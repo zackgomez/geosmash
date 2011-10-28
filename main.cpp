@@ -5,6 +5,7 @@
 #include <cmath>
 #include "glutils.h"
 #include "Fighter.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 static const float MAX_JOYSTICK_VALUE = 32767;
 static const float dt = 33.0 / 1000.0;
@@ -58,7 +59,7 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    fighter = new Fighter(Rectangle(0, 0, 0.05, 0.05));
+    fighter = new Fighter(Rectangle(0, -375+130, 50, 60));
 
     running = true;
     while (running)
@@ -114,6 +115,13 @@ void render()
     // Start with a blank slate
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
     glClear( GL_COLOR_BUFFER_BIT );
+
+    // Draw the land
+    glm::vec3 color(200, 0, 200);
+    glm::mat4 transform = glm::scale(
+            glm::translate(glm::mat4(1.0f), glm::vec3(0.0, -375.0+50.0, 0.0)),
+            glm::vec3(750.0, 100.0f, 1.0f));
+    renderRectangle(transform, color);
 
     fighter->render(dt);
 

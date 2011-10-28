@@ -13,7 +13,7 @@ Fighter::Fighter(const Rectangle &rect) :
     rect_(rect),
     xvel_(0), yvel_(0),
     state_(GROUND_STATE),
-    walkSpeed_(1.0),
+    walkSpeed_(300.0),
     airSpeed_(0.0),
     airAccel_(0.0)
 {}
@@ -67,7 +67,7 @@ void Fighter::render(float dt)
     glm::mat4 transform(1.0);
     transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
-            glm::vec3(0.1, 0.1, 1.0));
+            glm::vec3(rect_.w, rect_.h, 1.0));
 
     renderRectangle(transform, color);
 }
