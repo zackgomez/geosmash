@@ -37,7 +37,8 @@ public:
     bool hasAttack() const;
     Rectangle getAttackBox() const;
 
-    void respawn();
+    void respawn(bool killed);
+    bool isAlive() const;
 
 private:
     // Game state members
@@ -47,6 +48,7 @@ private:
     int state_;
     float stunTime_, stunDuration_;
     float damage_;
+    int lives_;
 
     // Fighter ID members
     float respawnx_, respawny_;

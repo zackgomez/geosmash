@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     for (unsigned i = 0; i < numPlayers; i++)
     {
         Fighter *fighter = new Fighter(Rectangle(0, 0, 50, 60), -225.0f+i*150, -100.f, playerColors[i]);
-        fighter->respawn();
+        fighter->respawn(false);
         fighters.push_back(fighter);
     }
     ground = Rectangle(0, -375+50, 750, 100);
@@ -125,9 +125,11 @@ void processInput()
 
 void update()
 {
+    int alivePlayers = 0;
     for (unsigned i = 0; i < numPlayers; i++)
     {
         Fighter *fighter = fighters[i];
+        if (fighter->isAlive()) alivePlayers++;
 
         // Update positions, etc
         fighter->update(controllers[i], dt);
@@ -175,13 +177,17 @@ void update()
         // Respawn condition
         if (fighter->getRectangle().y < -350 - 100.0f)
         {
-            fighter->respawn();
+            fighter->respawn(true);
             break;
         }
         // Ground check
         fighter->collisionWithGround(ground,
                 fighter->getRectangle().overlaps(ground));
     }
+
+    // End the game when no one is left
+    if (alivePlayers <= 0)
+        running = false;
 }
 
 void render()

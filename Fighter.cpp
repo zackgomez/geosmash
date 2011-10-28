@@ -9,6 +9,7 @@
 const static int AIR_NORMAL_STATE = 0;
 const static int AIR_STUNNED_STATE = 1;
 const static int GROUND_STATE = 2;
+const static int DEAD_STATE = 3;
 
 Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const glm::vec3& color) :
     rect_(rect),
@@ -16,7 +17,7 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
     dir_(-1),
     state_(AIR_NORMAL_STATE),
     stunTime_(0), stunDuration_(0),
-    damage_(0),
+    damage_(0), lives_(5),
     respawnx_(respawnx), respawny_(respawny),
     color_(color),
     attackTime_(-1),
@@ -32,6 +33,8 @@ Fighter::~Fighter()
 
 void Fighter::update(const struct Controller &controller, float dt)
 {
+    if (state_ == DEAD_STATE)
+        return;
     // Update
     if (state_ == GROUND_STATE)
     {
@@ -167,7 +170,7 @@ Rectangle Fighter::getAttackBox() const
             attackW_, attackH_);
 }
 
-void Fighter::respawn()
+void Fighter::respawn(bool killed)
 {
     rect_.x = respawnx_;
     rect_.y = respawny_;
@@ -175,16 +178,33 @@ void Fighter::respawn()
     state_ = AIR_NORMAL_STATE;
     attackTime_ = -1;
     damage_ = 0;
+    // Check for death
+    if (killed) --lives_;
+    if (lives_ <= 0)
+    {
+        // Move them way off the map
+        rect_.x = HUGE_VAL;
+        rect_.y = HUGE_VAL;
+        state_ = DEAD_STATE;
+    }
+}
+
+bool Fighter::isAlive() const
+{
+    return state_ != DEAD_STATE;
 }
 
 void Fighter::render(float dt)
 {
-    printf("State: %d   Position: [%f, %f]   Velocity: [%f, %f]\n", 
-            state_, rect_.x, rect_.y, xvel_, yvel_);
+    printf("State: %d   Lives: %d  Position: [%f, %f]   Velocity: [%f, %f]\n", 
+            state_, lives_, rect_.x, rect_.y, xvel_, yvel_);
+
+    if (state_ == DEAD_STATE)
+        return;
 
     glm::vec3 color = color_;
     if (state_ == AIR_STUNNED_STATE)
-        color *= 3;
+        color *= 4;
     // Draw body
     glm::mat4 transform(1.0);
     transform = glm::scale(
