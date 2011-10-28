@@ -63,11 +63,12 @@ void Fighter::render(float dt)
     printf("Position: [%f, %f]   Velocity: [%f, %f]\n", 
             rect_.x, rect_.y, xvel_, yvel_);
 
-    glm::vec3 color(1.0, 1.0, 1.0);
+    glm::vec3 color(0.2, 0.2, 8.0);
     glm::mat4 transform(1.0);
     transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
             glm::vec3(0.1, 0.1, 1.0));
+
     renderRectangle(transform, color);
 }
 
