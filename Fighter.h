@@ -22,14 +22,21 @@ public:
 class Fighter
 {
 public:
-    Fighter(const Rectangle &rect, const glm::vec3 &color);
+    Fighter(const Rectangle &rect, float respawnx, float respawny, const glm::vec3 &color);
     ~Fighter();
 
     void update(const Controller&, float dt);
     void render(float dt);
 
     void collisionWithGround(const Rectangle &ground, bool collision);
-    const Rectangle& getRectangle();
+    void attackCollision(); // Called when two attacks collide
+    void hitByAttack(const Rectangle &hitbox);  // Called when hit by an attack
+    void hitWithAttack(); // Called when you hit with an attack
+    const Rectangle& getRectangle() const;
+
+    bool hasAttack() const;
+    Rectangle getAttackBox() const;
+
     void respawn();
 
 private:
@@ -38,7 +45,20 @@ private:
     float xvel_, yvel_;
     float dir_; // 1 or -1 look in xdir
     int state_;
+    float stunTime_, stunDuration_;
+    float damage_;
+
+    // Fighter ID members
+    float respawnx_, respawny_;
     glm::vec3 color_;
+
+    // Attack members
+    float attackTime_; // -1 when not attacking
+    const float attackStartup_, attackDuration_, attackCooldown_;
+    const float attackDamage_, attackKnockback_, attackStun_; // attack stun in seconds
+    // Attack hitbox description
+    const float attackX_, attackY_;
+    const float attackW_, attackH_;
 
     // Fighter stats
     const float walkSpeed_;
@@ -47,4 +67,5 @@ private:
     const float jumpSpeed_;
 
     // Helper functions
+    float damageFunc() const; // Returns a scaling factor based on damage
 };

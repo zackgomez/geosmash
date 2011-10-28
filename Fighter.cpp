@@ -10,15 +10,20 @@ const static int AIR_NORMAL_STATE = 0;
 const static int AIR_STUNNED_STATE = 1;
 const static int GROUND_STATE = 2;
 
-Fighter::Fighter(const Rectangle &rect, const glm::vec3& color) :
+Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const glm::vec3& color) :
     rect_(rect),
     xvel_(0), yvel_(0),
     dir_(-1),
     state_(AIR_NORMAL_STATE),
+    stunTime_(0), stunDuration_(0),
+    damage_(0),
+    respawnx_(respawnx), respawny_(respawny),
     color_(color),
-    walkSpeed_(300.0),
-    airForce_(200.0),
-    airAccel_(-500.0),
+    attackTime_(-1),
+    attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),
+    attackDamage_(5), attackKnockback_(50.0), attackStun_(0.25),
+    attackX_(0.5*rect.w), attackY_(-0.33*rect.h), attackW_(50), attackH_(18),
+    walkSpeed_(300.0), airForce_(200.0), airAccel_(-500.0),
     jumpSpeed_(350.0)
 {}
 
@@ -31,7 +36,7 @@ void Fighter::update(const struct Controller &controller, float dt)
     if (state_ == GROUND_STATE)
     {
         // Check for jump
-        if (controller.jumpbutton || controller.joyy > 0.75f)
+        if (attackTime_ == -1 && (controller.jumpbutton || controller.joyy > 0.75f))
         {
             state_ = AIR_NORMAL_STATE;
             xvel_ = fabs(controller.joyx) > 0.2f ? controller.joyx * 0.5 * walkSpeed_ : 0.0f;
@@ -40,24 +45,44 @@ void Fighter::update(const struct Controller &controller, float dt)
         else
         {
             // If no jump update 
-            if (fabs(controller.joyx) > 0.2f)
+            if (fabs(controller.joyx) > 0.2f && attackTime_ < 0)
             {
                 xvel_ = controller.joyx * walkSpeed_;
                 dir_ = xvel_ < 0 ? -1 : 1;
             }
-            else
+            else if (attackTime_ < 0)
                 xvel_ = 0.0f;
         }
     }
     if (state_ == AIR_NORMAL_STATE)
     {
         // update for air normal state
-        if (fabs(controller.joyx) > 0.2f)
+        if (fabs(controller.joyx) > 0.2f && attackTime_ < 0)
         {
             xvel_ += controller.joyx * airForce_ * dt;
-            dir_ = xvel_ < 0 ? -1 : 1;
+            dir_ = controller.joyx < 0 ? -1 : 1;
         }
         yvel_ += airAccel_ * dt;
+    }
+    if (state_ == AIR_STUNNED_STATE)
+    {
+        yvel_ += airAccel_ * dt;
+        stunTime_ += dt;
+        if (stunTime_ > stunDuration_)
+            state_ = AIR_NORMAL_STATE;
+    }
+    if (state_ != AIR_STUNNED_STATE)
+    {
+        if (controller.buttona && attackTime_ < 0)
+        {
+            attackTime_ = 0;
+        }
+    }
+    if (attackTime_ >= 0)
+    {
+        attackTime_ += dt;
+        if (attackTime_ > attackStartup_ + attackDuration_ + attackCooldown_)
+            attackTime_ = -1;
     }
 
     // Update position
@@ -67,16 +92,18 @@ void Fighter::update(const struct Controller &controller, float dt)
 
 void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
 {
-    if (collision)
+    if (collision && ground.y + ground.h/2 < rect_.y + rect_.h/2)
     {
         if (state_ != GROUND_STATE)
         {
             state_ = GROUND_STATE;
             xvel_ = yvel_ = 0;
+            attackTime_ = -1;
         }
         // Make sure we're barely overlapping the ground (by 1 unit)
         rect_.y = ground.y + ground.h / 2 + rect_.h/2 - 1;
     }
+    // If no ground collision and we were on the ground, now in the air
     else
     {
         if (state_ == GROUND_STATE)
@@ -84,17 +111,70 @@ void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
     }
 }
 
-const Rectangle& Fighter::getRectangle()
+void Fighter::attackCollision()
+{
+    std::cout << "Attack Collision\n";
+    // If two attacks collide, just cancel them and go to cooldown
+    attackTime_ = attackStartup_ + attackDuration_;
+
+    // TODO Probably generate a tiny explosion here
+}
+
+void Fighter::hitByAttack(const Rectangle &hitbox)
+{
+    std::cout << "Hit by attack\n";
+    // Pop up a tiny amount if they're on the ground
+    if (state_ == GROUND_STATE)
+        rect_.y += 2;
+    // Take damage
+    damage_ += attackDamage_;
+    // Go to the stunned state
+    state_ = AIR_STUNNED_STATE;
+    stunTime_ = 0;
+    stunDuration_ = attackStun_ * damageFunc();;
+    // Calculate direction of hit
+    glm::vec2 hitdir = glm::vec2(rect_.x, rect_.y) - glm::vec2(hitbox.x, hitbox.y);
+    hitdir = glm::normalize(hitdir);
+    hitdir *= attackKnockback_ * damageFunc();
+
+    // Get knocked back
+    xvel_ = hitdir.x;
+    yvel_ = hitdir.y;
+
+    // TODO Probably generate a tiny explosion here
+}
+
+void Fighter::hitWithAttack()
+{
+    // Go straight to cooldown
+    attackTime_ = attackStartup_ + attackDuration_;
+}
+
+const Rectangle& Fighter::getRectangle() const
 {
     return rect_;
 }
 
+bool Fighter::hasAttack() const
+{
+    return attackTime_ > attackStartup_
+        && attackTime_ < attackStartup_ + attackDuration_;
+}
+
+Rectangle Fighter::getAttackBox() const
+{
+    return Rectangle(rect_.x + dir_ * attackX_, rect_.y + attackY_,
+            attackW_, attackH_);
+}
+
 void Fighter::respawn()
 {
-    rect_.x = 0.0f;
-    rect_.y = -100.0f;
+    rect_.x = respawnx_;
+    rect_.y = respawny_;
     xvel_ = yvel_ = 0.0f;
     state_ = AIR_NORMAL_STATE;
+    attackTime_ = -1;
+    damage_ = 0;
 }
 
 void Fighter::render(float dt)
@@ -102,21 +182,39 @@ void Fighter::render(float dt)
     printf("State: %d   Position: [%f, %f]   Velocity: [%f, %f]\n", 
             state_, rect_.x, rect_.y, xvel_, yvel_);
 
+    glm::vec3 color = color_;
+    if (state_ == AIR_STUNNED_STATE)
+        color *= 3;
     // Draw body
     glm::mat4 transform(1.0);
     transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
             glm::vec3(rect_.w, rect_.h, 1.0));
-    renderRectangle(transform, color_);
+    renderRectangle(transform, color);
 
     // Draw orientation tick
-    float angle = M_PI/2.0;
-    transform = glm::scale(
+    float angle = 0;
+    glm::mat4 ticktrans = glm::scale(
             glm::rotate(
                 glm::translate(transform, glm::vec3(0.5 * dir_, 0.0, 0.0)),
                 angle, glm::vec3(0.0, 0.0, -1.0)),
             glm::vec3(0.33, 0.1, 1.0));
-    renderRectangle(transform, color_);
+    renderRectangle(ticktrans, color);
+
+    // Draw hitbox if applicable
+    if (hasAttack())
+    {
+        Rectangle hitbox = getAttackBox();
+        glm::mat4 attacktrans = glm::scale(
+                glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
+                glm::vec3(hitbox.w, hitbox.h, 1.0f));
+        renderRectangle(attacktrans, glm::vec3(1,0,0));
+    }
+}
+
+float Fighter::damageFunc() const
+{
+    return damage_ / 33;
 }
 
 

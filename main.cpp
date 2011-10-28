@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     // Init game state
     for (unsigned i = 0; i < numPlayers; i++)
     {
-        Fighter *fighter = new Fighter(Rectangle(0, 0, 50, 60), playerColors[i]);
+        Fighter *fighter = new Fighter(Rectangle(0, 0, 50, 60), -225.0f+i*150, -100.f, playerColors[i]);
         fighter->respawn();
         fighters.push_back(fighter);
     }
@@ -132,10 +132,53 @@ void update()
         // Update positions, etc
         fighter->update(controllers[i], dt);
 
+        // Cache some vals
+        Rectangle hitboxi = fighter->getAttackBox();
+        bool fiattack = fighter->hasAttack();
+        // Check for hitbox collisions
+        for (unsigned j = i+1; j < numPlayers; j++)
+        {
+            Rectangle hitboxj = fighters[j]->getAttackBox();
+            bool fjattack = fighters[j]->hasAttack();
+
+            // Hitboxes hit each other?
+            if (fiattack && fjattack && hitboxi.overlaps(hitboxj))
+            {
+                // Then go straight to cooldown
+                fighter->attackCollision();
+                fighters[j]->attackCollision();
+
+                fiattack = fighter->hasAttack();
+                hitboxi = fighter->getAttackBox();
+                continue;
+            }
+            if (fiattack && fighters[j]->getRectangle().overlaps(hitboxi))
+            {
+                // fighter has hit fighters[j]
+                fighters[j]->hitByAttack(hitboxi);
+                fighter->hitWithAttack();
+
+                fiattack = fighter->hasAttack();
+                hitboxi = fighter->getAttackBox();
+            }
+            if (fjattack && fighter->getRectangle().overlaps(hitboxj))
+            {
+                // fighter[j] has hit fighter
+                fighter->hitByAttack(hitboxj);
+                fighters[j]->hitWithAttack();
+
+                fiattack = fighter->hasAttack();
+                hitboxi = fighter->getAttackBox();
+            }
+        }
+
         // Respawn condition
         if (fighter->getRectangle().y < -350 - 100.0f)
+        {
             fighter->respawn();
-        // Collision detection
+            break;
+        }
+        // Ground check
         fighter->collisionWithGround(ground,
                 fighter->getRectangle().overlaps(ground));
     }
