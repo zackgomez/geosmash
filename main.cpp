@@ -1,11 +1,12 @@
 #include <GL/glew.h>
 #include <SDL/SDL.h>
+#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <vector>
 #include "glutils.h"
 #include "Fighter.h"
-#include <glm/gtc/matrix_transform.hpp>
 
 static const float MAX_JOYSTICK_VALUE = 32767;
 static const float dt = 33.0 / 1000.0;
@@ -13,8 +14,19 @@ static const float dt = 33.0 / 1000.0;
 bool running;
 SDL_Joystick *joystick;
 
-Controller controller;
-Fighter *fighter;
+unsigned numPlayers = 0;
+
+Controller controllers[4];
+std::vector<Fighter*> fighters;
+const glm::vec3 playerColors[] =
+{
+    glm::vec3(0.2, 0.2, 1.0),
+    glm::vec3(0.2, 1.0, 0.2),
+    glm::vec3(1.0, 0.2, 0.2),
+    glm::vec3(0.2, 1.0, 1.0)
+};
+
+Rectangle ground;
 
 
 int initJoystick();
@@ -24,6 +36,8 @@ void cleanup();
 void processInput();
 void update();
 void render();
+
+void updateController(Controller &controller, const SDL_Event &event);
 
 int main(int argc, char **argv)
 {
@@ -48,7 +62,7 @@ int main(int argc, char **argv)
     }
 
 
-    if (!initJoystick())
+    if ((numPlayers = initJoystick()) == 0)
     {
         std::cerr << "Unable to initialize Joystick(s)\n";
         exit(1);
@@ -59,7 +73,14 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    fighter = new Fighter(Rectangle(0, -375+130, 50, 60));
+    // Init game state
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        Fighter *fighter = new Fighter(Rectangle(0, 0, 50, 60), playerColors[i]);
+        fighter->respawn();
+        fighters.push_back(fighter);
+    }
+    ground = Rectangle(0, -375+50, 750, 100);
 
     running = true;
     while (running)
@@ -81,18 +102,16 @@ void processInput()
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
+        int idx = -1;
         switch (event.type)
         {
         case SDL_JOYAXISMOTION:
-            if (event.jaxis.axis == 0)
-                controller.joyx = event.jaxis.value / MAX_JOYSTICK_VALUE;
-            else if (event.jaxis.axis == 1)
-                controller.joyy = -event.jaxis.value / MAX_JOYSTICK_VALUE;
-            break;
-
+            idx = idx == -1 ? event.jaxis.which : idx;
         case SDL_JOYBUTTONDOWN:
-            // TODO do something with buttons 0-3 (face buttons)
-            break;
+            idx = idx == -1 ? event.jbutton.which : idx;
+        case SDL_JOYBUTTONUP:
+            idx = idx == -1 ? event.jbutton.which : idx;
+            updateController(controllers[idx], event);
 
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
@@ -107,7 +126,20 @@ void processInput()
 
 void update()
 {
-    fighter->update(controller, dt);
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        Fighter *fighter = fighters[i];
+
+        // Update positions, etc
+        fighter->update(controllers[i], dt);
+
+        // Respawn condition
+        if (fighter->getRectangle().y < -350 - 100.0f)
+            fighter->respawn();
+        // Collision detection
+        fighter->collisionWithGround(ground,
+                fighter->getRectangle().overlaps(ground));
+    }
 }
 
 void render()
@@ -117,13 +149,14 @@ void render()
     glClear( GL_COLOR_BUFFER_BIT );
 
     // Draw the land
-    glm::vec3 color(200, 0, 200);
+    glm::vec3 color(200/255.0, 0, 200/255.0);
     glm::mat4 transform = glm::scale(
-            glm::translate(glm::mat4(1.0f), glm::vec3(0.0, -375.0+50.0, 0.0)),
-            glm::vec3(750.0, 100.0f, 1.0f));
+            glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.0)),
+            glm::vec3(ground.w, ground.h, 1.0f));
     renderRectangle(transform, color);
 
-    fighter->render(dt);
+    for (unsigned i = 0; i < numPlayers; i++)
+        fighters[i]->render(dt);
 
     // Finish
     SDL_GL_SwapBuffers();
@@ -140,9 +173,15 @@ int initJoystick()
         return 0;
 
     SDL_JoystickEventState(SDL_ENABLE);
-    joystick = SDL_JoystickOpen(0);
 
-    return 1;
+    int numPlayers = 0;
+    for (int i = 0; i < numJoysticks && numPlayers <= 4; i++)
+    {
+        joystick = SDL_JoystickOpen(i);
+        numPlayers++;
+    }
+
+    return numJoysticks;
 }
 
 int initGraphics()
@@ -160,4 +199,42 @@ void cleanup()
     std::cout << "Quiting nicely\n";
     SDL_JoystickClose(0);
     SDL_Quit();
+}
+
+void updateController(Controller &controller, const SDL_Event &event)
+{
+    switch (event.type)
+    {
+    case SDL_JOYAXISMOTION:
+        if (event.jaxis.axis == 0)
+            controller.joyx = event.jaxis.value / MAX_JOYSTICK_VALUE;
+        else if (event.jaxis.axis == 1)
+            controller.joyy = -event.jaxis.value / MAX_JOYSTICK_VALUE;
+        break;
+
+    case SDL_JOYBUTTONDOWN:
+        if (event.jbutton.button == 0)
+            controller.buttona = true;
+        else if (event.jbutton.button == 1)
+            controller.buttonb = true;
+        else if (event.jbutton.button == 3)
+            controller.jumpbutton = true;
+        else if (event.jbutton.button == 2)
+            controller.buttonc = true;
+        break;
+
+    case SDL_JOYBUTTONUP:
+        if (event.jbutton.button == 0)
+            controller.buttona = false;
+        else if (event.jbutton.button == 1)
+            controller.buttonb = false;
+        else if (event.jbutton.button == 3)
+            controller.jumpbutton = false;
+        else if (event.jbutton.button == 2)
+            controller.buttonc = false;
+        break;
+
+    default:
+        std::cout << "WARNING: Unknown event in updateController.\n";
+    }
 }
