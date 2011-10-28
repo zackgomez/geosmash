@@ -23,7 +23,7 @@ const glm::vec3 playerColors[] =
     glm::vec3(0.2, 0.2, 1.0),
     glm::vec3(0.2, 1.0, 0.2),
     glm::vec3(1.0, 0.2, 0.2),
-    glm::vec3(0.2, 1.0, 1.0)
+    glm::vec3(1.0, 1.0, 0.2)
 };
 
 Rectangle ground;

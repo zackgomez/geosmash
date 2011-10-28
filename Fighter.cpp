@@ -13,6 +13,7 @@ const static int GROUND_STATE = 2;
 Fighter::Fighter(const Rectangle &rect, const glm::vec3& color) :
     rect_(rect),
     xvel_(0), yvel_(0),
+    dir_(-1),
     state_(AIR_NORMAL_STATE),
     color_(color),
     walkSpeed_(300.0),
@@ -30,7 +31,7 @@ void Fighter::update(const struct Controller &controller, float dt)
     if (state_ == GROUND_STATE)
     {
         // Check for jump
-        if (controller.jumpbutton || controller.joyy > 0.5f)
+        if (controller.jumpbutton || controller.joyy > 0.75f)
         {
             state_ = AIR_NORMAL_STATE;
             xvel_ = fabs(controller.joyx) > 0.2f ? controller.joyx * 0.5 * walkSpeed_ : 0.0f;
@@ -40,7 +41,10 @@ void Fighter::update(const struct Controller &controller, float dt)
         {
             // If no jump update 
             if (fabs(controller.joyx) > 0.2f)
+            {
                 xvel_ = controller.joyx * walkSpeed_;
+                dir_ = xvel_ < 0 ? -1 : 1;
+            }
             else
                 xvel_ = 0.0f;
         }
@@ -49,7 +53,10 @@ void Fighter::update(const struct Controller &controller, float dt)
     {
         // update for air normal state
         if (fabs(controller.joyx) > 0.2f)
+        {
             xvel_ += controller.joyx * airForce_ * dt;
+            dir_ = xvel_ < 0 ? -1 : 1;
+        }
         yvel_ += airAccel_ * dt;
     }
 
@@ -95,11 +102,20 @@ void Fighter::render(float dt)
     printf("State: %d   Position: [%f, %f]   Velocity: [%f, %f]\n", 
             state_, rect_.x, rect_.y, xvel_, yvel_);
 
+    // Draw body
     glm::mat4 transform(1.0);
     transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
             glm::vec3(rect_.w, rect_.h, 1.0));
+    renderRectangle(transform, color_);
 
+    // Draw orientation tick
+    float angle = M_PI/2.0;
+    transform = glm::scale(
+            glm::rotate(
+                glm::translate(transform, glm::vec3(0.5 * dir_, 0.0, 0.0)),
+                angle, glm::vec3(0.0, 0.0, -1.0)),
+            glm::vec3(0.33, 0.1, 1.0));
     renderRectangle(transform, color_);
 }
 

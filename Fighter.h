@@ -36,6 +36,7 @@ private:
     // Game state members
     Rectangle rect_;
     float xvel_, yvel_;
+    float dir_; // 1 or -1 look in xdir
     int state_;
     glm::vec3 color_;
 
