@@ -14,7 +14,7 @@ static const float dt = 33.0 / 1000.0;
 bool running;
 SDL_Joystick *joystick;
 
-unsigned numPlayers = 0;
+unsigned numPlayers = 1;
 
 Controller controllers[4];
 std::vector<Fighter*> fighters;
@@ -29,10 +29,12 @@ const glm::vec3 playerColors[] =
 Rectangle ground;
 
 
-int initJoystick();
+int initJoystick(unsigned numPlayers);
 int initGraphics();
+int initLibs();
 void cleanup();
 
+void mainloop();
 void processInput();
 void update();
 void render();
@@ -41,28 +43,20 @@ void updateController(Controller &controller, const SDL_Event &event);
 
 int main(int argc, char **argv)
 {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
+    if (argc > 2)
     {
-        std::cerr << "Couldn't initialize SDL: " << SDL_GetError() << '\n';
+        std::cout << "usage: " << argv[0] << " [nplayers]\n";
         exit(1);
     }
-
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_Surface *screen = SDL_SetVideoMode(640, 480, 32, SDL_OPENGL);
-    if ( screen == NULL ) {
-        fprintf(stderr, "Couldn't set 640x480x8 video mode: %s\n",
-                SDL_GetError());
-        exit(1);
-    }
-    GLenum err = glewInit();
-    if (err != GLEW_OK)
+    if (argc == 2)
     {
-        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-        exit(1);
+        numPlayers = std::min(4, std::max(1, atoi(argv[1])));
     }
 
+    if (!initLibs())
+        exit(1);
 
-    if ((numPlayers = initJoystick()) == 0)
+    if ((initJoystick(numPlayers)) == 0)
     {
         std::cerr << "Unable to initialize Joystick(s)\n";
         exit(1);
@@ -82,6 +76,15 @@ int main(int argc, char **argv)
     }
     ground = Rectangle(0, -375+50, 750, 100);
 
+    mainloop();
+
+    cleanup();
+
+    return 0;
+}
+
+void mainloop()
+{
     running = true;
     while (running)
     {
@@ -91,10 +94,6 @@ int main(int argc, char **argv)
 
         SDL_Delay(static_cast<int>(dt * 1000.0));
     }
-
-    cleanup();
-
-    return 0;
 }
 
 void processInput()
@@ -162,11 +161,11 @@ void render()
     SDL_GL_SwapBuffers();
 }
 
-int initJoystick()
+int initJoystick(unsigned numPlayers)
 {
-    int numJoysticks = SDL_NumJoysticks();
+    unsigned numJoysticks = SDL_NumJoysticks();
     std::cout << "Available joysticks: " << numJoysticks << '\n';
-    for (int i = 0; i < numJoysticks; i++)
+    for (unsigned i = 0; i < numJoysticks; i++)
         std::cout << "Joystick: " << SDL_JoystickName(i) << '\n';
 
     if (numJoysticks == 0)
@@ -174,14 +173,14 @@ int initJoystick()
 
     SDL_JoystickEventState(SDL_ENABLE);
 
-    int numPlayers = 0;
-    for (int i = 0; i < numJoysticks && numPlayers <= 4; i++)
-    {
+    unsigned i;
+    for (i = 0; i < numJoysticks && i < numPlayers; i++)
         joystick = SDL_JoystickOpen(i);
-        numPlayers++;
-    }
 
-    return numJoysticks;
+    if (i != numPlayers)
+        return 0;
+
+    return numPlayers;
 }
 
 int initGraphics()
@@ -237,4 +236,28 @@ void updateController(Controller &controller, const SDL_Event &event)
     default:
         std::cout << "WARNING: Unknown event in updateController.\n";
     }
+}
+
+int initLibs()
+{
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
+    {
+        std::cerr << "Couldn't initialize SDL: " << SDL_GetError() << '\n';
+        return 0;
+    }
+
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_Surface *screen = SDL_SetVideoMode(640, 480, 32, SDL_OPENGL);
+    if ( screen == NULL ) {
+        fprintf(stderr, "Couldn't set 640x480x8 video mode: %s\n",
+                SDL_GetError());
+        return 0;
+    }
+    GLenum err = glewInit();
+    if (err != GLEW_OK)
+    {
+        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+        return 0;
+    }
+    return 1;
 }
