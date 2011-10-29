@@ -59,6 +59,9 @@ private:
     float respawnx_, respawny_;
     glm::vec3 color_;
 
+    float jumpTime_; // amount of time since last jump
+    
+
     // Attack members
     float attackTime_; // -1 when not attacking
     bool attackHit_; // True if current attack animation has hit
@@ -73,6 +76,8 @@ private:
     const float airForce_;
     const float airAccel_;
     const float jumpSpeed_;
+    const float jumpAirSpeed_; // The maximum x speed for jumping (only for player control)
+    //TODO: const float jumpInterval_; // length of time disalowed from second jump
 
     // Helper functions
     float damageFunc() const; // Returns a scaling factor based on damage

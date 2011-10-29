@@ -22,10 +22,10 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
     color_(color),
     attackTime_(-1),
     attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),
-    attackDamage_(5), attackKnockback_(50.0), attackStun_(0.25),
+    attackDamage_(5), attackKnockback_(60.0), attackStun_(0.25),
     attackX_(0.5*rect.w), attackY_(-0.33*rect.h), attackW_(50), attackH_(18),
-    walkSpeed_(300.0), airForce_(200.0), airAccel_(-500.0),
-    jumpSpeed_(350.0)
+    walkSpeed_(300.0), airForce_(450.0), airAccel_(-1100.0),
+    jumpSpeed_(600.0), jumpAirSpeed_(200.0)
 {}
 
 Fighter::~Fighter()
@@ -55,6 +55,7 @@ void Fighter::update(const struct Controller &controller, float dt)
             state_ = AIR_NORMAL_STATE;
             xvel_ = fabs(controller.joyx) > 0.2f ? controller.joyx * 0.5 * walkSpeed_ : 0.0f;
             yvel_ = jumpSpeed_;
+            jumpTime_ = 0.0f;
         }
         else
         {
@@ -73,15 +74,20 @@ void Fighter::update(const struct Controller &controller, float dt)
         // update for air normal state
         if (fabs(controller.joyx) > 0.2f && attackTime_ < 0)
         {
-            xvel_ += controller.joyx * airForce_ * dt;
+            // Don't let the player increase the velocity past a certain speed
+            if (xvel_ * controller.joyx <= 0 || fabs(xvel_) < jumpAirSpeed_)
+                xvel_ += controller.joyx * airForce_ * dt;
+            // You can always control your orientation
             dir_ = controller.joyx < 0 ? -1 : 1;
         }
         yvel_ += airAccel_ * dt;
+        jumpTime_ += dt;
     }
     if (state_ == AIR_STUNNED_STATE)
     {
         yvel_ += airAccel_ * dt;
         stunTime_ += dt;
+        jumpTime_ += dt;
         if (stunTime_ > stunDuration_)
             state_ = AIR_NORMAL_STATE;
     }
@@ -132,7 +138,7 @@ void Fighter::attackCollision()
 {
     std::cout << "Attack Collision\n";
     // If two attacks collide, just cancel them and go to cooldown
-    attackTime_ = attackStartup_ + attackDuration_;
+    attackHit_ = true;
 
     // TODO Probably generate a tiny explosion here
 }

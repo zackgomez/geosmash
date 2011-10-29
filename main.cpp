@@ -75,7 +75,7 @@ int main(int argc, char **argv)
         fighter->respawn(false);
         fighters.push_back(fighter);
     }
-    ground = Rectangle(0, -375+50, 750, 100);
+    ground = Rectangle(0, -375+50, 1025, 100);
 
     mainloop();
 
@@ -293,7 +293,7 @@ int initJoystick(unsigned numPlayers)
 int initGraphics()
 {
     // Set the viewport
-    glViewport(0, 0, 1024, 768);
+    glViewport(0, 0, 1920, 1080);
 
     initGLUtils();
 
@@ -354,7 +354,7 @@ int initLibs()
     }
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_Surface *screen = SDL_SetVideoMode(1024, 768, 32, SDL_OPENGL);
+    SDL_Surface *screen = SDL_SetVideoMode(1920, 1080, 32, SDL_OPENGL);
     if ( screen == NULL ) {
         fprintf(stderr, "Couldn't set video mode: %s\n",
                 SDL_GetError());
