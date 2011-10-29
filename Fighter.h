@@ -59,7 +59,7 @@ private:
     float respawnx_, respawny_;
     glm::vec3 color_;
 
-    float jumpTime_; // amount of time since last jump
+    float jumpTime_; // amount of time since jump inputted
     
 
     // Attack members
@@ -72,12 +72,13 @@ private:
     const float attackW_, attackH_;
 
     // Fighter stats
-    const float walkSpeed_;
-    const float airForce_;
-    const float airAccel_;
-    const float jumpSpeed_;
+    const float walkSpeed_; // Maximum walking speed
+    const float airForce_; // Force applied to allow player air control
+    const float airAccel_; // "Gravity"
+    const float jumpStartupTime_; // Delay before jump begins, also short hop/full jump control time
+    const float jumpSpeed_; // Speed of a full jump
+    const float hopSpeed_; // Speed of a short hop
     const float jumpAirSpeed_; // The maximum x speed for jumping (only for player control)
-    //TODO: const float jumpInterval_; // length of time disalowed from second jump
 
     // Helper functions
     float damageFunc() const; // Returns a scaling factor based on damage

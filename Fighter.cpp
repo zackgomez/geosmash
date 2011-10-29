@@ -25,7 +25,8 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
     attackDamage_(5), attackKnockback_(60.0), attackStun_(0.25),
     attackX_(0.5*rect.w), attackY_(-0.33*rect.h), attackW_(50), attackH_(18),
     walkSpeed_(300.0), airForce_(450.0), airAccel_(-1100.0),
-    jumpSpeed_(600.0), jumpAirSpeed_(200.0)
+    jumpStartupTime_(0.05), jumpSpeed_(600.0), hopSpeed_(200.0),
+    jumpAirSpeed_(200.0)
 {}
 
 Fighter::~Fighter()
@@ -50,12 +51,22 @@ void Fighter::update(const struct Controller &controller, float dt)
     if (state_ == GROUND_STATE)
     {
         // Check for jump
-        if (attackTime_ == -1 && (controller.jumpbutton || controller.joyy > 0.75f))
+        if (jumpTime_ < 0 && attackTime_ < 0 &&
+                (controller.jumpbutton || controller.joyy > 0.75f))
         {
+            // Start the jump timer
+            jumpTime_ = 0.0f;
+        }
+        if (jumpTime_ > jumpStartupTime_)
+        {
+            // If they are still "holding down" the jump button now, then full jump
+            // otherwise short hop
             state_ = AIR_NORMAL_STATE;
             xvel_ = fabs(controller.joyx) > 0.2f ? controller.joyx * 0.5 * walkSpeed_ : 0.0f;
-            yvel_ = jumpSpeed_;
-            jumpTime_ = 0.0f;
+            if (controller.jumpbutton || controller.joyy > 0.75f)
+                yvel_ = jumpSpeed_;
+            else
+                yvel_ = hopSpeed_;
         }
         else
         {
@@ -81,13 +92,11 @@ void Fighter::update(const struct Controller &controller, float dt)
             dir_ = controller.joyx < 0 ? -1 : 1;
         }
         yvel_ += airAccel_ * dt;
-        jumpTime_ += dt;
     }
     if (state_ == AIR_STUNNED_STATE)
     {
         yvel_ += airAccel_ * dt;
         stunTime_ += dt;
-        jumpTime_ += dt;
         if (stunTime_ > stunDuration_)
             state_ = AIR_NORMAL_STATE;
     }
@@ -107,6 +116,8 @@ void Fighter::update(const struct Controller &controller, float dt)
         if (attackTime_ > attackStartup_ + attackDuration_ + attackCooldown_)
             attackTime_ = -1;
     }
+    if (jumpTime_ >= 0)
+        jumpTime_ += dt;
 
     // Update position
     rect_.x += xvel_ * dt;
@@ -122,6 +133,7 @@ void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
             state_ = GROUND_STATE;
             xvel_ = yvel_ = 0;
             attackTime_ = -1;
+            jumpTime_ = -1;
         }
         // Make sure we're barely overlapping the ground (by 1 unit)
         rect_.y = ground.y + ground.h / 2 + rect_.h/2 - 1;
@@ -201,6 +213,7 @@ void Fighter::respawn(bool killed)
     xvel_ = yvel_ = 0.0f;
     state_ = AIR_NORMAL_STATE;
     attackTime_ = -1;
+    jumpTime_ = -1;
     damage_ = 0;
     // Check for death
     if (killed) --lives_;
@@ -220,8 +233,8 @@ bool Fighter::isAlive() const
 
 void Fighter::render(float dt)
 {
-    printf("State: %d   Lives: %d  Position: [%f, %f]   Velocity: [%f, %f]\n", 
-            state_, lives_, rect_.x, rect_.y, xvel_, yvel_);
+    printf("State: %d  Lives: %d  Damage: %f  Position: [%f, %f]   Velocity: [%f, %f] JumpTime: %f\n", 
+            state_, lives_, damage_, rect_.x, rect_.y, xvel_, yvel_, jumpTime_);
 
     if (state_ == DEAD_STATE)
         return;
