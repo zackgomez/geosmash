@@ -28,12 +28,17 @@ public:
     void update(const Controller&, float dt);
     void render(float dt);
 
+    int getLives() const;
+    float getDamage() const;
+
     void collisionWithGround(const Rectangle &ground, bool collision);
     void attackCollision(); // Called when two attacks collide
     void hitByAttack(const Rectangle &hitbox);  // Called when hit by an attack
     void hitWithAttack(); // Called when you hit with an attack
     const Rectangle& getRectangle() const;
 
+    // Returns true if this Fighter is currently attacking and has an attack
+    // hitbox (see getAttackBox())
     bool hasAttack() const;
     Rectangle getAttackBox() const;
 
@@ -56,6 +61,7 @@ private:
 
     // Attack members
     float attackTime_; // -1 when not attacking
+    bool attackHit_; // True if current attack animation has hit
     const float attackStartup_, attackDuration_, attackCooldown_;
     const float attackDamage_, attackKnockback_, attackStun_; // attack stun in seconds
     // Attack hitbox description
@@ -70,4 +76,5 @@ private:
 
     // Helper functions
     float damageFunc() const; // Returns a scaling factor based on damage
+    bool inAttackAnimation() const;
 };

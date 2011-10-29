@@ -17,7 +17,7 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
     dir_(-1),
     state_(AIR_NORMAL_STATE),
     stunTime_(0), stunDuration_(0),
-    damage_(0), lives_(5),
+    damage_(0), lives_(4),
     respawnx_(respawnx), respawny_(respawny),
     color_(color),
     attackTime_(-1),
@@ -30,6 +30,17 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
 
 Fighter::~Fighter()
 {}
+
+int Fighter::getLives() const
+{
+    return lives_;
+}
+
+float Fighter::getDamage() const 
+{
+    return damage_;
+}
+
 
 void Fighter::update(const struct Controller &controller, float dt)
 {
@@ -76,9 +87,12 @@ void Fighter::update(const struct Controller &controller, float dt)
     }
     if (state_ != AIR_STUNNED_STATE)
     {
+        // Check for attack
         if (controller.buttona && attackTime_ < 0)
         {
+            // Start new attack
             attackTime_ = 0;
+            attackHit_ = false;
         }
     }
     if (attackTime_ >= 0)
@@ -149,8 +163,7 @@ void Fighter::hitByAttack(const Rectangle &hitbox)
 
 void Fighter::hitWithAttack()
 {
-    // Go straight to cooldown
-    attackTime_ = attackStartup_ + attackDuration_;
+    attackHit_ = true;
 }
 
 const Rectangle& Fighter::getRectangle() const
@@ -159,6 +172,11 @@ const Rectangle& Fighter::getRectangle() const
 }
 
 bool Fighter::hasAttack() const
+{
+    return inAttackAnimation() && !attackHit_;
+}
+
+bool Fighter::inAttackAnimation() const
 {
     return attackTime_ > attackStartup_
         && attackTime_ < attackStartup_ + attackDuration_;
@@ -222,7 +240,7 @@ void Fighter::render(float dt)
     renderRectangle(ticktrans, color);
 
     // Draw hitbox if applicable
-    if (hasAttack())
+    if (inAttackAnimation())
     {
         Rectangle hitbox = getAttackBox();
         glm::mat4 attacktrans = glm::scale(
@@ -234,7 +252,7 @@ void Fighter::render(float dt)
 
 float Fighter::damageFunc() const
 {
-    return damage_ / 33;
+    return 2 * damage_ / 33;
 }
 
 

@@ -20,13 +20,14 @@ Controller controllers[4];
 std::vector<Fighter*> fighters;
 const glm::vec3 playerColors[] =
 {
-    glm::vec3(0.2, 0.2, 1.0),
-    glm::vec3(0.2, 1.0, 0.2),
-    glm::vec3(1.0, 0.2, 0.2),
-    glm::vec3(1.0, 1.0, 0.2)
+    glm::vec3(0.2, 0.2, 0.8),
+    glm::vec3(0.2, 0.8, 0.2),
+    glm::vec3(0.8, 0.2, 0.2),
+    glm::vec3(0.8, 0.8, 0.2)
 };
 
 Rectangle ground;
+const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
 
 
 int initJoystick(unsigned numPlayers);
@@ -197,14 +198,71 @@ void render()
     glClear( GL_COLOR_BUFFER_BIT );
 
     // Draw the land
-    glm::vec3 color(200/255.0, 0, 200/255.0);
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.0)),
             glm::vec3(ground.w, ground.h, 1.0f));
-    renderRectangle(transform, color);
+    renderRectangle(transform, groundColor);
 
     for (unsigned i = 0; i < numPlayers; i++)
         fighters[i]->render(dt);
+
+    //
+    // Render the overlay interface (HUD)
+    //
+
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        int lives = fighters[i]->getLives();
+        glm::vec2 life_area(-225.0f - 10 + 150*i, ground.y + 15);
+        // 10unit border
+        // 10unit squares
+        
+        // Draw life counts first
+        for (unsigned j = 0; j < lives; j++)
+        {
+            glm::mat4 transform = glm::scale(
+                    glm::translate(
+                        glm::mat4(1.0f),
+                        glm::vec3(life_area.x, life_area.y, 0.0f)),
+                    glm::vec3(10, 10, 1.0));
+            renderRectangle(transform, playerColors[i]);
+
+            if (j % 2 == 0)
+                life_area.x += 20;
+            else
+            {
+                life_area.x -= 20;
+                life_area.y -= 20;
+            }
+
+        }
+
+        // Draw damage bars
+        // First, render a black background rect
+        glm::vec2 damageBarMidpoint(-225.0f + 150*i, ground.y - 25);
+        glm::mat4 transform = glm::scale(
+                    glm::translate(
+                        glm::mat4(1.0f),
+                        glm::vec3(damageBarMidpoint.x, damageBarMidpoint.y, 0.0f)),
+                    glm::vec3(100, 20, 1.0));
+        renderRectangle(transform, glm::vec3(0, 0, 0));
+       
+        float maxDamage = 100;
+        float xscalefact = std::min(0.9f, fighters[i]->getDamage() / maxDamage);
+        transform = glm::scale(
+                glm::translate(
+                    transform,
+                    glm::vec3(0.0f)), //glm::vec3(-.4 * .5 * xscalefact, 0.0f, 0.0f)),
+                glm::vec3( xscalefact, 0.9f, 0.0f));
+        renderRectangle(transform, playerColors[i]);
+
+
+
+
+        
+
+    }
+
 
     // Finish
     SDL_GL_SwapBuffers();
@@ -235,7 +293,7 @@ int initJoystick(unsigned numPlayers)
 int initGraphics()
 {
     // Set the viewport
-    glViewport(0, 0, 640, 480);
+    glViewport(0, 0, 1024, 768);
 
     initGLUtils();
 
@@ -296,9 +354,9 @@ int initLibs()
     }
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_Surface *screen = SDL_SetVideoMode(640, 480, 32, SDL_OPENGL);
+    SDL_Surface *screen = SDL_SetVideoMode(1024, 768, 32, SDL_OPENGL);
     if ( screen == NULL ) {
-        fprintf(stderr, "Couldn't set 640x480x8 video mode: %s\n",
+        fprintf(stderr, "Couldn't set video mode: %s\n",
                 SDL_GetError());
         return 0;
     }
