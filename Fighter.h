@@ -4,8 +4,16 @@
 
 struct Controller
 {
+    // The positions [-1, 1] of the main analog stick
     float joyx, joyy;
+    // The velocities of the main analog stick over some time period
+    float joyxv, joyyv;
+
+    // nonzero if the button is pressed
     int buttona, buttonb, buttonc, jumpbutton;
+
+    // nonzero if the button was pressed this frame
+    int pressa, pressb, pressc, pressjump;
 };
 
 class Rectangle

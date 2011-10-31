@@ -47,12 +47,13 @@ void Fighter::update(const struct Controller &controller, float dt)
 {
     if (state_ == DEAD_STATE)
         return;
+
     // Update
     if (state_ == GROUND_STATE)
     {
         // Check for jump
         if (jumpTime_ < 0 && attackTime_ < 0 &&
-                (controller.jumpbutton || controller.joyy > 0.75f))
+                (controller.pressjump || (controller.joyy > 0.65 && controller.joyyv > 0.20f)))
         {
             // Start the jump timer
             jumpTime_ = 0.0f;
@@ -63,7 +64,7 @@ void Fighter::update(const struct Controller &controller, float dt)
             // otherwise short hop
             state_ = AIR_NORMAL_STATE;
             xvel_ = fabs(controller.joyx) > 0.2f ? controller.joyx * 0.5 * walkSpeed_ : 0.0f;
-            if (controller.jumpbutton || controller.joyy > 0.75f)
+            if (controller.jumpbutton || controller.joyy > 0.65f)
                 yvel_ = jumpSpeed_;
             else
                 yvel_ = hopSpeed_;
@@ -103,7 +104,7 @@ void Fighter::update(const struct Controller &controller, float dt)
     if (state_ != AIR_STUNNED_STATE)
     {
         // Check for attack
-        if (controller.buttona && attackTime_ < 0)
+        if (controller.pressa && attackTime_ < 0)
         {
             // Start new attack
             attackTime_ = 0;

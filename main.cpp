@@ -40,7 +40,8 @@ void processInput();
 void update();
 void render();
 
-void updateController(Controller &controller, const SDL_Event &event);
+void updateController(Controller &controller);
+void controllerEvent(Controller &controller, const SDL_Event &event);
 
 int main(int argc, char **argv)
 {
@@ -99,6 +100,13 @@ void mainloop()
 
 void processInput()
 {
+    // First update controllers / frame
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        updateController(controllers[i]);
+    }
+
+    // Now read new inputs
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
@@ -111,7 +119,7 @@ void processInput()
             idx = idx == -1 ? event.jbutton.which : idx;
         case SDL_JOYBUTTONUP:
             idx = idx == -1 ? event.jbutton.which : idx;
-            updateController(controllers[idx], event);
+            controllerEvent(controllers[idx], event);
 
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
@@ -218,7 +226,7 @@ void render()
         // 10unit squares
         
         // Draw life counts first
-        for (unsigned j = 0; j < lives; j++)
+        for (int j = 0; j < lives; j++)
         {
             glm::mat4 transform = glm::scale(
                     glm::translate(
@@ -247,6 +255,7 @@ void render()
                     glm::vec3(100, 20, 1.0));
         renderRectangle(transform, glm::vec3(0, 0, 0));
        
+        // Now fill it in with a colored bar
         float maxDamage = 100;
         float xscalefact = std::min(0.9f, fighters[i]->getDamage() / maxDamage);
         transform = glm::scale(
@@ -255,12 +264,6 @@ void render()
                     glm::vec3(0.0f)), //glm::vec3(-.4 * .5 * xscalefact, 0.0f, 0.0f)),
                 glm::vec3( xscalefact, 0.9f, 0.0f));
         renderRectangle(transform, playerColors[i]);
-
-
-
-
-        
-
     }
 
 
@@ -307,37 +310,79 @@ void cleanup()
     SDL_Quit();
 }
 
-void updateController(Controller &controller, const SDL_Event &event)
+void updateController(Controller &controller)
+{
+    controller.pressa = false;
+    controller.pressb = false;
+    controller.pressc = false;
+    controller.pressjump = false;
+    controller.joyxv = 0;
+    controller.joyyv = 0;
+}
+
+void controllerEvent(Controller &controller, const SDL_Event &event)
 {
     switch (event.type)
     {
     case SDL_JOYAXISMOTION:
         if (event.jaxis.axis == 0)
-            controller.joyx = event.jaxis.value / MAX_JOYSTICK_VALUE;
+        {
+            float newPos = event.jaxis.value / MAX_JOYSTICK_VALUE;
+            controller.joyxv += (newPos - controller.joyx);
+            controller.joyx = newPos;
+        }
         else if (event.jaxis.axis == 1)
-            controller.joyy = -event.jaxis.value / MAX_JOYSTICK_VALUE;
+        {
+            float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
+            controller.joyyv += (newPos - controller.joyy);
+            controller.joyy = newPos;
+        }
         break;
 
     case SDL_JOYBUTTONDOWN:
         if (event.jbutton.button == 0)
+        {
+            controller.pressa = true;
             controller.buttona = true;
+        }
         else if (event.jbutton.button == 1)
+        {
+            controller.pressb = true;
             controller.buttonb = true;
+        }
         else if (event.jbutton.button == 3)
+        {
+            controller.pressjump = true;
             controller.jumpbutton = true;
+        }
         else if (event.jbutton.button == 2)
+        {
+            controller.pressc = !controller.buttonc;
             controller.buttonc = true;
+        }
         break;
 
     case SDL_JOYBUTTONUP:
         if (event.jbutton.button == 0)
+        {
             controller.buttona = false;
+            controller.pressa = false;
+        }
         else if (event.jbutton.button == 1)
+        {
             controller.buttonb = false;
+            controller.pressb = false;
+        }
         else if (event.jbutton.button == 3)
+        {
             controller.jumpbutton = false;
+            controller.pressjump = false;
+        }
         else if (event.jbutton.button == 2)
+        {
             controller.buttonc = false;
+            controller.pressc = false;
+        }
         break;
 
     default:
