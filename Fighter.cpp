@@ -98,7 +98,7 @@ void Fighter::update(const struct Controller &controller, float dt)
 
         // second jump, if the character wants to.
         if ((controller.pressjump || (controller.joyy > 0.65 && 
-                    controller.joyyv > 0.20f)) && canSecondJump_) 
+                    controller.joyyv > 0.20f)) && canSecondJump_ && attackTime_ < 0) 
         {
             canSecondJump_ = false;
             jumpTime_ = 0;
