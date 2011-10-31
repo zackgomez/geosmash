@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include "glutils.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include "explosion.h"
 
 const static int AIR_NORMAL_STATE = 0;
 const static int AIR_STUNNED_STATE = 1;
@@ -184,8 +185,7 @@ void Fighter::attackCollision()
     std::cout << "Attack Collision\n";
     // If two attacks collide, just cancel them and go to cooldown
     attackHit_ = true;
-
-    // TODO Probably generate a tiny explosion here
+    attackTime_ = attackStartup_ + attackDuration_;
 }
 
 void Fighter::hitByAttack(const Rectangle &hitbox)
@@ -203,13 +203,16 @@ void Fighter::hitByAttack(const Rectangle &hitbox)
     // Calculate direction of hit
     glm::vec2 hitdir = glm::vec2(rect_.x, rect_.y) - glm::vec2(hitbox.x, hitbox.y);
     hitdir = glm::normalize(hitdir);
-    hitdir *= attackKnockback_ * damageFunc();
+    glm::vec2 knockback = hitdir * attackKnockback_ * damageFunc();
 
     // Get knocked back
-    xvel_ = hitdir.x;
-    yvel_ = hitdir.y;
+    xvel_ = knockback.x;
+    yvel_ = knockback.y;
 
-    // TODO Probably generate a tiny explosion here
+    // Generate a tiny explosion here
+    float exx = -hitdir.x * rect_.w / 2 + rect_.x;
+    float exy = -hitdir.y * rect_.h / 2 + rect_.y;
+    ExplosionManager::get()->addExplosion(exx, exy, 0.2);
 }
 
 void Fighter::hitWithAttack()

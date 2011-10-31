@@ -8,6 +8,7 @@
 #include "glutils.h"
 #include "Fighter.h"
 #include "audio.h"
+#include "explosion.h"
 
 static const float MAX_JOYSTICK_VALUE = 32767;
 static const float dt = 33.0 / 1000.0;
@@ -166,6 +167,12 @@ void update()
                 fighter->attackCollision();
                 fighters[j]->attackCollision();
 
+                // Generate small explosion
+                float x = (hitboxi.x + hitboxj.x) / 2;
+                float y = (hitboxi.y + hitboxj.y) / 2;
+                ExplosionManager::get()->addExplosion(x, y, 0.1f);
+
+                // Cache values
                 fiattack = fighter->hasAttack();
                 hitboxi = fighter->getAttackBox();
                 continue;
@@ -176,6 +183,7 @@ void update()
                 fighters[j]->hitByAttack(hitboxi);
                 fighter->hitWithAttack();
 
+                // Cache values
                 fiattack = fighter->hasAttack();
                 hitboxi = fighter->getAttackBox();
             }
@@ -185,6 +193,7 @@ void update()
                 fighter->hitByAttack(hitboxj);
                 fighters[j]->hitWithAttack();
 
+                // Cache values
                 fiattack = fighter->hasAttack();
                 hitboxi = fighter->getAttackBox();
             }
@@ -218,8 +227,12 @@ void render()
             glm::vec3(ground.w, ground.h, 1.0f));
     renderRectangle(transform, groundColor);
 
+    // Draw the fighters
     for (unsigned i = 0; i < numPlayers; i++)
         fighters[i]->render(dt);
+
+    // Draw any explosions
+    ExplosionManager::get()->render(dt);
 
     //
     // Render the overlay interface (HUD)

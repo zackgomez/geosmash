@@ -1,4 +1,5 @@
 #pragma once
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 
 GLuint make_buffer( GLenum target, const void *buffer_data, GLsizei buffer_size);
