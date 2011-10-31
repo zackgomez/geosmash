@@ -7,6 +7,7 @@
 #include <vector>
 #include "glutils.h"
 #include "Fighter.h"
+#include "audio.h"
 
 static const float MAX_JOYSTICK_VALUE = 32767;
 static const float dt = 33.0 / 1000.0;
@@ -78,10 +79,16 @@ int main(int argc, char **argv)
     }
     ground = Rectangle(0, -375+50, 1025, 100);
 
+
+
+    play_song("smash001.aif");
+
+
     mainloop();
 
-    cleanup();
 
+
+    cleanup();
     return 0;
 }
 

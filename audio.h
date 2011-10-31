@@ -1,21 +1,5 @@
-//
-// Test file to commit
-// TODO: add code here to load some audio
-//
-#ifndef __AUDIO_H__
-#define __AUDIO_H__
+#pragma once
 
-#include "SDL.h"
-#include "SDL_mixer.h"
+#include <SFML/Audio.hpp>
 
-const char *audio_filename;
-
-//or some shit
-void load_file(const char *);
-//
-// Audio code for 
-//
-//
-
-
-#endif //__AUDIO_H__
+void play_song(const char *filename);
