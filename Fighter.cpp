@@ -22,11 +22,11 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
     color_(color),
     attackTime_(-1),
     attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),
-    attackDamage_(5), attackKnockback_(60.0), attackStun_(0.25),
+    attackDamage_(5), attackKnockback_(60.0), attackStun_(0.02),
     attackX_(0.5*rect.w), attackY_(-0.33*rect.h), attackW_(50), attackH_(18),
     walkSpeed_(300.0), airForce_(450.0), airAccel_(-1100.0),
     jumpStartupTime_(0.05), jumpSpeed_(600.0), hopSpeed_(200.0),
-    jumpAirSpeed_(200.0)
+    jumpAirSpeed_(200.0), secondJumpSpeed_(500.0)
 {}
 
 Fighter::~Fighter()
@@ -63,6 +63,9 @@ void Fighter::update(const struct Controller &controller, float dt)
             // If they are still "holding down" the jump button now, then full jump
             // otherwise short hop
             state_ = AIR_NORMAL_STATE;
+            jumpTime_ = -1;
+            // also let this character double jump if they want
+            canSecondJump_ = true;
             xvel_ = fabs(controller.joyx) > 0.2f ? controller.joyx * 0.5 * walkSpeed_ : 0.0f;
             if (controller.jumpbutton || controller.joyy > 0.65f)
                 yvel_ = jumpSpeed_;
@@ -92,14 +95,39 @@ void Fighter::update(const struct Controller &controller, float dt)
             // You can always control your orientation
             dir_ = controller.joyx < 0 ? -1 : 1;
         }
+
+        // second jump, if the character wants to.
+        if ((controller.pressjump || (controller.joyy > 0.65 && 
+                    controller.joyyv > 0.20f)) && canSecondJump_) 
+        {
+            canSecondJump_ = false;
+            jumpTime_ = 0;
+        }
+        if (jumpTime_ > jumpStartupTime_) 
+        {
+            yvel_ = secondJumpSpeed_;
+            xvel_ = fabs(controller.joyx) > 0.2f ? 
+                        controller.joyx  * walkSpeed_ : 
+                        0.0f;
+            jumpTime_ = -1;
+        }
+        
+        // gravity update (separate from controller force)
         yvel_ += airAccel_ * dt;
+
+
     }
     if (state_ == AIR_STUNNED_STATE)
     {
         yvel_ += airAccel_ * dt;
         stunTime_ += dt;
         if (stunTime_ > stunDuration_)
+        {
             state_ = AIR_NORMAL_STATE;
+            jumpTime_ = -1;
+            canSecondJump_ = true;
+
+        }
     }
     if (state_ != AIR_STUNNED_STATE)
     {
@@ -143,7 +171,11 @@ void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
     else
     {
         if (state_ == GROUND_STATE)
+        {
             state_ = AIR_NORMAL_STATE;
+            jumpTime_ = -1;
+            canSecondJump_ = true;
+        }
     }
 }
 
@@ -213,6 +245,7 @@ void Fighter::respawn(bool killed)
     rect_.y = respawny_;
     xvel_ = yvel_ = 0.0f;
     state_ = AIR_NORMAL_STATE;
+    canSecondJump_ = true;
     attackTime_ = -1;
     jumpTime_ = -1;
     damage_ = 0;

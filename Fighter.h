@@ -68,6 +68,7 @@ private:
     glm::vec3 color_;
 
     float jumpTime_; // amount of time since jump inputted
+    bool canSecondJump_;
     
 
     // Attack members
@@ -87,6 +88,7 @@ private:
     const float jumpSpeed_; // Speed of a full jump
     const float hopSpeed_; // Speed of a short hop
     const float jumpAirSpeed_; // The maximum x speed for jumping (only for player control)
+    const float secondJumpSpeed_; // Speed of the second jump
 
     // Helper functions
     float damageFunc() const; // Returns a scaling factor based on damage
