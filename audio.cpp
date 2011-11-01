@@ -3,7 +3,7 @@
 
 static sf::Music music;
 
-void play_song(const char *filename)
+void start_song(const char *filename)
 {
     if (!music.OpenFromFile(filename))
     {
@@ -11,5 +11,15 @@ void play_song(const char *filename)
         return;
     }
     music.SetLoop(true);
+    music.Play();
+}
+
+void stop_song()
+{
+    music.Stop();
+};
+
+void play_song()
+{
     music.Play();
 }

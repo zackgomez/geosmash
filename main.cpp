@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
 
 
-    play_song("smash001.aif");
+    start_song("smash001.aif");
 
 
     mainloop();
@@ -132,6 +132,10 @@ void processInput()
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
+            if (event.key.keysym.sym == SDLK_m)
+                stop_song();
+            if (event.key.keysym.sym == SDLK_p)
+                play_song();
             break;
         case SDL_QUIT:
             running = false;
