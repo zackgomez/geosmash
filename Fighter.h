@@ -27,6 +27,15 @@ public:
     float x, y, w, h;
 };
 
+struct Attack
+{
+    Rectangle hitbox;
+    float startup_, duration_, cooldown_;
+    float damage_, stun_;
+    glm::vec2 knockback_; // knockback vector, x is multipled by -1 or 1 depending
+    // on orientation of fighter
+};
+
 class Fighter
 {
 public:

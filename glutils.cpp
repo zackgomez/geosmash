@@ -6,7 +6,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "util.h"
 #include "glutils.h"
-#include "readpng.h"
 
 static struct 
 {
