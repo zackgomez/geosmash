@@ -311,7 +311,14 @@ void Fighter::render(float dt)
 
     glm::vec3 color = color_;
     if (state_ == AIR_STUNNED_STATE)
-        color *= 4;
+	{
+		//float opacity_factor;
+		//float period_scale_factor = 2.0;
+		//float opacity_amplitude = 4;
+		//opacity_factor = cos(period_scale_factor * stunTime_);
+        //color *= opacity_amplitude * opacity_factor;
+		color *= 4;
+	}
     // Draw body
     glm::mat4 transform(1.0);
     transform = glm::scale(
