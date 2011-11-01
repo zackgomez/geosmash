@@ -144,7 +144,7 @@ void Fighter::update(const struct Controller &controller, float dt)
         {
             yvel_ = secondJumpSpeed_;
             xvel_ = fabs(controller.joyx) > 0.2f ? 
-                        controller.joyx  * dashSpeed_ : 
+                        dashSpeed_ * std::max(-1.0f, std::min(1.0f, (controller.joyx - 0.2f) / 0.6f)) :
                         0.0f;
             jumpTime_ = -1;
         }
