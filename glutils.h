@@ -10,7 +10,10 @@ GLuint make_shader(GLenum type, const char *filename);
 
 GLuint make_program(GLuint vertex_shader, GLuint fragment_shader);
 
+GLuint make_texture(const char *filename);
+
 bool initGLUtils();
 void cleanGLUtils();
 
 void renderRectangle(const glm::mat4 &transform, const glm::vec3 &color);
+void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture);

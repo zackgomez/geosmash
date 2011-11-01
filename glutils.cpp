@@ -1,16 +1,20 @@
 #include <GL/glew.h>
 #include <cstdlib>
 #include <cstdio>
+#include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "util.h"
 #include "glutils.h"
+#include "readpng.h"
 
 static struct 
 {
     GLuint vertex_buffer, element_buffer;
     GLuint vertex_shader, fragment_shader;
     GLuint program;
+    GLuint texvertex_shader, texfragment_shader;
+    GLuint texprogram;
 } resources;
 
 
@@ -82,6 +86,32 @@ GLuint make_program(GLuint vertex_shader, GLuint fragment_shader)
         return 0;
     }
     return program;
+} 
+
+GLuint make_texture(const char *filename)
+{
+    int width, height;
+    void *pixels = read_tga(filename, &width, &height);
+    GLuint texture;
+
+    if (!pixels)
+        return 0;
+
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_EDGE);
+    glTexImage2D(
+            GL_TEXTURE_2D, 0,           /* target, level */
+            GL_RGB8,                    /* internal format */
+            width, height, 0,           /* width, height, border */
+            GL_BGR, GL_UNSIGNED_BYTE,   /* external format, type */
+            pixels                      /* pixels */
+            );
+    free(pixels);
+    return texture;
 }
 
 bool initGLUtils()
@@ -107,6 +137,14 @@ bool initGLUtils()
         return false;
 
     resources.program = make_program(resources.vertex_shader, resources.fragment_shader);
+    
+    resources.texvertex_shader = make_shader(GL_VERTEX_SHADER, "texbox.v.glsl");
+    if (resources.texvertex_shader == 0)
+        return false;
+    resources.texfragment_shader = make_shader(GL_FRAGMENT_SHADER, "texbox.f.glsl");
+    if (resources.texfragment_shader == 0)
+        return false;
+    resources.texprogram = make_program(resources.texvertex_shader, resources.texfragment_shader);
 
     return true;
 }
@@ -124,6 +162,32 @@ void renderRectangle(const glm::mat4 &transform, const glm::vec3 &color)
     glUseProgram(resources.program);
     glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(transform));
     glUniform3fv(colorUniform, 1, glm::value_ptr(color));
+
+    glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
+    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
+
+    // Clean up
+    glDisableVertexAttribArray(0);
+    glUseProgram(0);
+}
+
+void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture)
+{
+    GLuint transformUniform = glGetUniformLocation(resources.texprogram, "transform");
+    GLuint textureUniform = glGetUniformLocation(resources.texprogram, "texture");
+
+    // Enable program and set up values
+    glUseProgram(resources.texprogram);
+    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniform1i(textureUniform, 0);
+
+    glActiveTexture(GL_TEXTURE0);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
     glEnableVertexAttribArray(0);

@@ -3,7 +3,7 @@ LDFLAGS=-lSDL -lGL -lGLEW  -lsfml-audio
 
 all: ssb
 
-ssb: main.o glutils.o util.o Fighter.o audio.o explosion.o
+ssb: main.o glutils.o util.o Fighter.o audio.o explosion.o 
 	g++ $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 
 clean:

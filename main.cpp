@@ -28,6 +28,8 @@ const glm::vec3 playerColors[] =
     glm::vec3(0.8, 0.8, 0.2)
 };
 
+GLuint backgroundTex = 0;
+
 Rectangle ground;
 const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
 
@@ -225,6 +227,10 @@ void render()
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
     glClear( GL_COLOR_BUFFER_BIT );
 
+    // Draw the background
+    glm::mat4 backtrans = glm::scale(glm::mat4(1.0f), glm::vec3(1500.0f, 750.0f, 1.0f));
+    renderTexturedRectangle(backtrans, backgroundTex);
+
     // Draw the land
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.0)),
@@ -323,6 +329,8 @@ int initGraphics()
     glViewport(0, 0, 1920, 1080);
 
     initGLUtils();
+
+    backgroundTex = make_texture("back001.tga");
 
     return 1;
 }
