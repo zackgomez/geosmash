@@ -59,7 +59,6 @@ private:
     float xvel_, yvel_;
     float dir_; // 1 or -1 look in xdir
     int state_;
-    float stunTime_, stunDuration_;
     float damage_;
     int lives_;
 
@@ -67,9 +66,16 @@ private:
     float respawnx_, respawny_;
     glm::vec3 color_;
 
+    // GROUND_STATE members
+    bool dashing_;
+    float dashTime_; // time remaining until dash wait is done
+
+    // AIR_NORMAL_STATE members
     float jumpTime_; // amount of time since jump inputted
     bool canSecondJump_;
-    
+
+    // AIR_STUNNED_STATE members
+    float stunTime_, stunDuration_;
 
     // Attack members
     float attackTime_; // -1 when not attacking
@@ -81,7 +87,8 @@ private:
     const float attackW_, attackH_;
 
     // Fighter stats
-    const float walkSpeed_; // Maximum walking speed
+    const float walkSpeed_; // maximum walking speed
+    const float dashSpeed_; // Dashing Speed
     const float airForce_; // Force applied to allow player air control
     const float airAccel_; // "Gravity"
     const float jumpStartupTime_; // Delay before jump begins, also short hop/full jump control time
@@ -89,6 +96,7 @@ private:
     const float hopSpeed_; // Speed of a short hop
     const float jumpAirSpeed_; // The maximum x speed for jumping (only for player control)
     const float secondJumpSpeed_; // Speed of the second jump
+    const float dashStartupTime_; // Time from starting dash to first movement
 
     // Helper functions
     float damageFunc() const; // Returns a scaling factor based on damage

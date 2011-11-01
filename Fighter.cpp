@@ -17,17 +17,16 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
     xvel_(0), yvel_(0),
     dir_(-1),
     state_(AIR_NORMAL_STATE),
-    stunTime_(0), stunDuration_(0),
     damage_(0), lives_(4),
     respawnx_(respawnx), respawny_(respawny),
     color_(color),
     attackTime_(-1),
     attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),
-    attackDamage_(5), attackKnockback_(60.0), attackStun_(0.02),
+    attackDamage_(5), attackKnockback_(80.0), attackStun_(0.07),
     attackX_(0.5*rect.w), attackY_(-0.33*rect.h), attackW_(50), attackH_(18),
-    walkSpeed_(300.0), airForce_(450.0), airAccel_(-1100.0),
+    walkSpeed_(133.3), dashSpeed_(400.0), airForce_(450.0), airAccel_(-1100.0),
     jumpStartupTime_(0.05), jumpSpeed_(600.0), hopSpeed_(200.0),
-    jumpAirSpeed_(200.0), secondJumpSpeed_(500.0)
+    jumpAirSpeed_(200.0), secondJumpSpeed_(500.0), dashStartupTime_(0.08)
 {}
 
 Fighter::~Fighter()
@@ -52,37 +51,74 @@ void Fighter::update(const struct Controller &controller, float dt)
     // Update
     if (state_ == GROUND_STATE)
     {
-        // Check for jump
-        if (jumpTime_ < 0 && attackTime_ < 0 &&
-                (controller.pressjump || (controller.joyy > 0.65 && controller.joyyv > 0.20f)))
+        dashTime_ -= dt;
+        if (attackTime_ < 0 && dashTime_ < 0)
         {
-            // Start the jump timer
-            jumpTime_ = 0.0f;
-        }
-        if (jumpTime_ > jumpStartupTime_)
-        {
-            // If they are still "holding down" the jump button now, then full jump
-            // otherwise short hop
-            state_ = AIR_NORMAL_STATE;
-            jumpTime_ = -1;
-            // also let this character double jump if they want
-            canSecondJump_ = true;
-            xvel_ = fabs(controller.joyx) > 0.2f ? controller.joyx * 0.5 * walkSpeed_ : 0.0f;
-            if (controller.jumpbutton || controller.joyy > 0.65f)
-                yvel_ = jumpSpeed_;
-            else
-                yvel_ = hopSpeed_;
-        }
-        else
-        {
-            // If no jump update 
-            if (fabs(controller.joyx) > 0.2f && attackTime_ < 0)
+            // Dashing direction update
+            if (dashing_)
             {
-                xvel_ = controller.joyx * walkSpeed_;
-                dir_ = xvel_ < 0 ? -1 : 1;
+                int newdir = controller.joyx < 0 ? -1 : 1;
+                if (dir_ != newdir)
+                {
+                    dir_ = newdir;
+                    dashTime_ = dashStartupTime_;
+                    xvel_ = 0;
+                }
+                else if (fabs(controller.joyx) < 0.6f && fabs(controller.joyxv) < 0.15f)
+                {
+                    dashing_ = false;
+                    dashTime_ = dashStartupTime_;
+                }
+                else
+                    xvel_ = dir_ * dashSpeed_;
             }
-            else if (attackTime_ < 0)
-                xvel_ = 0.0f;
+            else // !dashing_
+            {
+                // Check for entry into dash
+                if (!dashing_ && fabs(controller.joyx) > 0.9f && fabs(controller.joyxv) > 0.15f)
+                {
+                    dashing_ = true;
+                    dashTime_ = dashStartupTime_;
+                    xvel_ = 0;
+                }
+                xvel_ = 0;
+                if (!dashing_ && fabs(controller.joyx) > 0.2f && attackTime_ < 0)
+                {
+                    xvel_ = controller.joyx * walkSpeed_;
+                    dir_ = xvel_ < 0 ? -1 : 1;
+                }
+            }
+            // Check for jump
+            if (jumpTime_ < 0 && 
+                    (controller.pressjump || (controller.joyy > 0.65 && controller.joyyv > 0.20f)))
+            {
+                // Start the jump timer
+                jumpTime_ = 0.0f;
+            }
+            if (jumpTime_ > jumpStartupTime_)
+            {
+                // If they are still "holding down" the jump button now, then full jump
+                // otherwise short hop
+                state_ = AIR_NORMAL_STATE;
+                jumpTime_ = -1;
+                // also let this character double jump if they want
+                canSecondJump_ = true;
+                xvel_ = fabs(controller.joyx) > 0.2f ? controller.joyx * 0.5 * dashSpeed_ : 0.0f;
+                if (controller.jumpbutton || controller.joyy > 0.65f)
+                    yvel_ = jumpSpeed_;
+                else
+                    yvel_ = hopSpeed_;
+            }
+            // Check for attack
+            if (dashing_ && controller.pressa)
+            {
+                // Start new attack
+                attackTime_ = 0;
+                attackHit_ = false;
+                if (!dashing_)
+                    xvel_ = 0;
+                dashing_ = false;
+            }
         }
     }
     if (state_ == AIR_NORMAL_STATE)
@@ -108,9 +144,16 @@ void Fighter::update(const struct Controller &controller, float dt)
         {
             yvel_ = secondJumpSpeed_;
             xvel_ = fabs(controller.joyx) > 0.2f ? 
-                        controller.joyx  * walkSpeed_ : 
+                        controller.joyx  * dashSpeed_ : 
                         0.0f;
             jumpTime_ = -1;
+        }
+        // Check for attack
+        if (controller.pressa && attackTime_ < 0)
+        {
+            // Start new attack
+            attackTime_ = 0;
+            attackHit_ = false;
         }
         
         // gravity update (separate from controller force)
@@ -127,17 +170,6 @@ void Fighter::update(const struct Controller &controller, float dt)
             state_ = AIR_NORMAL_STATE;
             jumpTime_ = -1;
             canSecondJump_ = true;
-
-        }
-    }
-    if (state_ != AIR_STUNNED_STATE)
-    {
-        // Check for attack
-        if (controller.pressa && attackTime_ < 0)
-        {
-            // Start new attack
-            attackTime_ = 0;
-            attackHit_ = false;
         }
     }
     if (attackTime_ >= 0)
@@ -164,6 +196,7 @@ void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
             xvel_ = yvel_ = 0;
             attackTime_ = -1;
             jumpTime_ = -1;
+            dashing_ = false;
         }
         // Make sure we're barely overlapping the ground (by 1 unit)
         rect_.y = ground.y + ground.h / 2 + rect_.h/2 - 1;
@@ -270,8 +303,8 @@ bool Fighter::isAlive() const
 
 void Fighter::render(float dt)
 {
-    printf("State: %d  Lives: %d  Damage: %f  Position: [%f, %f]   Velocity: [%f, %f] JumpTime: %f\n", 
-            state_, lives_, damage_, rect_.x, rect_.y, xvel_, yvel_, jumpTime_);
+    printf("State: %d  Lives: %d  Damage: %f  Position: [%f, %f]   Velocity: [%f, %f]  Dashing: %d\n", 
+            state_, lives_, damage_, rect_.x, rect_.y, xvel_, yvel_, dashing_);
 
     if (state_ == DEAD_STATE)
         return;
