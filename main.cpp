@@ -9,13 +9,15 @@
 #include "Fighter.h"
 #include "audio.h"
 #include "explosion.h"
+#include "ParamReader.h"
 
-static const float MAX_JOYSTICK_VALUE = 32767;
-static const float dt = 33.0 / 1000.0;
-static const float WORLD_W = 1500;
-static const float WORLD_H = 750;
-static const int SCREEN_W = 1920;
-static const int SCREEN_H = 1080;
+static const float MAX_JOYSTICK_VALUE = 32767.0f;
+static const float dt = 33.0f / 1000.0f;
+
+static float WORLD_W = 1500.0f;
+static float WORLD_H = 750.0f;
+static int SCREEN_W = 1920;
+static int SCREEN_H = 1080;
 
 bool running;
 SDL_Joystick *joystick;
@@ -79,9 +81,10 @@ int main(int argc, char **argv)
     }
 
     // Init game state
+    ParamReader params("params.dat");
     for (unsigned i = 0; i < numPlayers; i++)
     {
-        Fighter *fighter = new Fighter(Rectangle(0, 0, 50, 60), -225.0f+i*150, -100.f, playerColors[i]);
+        Fighter *fighter = new Fighter(params, -225.0f+i*150, -100.f, playerColors[i]);
         fighter->respawn(false);
         fighters.push_back(fighter);
     }

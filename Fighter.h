@@ -1,6 +1,9 @@
 #pragma once
 #include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <string>
+
+class ParamReader;
 
 struct Controller
 {
@@ -91,7 +94,7 @@ private:
 class Fighter
 {
 public:
-    Fighter(const Rectangle &rect, float respawnx, float respawny, const glm::vec3 &color);
+    Fighter(const ParamReader &params, float respawnx, float respawny, const glm::vec3 &color);
     ~Fighter();
 
     void update(const Controller&, float dt);
@@ -164,4 +167,7 @@ private:
 
     // Helper functions
     float damageFunc() const; // Returns a scaling factor based on damage
+
+    // Loads an attack from the params using the attackName.param syntax
+    Attack loadAttack(const ParamReader &params, std::string attackName);
 };

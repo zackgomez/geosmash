@@ -6,54 +6,53 @@
 #include "glutils.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "explosion.h"
+#include "ParamReader.h"
 
 const static int AIR_NORMAL_STATE = 0;
 const static int AIR_STUNNED_STATE = 1;
 const static int GROUND_STATE = 2;
 const static int DEAD_STATE = 3;
 
-Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const glm::vec3& color) :
-    rect_(rect),
+Fighter::Fighter(const ParamReader &params, float respawnx, float respawny, const glm::vec3& color) :
+    rect_(Rectangle(0, 0, params.get("fighter.w"), params.get("fighter.h"))),
     xvel_(0), yvel_(0),
     dir_(-1),
     state_(AIR_NORMAL_STATE),
-    damage_(0), lives_(4),
+    damage_(0), lives_(params.get("fighter.lives")),
     respawnx_(respawnx), respawny_(respawny),
     color_(color),
     attack_(NULL),
-    walkSpeed_(133.3), dashSpeed_(400.0), airForce_(450.0), airAccel_(-1100.0),
-    jumpStartupTime_(0.05), jumpSpeed_(600.0), hopSpeed_(200.0),
-    jumpAirSpeed_(200.0), secondJumpSpeed_(500.0), dashStartupTime_(0.08)
+    walkSpeed_(params.get("walkSpeed")),
+    dashSpeed_(params.get("dashSpeed")),
+    airForce_(params.get("airForce")),
+    airAccel_(params.get("airAccel")),
+    jumpStartupTime_(params.get("jumpStartupTime")),
+    jumpSpeed_(params.get("jumpSpeed")),
+    hopSpeed_(params.get("hopSpeed")),
+    jumpAirSpeed_(params.get("jumpAirSpeed")),
+    secondJumpSpeed_(params.get("secondJumpSpeed")),
+    dashStartupTime_(params.get("dashStartupTime"))
 {
-    // XXX HOLY SHIT THIS SUCKS
-    dashAttack_ = Attack(0.1, 0.3, 0.2, 5, 0.07,
-            40.0f * glm::normalize(glm::vec2(1, 4)),
-            Rectangle(0.5f * rect_.w + 20, -0.33f * rect_.h, 50, 18));
+    // Load ground attacks
+    dashAttack_ = loadAttack(params, "dashAttack");
+    neutralTiltAttack_ = loadAttack(params, "neutralTiltAttack");
+    sideTiltAttack_ = loadAttack(params, "sideTiltAttack");
+    downTiltAttack_ = loadAttack(params, "downTiltAttack");
+    upTiltAttack_ = loadAttack(params, "upTiltAttack");
 
-    neutralTiltAttack_ = Attack(0.05, 0.15, 0.1, 3, 0.07,
-            30.0f * glm::normalize(glm::vec2(1, 1)),
-            Rectangle(0.5f * rect_.w + 15, 0.0f, 30, 18));
-
-    sideTiltAttack_ = Attack(0.10, 0.22, 0.12, 6, 0.07,
-            60.0f * glm::normalize(glm::vec2(3, 2)),
-            Rectangle(0.5f * rect_.w + 30.0f, 5.0f, 60, 18));
-
-    downTiltAttack_ = Attack(0.10, 0.22, 0.12, 6, 0.07,
-            60.0f * glm::normalize(glm::vec2(1, 5)),
-            Rectangle(0.5f * rect_.w + 25, -0.5f * rect_.h, 50, 15));
-
-    upTiltAttack_ = Attack(0.10, 0.22, 0.12, 6, 0.07,
-            70.0f * glm::normalize(glm::vec2(1, 9)),
-            Rectangle(0.5f * rect_.w, 0.5f * rect_.h, 40, 40));
-
-    airAttack_ = AirAttack(0.1, 0.3, 0.2, 5, 0.07,
-            100.0f,
-            Rectangle(0.5f * rect_.w + 10, -0.4 * rect_.h, 45, 25));
-    /*
-    attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),
-    attackDamage_(5), attackKnockback_(80.0), attackStun_(0.07),
-    attackX_(0.5*rect.w), attackY_(-0.33*rect.h), attackW_(50), attackH_(18),
-    */
+    // Load air attack special as it uses a different class
+    airAttack_ = AirAttack(
+            params.get("airAttack.startup"),
+            params.get("airAttack.duration"),
+            params.get("airAttack.cooldown"),
+            params.get("airAttack.damage"),
+            params.get("airAttack.stun"),
+            params.get("airAttack.knockbackpow"),
+            Rectangle(
+                0.5f * rect_.w + params.get("airAttack.hitboxx"),
+                params.get("airAttack.hitboxy"),
+                params.get("airAttack.hitboxw"),
+                params.get("airAttack.hitboxh")));
 }
 
 Fighter::~Fighter()
@@ -415,6 +414,29 @@ void Fighter::render(float dt)
 float Fighter::damageFunc() const
 {
     return 2 * damage_ / 33;
+}
+
+Attack Fighter::loadAttack(const ParamReader &params, std::string attackName)
+{
+    attackName += '.';
+
+    Attack ret(
+            params.get(attackName + "startup"),
+            params.get(attackName + "duration"),
+            params.get(attackName + "cooldown"),
+            params.get(attackName + "damage"),
+            params.get(attackName + "stun"),
+            params.get(attackName + "knockbackpow") * glm::normalize(glm::vec2(
+                    params.get(attackName + "knockbackx"),
+                    params.get(attackName + "knockbacky"))),
+            Rectangle(
+                0.5f * rect_.w + params.get(attackName + "hitboxx"),
+                params.get(attackName + "hitboxy"),
+                params.get(attackName + "hitboxw"),
+                params.get(attackName + "hitboxh")));
+
+    return ret;
+
 }
 
 
