@@ -14,6 +14,8 @@ static struct
     GLuint program;
     GLuint texvertex_shader, texfragment_shader;
     GLuint texprogram;
+
+    glm::mat4 perspective;
 } resources;
 
 
@@ -113,7 +115,7 @@ GLuint make_texture(const char *filename)
     return texture;
 }
 
-bool initGLUtils()
+bool initGLUtils(const glm::mat4 &perspectiveTransform)
 {
     // The datas
     const GLfloat vertex_buffer_data[] = { 
@@ -145,6 +147,8 @@ bool initGLUtils()
         return false;
     resources.texprogram = make_program(resources.texvertex_shader, resources.texfragment_shader);
 
+    resources.perspective = perspectiveTransform;
+
     return true;
 }
 
@@ -159,7 +163,7 @@ void renderRectangle(const glm::mat4 &transform, const glm::vec3 &color)
 
     // Enable program and set up values
     glUseProgram(resources.program);
-    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(resources.perspective * transform));
     glUniform3fv(colorUniform, 1, glm::value_ptr(color));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
@@ -181,7 +185,7 @@ void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture)
 
     // Enable program and set up values
     glUseProgram(resources.texprogram);
-    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(resources.perspective * transform));
     glUniform1i(textureUniform, 0);
 
     glActiveTexture(GL_TEXTURE0);

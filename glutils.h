@@ -12,7 +12,7 @@ GLuint make_program(GLuint vertex_shader, GLuint fragment_shader);
 
 GLuint make_texture(const char *filename);
 
-bool initGLUtils();
+bool initGLUtils(const glm::mat4 &perspectiveTrans);
 void cleanGLUtils();
 
 void renderRectangle(const glm::mat4 &transform, const glm::vec3 &color);

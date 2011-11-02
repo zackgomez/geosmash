@@ -3,7 +3,6 @@
 layout(location = 0) in vec4 position;
 uniform mat4 transform;
 uniform vec3 color;
-uniform vec2 worldSize;
 
 mat4 make_ortho(float l, float r, float b, float t, float n, float f)
 {
@@ -16,5 +15,5 @@ mat4 make_ortho(float l, float r, float b, float t, float n, float f)
 
 void main()
 {
-    gl_Position = make_ortho(-750.0, 750.0, -375.0, 375.0, -1.0, 1.0) * transform * position;
+    gl_Position = transform * position;
 }

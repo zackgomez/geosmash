@@ -12,6 +12,10 @@
 
 static const float MAX_JOYSTICK_VALUE = 32767;
 static const float dt = 33.0 / 1000.0;
+static const float WORLD_W = 1500;
+static const float WORLD_H = 750;
+static const int SCREEN_W = 1920;
+static const int SCREEN_H = 1080;
 
 bool running;
 SDL_Joystick *joystick;
@@ -29,6 +33,7 @@ const glm::vec3 playerColors[] =
 };
 
 GLuint backgroundTex = 0;
+const glm::mat4 perspectiveTransform = glm::ortho(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.0f, 1.0f);
 
 Rectangle ground;
 const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
@@ -328,9 +333,9 @@ int initJoystick(unsigned numPlayers)
 int initGraphics()
 {
     // Set the viewport
-    glViewport(0, 0, 1920, 1080);
+    glViewport(0, 0, SCREEN_W, SCREEN_H);
 
-    initGLUtils();
+    initGLUtils(perspectiveTransform);
 
     backgroundTex = make_texture("back003.tga");
 
@@ -433,7 +438,7 @@ int initLibs()
     }
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_Surface *screen = SDL_SetVideoMode(1920, 1080, 32, SDL_OPENGL);
+    SDL_Surface *screen = SDL_SetVideoMode(SCREEN_W, SCREEN_H, 32, SDL_OPENGL);
     if ( screen == NULL ) {
         fprintf(stderr, "Couldn't set video mode: %s\n",
                 SDL_GetError());
