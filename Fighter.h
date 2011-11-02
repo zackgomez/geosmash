@@ -37,7 +37,7 @@ public:
         hitbox_(hitbox),
         startup_(startup), duration_(duration), cooldown_(cooldown),
         damage_(damage), stun_(stun), knockback_(knockback),
-        hasHit_(false), t_(0.0f)
+        hasHit_(false), t_(0.0f), owner_(NULL)
     {}
 
     Rectangle getHitbox() const;
@@ -68,6 +68,8 @@ private:
     glm::vec2 knockback_;
     bool hasHit_;
     float t_;
+
+    const Fighter *owner_;
 };
 
 class Fighter
@@ -126,6 +128,8 @@ private:
 
     // Available reference attacks
     Attack neutralAttack_;
+    Attack dashAttack_;
+    Attack airAttack_;
 
     // Fighter stats
     const float walkSpeed_; // maximum walking speed

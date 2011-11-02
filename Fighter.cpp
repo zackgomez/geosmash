@@ -27,8 +27,11 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
 {
     // XXX HOLY SHIT THIS SUCKS
     neutralAttack_ = Attack(0.05, 0.15, 0.1, 5, 0.07,
-            40.0f * glm::normalize(glm::vec2(1, 1)),
-            Rectangle(0.75f * rect_.w, 0.0f, 0.5f * rect_.w, 0.25f * rect_.h));
+            30.0f * glm::normalize(glm::vec2(1, 1)),
+            Rectangle(0.5f * rect_.w + 15, 0.0f, 30, 18));
+    dashAttack_ = Attack(0.1, 0.3, 0.2, 5, 0.07,
+            80.0f * glm::normalize(glm::vec2(1, 4)),
+            Rectangle(0.5f * rect_.w + 20, -0.33f * rect_.h, 50, 18));
     /*
     attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),
     attackDamage_(5), attackKnockback_(80.0), attackStun_(0.07),
@@ -94,6 +97,7 @@ void Fighter::update(const struct Controller &controller, float dt)
                     xvel_ = 0;
                 }
                 xvel_ = 0;
+                // Check for walking
                 if (!dashing_ && fabs(controller.joyx) > 0.2f && !attack_)
                 {
                     xvel_ = controller.joyx * walkSpeed_;
@@ -124,7 +128,10 @@ void Fighter::update(const struct Controller &controller, float dt)
             // Check for attack
             if (dashing_ && controller.pressa)
             {
-                // TODO DO DASH ATTACK
+                // Do the dash attack
+                dashing_ = false;
+                attack_ = new Attack(dashAttack_);
+                attack_->setFighter(this);
             }
             else if (!dashing_ && controller.pressa)
             {
@@ -358,6 +365,7 @@ void Fighter::render(float dt)
     if (attack_ && attack_->drawHitbox())
     {
         Rectangle hitbox = attack_->getHitbox();
+        std::cout << "Hitbox: " << hitbox.x << ' ' << hitbox.y << ' ' << hitbox.w << ' ' << hitbox.h << '\n';
         glm::mat4 attacktrans = glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
                 glm::vec3(hitbox.w, hitbox.h, 1.0f));
@@ -388,13 +396,17 @@ bool Rectangle::overlaps(const Rectangle &rhs) const
 
 void Attack::setFighter(const Fighter *fighter)
 {
-    hitbox_.x = hitbox_.x * fighter->getDirection() + fighter->getRectangle().x;
-    hitbox_.y += fighter->getRectangle().y;
+    owner_ = fighter;
 }
 
 Rectangle Attack::getHitbox() const
 {
-    return hitbox_;
+    Rectangle ret;
+    ret.x = hitbox_.x * owner_->getDirection() + owner_->getRectangle().x;
+    ret.y = hitbox_.y + owner_->getRectangle().y;
+    ret.h = hitbox_.h;
+    ret.w = hitbox_.w;
+    return ret;
 }
 
 bool Attack::hasHitbox() const
