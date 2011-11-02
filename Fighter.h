@@ -40,26 +40,26 @@ public:
         hasHit_(false), t_(0.0f), owner_(NULL)
     {}
 
-    Rectangle getHitbox() const;
-    float getDamage(const Fighter *fighter) const { return damage_; }
-    float getStun(const Fighter *fighter) const { return stun_; }
-    glm::vec2 getKnockback(const Fighter *fighter) const { return knockback_; }
+    virtual Rectangle getHitbox() const;
+    virtual float getDamage(const Fighter *fighter) const { return damage_; }
+    virtual float getStun(const Fighter *fighter) const { return stun_; }
+    virtual glm::vec2 getKnockback(const Fighter *fighter) const { return knockback_; }
 
     void setFighter(const Fighter *fighter);
 
     // If hitbox can hit another player
-    bool hasHitbox() const;
+    virtual bool hasHitbox() const;
     // If hitbox should be drawn
-    bool drawHitbox() const;
+    virtual bool drawHitbox() const;
     // If this attack is over
-    bool isDone() const;
+    virtual bool isDone() const;
 
     // Updates internal timer
-    void update(float dt);
+    virtual void update(float dt);
     // Sends to cooldown time
-    void cancel();
+    virtual void cancel();
     // Called when the attack 'connects'
-    void hit();
+    virtual void hit();
 
 private:
     Rectangle hitbox_;
@@ -70,6 +70,22 @@ private:
     float t_;
 
     const Fighter *owner_;
+};
+
+class AirAttack : public Attack
+{
+public:
+    AirAttack() : Attack() {}
+    AirAttack(float startup, float duration, float cooldown, float damage, float stun,
+            float power, const Rectangle &hitbox) :
+        Attack(startup, duration, cooldown, damage, stun, glm::vec2(0,0), hitbox),
+        power_(power)
+    {}
+
+    virtual glm::vec2 getKnockback(const Fighter *fighter) const;
+
+private:
+    float power_;
 };
 
 class Fighter
@@ -128,6 +144,7 @@ private:
 
     // Available reference attacks
     Attack dashAttack_;
+    AirAttack airAttack_;
     Attack neutralTiltAttack_;
     Attack sideTiltAttack_;
     Attack downTiltAttack_;

@@ -45,6 +45,10 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
     upTiltAttack_ = Attack(0.10, 0.22, 0.12, 6, 0.07,
             70.0f * glm::normalize(glm::vec2(1, 9)),
             Rectangle(0.5f * rect_.w, 0.5f * rect_.h, 40, 40));
+
+    airAttack_ = AirAttack(0.1, 0.3, 0.2, 5, 0.07,
+            80.0f,
+            Rectangle(0.5f * rect_.w + 10, -0.4 * rect_.h, 45, 25));
     /*
     attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),
     attackDamage_(5), attackKnockback_(80.0), attackStun_(0.07),
@@ -158,7 +162,7 @@ void Fighter::update(const struct Controller &controller, float dt)
                     dir_ = controller.joyx > 0 ? 1 : -1;
                     attack_ = new Attack(sideTiltAttack_);
                 }
-                else if (controller.joyy < 0.4 && fabs(tiltDir.x) < fabs(tiltDir.y))
+                else if (controller.joyy < -0.4 && fabs(tiltDir.x) < fabs(tiltDir.y))
                 {
                     attack_ = new Attack(downTiltAttack_);
                 }
@@ -206,7 +210,9 @@ void Fighter::update(const struct Controller &controller, float dt)
         // Check for attack
         if (controller.pressa && !attack_)
         {
-            // TODO Start new AIR attack
+            // Start new AIR attack
+            attack_ = new AirAttack(airAttack_);
+            attack_->setFighter(this);
         }
         
         // gravity update (separate from controller force)
@@ -399,7 +405,6 @@ void Fighter::render(float dt)
     if (attack_ && attack_->drawHitbox())
     {
         Rectangle hitbox = attack_->getHitbox();
-        std::cout << "Hitbox: " << hitbox.x << ' ' << hitbox.y << ' ' << hitbox.w << ' ' << hitbox.h << '\n';
         glm::mat4 attacktrans = glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
                 glm::vec3(hitbox.w, hitbox.h, 1.0f));
@@ -471,5 +476,15 @@ void Attack::cancel()
 void Attack::hit()
 {
     hasHit_ = true;
+}
+
+glm::vec2 AirAttack::getKnockback(const Fighter *fighter) const
+{
+    // Calculate direction of knockback
+    glm::vec2 dir = glm::normalize(glm::vec2(fighter->getRectangle().x - getHitbox().x,
+                fighter->getRectangle().y - getHitbox().y));
+
+    glm::vec2 kb = dir * power_;
+    return kb;
 }
 
