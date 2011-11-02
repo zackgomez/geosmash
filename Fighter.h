@@ -27,31 +27,48 @@ public:
     float x, y, w, h;
 };
 
-/*
+class Fighter;
 class Attack
 {
 public:
+    Attack() {}
     Attack(float startup, float duration, float cooldown, float damage, float stun,
             const glm::vec2& knockback, const Rectangle &hitbox) :
         hitbox_(hitbox),
-        startup_(startup), duration_(duration_), cooldown_(cooldown),
+        startup_(startup), duration_(duration), cooldown_(cooldown),
         damage_(damage), stun_(stun), knockback_(knockback),
-        t_(0.0f)
+        hasHit_(false), t_(0.0f)
     {}
 
-    bool hasHitbox() const;
     Rectangle getHitbox() const;
+    float getDamage(const Fighter *fighter) const { return damage_; }
+    float getStun(const Fighter *fighter) const { return stun_; }
+    glm::vec2 getKnockback(const Fighter *fighter) const { return knockback_; }
 
+    void setFighter(const Fighter *fighter);
+
+    // If hitbox can hit another player
+    bool hasHitbox() const;
+    // If hitbox should be drawn
+    bool drawHitbox() const;
+    // If this attack is over
+    bool isDone() const;
+
+    // Updates internal timer
     void update(float dt);
+    // Sends to cooldown time
+    void cancel();
+    // Called when the attack 'connects'
+    void hit();
 
 private:
-    Rectangle hitbox;
+    Rectangle hitbox_;
     float startup_, duration_, cooldown_;
     float damage_, stun_;
-    float t_;
     glm::vec2 knockback_;
+    bool hasHit_;
+    float t_;
 };
-*/
 
 class Fighter
 {
@@ -64,17 +81,18 @@ public:
 
     int getLives() const;
     float getDamage() const;
+    float getDirection() const; // returns -1 or 1
 
     void collisionWithGround(const Rectangle &ground, bool collision);
     void attackCollision(); // Called when two attacks collide
-    void hitByAttack(const Rectangle &hitbox);  // Called when hit by an attack
+    void hitByAttack(const Fighter *fighter, const Attack* attack);  // Called when hit by an attack
     void hitWithAttack(); // Called when you hit with an attack
     const Rectangle& getRectangle() const;
 
     // Returns true if this Fighter is currently attacking and has an attack
     // hitbox (see getAttackBox())
     bool hasAttack() const;
-    Rectangle getAttackBox() const;
+    const Attack * getAttack() const;
 
     void respawn(bool killed);
     bool isAlive() const;
@@ -92,6 +110,9 @@ private:
     float respawnx_, respawny_;
     glm::vec3 color_;
 
+    // Current attack members
+    Attack* attack_;
+
     // GROUND_STATE members
     bool dashing_;
     float dashTime_; // time remaining until dash wait is done
@@ -103,14 +124,8 @@ private:
     // AIR_STUNNED_STATE members
     float stunTime_, stunDuration_;
 
-    // Attack members
-    float attackTime_; // -1 when not attacking
-    bool attackHit_; // True if current attack animation has hit
-    const float attackStartup_, attackDuration_, attackCooldown_;
-    const float attackDamage_, attackKnockback_, attackStun_; // attack stun in seconds
-    // Attack hitbox description
-    const float attackX_, attackY_;
-    const float attackW_, attackH_;
+    // Available reference attacks
+    Attack neutralAttack_;
 
     // Fighter stats
     const float walkSpeed_; // maximum walking speed
@@ -126,5 +141,4 @@ private:
 
     // Helper functions
     float damageFunc() const; // Returns a scaling factor based on damage
-    bool inAttackAnimation() const;
 };

@@ -158,50 +158,52 @@ void update()
         fighter->update(controllers[i], dt);
 
         // Cache some vals
-        Rectangle hitboxi = fighter->getAttackBox();
+        const Attack *attacki = fighter->getAttack();
         bool fiattack = fighter->hasAttack();
         // Check for hitbox collisions
         for (unsigned j = i+1; j < numPlayers; j++)
         {
-            Rectangle hitboxj = fighters[j]->getAttackBox();
+            const Attack *attackj = fighters[j]->getAttack();
             bool fjattack = fighters[j]->hasAttack();
 
             // Hitboxes hit each other?
-            if (fiattack && fjattack && hitboxi.overlaps(hitboxj))
+            if (fiattack && fjattack && attacki->getHitbox().overlaps(attackj->getHitbox()))
             {
                 // Then go straight to cooldown
                 fighter->attackCollision();
                 fighters[j]->attackCollision();
 
                 // Generate small explosion
+                Rectangle hitboxi = attacki->getHitbox();
+                Rectangle hitboxj = attackj->getHitbox();
                 float x = (hitboxi.x + hitboxj.x) / 2;
                 float y = (hitboxi.y + hitboxj.y) / 2;
                 ExplosionManager::get()->addExplosion(x, y, 0.1f);
 
                 // Cache values
                 fiattack = fighter->hasAttack();
-                hitboxi = fighter->getAttackBox();
+                attacki = fighter->getAttack();
                 continue;
             }
-            if (fiattack && fighters[j]->getRectangle().overlaps(hitboxi))
+            if (fiattack && fighters[j]->getRectangle().overlaps(attacki->getHitbox()))
             {
                 // fighter has hit fighters[j]
-                fighters[j]->hitByAttack(hitboxi);
+                fighters[j]->hitByAttack(fighter, attacki);
                 fighter->hitWithAttack();
 
                 // Cache values
                 fiattack = fighter->hasAttack();
-                hitboxi = fighter->getAttackBox();
+                attacki = fighter->getAttack();
             }
-            if (fjattack && fighter->getRectangle().overlaps(hitboxj))
+            if (fjattack && fighter->getRectangle().overlaps(attackj->getHitbox()))
             {
                 // fighter[j] has hit fighter
-                fighter->hitByAttack(hitboxj);
+                fighter->hitByAttack(fighters[j], attackj);
                 fighters[j]->hitWithAttack();
 
                 // Cache values
                 fiattack = fighter->hasAttack();
-                hitboxi = fighter->getAttackBox();
+                attacki = fighter->getAttack();
             }
         }
 

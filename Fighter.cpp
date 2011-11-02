@@ -20,14 +20,21 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
     damage_(0), lives_(4),
     respawnx_(respawnx), respawny_(respawny),
     color_(color),
-    attackTime_(-1),
-    attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),
-    attackDamage_(5), attackKnockback_(80.0), attackStun_(0.07),
-    attackX_(0.5*rect.w), attackY_(-0.33*rect.h), attackW_(50), attackH_(18),
+    attack_(NULL),
     walkSpeed_(133.3), dashSpeed_(400.0), airForce_(450.0), airAccel_(-1100.0),
     jumpStartupTime_(0.05), jumpSpeed_(600.0), hopSpeed_(200.0),
     jumpAirSpeed_(200.0), secondJumpSpeed_(500.0), dashStartupTime_(0.08)
-{}
+{
+    // XXX HOLY SHIT THIS SUCKS
+    neutralAttack_ = Attack(0.05, 0.15, 0.1, 5, 0.07,
+            40.0f * glm::normalize(glm::vec2(1, 1)),
+            Rectangle(0.75f * rect_.w, 0.0f, 0.5f * rect_.w, 0.25f * rect_.h));
+    /*
+    attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),
+    attackDamage_(5), attackKnockback_(80.0), attackStun_(0.07),
+    attackX_(0.5*rect.w), attackY_(-0.33*rect.h), attackW_(50), attackH_(18),
+    */
+}
 
 Fighter::~Fighter()
 {}
@@ -42,10 +49,14 @@ float Fighter::getDamage() const
     return damage_;
 }
 
+float Fighter::getDirection() const
+{
+    return dir_;
+}
+
 
 void Fighter::update(const struct Controller &controller, float dt)
 {
-    printf("Controller: Joy [%f %f]  AttackTime: %f  DashTime: %f\n", controller.joyx, controller.joyy, attackTime_, dashTime_);
     if (state_ == DEAD_STATE)
         return;
 
@@ -53,7 +64,7 @@ void Fighter::update(const struct Controller &controller, float dt)
     if (state_ == GROUND_STATE)
     {
         dashTime_ -= dt;
-        if (attackTime_ < 0 && dashTime_ < 0)
+        if (!attack_ && dashTime_ < 0)
         {
             // Dashing direction update
             if (dashing_)
@@ -83,7 +94,7 @@ void Fighter::update(const struct Controller &controller, float dt)
                     xvel_ = 0;
                 }
                 xvel_ = 0;
-                if (!dashing_ && fabs(controller.joyx) > 0.2f && attackTime_ < 0)
+                if (!dashing_ && fabs(controller.joyx) > 0.2f && !attack_)
                 {
                     xvel_ = controller.joyx * walkSpeed_;
                     dir_ = xvel_ < 0 ? -1 : 1;
@@ -113,19 +124,21 @@ void Fighter::update(const struct Controller &controller, float dt)
             // Check for attack
             if (dashing_ && controller.pressa)
             {
-                // Start new attack
-                attackTime_ = 0;
-                attackHit_ = false;
-                if (!dashing_)
-                    xvel_ = 0;
-                dashing_ = false;
+                // TODO DO DASH ATTACK
+            }
+            else if (!dashing_ && controller.pressa)
+            {
+                // Do the ground neutral attack
+                xvel_ = 0;
+                attack_ = new Attack(neutralAttack_);
+                attack_->setFighter(this);
             }
         }
     }
     if (state_ == AIR_NORMAL_STATE)
     {
         // update for air normal state
-        if (fabs(controller.joyx) > 0.2f && attackTime_ < 0)
+        if (fabs(controller.joyx) > 0.2f && !attack_)
         {
             // Don't let the player increase the velocity past a certain speed
             if (xvel_ * controller.joyx <= 0 || fabs(xvel_) < jumpAirSpeed_)
@@ -136,7 +149,7 @@ void Fighter::update(const struct Controller &controller, float dt)
 
         // second jump, if the character wants to.
         if ((controller.pressjump || (controller.joyy > 0.65 && 
-                    controller.joyyv > 0.20f)) && canSecondJump_ && attackTime_ < 0) 
+                    controller.joyyv > 0.20f)) && canSecondJump_ && !attack_)
         {
             canSecondJump_ = false;
             jumpTime_ = 0;
@@ -150,11 +163,9 @@ void Fighter::update(const struct Controller &controller, float dt)
             jumpTime_ = -1;
         }
         // Check for attack
-        if (controller.pressa && attackTime_ < 0)
+        if (controller.pressa && !attack_)
         {
-            // Start new attack
-            attackTime_ = 0;
-            attackHit_ = false;
+            // TODO Start new AIR attack
         }
         
         // gravity update (separate from controller force)
@@ -173,11 +184,14 @@ void Fighter::update(const struct Controller &controller, float dt)
             canSecondJump_ = true;
         }
     }
-    if (attackTime_ >= 0)
+    if (attack_)
     {
-        attackTime_ += dt;
-        if (attackTime_ > attackStartup_ + attackDuration_ + attackCooldown_)
-            attackTime_ = -1;
+        attack_->update(dt);
+        if (attack_->isDone())
+        {
+            delete attack_;
+            attack_ = NULL;
+        }
     }
     if (jumpTime_ >= 0)
         jumpTime_ += dt;
@@ -195,10 +209,11 @@ void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
         {
             state_ = GROUND_STATE;
             xvel_ = yvel_ = 0;
-            attackTime_ = -1;
             jumpTime_ = -1;
             dashing_ = false;
             dashTime_ = -1;
+            if (attack_)
+                attack_->cancel();
         }
         // Make sure we're barely overlapping the ground (by 1 unit)
         rect_.y = ground.y + ground.h / 2 + rect_.h/2 - 1;
@@ -217,34 +232,38 @@ void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
 
 void Fighter::attackCollision()
 {
-    std::cout << "Attack Collision\n";
     // If two attacks collide, just cancel them and go to cooldown
-    attackHit_ = true;
-    attackTime_ = attackStartup_ + attackDuration_;
+    assert(attack_);
+    attack_->cancel();
 }
 
-void Fighter::hitByAttack(const Rectangle &hitbox)
+void Fighter::hitByAttack(const Fighter *fighter, const Attack *inAttack)
 {
-    std::cout << "Hit by attack\n";
+    assert(inAttack);
+    assert(fighter);
     // Pop up a tiny amount if they're on the ground
     if (state_ == GROUND_STATE)
         rect_.y += 2;
     // Take damage
-    damage_ += attackDamage_;
+    damage_ += inAttack->getDamage(this);
     // Go to the stunned state
     state_ = AIR_STUNNED_STATE;
     stunTime_ = 0;
-    stunDuration_ = attackStun_ * damageFunc();;
+    stunDuration_ = inAttack->getStun(this) * damageFunc();;
+
     // Calculate direction of hit
-    glm::vec2 hitdir = glm::vec2(rect_.x, rect_.y) - glm::vec2(hitbox.x, hitbox.y);
-    hitdir = glm::normalize(hitdir);
-    glm::vec2 knockback = hitdir * attackKnockback_ * damageFunc();
+    glm::vec2 knockback = inAttack->getKnockback(this) * glm::vec2(fighter->dir_, 1.0f)
+        * damageFunc();
+
 
     // Get knocked back
     xvel_ = knockback.x;
     yvel_ = knockback.y;
 
     // Generate a tiny explosion here
+    glm::vec2 hitdir = glm::vec2(rect_.x, rect_.y)
+        - glm::vec2(inAttack->getHitbox().x, inAttack->getHitbox().y);
+    hitdir = glm::normalize(hitdir);
     float exx = -hitdir.x * rect_.w / 2 + rect_.x;
     float exy = -hitdir.y * rect_.h / 2 + rect_.y;
     ExplosionManager::get()->addExplosion(exx, exy, 0.2);
@@ -252,7 +271,8 @@ void Fighter::hitByAttack(const Rectangle &hitbox)
 
 void Fighter::hitWithAttack()
 {
-    attackHit_ = true;
+    assert(attack_);
+    attack_->hit();
 }
 
 const Rectangle& Fighter::getRectangle() const
@@ -262,19 +282,12 @@ const Rectangle& Fighter::getRectangle() const
 
 bool Fighter::hasAttack() const
 {
-    return inAttackAnimation() && !attackHit_;
+    return attack_ && attack_->hasHitbox();
 }
 
-bool Fighter::inAttackAnimation() const
+const Attack * Fighter::getAttack() const
 {
-    return attackTime_ > attackStartup_
-        && attackTime_ < attackStartup_ + attackDuration_;
-}
-
-Rectangle Fighter::getAttackBox() const
-{
-    return Rectangle(rect_.x + dir_ * attackX_, rect_.y + attackY_,
-            attackW_, attackH_);
+    return attack_;
 }
 
 void Fighter::respawn(bool killed)
@@ -284,9 +297,13 @@ void Fighter::respawn(bool killed)
     xvel_ = yvel_ = 0.0f;
     state_ = AIR_NORMAL_STATE;
     canSecondJump_ = true;
-    attackTime_ = -1;
     jumpTime_ = -1;
     damage_ = 0;
+    if (attack_)
+    {
+        delete attack_;
+        attack_ = 0;
+    }
     // Check for death
     if (killed) --lives_;
     if (lives_ <= 0)
@@ -305,8 +322,8 @@ bool Fighter::isAlive() const
 
 void Fighter::render(float dt)
 {
-    printf("State: %d  Lives: %d  Damage: %f  Position: [%f, %f]   Velocity: [%f, %f]  Dashing: %d\n", 
-            state_, lives_, damage_, rect_.x, rect_.y, xvel_, yvel_, dashing_);
+    printf("State: %d  Damage: %f  Position: [%f, %f]   Velocity: [%f, %f]  Dashing: %d  Attack: %d  Dir: %f\n", 
+            state_, damage_, rect_.x, rect_.y, xvel_, yvel_, dashing_, attack_ != 0, dir_);
 
     if (state_ == DEAD_STATE)
         return;
@@ -338,9 +355,9 @@ void Fighter::render(float dt)
     renderRectangle(ticktrans, color);
 
     // Draw hitbox if applicable
-    if (inAttackAnimation())
+    if (attack_ && attack_->drawHitbox())
     {
-        Rectangle hitbox = getAttackBox();
+        Rectangle hitbox = attack_->getHitbox();
         glm::mat4 attacktrans = glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
                 glm::vec3(hitbox.w, hitbox.h, 1.0f));
@@ -367,3 +384,46 @@ bool Rectangle::overlaps(const Rectangle &rhs) const
     return (rhs.x + rhs.w/2) > (x - w/2) && (rhs.x - rhs.w/2) < (x + w/2) &&
         (rhs.y + rhs.h/2) > (y - h/2) && (rhs.y - rhs.h/2) < (y + h/2);
 }
+
+
+void Attack::setFighter(const Fighter *fighter)
+{
+    hitbox_.x = hitbox_.x * fighter->getDirection() + fighter->getRectangle().x;
+    hitbox_.y += fighter->getRectangle().y;
+}
+
+Rectangle Attack::getHitbox() const
+{
+    return hitbox_;
+}
+
+bool Attack::hasHitbox() const
+{
+    return (t_ > startup_) && (t_ < startup_ + duration_) && !hasHit_;
+}
+
+bool Attack::drawHitbox() const
+{
+    return (t_ > startup_) && (t_ < startup_ + duration_);
+}
+
+bool Attack::isDone() const
+{
+    return (t_ > startup_ + duration_ + cooldown_);
+}
+
+void Attack::update(float dt)
+{
+    t_ += dt;
+}
+
+void Attack::cancel()
+{
+    t_ = startup_ + duration_;
+}
+
+void Attack::hit()
+{
+    hasHit_ = true;
+}
+
