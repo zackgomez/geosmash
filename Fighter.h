@@ -27,14 +27,31 @@ public:
     float x, y, w, h;
 };
 
-struct Attack
+/*
+class Attack
 {
+public:
+    Attack(float startup, float duration, float cooldown, float damage, float stun,
+            const glm::vec2& knockback, const Rectangle &hitbox) :
+        hitbox_(hitbox),
+        startup_(startup), duration_(duration_), cooldown_(cooldown),
+        damage_(damage), stun_(stun), knockback_(knockback),
+        t_(0.0f)
+    {}
+
+    bool hasHitbox() const;
+    Rectangle getHitbox() const;
+
+    void update(float dt);
+
+private:
     Rectangle hitbox;
     float startup_, duration_, cooldown_;
     float damage_, stun_;
-    glm::vec2 knockback_; // knockback vector, x is multipled by -1 or 1 depending
-    // on orientation of fighter
+    float t_;
+    glm::vec2 knockback_;
 };
+*/
 
 class Fighter
 {

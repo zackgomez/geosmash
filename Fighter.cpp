@@ -45,6 +45,7 @@ float Fighter::getDamage() const
 
 void Fighter::update(const struct Controller &controller, float dt)
 {
+    printf("Controller: Joy [%f %f]  AttackTime: %f  DashTime: %f\n", controller.joyx, controller.joyy, attackTime_, dashTime_);
     if (state_ == DEAD_STATE)
         return;
 
@@ -197,6 +198,7 @@ void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
             attackTime_ = -1;
             jumpTime_ = -1;
             dashing_ = false;
+            dashTime_ = -1;
         }
         // Make sure we're barely overlapping the ground (by 1 unit)
         rect_.y = ground.y + ground.h / 2 + rect_.h/2 - 1;
@@ -312,12 +314,12 @@ void Fighter::render(float dt)
     glm::vec3 color = color_;
     if (state_ == AIR_STUNNED_STATE)
 	{
-		//float opacity_factor;
-		//float period_scale_factor = 2.0;
-		//float opacity_amplitude = 4;
-		//opacity_factor = cos(period_scale_factor * stunTime_);
-        //color *= opacity_amplitude * opacity_factor;
-		color *= 4;
+        // flash the player when in the stunned state...
+		float opacity_factor;
+		float period_scale_factor = 20.0;
+		float opacity_amplitude = 3;
+		opacity_factor = (1 + cos(period_scale_factor * stunTime_)) * 0.5f; 
+        color *= opacity_amplitude * opacity_factor + 1;
 	}
     // Draw body
     glm::mat4 transform(1.0);

@@ -330,7 +330,7 @@ int initGraphics()
 
     initGLUtils();
 
-    backgroundTex = make_texture("back001.tga");
+    backgroundTex = make_texture("back002.tga");
 
     return 1;
 }
