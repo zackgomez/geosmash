@@ -26,12 +26,25 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
     jumpAirSpeed_(200.0), secondJumpSpeed_(500.0), dashStartupTime_(0.08)
 {
     // XXX HOLY SHIT THIS SUCKS
-    neutralAttack_ = Attack(0.05, 0.15, 0.1, 5, 0.07,
-            30.0f * glm::normalize(glm::vec2(1, 1)),
-            Rectangle(0.5f * rect_.w + 15, 0.0f, 30, 18));
     dashAttack_ = Attack(0.1, 0.3, 0.2, 5, 0.07,
             80.0f * glm::normalize(glm::vec2(1, 4)),
             Rectangle(0.5f * rect_.w + 20, -0.33f * rect_.h, 50, 18));
+
+    neutralTiltAttack_ = Attack(0.05, 0.15, 0.1, 3, 0.07,
+            30.0f * glm::normalize(glm::vec2(1, 1)),
+            Rectangle(0.5f * rect_.w + 15, 0.0f, 30, 18));
+
+    sideTiltAttack_ = Attack(0.10, 0.22, 0.12, 6, 0.07,
+            60.0f * glm::normalize(glm::vec2(3, 2)),
+            Rectangle(0.5f * rect_.w + 30.0f, 5.0f, 60, 18));
+
+    downTiltAttack_ = Attack(0.10, 0.22, 0.12, 6, 0.07,
+            60.0f * glm::normalize(glm::vec2(1, 5)),
+            Rectangle(0.5f * rect_.w + 25, -0.5f * rect_.h, 50, 15));
+
+    upTiltAttack_ = Attack(0.10, 0.22, 0.12, 6, 0.07,
+            70.0f * glm::normalize(glm::vec2(1, 9)),
+            Rectangle(0.5f * rect_.w, 0.5f * rect_.h, 40, 40));
     /*
     attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),
     attackDamage_(5), attackKnockback_(80.0), attackStun_(0.07),
@@ -135,9 +148,30 @@ void Fighter::update(const struct Controller &controller, float dt)
             }
             else if (!dashing_ && controller.pressa)
             {
-                // Do the ground neutral attack
-                xvel_ = 0;
-                attack_ = new Attack(neutralAttack_);
+                // No movement during attack
+                xvel_ = 0; yvel_ = 0;
+                // Get direction of stick
+                glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
+                if (fabs(controller.joyx) > 0.4 && fabs(tiltDir.x) > fabs(tiltDir.y))
+                {
+                    // Do the L/R tilt
+                    dir_ = controller.joyx > 0 ? 1 : -1;
+                    attack_ = new Attack(sideTiltAttack_);
+                }
+                else if (controller.joyy < 0.4 && fabs(tiltDir.x) < fabs(tiltDir.y))
+                {
+                    attack_ = new Attack(downTiltAttack_);
+                }
+                else if (controller.joyy > 0.4 && fabs(tiltDir.x) < fabs(tiltDir.y))
+                {
+                    attack_ = new Attack(upTiltAttack_);
+                }
+                else
+                {
+                    // Neutral tilt attack
+                    attack_ = new Attack(neutralTiltAttack_);
+                }
+                // Set the owner of the attack
                 attack_->setFighter(this);
             }
         }

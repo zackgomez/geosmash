@@ -127,9 +127,11 @@ private:
     float stunTime_, stunDuration_;
 
     // Available reference attacks
-    Attack neutralAttack_;
     Attack dashAttack_;
-    Attack airAttack_;
+    Attack neutralTiltAttack_;
+    Attack sideTiltAttack_;
+    Attack downTiltAttack_;
+    Attack upTiltAttack_;
 
     // Fighter stats
     const float walkSpeed_; // maximum walking speed
