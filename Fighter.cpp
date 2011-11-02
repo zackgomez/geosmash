@@ -27,7 +27,7 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
 {
     // XXX HOLY SHIT THIS SUCKS
     dashAttack_ = Attack(0.1, 0.3, 0.2, 5, 0.07,
-            80.0f * glm::normalize(glm::vec2(1, 4)),
+            40.0f * glm::normalize(glm::vec2(1, 4)),
             Rectangle(0.5f * rect_.w + 20, -0.33f * rect_.h, 50, 18));
 
     neutralTiltAttack_ = Attack(0.05, 0.15, 0.1, 3, 0.07,
@@ -47,7 +47,7 @@ Fighter::Fighter(const Rectangle &rect, float respawnx, float respawny, const gl
             Rectangle(0.5f * rect_.w, 0.5f * rect_.h, 40, 40));
 
     airAttack_ = AirAttack(0.1, 0.3, 0.2, 5, 0.07,
-            80.0f,
+            100.0f,
             Rectangle(0.5f * rect_.w + 10, -0.4 * rect_.h, 45, 25));
     /*
     attackStartup_(0.1), attackDuration_(0.3), attackCooldown_(0.2),

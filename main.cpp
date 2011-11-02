@@ -84,7 +84,7 @@ int main(int argc, char **argv)
 
 
 
-    start_song("smash001.aif");
+    start_song("smash002.aif");
 
 
     mainloop();
@@ -332,7 +332,7 @@ int initGraphics()
 
     initGLUtils();
 
-    backgroundTex = make_texture("back002.tga");
+    backgroundTex = make_texture("back003.tga");
 
     return 1;
 }
@@ -445,5 +445,8 @@ int initLibs()
         fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
         return 0;
     }
+
+    SDL_WM_SetCaption("Geometry Smash 0.2", "geosmash");
+
     return 1;
 }

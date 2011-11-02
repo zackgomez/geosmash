@@ -3,6 +3,7 @@
 layout(location = 0) in vec4 position;
 uniform mat4 transform;
 uniform vec3 color;
+uniform vec2 worldSize;
 
 mat4 make_ortho(float l, float r, float b, float t, float n, float f)
 {
