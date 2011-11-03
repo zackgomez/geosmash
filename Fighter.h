@@ -104,18 +104,22 @@ public:
     float getDamage() const;
     float getDirection() const; // returns -1 or 1
 
+    // collision is true if there is a collision with ground this frame, false otherwise
     void collisionWithGround(const Rectangle &ground, bool collision);
     void attackCollision(); // Called when two attacks collide
     void hitByAttack(const Fighter *fighter, const Attack* attack);  // Called when hit by an attack
     void hitWithAttack(); // Called when you hit with an attack
+    // Gets the fighter's hitbox
     const Rectangle& getRectangle() const;
 
-    // Returns true if this Fighter is currently attacking and has an attack
-    // hitbox (see getAttackBox())
+    // Returns true if this Fighter is currently attacking and has an attack hitbox
     bool hasAttack() const;
     const Attack * getAttack() const;
 
+    // Respawns the fighter at its respawn location.  If killed is true, a
+    // life be removed
     void respawn(bool killed);
+    // True if this player has more than 0 lives
     bool isAlive() const;
 
 private:
@@ -165,9 +169,15 @@ private:
     const float secondJumpSpeed_; // Speed of the second jump
     const float dashStartupTime_; // Time from starting dash to first movement
 
-    // Helper functions
-    float damageFunc() const; // Returns a scaling factor based on damage
+    // Input response parameters
+    const float inputVelocityThreshold_;
+    const float inputJumpThresh_;
+    const float inputDashThresh_;
+    const float inputDashMin_;
+    const float inputDeadzone_;
 
+    // ---- Helper functions ----
+    float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
     Attack loadAttack(const ParamReader &params, std::string attackName);
 };

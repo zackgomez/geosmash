@@ -31,7 +31,12 @@ Fighter::Fighter(const ParamReader &params, float respawnx, float respawny, cons
     hopSpeed_(params.get("hopSpeed")),
     jumpAirSpeed_(params.get("jumpAirSpeed")),
     secondJumpSpeed_(params.get("secondJumpSpeed")),
-    dashStartupTime_(params.get("dashStartupTime"))
+    dashStartupTime_(params.get("dashStartupTime")),
+    inputVelocityThreshold_(params.get("input.velThresh")),
+    inputJumpThresh_(params.get("input.jumpThresh")),
+    inputDashThresh_(params.get("input.dashThresh")),
+    inputDashMin_(params.get("input.dashMin")),
+    inputDeadzone_(params.get("input.deadzone"))
 {
     // Load ground attacks
     dashAttack_ = loadAttack(params, "dashAttack");
@@ -95,7 +100,7 @@ void Fighter::update(const struct Controller &controller, float dt)
                     dashTime_ = dashStartupTime_;
                     xvel_ = 0;
                 }
-                else if (fabs(controller.joyx) < 0.6f && fabs(controller.joyxv) < 0.15f)
+                else if (fabs(controller.joyx) < inputDashMin_ && fabs(controller.joyxv) < inputVelocityThreshold_)
                 {
                     dashing_ = false;
                     dashTime_ = dashStartupTime_;
@@ -106,7 +111,7 @@ void Fighter::update(const struct Controller &controller, float dt)
             else // !dashing_
             {
                 // Check for entry into dash
-                if (!dashing_ && fabs(controller.joyx) > 0.9f && fabs(controller.joyxv) > 0.15f)
+                if (!dashing_ && fabs(controller.joyx) > inputDashThresh_ && fabs(controller.joyxv) > inputVelocityThreshold_)
                 {
                     dashing_ = true;
                     dashTime_ = dashStartupTime_;
@@ -114,7 +119,7 @@ void Fighter::update(const struct Controller &controller, float dt)
                 }
                 xvel_ = 0;
                 // Check for walking
-                if (!dashing_ && fabs(controller.joyx) > 0.2f && !attack_)
+                if (!dashing_ && fabs(controller.joyx) > inputDeadzone_ && !attack_)
                 {
                     xvel_ = controller.joyx * walkSpeed_;
                     dir_ = xvel_ < 0 ? -1 : 1;
@@ -122,7 +127,7 @@ void Fighter::update(const struct Controller &controller, float dt)
             }
             // Check for jump
             if (jumpTime_ < 0 && 
-                    (controller.pressjump || (controller.joyy > 0.65 && controller.joyyv > 0.20f)))
+                    (controller.pressjump || (controller.joyy > inputJumpThresh_ && controller.joyyv > inputVelocityThreshold_)))
             {
                 // Start the jump timer
                 jumpTime_ = 0.0f;
@@ -135,8 +140,10 @@ void Fighter::update(const struct Controller &controller, float dt)
                 jumpTime_ = -1;
                 // also let this character double jump if they want
                 canSecondJump_ = true;
-                xvel_ = fabs(controller.joyx) > 0.2f ? controller.joyx * 0.5 * dashSpeed_ : 0.0f;
-                if (controller.jumpbutton || controller.joyy > 0.65f)
+                xvel_ = fabs(controller.joyx) > inputDeadzone_ ?
+                    controller.joyx * 0.5 * dashSpeed_ :
+                    0.0f;
+                if (controller.jumpbutton || controller.joyy > inputJumpThresh_)
                     yvel_ = jumpSpeed_;
                 else
                     yvel_ = hopSpeed_;
@@ -146,6 +153,7 @@ void Fighter::update(const struct Controller &controller, float dt)
             {
                 // Do the dash attack
                 dashing_ = false;
+                xvel_ = dir_ * dashSpeed_;
                 attack_ = new Attack(dashAttack_);
                 attack_->setFighter(this);
             }

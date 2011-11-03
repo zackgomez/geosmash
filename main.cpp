@@ -82,13 +82,19 @@ int main(int argc, char **argv)
 
     // Init game state
     ParamReader params("params.dat");
+    WORLD_W = params.get("worldWidth");
+    WORLD_H = params.get("worldHeight");
     for (unsigned i = 0; i < numPlayers; i++)
     {
         Fighter *fighter = new Fighter(params, -225.0f+i*150, -100.f, playerColors[i]);
         fighter->respawn(false);
         fighters.push_back(fighter);
     }
-    ground = Rectangle(0, -375+50, 1025, 100);
+    ground = Rectangle(
+            params.get("level.x"),
+            params.get("level.y"),
+            params.get("level.w"),
+            params.get("level.h"));
 
 
 
@@ -216,7 +222,7 @@ void update()
         }
 
         // Respawn condition
-        if (fighter->getRectangle().y < -350 - 100.0f || fighter->getRectangle().y > WORLD_H/2 * 1.5
+        if (fighter->getRectangle().y < -WORLD_H/2 * 1.5 || fighter->getRectangle().y > WORLD_H/2 * 1.5
                 || fighter->getRectangle().x < -WORLD_W/2 * 1.5 || fighter->getRectangle().y > WORLD_W/2 * 1.5)
         {
             fighter->respawn(true);

@@ -1,6 +1,20 @@
-fighter.w 50
-fighter.h 60
-fighter.lives 4
+worldWidth   1500
+worldHeight  750
+level.x      0
+level.y      -325
+level.w      1025
+level.h      100
+
+input.dashThresh    0.9
+input.dashMin       0.6
+input.velThresh     0.15
+input.jumpThresh    0.9
+input.deadzone      0.2
+
+
+fighter.w        50
+fighter.h        60
+fighter.lives    4
 
 walkSpeed        133.3
 dashSpeed        400.0
