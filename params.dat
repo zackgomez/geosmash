@@ -41,7 +41,7 @@ neutralTiltAttack.hitboxh      18
 
 sideTiltAttack.startup      0.1
 sideTiltAttack.duration     0.22
-sideTiltAttack.cooldown     0.12
+sideTiltAttack.cooldown     0.25
 sideTiltAttack.damage       6
 sideTiltAttack.stun         0.07
 sideTiltAttack.knockbackx   3
@@ -52,22 +52,22 @@ sideTiltAttack.hitboxy      5
 sideTiltAttack.hitboxw      60
 sideTiltAttack.hitboxh      18
 
-downTiltAttack.startup      0.1
+downTiltAttack.startup      0.2
 downTiltAttack.duration     0.22
-downTiltAttack.cooldown     0.12
-downTiltAttack.damage       6
-downTiltAttack.stun         0.07
+downTiltAttack.cooldown     0.25
+downTiltAttack.damage       8
+downTiltAttack.stun         0.10
 downTiltAttack.knockbackx   1
 downTiltAttack.knockbacky   5
-downTiltAttack.knockbackpow 60.0
-downTiltAttack.hitboxx      25
+downTiltAttack.knockbackpow 70.0
+downTiltAttack.hitboxx      35
 downTiltAttack.hitboxy      -30
-downTiltAttack.hitboxw      50
+downTiltAttack.hitboxw      70
 downTiltAttack.hitboxh      15
 
 upTiltAttack.startup      0.1
 upTiltAttack.duration     0.22
-upTiltAttack.cooldown     0.12
+upTiltAttack.cooldown     0.25
 upTiltAttack.damage       6
 upTiltAttack.stun         0.07
 upTiltAttack.knockbackx   1

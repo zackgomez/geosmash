@@ -13,14 +13,11 @@ public:
         readFile(filename);
     }
 
-    float get(const std::string &key, float def = 0.0f) const
+    float get(const std::string &key) const
     {
         std::map<std::string, float>::const_iterator it = params_.find(key);
         if (it == params_.end())
-        {
             assert(false && "Key not found in params");
-            return def;
-        }
         else
             return it->second;
     }
