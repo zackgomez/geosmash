@@ -216,7 +216,8 @@ void update()
         }
 
         // Respawn condition
-        if (fighter->getRectangle().y < -350 - 100.0f)
+        if (fighter->getRectangle().y < -350 - 100.0f || fighter->getRectangle().y > WORLD_H/2 * 1.5
+                || fighter->getRectangle().x < -WORLD_W/2 * 1.5 || fighter->getRectangle().y > WORLD_W/2 * 1.5)
         {
             fighter->respawn(true);
             break;
