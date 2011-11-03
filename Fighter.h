@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <string>
+#include <SFML/Audio.hpp>
 
 class ParamReader;
 
@@ -40,7 +41,7 @@ public:
         hitbox_(hitbox),
         startup_(startup), duration_(duration), cooldown_(cooldown),
         damage_(damage), stun_(stun), knockback_(knockback),
-        hasHit_(false), t_(0.0f), owner_(NULL)
+        hasHit_(false), t_(0.0f), owner_(NULL), sound_(NULL)
     {}
 
     virtual Rectangle getHitbox() const;
@@ -63,6 +64,8 @@ public:
     virtual void cancel();
     // Called when the attack 'connects'
     virtual void hit();
+    void playSound();
+    void setSound(sf::Music *);
 
 private:
     Rectangle hitbox_;
@@ -73,6 +76,7 @@ private:
     float t_;
 
     const Fighter *owner_;
+    sf::Music *sound_;
 };
 
 class AirAttack : public Attack
@@ -179,5 +183,6 @@ private:
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
-    Attack loadAttack(const ParamReader &params, std::string attackName);
+    Attack loadAttack(const ParamReader &params, std::string attackName,
+            std::string soundFile = "");
 };

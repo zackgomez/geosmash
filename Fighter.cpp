@@ -13,6 +13,8 @@ const static int AIR_STUNNED_STATE = 1;
 const static int GROUND_STATE = 2;
 const static int DEAD_STATE = 3;
 
+static sf::Music *koSound = NULL;
+
 Fighter::Fighter(const ParamReader &params, float respawnx, float respawny, const glm::vec3& color) :
     rect_(Rectangle(0, 0, params.get("fighter.w"), params.get("fighter.h"))),
     xvel_(0), yvel_(0),
@@ -39,11 +41,11 @@ Fighter::Fighter(const ParamReader &params, float respawnx, float respawny, cons
     inputDeadzone_(params.get("input.deadzone"))
 {
     // Load ground attacks
-    dashAttack_ = loadAttack(params, "dashAttack");
-    neutralTiltAttack_ = loadAttack(params, "neutralTiltAttack");
-    sideTiltAttack_ = loadAttack(params, "sideTiltAttack");
-    downTiltAttack_ = loadAttack(params, "downTiltAttack");
-    upTiltAttack_ = loadAttack(params, "upTiltAttack");
+    dashAttack_ = loadAttack(params, "dashAttack", "sfx/neutral001.wav");
+    neutralTiltAttack_ = loadAttack(params, "neutralTiltAttack", "sfx/neutral001.wav");
+    sideTiltAttack_ = loadAttack(params, "sideTiltAttack", "sfx/forwardtilt001.wav");
+    downTiltAttack_ = loadAttack(params, "downTiltAttack", "sfx/downtilt001.wav");
+    upTiltAttack_ = loadAttack(params, "upTiltAttack", "sfx/uptilt001.wav");
 
     // Load air attack special as it uses a different class
     airAttack_ = AirAttack(
@@ -58,6 +60,16 @@ Fighter::Fighter(const ParamReader &params, float respawnx, float respawny, cons
                 params.get("airAttack.hitboxy"),
                 params.get("airAttack.hitboxw"),
                 params.get("airAttack.hitboxh")));
+    sf::Music *m = new sf::Music();
+    m->OpenFromFile("sfx/airneutral001.wav");
+    airAttack_.setSound(m);
+
+    // Load some audio
+    if (!koSound)
+    {
+        koSound = new sf::Music();
+        koSound->OpenFromFile("sfx/ko001.wav");
+    }
 }
 
 Fighter::~Fighter()
@@ -370,7 +382,11 @@ void Fighter::respawn(bool killed)
         attack_ = 0;
     }
     // Check for death
-    if (killed) --lives_;
+    if (killed)
+    {
+        --lives_;
+        koSound->Play();
+    }
     if (lives_ <= 0)
     {
         // Move them way off the map
@@ -435,7 +451,8 @@ float Fighter::damageFunc() const
     return 2 * damage_ / 33;
 }
 
-Attack Fighter::loadAttack(const ParamReader &params, std::string attackName)
+Attack Fighter::loadAttack(const ParamReader &params, std::string attackName,
+        std::string soundFile)
 {
     attackName += '.';
 
@@ -453,6 +470,13 @@ Attack Fighter::loadAttack(const ParamReader &params, std::string attackName)
                 params.get(attackName + "hitboxy"),
                 params.get(attackName + "hitboxw"),
                 params.get(attackName + "hitboxh")));
+
+    if (!soundFile.empty())
+    {
+        sf::Music *m = new sf::Music();
+        m->OpenFromFile(soundFile);
+        ret.setSound(m);
+    }
 
     return ret;
 
@@ -473,6 +497,17 @@ bool Rectangle::overlaps(const Rectangle &rhs) const
         (rhs.y + rhs.h/2) > (y - h/2) && (rhs.y - rhs.h/2) < (y + h/2);
 }
 
+
+void Attack::playSound() 
+{
+    if (sound_)
+        sound_->Play();
+}
+
+void Attack::setSound(sf::Music *m) 
+{
+    sound_ = m;
+}
 
 void Attack::setFighter(const Fighter *fighter)
 {
@@ -517,6 +552,7 @@ void Attack::cancel()
 void Attack::hit()
 {
     hasHit_ = true;
+    playSound();
 }
 
 glm::vec2 AirAttack::getKnockback(const Fighter *fighter) const
