@@ -99,6 +99,11 @@ void Fighter::update(const struct Controller &controller, float dt)
                     dir_ = newdir;
                     dashTime_ = dashStartupTime_;
                     xvel_ = 0;
+                    // Draw a little puff
+                    ExplosionManager::get()->addPuff(
+                            rect_.x - rect_.w * dir_ * 0.4f, 
+                            rect_.y - rect_.h * 0.45f,
+                            0.3f);
                 }
                 else if (fabs(controller.joyx) < inputDashMin_ && fabs(controller.joyxv) < inputVelocityThreshold_)
                 {
@@ -116,6 +121,12 @@ void Fighter::update(const struct Controller &controller, float dt)
                     dashing_ = true;
                     dashTime_ = dashStartupTime_;
                     xvel_ = 0;
+                    dir_ = controller.joyx < 0 ? -1 : 1;
+                    // Draw a little puff
+                    ExplosionManager::get()->addPuff(
+                            rect_.x - rect_.w * dir_ * 0.4f, 
+                            rect_.y - rect_.h * 0.45f,
+                            0.3f);
                 }
                 xvel_ = 0;
                 // Check for walking

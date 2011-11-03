@@ -3,6 +3,23 @@
 #include "explosion.h"
 #include "glutils.h"
 
+void Explosion::render(float dt)
+{
+    t_ += dt;
+
+    float frac = std::min(1.0f, t_ / duration_);
+    glm::mat4 transform = 
+        glm::scale(
+                glm::translate(glm::mat4(1.0f), glm::vec3(x_, y_, 0.0)),
+                frac * glm::vec3(size_, size_, 1.0f));
+    renderRectangle(transform, color_);
+}
+
+bool Explosion::isDone() const
+{
+    return t_ > duration_;
+}
+
 ExplosionManager::ExplosionManager()
 {}
 
@@ -14,28 +31,27 @@ ExplosionManager* ExplosionManager::get()
 
 void ExplosionManager::addExplosion(float x, float y, float t)
 {
-    explosions_.push_back(explosion(x, y, t));
+    explosions_.push_back(Explosion(x, y, t, glm::vec3(1.0f, 0.42f, 0.0f), 30.0f));
+}
+
+void ExplosionManager::addPuff(float x, float y, float t)
+{
+    explosions_.push_back(Explosion(x, y, t, glm::vec3(0.8f, 0.8f, 0.8f), 20.0f));
 }
 
 void ExplosionManager::render(float dt)
 {
-    std::vector<explosion>::iterator it = explosions_.begin();
+    std::vector<Explosion>::iterator it = explosions_.begin();
     for (; it != explosions_.end(); )
     {
-        explosion& ex = *it;
+        Explosion& ex = *it;
         // Check for explosion death
-        if ((ex.t += dt) >= ex.duration)
-        {
+        if (ex.isDone())
             it = explosions_.erase(it);
-        }
+        // Otherwise render it
         else
         {
-            float frac = ex.t / ex.duration;
-            glm::mat4 transform = 
-                glm::scale(
-                        glm::translate(glm::mat4(1.0f), glm::vec3(ex.x, ex.y, 0.0)),
-                        frac * glm::vec3(30.0f, 30.0f, 1.0f));
-            renderRectangle(transform, glm::vec3(1.0f, 0.42, 0.0f));
+            ex.render(dt);
             // Next explosion
             it++;
         }
