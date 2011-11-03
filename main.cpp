@@ -301,16 +301,32 @@ void render()
                         glm::vec3(damageBarMidpoint.x, damageBarMidpoint.y, 0.0f)),
                     glm::vec3(100, 20, 1.0));
         renderRectangle(transform, glm::vec3(0, 0, 0));
+
+        float maxDamage = 100;
+
+        float damageRatio = fighters[i]->getDamage() / maxDamage;
+        float xscalefact = 0.9f * std::min(1.0f, damageRatio - floorf(damageRatio));
+        float darkeningFactor = 0.60;
+
+        // Draw the last color bar and then draw on top of it
+        if (damageRatio >= 1.0f)
+        {
+            transform = glm::scale(
+                    glm::translate(
+                        transform,
+                        glm::vec3(0.0f)), //glm::vec3(-.4 * .5 * xscalefact, 0.0f, 0.0f)),
+                glm::vec3( 0.9f, 0.9f, 0.0f));
+            renderRectangle(transform, playerColors[i] * powf(darkeningFactor, floorf(damageRatio - 1)));
+        }
        
         // Now fill it in with a colored bar
-        float maxDamage = 100;
-        float xscalefact = std::min(0.9f, fighters[i]->getDamage() / maxDamage);
         transform = glm::scale(
                 glm::translate(
                     transform,
                     glm::vec3(0.0f)), //glm::vec3(-.4 * .5 * xscalefact, 0.0f, 0.0f)),
                 glm::vec3( xscalefact, 0.9f, 0.0f));
-        renderRectangle(transform, playerColors[i]);
+        std::cout << "darkeningFactor = " << darkeningFactor << '\n';
+        renderRectangle(transform, playerColors[i] * powf(darkeningFactor, floorf(damageRatio)));
     }
 
 
