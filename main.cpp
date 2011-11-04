@@ -325,7 +325,6 @@ void render()
                     transform,
                     glm::vec3(0.0f)), //glm::vec3(-.4 * .5 * xscalefact, 0.0f, 0.0f)),
                 glm::vec3( xscalefact, 0.9f, 0.0f));
-        std::cout << "darkeningFactor = " << darkeningFactor << '\n';
         renderRectangle(transform, playerColors[i] * powf(darkeningFactor, floorf(damageRatio)));
     }
 

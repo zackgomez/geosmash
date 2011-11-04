@@ -79,22 +79,6 @@ private:
     sf::Music *sound_;
 };
 
-class AirAttack : public Attack
-{
-public:
-    AirAttack() : Attack() {}
-    AirAttack(float startup, float duration, float cooldown, float damage, float stun,
-            float power, const Rectangle &hitbox) :
-        Attack(startup, duration, cooldown, damage, stun, glm::vec2(0,0), hitbox),
-        power_(power)
-    {}
-
-    virtual glm::vec2 getKnockback(const Fighter *fighter) const;
-
-private:
-    float power_;
-};
-
 class Fighter
 {
 public:
@@ -155,11 +139,15 @@ private:
 
     // Available reference attacks
     Attack dashAttack_;
-    AirAttack airAttack_;
     Attack neutralTiltAttack_;
     Attack sideTiltAttack_;
     Attack downTiltAttack_;
     Attack upTiltAttack_;
+
+    Attack airNeutralAttack_;
+    Attack airSideAttack_;
+    Attack airDownAttack_;
+    Attack airUpAttack_;
 
     // Fighter stats
     const float walkSpeed_; // maximum walking speed
@@ -179,6 +167,7 @@ private:
     const float inputDashThresh_;
     const float inputDashMin_;
     const float inputDeadzone_;
+    const float inputTiltThresh_;
 
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage

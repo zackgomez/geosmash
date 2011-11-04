@@ -38,7 +38,8 @@ Fighter::Fighter(const ParamReader &params, float respawnx, float respawny, cons
     inputJumpThresh_(params.get("input.jumpThresh")),
     inputDashThresh_(params.get("input.dashThresh")),
     inputDashMin_(params.get("input.dashMin")),
-    inputDeadzone_(params.get("input.deadzone"))
+    inputDeadzone_(params.get("input.deadzone")),
+    inputTiltThresh_(params.get("input.tiltThresh"))
 {
     // Load ground attacks
     dashAttack_ = loadAttack(params, "dashAttack", "sfx/neutral001.wav");
@@ -48,21 +49,10 @@ Fighter::Fighter(const ParamReader &params, float respawnx, float respawny, cons
     upTiltAttack_ = loadAttack(params, "upTiltAttack", "sfx/uptilt001.wav");
 
     // Load air attack special as it uses a different class
-    airAttack_ = AirAttack(
-            params.get("airAttack.startup"),
-            params.get("airAttack.duration"),
-            params.get("airAttack.cooldown"),
-            params.get("airAttack.damage"),
-            params.get("airAttack.stun"),
-            params.get("airAttack.knockbackpow"),
-            Rectangle(
-                0.5f * rect_.w + params.get("airAttack.hitboxx"),
-                params.get("airAttack.hitboxy"),
-                params.get("airAttack.hitboxw"),
-                params.get("airAttack.hitboxh")));
-    sf::Music *m = new sf::Music();
-    m->OpenFromFile("sfx/airneutral001.wav");
-    airAttack_.setSound(m);
+    airNeutralAttack_ = loadAttack(params, "airNeutralAttack", "sfx/uptilt001.wav");
+    airSideAttack_ = loadAttack(params, "airSideAttack", "sfx/uptilt001.wav");
+    airDownAttack_ = loadAttack(params, "airDownAttack", "sfx/uptilt001.wav");
+    airUpAttack_ = loadAttack(params, "airUpAttack", "sfx/uptilt001.wav");
 
     // Load some audio
     if (!koSound)
@@ -186,17 +176,17 @@ void Fighter::update(const struct Controller &controller, float dt)
                 xvel_ = 0; yvel_ = 0;
                 // Get direction of stick
                 glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
-                if (fabs(controller.joyx) > 0.4 && fabs(tiltDir.x) > fabs(tiltDir.y))
+                if (fabs(controller.joyx) > inputTiltThresh_ && fabs(tiltDir.x) > fabs(tiltDir.y))
                 {
                     // Do the L/R tilt
                     dir_ = controller.joyx > 0 ? 1 : -1;
                     attack_ = new Attack(sideTiltAttack_);
                 }
-                else if (controller.joyy < -0.4 && fabs(tiltDir.x) < fabs(tiltDir.y))
+                else if (controller.joyy < -inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
                 {
                     attack_ = new Attack(downTiltAttack_);
                 }
-                else if (controller.joyy > 0.4 && fabs(tiltDir.x) < fabs(tiltDir.y))
+                else if (controller.joyy > inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
                 {
                     attack_ = new Attack(upTiltAttack_);
                 }
@@ -223,8 +213,8 @@ void Fighter::update(const struct Controller &controller, float dt)
         }
 
         // second jump, if the character wants to.
-        if ((controller.pressjump || (controller.joyy > 0.65 && 
-                    controller.joyyv > 0.20f)) && canSecondJump_ && !attack_)
+        if ((controller.pressjump || (controller.joyy > inputJumpThresh_ && 
+                    controller.joyyv > inputVelocityThreshold_)) && canSecondJump_ && !attack_)
         {
             canSecondJump_ = false;
             jumpTime_ = 0;
@@ -232,7 +222,8 @@ void Fighter::update(const struct Controller &controller, float dt)
         if (jumpTime_ > jumpStartupTime_) 
         {
             yvel_ = secondJumpSpeed_;
-            xvel_ = fabs(controller.joyx) > 0.2f ? 
+            // XXX this is pretty not great
+            xvel_ = fabs(controller.joyx) > inputDeadzone_ ?
                         dashSpeed_ * std::max(-1.0f, std::min(1.0f, (controller.joyx - 0.2f) / 0.6f)) :
                         0.0f;
             jumpTime_ = -1;
@@ -240,8 +231,28 @@ void Fighter::update(const struct Controller &controller, float dt)
         // Check for attack
         if (controller.pressa && !attack_)
         {
-            // Start new AIR attack
-            attack_ = new AirAttack(airAttack_);
+            // Get direction of stick
+            glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
+            if (fabs(controller.joyx) > inputTiltThresh_ && fabs(tiltDir.x) > fabs(tiltDir.y))
+            {
+                // Do the L/R tilt
+                dir_ = controller.joyx > 0 ? 1 : -1;
+                attack_ = new Attack(airSideAttack_);
+            }
+            else if (controller.joyy < -inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
+            {
+                attack_ = new Attack(airDownAttack_);
+            }
+            else if (controller.joyy > inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
+            {
+                attack_ = new Attack(airUpAttack_);
+            }
+            else
+            {
+                // Neutral tilt attack
+                attack_ = new Attack(airNeutralAttack_);
+            }
+            // Set the owner of the attack
             attack_->setFighter(this);
         }
         
@@ -289,6 +300,7 @@ void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
             jumpTime_ = -1;
             dashing_ = false;
             dashTime_ = -1;
+            // Make them eat the cooldown time
             if (attack_)
                 attack_->cancel();
         }
@@ -553,15 +565,5 @@ void Attack::hit()
 {
     hasHit_ = true;
     playSound();
-}
-
-glm::vec2 AirAttack::getKnockback(const Fighter *fighter) const
-{
-    // Calculate direction of knockback
-    glm::vec2 dir = glm::normalize(glm::vec2(fighter->getRectangle().x - getHitbox().x,
-                fighter->getRectangle().y - getHitbox().y));
-
-    glm::vec2 kb = dir * power_;
-    return kb;
 }
 

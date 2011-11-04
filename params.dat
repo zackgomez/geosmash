@@ -11,6 +11,7 @@ input.dashMin       0.6
 input.velThresh     0.15
 input.jumpThresh    0.9
 input.deadzone      0.2
+input.tiltThresh    0.4
 
 
 fighter.w        50
@@ -26,7 +27,7 @@ jumpSpeed        600.0
 hopSpeed         200.0
 jumpAirSpeed     200.0
 secondJumpSpeed  500.0
-dashStartupTime  0.08
+dashStartupTime  0.12
 
 
 dashAttack.startup      0.1
@@ -95,13 +96,56 @@ upTiltAttack.hitboxy      30
 upTiltAttack.hitboxw      40
 upTiltAttack.hitboxh      40
 
-airAttack.startup      0.1
-airAttack.duration     0.3
-airAttack.cooldown     0.2
-airAttack.damage       5
-airAttack.stun         0.07
-airAttack.knockbackpow 100.0
-airAttack.hitboxx      35
-airAttack.hitboxy      -24
-airAttack.hitboxw      45
-airAttack.hitboxh      25
+
+
+airNeutralAttack.startup      0.15
+airNeutralAttack.duration     0.36
+airNeutralAttack.cooldown     0.15
+airNeutralAttack.damage       8
+airNeutralAttack.stun         0.10
+airNeutralAttack.knockbackx   4
+airNeutralAttack.knockbacky   1
+airNeutralAttack.knockbackpow 50.0
+airNeutralAttack.hitboxx      45
+airNeutralAttack.hitboxy      -10
+airNeutralAttack.hitboxw      50
+airNeutralAttack.hitboxh      25
+
+airSideAttack.startup      0.25
+airSideAttack.duration     0.25
+airSideAttack.cooldown     0.30
+airSideAttack.damage       8
+airSideAttack.stun         0.10
+airSideAttack.knockbackx   5
+airSideAttack.knockbacky   2
+airSideAttack.knockbackpow 100.0
+airSideAttack.hitboxx      40
+airSideAttack.hitboxy      -5
+airSideAttack.hitboxw      35
+airSideAttack.hitboxh      40
+
+airDownAttack.startup      0.15
+airDownAttack.duration     0.15
+airDownAttack.cooldown     0.15
+airDownAttack.damage       11
+airDownAttack.stun         0.10
+airDownAttack.knockbackx   0
+airDownAttack.knockbacky   -1
+airDownAttack.knockbackpow 80.0
+airDownAttack.hitboxx      0
+airDownAttack.hitboxy      -40
+airDownAttack.hitboxw      40
+airDownAttack.hitboxh      20
+
+airUpAttack.startup      0.15
+airUpAttack.duration     0.15
+airUpAttack.cooldown     0.15
+airUpAttack.damage       9
+airUpAttack.stun         0.10
+airUpAttack.knockbackx   0
+airUpAttack.knockbacky   1
+airUpAttack.knockbackpow 80.0
+airUpAttack.hitboxx      0
+airUpAttack.hitboxy      40
+airUpAttack.hitboxw      40
+airUpAttack.hitboxh      20
