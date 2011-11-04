@@ -5,6 +5,7 @@ level.y      -325
 level.w      1025
 level.h      100
 
+
 input.dashThresh    0.9
 input.dashMin       0.6
 input.velThresh     0.15
@@ -27,6 +28,7 @@ jumpAirSpeed     200.0
 secondJumpSpeed  500.0
 dashStartupTime  0.08
 
+
 dashAttack.startup      0.1
 dashAttack.duration     0.3
 dashAttack.cooldown     0.2
@@ -35,10 +37,11 @@ dashAttack.stun         0.07
 dashAttack.knockbackx   1
 dashAttack.knockbacky   4
 dashAttack.knockbackpow 40.0
-dashAttack.hitboxx      20
+dashAttack.hitboxx      45
 dashAttack.hitboxy      -20
 dashAttack.hitboxw      50
 dashAttack.hitboxh      18
+
 
 neutralTiltAttack.startup      0.05
 neutralTiltAttack.duration     0.15
@@ -48,7 +51,7 @@ neutralTiltAttack.stun         0.07
 neutralTiltAttack.knockbackx   1
 neutralTiltAttack.knockbacky   1
 neutralTiltAttack.knockbackpow 30.0
-neutralTiltAttack.hitboxx      15
+neutralTiltAttack.hitboxx      40
 neutralTiltAttack.hitboxy      0
 neutralTiltAttack.hitboxw      30
 neutralTiltAttack.hitboxh      18
@@ -61,7 +64,7 @@ sideTiltAttack.stun         0.07
 sideTiltAttack.knockbackx   3
 sideTiltAttack.knockbacky   2
 sideTiltAttack.knockbackpow 60.0
-sideTiltAttack.hitboxx      30
+sideTiltAttack.hitboxx      55
 sideTiltAttack.hitboxy      5
 sideTiltAttack.hitboxw      60
 sideTiltAttack.hitboxh      18
@@ -74,7 +77,7 @@ downTiltAttack.stun         0.10
 downTiltAttack.knockbackx   1
 downTiltAttack.knockbacky   5
 downTiltAttack.knockbackpow 70.0
-downTiltAttack.hitboxx      35
+downTiltAttack.hitboxx      60
 downTiltAttack.hitboxy      -30
 downTiltAttack.hitboxw      70
 downTiltAttack.hitboxh      15
@@ -87,7 +90,7 @@ upTiltAttack.stun         0.07
 upTiltAttack.knockbackx   1
 upTiltAttack.knockbacky   9
 upTiltAttack.knockbackpow 70.0
-upTiltAttack.hitboxx      0
+upTiltAttack.hitboxx      25
 upTiltAttack.hitboxy      30
 upTiltAttack.hitboxw      40
 upTiltAttack.hitboxh      40
@@ -98,7 +101,7 @@ airAttack.cooldown     0.2
 airAttack.damage       5
 airAttack.stun         0.07
 airAttack.knockbackpow 100.0
-airAttack.hitboxx      10
+airAttack.hitboxx      35
 airAttack.hitboxy      -24
 airAttack.hitboxw      45
 airAttack.hitboxh      25

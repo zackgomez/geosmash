@@ -466,7 +466,7 @@ Attack Fighter::loadAttack(const ParamReader &params, std::string attackName,
                     params.get(attackName + "knockbackx"),
                     params.get(attackName + "knockbacky"))),
             Rectangle(
-                0.5f * rect_.w + params.get(attackName + "hitboxx"),
+                params.get(attackName + "hitboxx"),
                 params.get(attackName + "hitboxy"),
                 params.get(attackName + "hitboxw"),
                 params.get(attackName + "hitboxh")));
