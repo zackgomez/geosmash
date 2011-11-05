@@ -34,13 +34,14 @@ Fighter::Fighter(const ParamReader &params, float respawnx, float respawny, cons
     jumpAirSpeed_(params.get("jumpAirSpeed")),
     secondJumpSpeed_(params.get("secondJumpSpeed")),
     dashStartupTime_(params.get("dashStartupTime")),
-    inputVelocityThreshold_(params.get("input.velThresh")),
+    inputVelocityThresh_(params.get("input.velThresh")),
     inputJumpThresh_(params.get("input.jumpThresh")),
     inputDashThresh_(params.get("input.dashThresh")),
     inputDashMin_(params.get("input.dashMin")),
     inputDeadzone_(params.get("input.deadzone")),
     inputTiltThresh_(params.get("input.tiltThresh"))
 {
+    std::cout << "RESPAWN: " << respawnx_ << ' ' << respawny_ << '\n';
     // Load ground attacks
     dashAttack_ = loadAttack(params, "dashAttack", "sfx/neutral001.wav");
     neutralTiltAttack_ = loadAttack(params, "neutralTiltAttack", "sfx/neutral001.wav");
@@ -53,6 +54,8 @@ Fighter::Fighter(const ParamReader &params, float respawnx, float respawny, cons
     airSideAttack_ = loadAttack(params, "airSideAttack", "sfx/uptilt001.wav");
     airDownAttack_ = loadAttack(params, "airDownAttack", "sfx/uptilt001.wav");
     airUpAttack_ = loadAttack(params, "airUpAttack", "sfx/uptilt001.wav");
+
+    state_ = 0;
 
     // Load some audio
     if (!koSound)
@@ -80,198 +83,17 @@ float Fighter::getDirection() const
     return dir_;
 }
 
-
 void Fighter::update(const struct Controller &controller, float dt)
 {
-    if (state_ == DEAD_STATE)
-        return;
-
-    // Update
-    if (state_ == GROUND_STATE)
+    // Check for state transition
+    if (state_->hasTransition())
     {
-        dashTime_ -= dt;
-        if (!attack_ && dashTime_ < 0)
-        {
-            // Dashing direction update
-            if (dashing_)
-            {
-                int newdir = controller.joyx < 0 ? -1 : 1;
-                if (dir_ != newdir)
-                {
-                    dir_ = newdir;
-                    dashTime_ = dashStartupTime_;
-                    xvel_ = 0;
-                    // Draw a little puff
-                    ExplosionManager::get()->addPuff(
-                            rect_.x - rect_.w * dir_ * 0.4f, 
-                            rect_.y - rect_.h * 0.45f,
-                            0.3f);
-                }
-                else if (fabs(controller.joyx) < inputDashMin_ && fabs(controller.joyxv) < inputVelocityThreshold_)
-                {
-                    dashing_ = false;
-                    dashTime_ = dashStartupTime_;
-                }
-                else
-                    xvel_ = dir_ * dashSpeed_;
-            }
-            else // !dashing_
-            {
-                // Check for entry into dash
-                if (!dashing_ && fabs(controller.joyx) > inputDashThresh_ && fabs(controller.joyxv) > inputVelocityThreshold_)
-                {
-                    dashing_ = true;
-                    dashTime_ = dashStartupTime_;
-                    xvel_ = 0;
-                    dir_ = controller.joyx < 0 ? -1 : 1;
-                    // Draw a little puff
-                    ExplosionManager::get()->addPuff(
-                            rect_.x - rect_.w * dir_ * 0.4f, 
-                            rect_.y - rect_.h * 0.45f,
-                            0.3f);
-                }
-                xvel_ = 0;
-                // Check for walking
-                if (!dashing_ && fabs(controller.joyx) > inputDeadzone_ && !attack_)
-                {
-                    xvel_ = controller.joyx * walkSpeed_;
-                    dir_ = xvel_ < 0 ? -1 : 1;
-                }
-            }
-            // Check for jump
-            if (jumpTime_ < 0 && 
-                    (controller.pressjump || (controller.joyy > inputJumpThresh_ && controller.joyyv > inputVelocityThreshold_)))
-            {
-                // Start the jump timer
-                jumpTime_ = 0.0f;
-            }
-            if (jumpTime_ > jumpStartupTime_)
-            {
-                // If they are still "holding down" the jump button now, then full jump
-                // otherwise short hop
-                state_ = AIR_NORMAL_STATE;
-                jumpTime_ = -1;
-                // also let this character double jump if they want
-                canSecondJump_ = true;
-                xvel_ = fabs(controller.joyx) > inputDeadzone_ ?
-                    controller.joyx * 0.5 * dashSpeed_ :
-                    0.0f;
-                if (controller.jumpbutton || controller.joyy > inputJumpThresh_)
-                    yvel_ = jumpSpeed_;
-                else
-                    yvel_ = hopSpeed_;
-            }
-            // Check for attack
-            if (dashing_ && controller.pressa)
-            {
-                // Do the dash attack
-                dashing_ = false;
-                xvel_ = dir_ * dashSpeed_;
-                attack_ = new Attack(dashAttack_);
-                attack_->setFighter(this);
-            }
-            else if (!dashing_ && controller.pressa)
-            {
-                // No movement during attack
-                xvel_ = 0; yvel_ = 0;
-                // Get direction of stick
-                glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
-                if (fabs(controller.joyx) > inputTiltThresh_ && fabs(tiltDir.x) > fabs(tiltDir.y))
-                {
-                    // Do the L/R tilt
-                    dir_ = controller.joyx > 0 ? 1 : -1;
-                    attack_ = new Attack(sideTiltAttack_);
-                }
-                else if (controller.joyy < -inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
-                {
-                    attack_ = new Attack(downTiltAttack_);
-                }
-                else if (controller.joyy > inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
-                {
-                    attack_ = new Attack(upTiltAttack_);
-                }
-                else
-                {
-                    // Neutral tilt attack
-                    attack_ = new Attack(neutralTiltAttack_);
-                }
-                // Set the owner of the attack
-                attack_->setFighter(this);
-            }
-        }
+        FighterState *next = state_->nextState();
+        delete state_;
+        state_ = next;
     }
-    if (state_ == AIR_NORMAL_STATE)
-    {
-        // update for air normal state
-        if (fabs(controller.joyx) > 0.2f && !attack_)
-        {
-            // Don't let the player increase the velocity past a certain speed
-            if (xvel_ * controller.joyx <= 0 || fabs(xvel_) < jumpAirSpeed_)
-                xvel_ += controller.joyx * airForce_ * dt;
-            // You can always control your orientation
-            dir_ = controller.joyx < 0 ? -1 : 1;
-        }
 
-        // second jump, if the character wants to.
-        if ((controller.pressjump || (controller.joyy > inputJumpThresh_ && 
-                    controller.joyyv > inputVelocityThreshold_)) && canSecondJump_ && !attack_)
-        {
-            canSecondJump_ = false;
-            jumpTime_ = 0;
-        }
-        if (jumpTime_ > jumpStartupTime_) 
-        {
-            yvel_ = secondJumpSpeed_;
-            // XXX this is pretty not great
-            xvel_ = fabs(controller.joyx) > inputDeadzone_ ?
-                        dashSpeed_ * std::max(-1.0f, std::min(1.0f, (controller.joyx - 0.2f) / 0.6f)) :
-                        0.0f;
-            jumpTime_ = -1;
-        }
-        // Check for attack
-        if (controller.pressa && !attack_)
-        {
-            // Get direction of stick
-            glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
-            if (fabs(controller.joyx) > inputTiltThresh_ && fabs(tiltDir.x) > fabs(tiltDir.y))
-            {
-                // Do the L/R tilt
-                dir_ = controller.joyx > 0 ? 1 : -1;
-                attack_ = new Attack(airSideAttack_);
-            }
-            else if (controller.joyy < -inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
-            {
-                attack_ = new Attack(airDownAttack_);
-            }
-            else if (controller.joyy > inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
-            {
-                attack_ = new Attack(airUpAttack_);
-            }
-            else
-            {
-                // Neutral tilt attack
-                attack_ = new Attack(airNeutralAttack_);
-            }
-            // Set the owner of the attack
-            attack_->setFighter(this);
-        }
-        
-        // gravity update (separate from controller force)
-        yvel_ += airAccel_ * dt;
-
-
-    }
-    if (state_ == AIR_STUNNED_STATE)
-    {
-        yvel_ += airAccel_ * dt;
-        stunTime_ += dt;
-        if (stunTime_ > stunDuration_)
-        {
-            state_ = AIR_NORMAL_STATE;
-            jumpTime_ = -1;
-            canSecondJump_ = true;
-        }
-    }
+    // Update the attack
     if (attack_)
     {
         attack_->update(dt);
@@ -281,8 +103,9 @@ void Fighter::update(const struct Controller &controller, float dt)
             attack_ = NULL;
         }
     }
-    if (jumpTime_ >= 0)
-        jumpTime_ += dt;
+
+    // Update state
+    state_->update(controller, dt);
 
     // Update position
     rect_.x += xvel_ * dt;
@@ -291,32 +114,7 @@ void Fighter::update(const struct Controller &controller, float dt)
 
 void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
 {
-    if (collision && ground.y + ground.h/2 < rect_.y + rect_.h/2)
-    {
-        if (state_ != GROUND_STATE)
-        {
-            state_ = GROUND_STATE;
-            xvel_ = yvel_ = 0;
-            jumpTime_ = -1;
-            dashing_ = false;
-            dashTime_ = -1;
-            // Make them eat the cooldown time
-            if (attack_)
-                attack_->cancel();
-        }
-        // Make sure we're barely overlapping the ground (by 1 unit)
-        rect_.y = ground.y + ground.h / 2 + rect_.h/2 - 1;
-    }
-    // If no ground collision and we were on the ground, now in the air
-    else
-    {
-        if (state_ == GROUND_STATE)
-        {
-            state_ = AIR_NORMAL_STATE;
-            jumpTime_ = -1;
-            canSecondJump_ = true;
-        }
-    }
+    state_->collisionWithGround(ground, collision);
 }
 
 void Fighter::attackCollision()
@@ -330,32 +128,7 @@ void Fighter::hitByAttack(const Fighter *fighter, const Attack *inAttack)
 {
     assert(inAttack);
     assert(fighter);
-    // Pop up a tiny amount if they're on the ground
-    if (state_ == GROUND_STATE)
-        rect_.y += 2;
-    // Take damage
-    damage_ += inAttack->getDamage(this);
-    // Go to the stunned state
-    state_ = AIR_STUNNED_STATE;
-    stunTime_ = 0;
-    stunDuration_ = inAttack->getStun(this) * damageFunc();;
-
-    // Calculate direction of hit
-    glm::vec2 knockback = inAttack->getKnockback(this) * glm::vec2(fighter->dir_, 1.0f)
-        * damageFunc();
-
-
-    // Get knocked back
-    xvel_ = knockback.x;
-    yvel_ = knockback.y;
-
-    // Generate a tiny explosion here
-    glm::vec2 hitdir = glm::vec2(rect_.x, rect_.y)
-        - glm::vec2(inAttack->getHitbox().x, inAttack->getHitbox().y);
-    hitdir = glm::normalize(hitdir);
-    float exx = -hitdir.x * rect_.w / 2 + rect_.x;
-    float exy = -hitdir.y * rect_.h / 2 + rect_.y;
-    ExplosionManager::get()->addExplosion(exx, exy, 0.2);
+    state_->hitByAttack(fighter, inAttack);
 }
 
 void Fighter::hitWithAttack()
@@ -381,24 +154,28 @@ const Attack * Fighter::getAttack() const
 
 void Fighter::respawn(bool killed)
 {
+    // Reset vars
     rect_.x = respawnx_;
     rect_.y = respawny_;
     xvel_ = yvel_ = 0.0f;
-    state_ = AIR_NORMAL_STATE;
-    canSecondJump_ = true;
-    jumpTime_ = -1;
     damage_ = 0;
+    // Set state to air normal
+    delete state_;
+    state_ = new AirNormalState(this);
+    // Remove any attacks
     if (attack_)
     {
         delete attack_;
         attack_ = 0;
     }
-    // Check for death
+    // If we died remove a life and play a sound
     if (killed)
     {
         --lives_;
         koSound->Play();
     }
+    /*
+    // Check for death
     if (lives_ <= 0)
     {
         // Move them way off the map
@@ -406,31 +183,25 @@ void Fighter::respawn(bool killed)
         rect_.y = HUGE_VAL;
         state_ = DEAD_STATE;
     }
+    */
 }
 
 bool Fighter::isAlive() const
 {
-    return state_ != DEAD_STATE;
+    return true;
+    //return state_ != DEAD_STATE;
 }
 
 void Fighter::render(float dt)
 {
-    printf("State: %d  Damage: %f  Position: [%f, %f]   Velocity: [%f, %f]  Dashing: %d  Attack: %d  Dir: %f\n", 
-            state_, damage_, rect_.x, rect_.y, xvel_, yvel_, dashing_, attack_ != 0, dir_);
+    state_->render(dt);
+}
 
-    if (state_ == DEAD_STATE)
-        return;
+void Fighter::renderHelper(float dt, const glm::vec3 &color)
+{
+    printf("Damage: %f  Position: [%f, %f]   Velocity: [%f, %f]  Attack: %d  Dir: %f\n", 
+            damage_, rect_.x, rect_.y, xvel_, yvel_, attack_ != 0, dir_);
 
-    glm::vec3 color = color_;
-    if (state_ == AIR_STUNNED_STATE)
-	{
-        // flash the player when in the stunned state...
-		float opacity_factor;
-		float period_scale_factor = 20.0;
-		float opacity_amplitude = 3;
-		opacity_factor = (1 + cos(period_scale_factor * stunTime_)) * 0.5f; 
-        color *= opacity_amplitude * opacity_factor + 1;
-	}
     // Draw body
     glm::mat4 transform(1.0);
     transform = glm::scale(
@@ -494,6 +265,389 @@ Attack Fighter::loadAttack(const ParamReader &params, std::string attackName,
 
 }
 
+// ----------------------------------------------------------------------------
+// FighterState class methods
+// ----------------------------------------------------------------------------
+
+void FighterState::calculateHitResult(const Fighter *attacker, const Attack *attack)
+{
+    // Cancel any current attack
+    if (fighter_->attack_)
+    {
+        delete fighter_->attack_;
+        fighter_->attack_ = 0;
+    }
+    // Take damage
+    fighter_->damage_ += attack->getDamage(fighter_);
+
+    // Calculate direction of hit
+    glm::vec2 knockback = attack->getKnockback(fighter_) * glm::vec2(attacker->dir_, 1.0f)
+        * fighter_->damageFunc();
+
+    // Get knocked back
+    fighter_->xvel_ = knockback.x;
+    fighter_->yvel_ = knockback.y;
+
+    // Generate a tiny explosion here
+    glm::vec2 hitdir = glm::vec2(fighter_->rect_.x, fighter_->rect_.y)
+        - glm::vec2(attack->getHitbox().x, attack->getHitbox().y);
+    hitdir = glm::normalize(hitdir);
+    float exx = -hitdir.x * fighter_->rect_.w / 2 + fighter_->rect_.x;
+    float exy = -hitdir.y * fighter_->rect_.h / 2 + fighter_->rect_.y;
+    ExplosionManager::get()->addExplosion(exx, exy, 0.2);
+
+    // Go to the stunned state
+    float stunDuration = attack->getStun(fighter_) * fighter_->damageFunc();
+    next_ = new AirStunnedState(fighter_, stunDuration);
+}
+
+//// ---------------------- AIR STUNNED STATE -----------------------
+AirStunnedState::AirStunnedState(Fighter *f, float duration) : 
+    FighterState(f), stunDuration_(duration), stunTime_(0)
+{
+}
+
+AirStunnedState::~AirStunnedState()
+{
+}
+
+void AirStunnedState::update(const Controller&, float dt)
+{
+    // Gravity
+    fighter_->yvel_ += fighter_->airAccel_ * dt;
+
+    // Check for completetion
+    if ((stunTime_ += dt) > stunDuration_)
+        next_ = new AirNormalState(fighter_);
+}
+
+void AirStunnedState::render(float dt)
+{
+    printf("AIR STUNNED | StunTime: %f  StunDuration: %f || ",
+            stunTime_, stunDuration_);
+    // flash the player 
+    float period_scale_factor = 20.0;
+    float opacity_amplitude = 3;
+    float opacity_factor = (1 + cos(period_scale_factor * stunTime_)) * 0.5f; 
+    glm::vec3 color = fighter_->color_ * (opacity_amplitude * opacity_factor + 1);
+
+    fighter_->renderHelper(dt, color);
+}
+
+void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+    // If no collision, we don't care
+    if (!collision)
+        return;
+    // If we're completely below the ground, no 'real' collision
+    if (fighter_->rect_.y + fighter_->rect_.h/2 < ground.y + ground.h/2)
+        return;
+    // Overlap the ground by just one unit, only if some part of us is above
+    fighter_->rect_.y = ground.y + ground.h/2 + fighter_->rect_.h/2 - 1;
+    // Transition to the ground state
+    if (next_) delete next_;
+    next_ = new GroundState(fighter_);
+}
+
+void AirStunnedState::hitByAttack(const Fighter *attacker, const Attack *attack)
+{
+    FighterState::calculateHitResult(attacker, attack);
+}
+
+//// ------------------------ GROUND STATE -------------------------
+GroundState::GroundState(Fighter *f) :
+    FighterState(f), jumpTime_(-1), dashTime_(-1), dashChangeTime_(-1),
+    dashing_(false)
+{
+    f->xvel_ = 0;
+    f->yvel_ = 0;
+    if (f->attack_)
+        f->attack_->cancel();
+}
+
+GroundState::~GroundState()
+{ /* Empty */ }
+
+void GroundState::update(const Controller &controller, float dt)
+{
+    // Update running timers
+    if (jumpTime_ >= 0) jumpTime_ += dt;
+    if (dashTime_ >= 0) dashTime_ += dt;
+    if (dashChangeTime_ >= 0) dashChangeTime_ += dt;
+    // If the fighter is currently attacking, do nothing else
+    if (fighter_->attack_) return;
+    // Do nothing during jump startup
+    if (jumpTime_ > 0 && jumpTime_ < fighter_->jumpStartupTime_)
+        return;
+    // Do nothing during dash startup
+    if (dashTime_ > 0 && dashTime_ < fighter_->dashStartupTime_)
+        return;
+    if (dashChangeTime_ > 0 && dashChangeTime_ < fighter_->dashStartupTime_)
+        return;
+
+    // --- Deal with dashing movement ---
+    if (dashing_ )
+    {
+        int newdir = controller.joyx < 0 ? -1 : 1;
+        // Check for change of dash direction
+        if (fighter_->dir_ != newdir && fabs(controller.joyxv) > fighter_->inputVelocityThresh_ && fabs(controller.joyx) > fighter_->inputDashMin_)
+        {
+            fighter_->dir_ = newdir;
+            dashChangeTime_ = 0;
+            fighter_->xvel_ = 0;
+            // Draw a little puff
+            ExplosionManager::get()->addPuff(
+                    fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.4f, 
+                    fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                    0.3f);
+        }
+        // Check for drop out of dash
+        else if (fabs(controller.joyx) < fighter_->inputDashMin_ && fabs(controller.joyxv) < fighter_->inputVelocityThresh_)
+        {
+            dashing_ = false;
+            dashChangeTime_ = 0;
+            fighter_->xvel_ = 0;
+            ExplosionManager::get()->addPuff(
+                    fighter_->rect_.x + fighter_->rect_.w * fighter_->dir_ * 0.4f, 
+                    fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                    0.3f);
+        }
+        // Otherwise just set the velocity
+        else
+        {
+            fighter_->xvel_ = fighter_->dir_ * fighter_->dashSpeed_;
+            // TODO add puffs every x amount of time
+        }
+    }
+    // --- Deal with normal ground movement ---
+    else
+    {
+        // Just move around a bit based on the controller
+        if (fabs(controller.joyx) > fighter_->inputDeadzone_)
+        {
+            fighter_->xvel_ = controller.joyx * fighter_->walkSpeed_;
+            fighter_->dir_ = fighter_->xvel_ < 0 ? -1 : 1;
+        }
+        // Only move when controller is held
+        else
+            fighter_->xvel_ = 0;
+
+        // --- Check for dashing ---
+        if (dashTime_ > fighter_->dashStartupTime_)
+        {
+            dashing_ = true;
+            dashTime_ = -1;
+        }
+        else if (fabs(controller.joyx) > fighter_->inputDashThresh_ && fabs(controller.joyxv) > fighter_->inputVelocityThresh_)
+        {
+            dashTime_ = 0;
+            fighter_->xvel_ = 0;
+            fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
+            // Draw a little puff
+            ExplosionManager::get()->addPuff(
+                    fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.4f, 
+                    fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                    0.3f);
+        }
+    }
+
+    // --- Deal with jumping ---
+    if (jumpTime_ > fighter_->jumpStartupTime_)
+    {
+        // Jump; transition to Air Normal
+        next_ = new AirNormalState(fighter_);
+        // Set the xvelocity of the jump
+        fighter_->xvel_ = fabs(controller.joyx) > fighter_->inputDeadzone_ ?
+            controller.joyx * 0.5 * fighter_->dashSpeed_ :
+            0.0f;
+        // If they are still "holding down" the jump button now, then full jump
+        // otherwise short hop
+        if (controller.jumpbutton || controller.joyy > fighter_->inputJumpThresh_)
+            fighter_->yvel_ = fighter_->jumpSpeed_;
+        else
+            fighter_->yvel_ = fighter_->hopSpeed_;
+    }
+    else if (controller.pressjump ||
+            (controller.joyy > fighter_->inputJumpThresh_
+             && controller.joyyv > fighter_->inputVelocityThresh_))
+    {
+        // Start the jump timer
+        jumpTime_ = 0.0f;
+    }
+
+    // -- Deal with starting an attack
+    if (controller.pressa)
+    {
+        // Check for dash attack
+        if (dashing_)
+        {
+            dashing_ = false;
+            fighter_->xvel_ = fighter_->dir_ * fighter_->dashSpeed_;
+            fighter_->attack_ = new Attack(fighter_->dashAttack_);
+        }
+        // Not dashing- use a tilt
+        else
+        {
+            // No movement during attack
+            fighter_->xvel_ = 0; fighter_->yvel_ = 0;
+            // Get direction of stick
+            glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
+            if (fabs(controller.joyx) > fighter_->inputTiltThresh_ && fabs(tiltDir.x) > fabs(tiltDir.y))
+            {
+                // Do the L/R tilt
+                fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+                fighter_->attack_ = new Attack(fighter_->sideTiltAttack_);
+            }
+            else if (controller.joyy < -fighter_->inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
+            {
+                fighter_->attack_ = new Attack(fighter_->downTiltAttack_);
+            }
+            else if (controller.joyy > fighter_->inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
+            {
+                fighter_->attack_ = new Attack(fighter_->upTiltAttack_);
+            }
+            else
+            {
+                // Neutral tilt attack
+                fighter_->attack_ = new Attack(fighter_->neutralTiltAttack_);
+            }
+        }
+        // Set the owner of the attack
+        fighter_->attack_->setFighter(fighter_);
+    }
+
+}
+
+void GroundState::render(float dt)
+{
+    printf("GROUND | JumpTime: %f  DashTime: %f || ",
+            jumpTime_, dashTime_);
+    fighter_->renderHelper(dt, fighter_->color_);
+}
+
+void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+    if (!collision)
+        next_ = new AirNormalState(fighter_);
+
+    // If there is a collision, we don't need to do anything, because we're
+    // already in the GroundState
+}
+
+void GroundState::hitByAttack(const Fighter *attacker, const Attack *attack)
+{
+    // Pop up a bit so that we're not overlapping the ground
+    fighter_->rect_.x += 2;
+    // Then do the normal stuff
+    FighterState::calculateHitResult(attacker, attack);
+}
+
+//// -------------------- AIR NORMAL STATE -----------------------------
+AirNormalState::AirNormalState(Fighter *f) :
+    FighterState(f), canSecondJump_(true), jumpTime_(-1)
+{
+    if (f->attack_)
+        f->attack_->cancel();
+}
+
+AirNormalState::~AirNormalState()
+{ /* Empty */ }
+
+void AirNormalState::update(const Controller &controller, float dt)
+{
+    // Gravity
+    fighter_->yvel_ += fighter_->airAccel_ * dt;
+
+    // Update running timers
+    if (jumpTime_ >= 0) jumpTime_ += dt;
+    // If the fighter is currently attacking, do nothing else
+    if (fighter_->attack_) return;
+
+    // Let them control the character slightly
+    if (fabs(controller.joyx) > fighter_->inputDeadzone_)
+    {
+        // Don't let the player increase the velocity past a certain speed
+        if (fighter_->xvel_ * controller.joyx <= 0 || fabs(fighter_->xvel_) < fighter_->jumpAirSpeed_)
+            fighter_->xvel_ += controller.joyx * fighter_->airForce_ * dt;
+        // You can always control your orientation
+        fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
+    }
+
+    // --- Check for jump ---
+    if ((controller.pressjump || (controller.joyy > fighter_->inputJumpThresh_ && 
+                    controller.joyyv > fighter_->inputVelocityThresh_)) && canSecondJump_)
+    {
+        canSecondJump_ = false;
+        jumpTime_ = 0;
+    }
+    if (jumpTime_ > fighter_->jumpStartupTime_) 
+    {
+        fighter_->yvel_ = fighter_->secondJumpSpeed_;
+        fighter_->xvel_ = fabs(controller.joyx) > fighter_->inputDeadzone_ ?
+            fighter_->dashSpeed_ * std::max(-1.0f, std::min(1.0f, (controller.joyx - 0.2f) / 0.6f)) :
+            0.0f;
+        jumpTime_ = -1;
+    }
+    // --- Check for jump ---
+    if (controller.pressa)
+    {
+        // Get direction of stick
+        glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
+        if (fabs(controller.joyx) > fighter_->inputTiltThresh_ && fabs(tiltDir.x) > fabs(tiltDir.y))
+        {
+            // Do the L/R tilt
+            fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+            fighter_->attack_ = new Attack(fighter_->airSideAttack_);
+        }
+        else if (controller.joyy < -fighter_->inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
+        {
+            fighter_->attack_ = new Attack(fighter_->airDownAttack_);
+        }
+        else if (controller.joyy > fighter_->inputTiltThresh_ && fabs(tiltDir.x) < fabs(tiltDir.y))
+        {
+            fighter_->attack_ = new Attack(fighter_->airUpAttack_);
+        }
+        else
+        {
+            // Neutral tilt attack
+            fighter_->attack_ = new Attack(fighter_->airNeutralAttack_);
+        }
+        // Set the owner of the attack
+        fighter_->attack_->setFighter(fighter_);
+    }
+}
+
+void AirNormalState::render(float dt)
+{
+    printf("AIR NORMAL | JumpTime: %f  Can2ndJump: %d || ",
+            jumpTime_, canSecondJump_);
+    fighter_->renderHelper(dt, fighter_->color_);
+}
+
+void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+    // If no collision, we don't care
+    if (!collision)
+        return;
+    // If we're completely below the ground, no 'real' collision
+    if (fighter_->rect_.y + fighter_->rect_.h/2 < ground.y + ground.h/2)
+        return;
+    // Overlap the ground by just one unit, only if some part of us is above
+    fighter_->rect_.y = ground.y + ground.h/2 + fighter_->rect_.h/2 - 1;
+    // Transition to the ground state
+    if (next_) delete next_;
+    next_ = new GroundState(fighter_);
+}
+
+void AirNormalState::hitByAttack(const Fighter *attacker, const Attack *attack)
+{
+    FighterState::calculateHitResult(attacker, attack);
+}
+
+
+// ----------------------------------------------------------------------------
+// Rectangle class methods
+// ----------------------------------------------------------------------------
 
 Rectangle::Rectangle() :
     x(0), y(0), w(0), h(0)
@@ -509,6 +663,9 @@ bool Rectangle::overlaps(const Rectangle &rhs) const
         (rhs.y + rhs.h/2) > (y - h/2) && (rhs.y - rhs.h/2) < (y + h/2);
 }
 
+// ----------------------------------------------------------------------------
+// Attack class methods
+// ----------------------------------------------------------------------------
 
 void Attack::playSound() 
 {

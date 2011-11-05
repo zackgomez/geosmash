@@ -12,10 +12,8 @@ struct Controller
     float joyx, joyy;
     // The velocities of the main analog stick over some time period
     float joyxv, joyyv;
-
     // nonzero if the button is pressed
     int buttona, buttonb, buttonc, jumpbutton;
-
     // nonzero if the button was pressed this frame
     int pressa, pressb, pressc, pressjump;
 };
@@ -43,6 +41,8 @@ public:
         damage_(damage), stun_(stun), knockback_(knockback),
         hasHit_(false), t_(0.0f), owner_(NULL), sound_(NULL)
     {}
+
+    virtual ~Attack() {}
 
     virtual Rectangle getHitbox() const;
     virtual float getDamage(const Fighter *fighter) const { return damage_; }
@@ -78,6 +78,97 @@ private:
     const Fighter *owner_;
     sf::Music *sound_;
 };
+
+class FighterState
+{
+public:
+    FighterState(Fighter *f) :
+        fighter_(f), next_(NULL)
+    {}
+    virtual ~FighterState() {}
+
+    // Returns true if this state should transition to a new one
+    bool hasTransition() const { return next_ != NULL; }
+    // Returns the next state to transition to, only valid if needsTransition()
+    // returns true.
+    FighterState* nextState() const { return next_; }
+
+    // State behavior functions
+    // This function is called once every call to Fighter::update
+    virtual void update(const Controller&, float dt) = 0;
+    // TODO description
+    virtual void render(float dt) = 0;
+    // This function is called once every call to Fighter::collisionWithGround
+    virtual void collisionWithGround(const Rectangle &ground, bool collision) = 0;
+    // This function is called when Fighter::hitByAttack is called, before any
+    // other work is done
+    virtual void hitByAttack(const Fighter *attacker, const Attack *attack) = 0;
+
+protected:
+    Fighter *fighter_;
+    FighterState *next_;
+
+    void calculateHitResult(const Fighter *fighter, const Attack *attack);
+};
+
+class GroundState : public FighterState
+{
+public:
+    GroundState(Fighter *f);
+    virtual ~GroundState();
+
+    virtual void update(const Controller&, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+
+private:
+    // Jump startup timer.  Value >= 0 implies that the fighter is starting a jump
+    float jumpTime_;
+    // Dash startup timer.  Value >= 0 implies that the fighter is start to dash
+    float dashTime_;
+    // Dash change direction timer
+    float dashChangeTime_;
+    bool dashing_;
+};
+
+class AirNormalState : public FighterState
+{
+public:
+    AirNormalState(Fighter *f);
+    virtual ~AirNormalState();
+
+    virtual void update(const Controller&, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+
+private:
+    // True if the player has a second jump available
+    bool canSecondJump_;
+    // Jump startup timer.  Value > 0 implies that the fighter is starting a jump
+    float jumpTime_;
+};
+
+class AirStunnedState : public FighterState
+{
+public:
+    AirStunnedState(Fighter *f, float duration);
+    virtual ~AirStunnedState();
+
+    virtual void update(const Controller&, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+
+private:
+    float stunDuration_;
+    float stunTime_;
+};
+
+
+
+
 
 class Fighter
 {
@@ -115,7 +206,7 @@ private:
     Rectangle rect_;
     float xvel_, yvel_;
     float dir_; // 1 or -1 look in xdir
-    int state_;
+    FighterState *state_;
     float damage_;
     int lives_;
 
@@ -125,17 +216,6 @@ private:
 
     // Current attack members
     Attack* attack_;
-
-    // GROUND_STATE members
-    bool dashing_;
-    float dashTime_; // time remaining until dash wait is done
-
-    // AIR_NORMAL_STATE members
-    float jumpTime_; // amount of time since jump inputted
-    bool canSecondJump_;
-
-    // AIR_STUNNED_STATE members
-    float stunTime_, stunDuration_;
 
     // Available reference attacks
     Attack dashAttack_;
@@ -152,17 +232,18 @@ private:
     // Fighter stats
     const float walkSpeed_; // maximum walking speed
     const float dashSpeed_; // Dashing Speed
-    const float airForce_; // Force applied to allow player air control
-    const float airAccel_; // "Gravity"
     const float jumpStartupTime_; // Delay before jump begins, also short hop/full jump control time
+    const float dashStartupTime_; // Time from starting dash to first movement
     const float jumpSpeed_; // Speed of a full jump
     const float hopSpeed_; // Speed of a short hop
+
+    const float airForce_; // Force applied to allow player air control
+    const float airAccel_; // "Gravity"
     const float jumpAirSpeed_; // The maximum x speed for jumping (only for player control)
     const float secondJumpSpeed_; // Speed of the second jump
-    const float dashStartupTime_; // Time from starting dash to first movement
 
     // Input response parameters
-    const float inputVelocityThreshold_;
+    const float inputVelocityThresh_;
     const float inputJumpThresh_;
     const float inputDashThresh_;
     const float inputDashMin_;
@@ -174,4 +255,11 @@ private:
     // Loads an attack from the params using the attackName.param syntax
     Attack loadAttack(const ParamReader &params, std::string attackName,
             std::string soundFile = "");
+    void renderHelper(float dt, const glm::vec3& color);
+
+    friend class FighterState;
+    friend class GroundState;
+    friend class DashState;
+    friend class AirNormalState;
+    friend class AirStunnedState;
 };
