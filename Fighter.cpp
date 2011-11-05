@@ -227,7 +227,7 @@ void Fighter::renderHelper(float dt, const glm::vec3 &color)
 
 float Fighter::damageFunc() const
 {
-    return 2 * damage_ / 33;
+    return (damage_) / 33 + 1;
 }
 
 Attack Fighter::loadAttack(std::string attackName, std::string soundFile)
@@ -471,7 +471,7 @@ void GroundState::update(const Controller &controller, float dt)
     }
 
     // -- Deal with starting an attack
-    if (controller.pressa)
+    if (controller.pressa && jumpTime_ < 0)
     {
         // Check for dash attack
         if (dashing_)
