@@ -115,7 +115,7 @@ protected:
 class Fighter
 {
 public:
-    Fighter(const ParamReader &params, float respawnx, float respawny, const glm::vec3 &color);
+    Fighter(float respawnx, float respawny, const glm::vec3 &color);
     ~Fighter();
 
     void update(const Controller&, float dt);
@@ -195,7 +195,7 @@ private:
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
-    Attack loadAttack(const ParamReader &params, std::string attackName,
+    Attack loadAttack(std::string attackName,
             std::string soundFile = "");
     void renderHelper(float dt, const glm::vec3& color);
 

@@ -7,25 +7,13 @@
 class ParamReader
 {
 public:
-    ParamReader() {}
-    ParamReader(const char *filename)
+    static ParamReader *instance()
     {
-        readFile(filename);
+        static ParamReader pr;
+        return &pr;
     }
 
-    float get(const std::string &key) const
-    {
-        std::map<std::string, float>::const_iterator it = params_.find(key);
-        if (it == params_.end())
-            assert(false && "Key not found in params");
-        else
-            return it->second;
-    }
-
-private:
-    std::map<std::string, float> params_;
-
-    void readFile(const char *filename)
+    void loadFile(const char *filename)
     {
         std::ifstream file(filename);
         if (!file)
@@ -48,6 +36,15 @@ private:
         }
     }
 
+    float get(const std::string &key) const
+    {
+        std::map<std::string, float>::const_iterator it = params_.find(key);
+        if (it == params_.end())
+            assert(false && "Key not found in params");
+        else
+            return it->second;
+    }
+
     void printParams() const
     {
         std::cout << "Params:\n";
@@ -57,4 +54,9 @@ private:
             std::cout << it->first << ' ' << it->second << '\n';
         }
     }
+
+private:
+    ParamReader() {}
+
+    std::map<std::string, float> params_;
 };

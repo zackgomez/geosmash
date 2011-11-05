@@ -15,45 +15,46 @@ const static int DEAD_STATE = 3;
 
 static sf::Music *koSound = NULL;
 
-Fighter::Fighter(const ParamReader &params, float respawnx, float respawny, const glm::vec3& color) :
-    rect_(Rectangle(0, 0, params.get("fighter.w"), params.get("fighter.h"))),
+Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color) :
+    rect_(Rectangle(0, 0, ParamReader::instance()->get("fighter.w"),
+                ParamReader::instance()->get("fighter.h"))),
     xvel_(0), yvel_(0),
     dir_(-1),
     state_(AIR_NORMAL_STATE),
-    damage_(0), lives_(params.get("fighter.lives")),
+    damage_(0), lives_(ParamReader::instance()->get("fighter.lives")),
     respawnx_(respawnx), respawny_(respawny),
     color_(color),
     attack_(NULL),
-    walkSpeed_(params.get("walkSpeed")),
-    dashSpeed_(params.get("dashSpeed")),
-    airForce_(params.get("airForce")),
-    airAccel_(params.get("airAccel")),
-    jumpStartupTime_(params.get("jumpStartupTime")),
-    jumpSpeed_(params.get("jumpSpeed")),
-    hopSpeed_(params.get("hopSpeed")),
-    jumpAirSpeed_(params.get("jumpAirSpeed")),
-    secondJumpSpeed_(params.get("secondJumpSpeed")),
-    dashStartupTime_(params.get("dashStartupTime")),
-    inputVelocityThresh_(params.get("input.velThresh")),
-    inputJumpThresh_(params.get("input.jumpThresh")),
-    inputDashThresh_(params.get("input.dashThresh")),
-    inputDashMin_(params.get("input.dashMin")),
-    inputDeadzone_(params.get("input.deadzone")),
-    inputTiltThresh_(params.get("input.tiltThresh"))
+    walkSpeed_(ParamReader::instance()->get("walkSpeed")),
+    dashSpeed_(ParamReader::instance()->get("dashSpeed")),
+    airForce_(ParamReader::instance()->get("airForce")),
+    airAccel_(ParamReader::instance()->get("airAccel")),
+    jumpStartupTime_(ParamReader::instance()->get("jumpStartupTime")),
+    jumpSpeed_(ParamReader::instance()->get("jumpSpeed")),
+    hopSpeed_(ParamReader::instance()->get("hopSpeed")),
+    jumpAirSpeed_(ParamReader::instance()->get("jumpAirSpeed")),
+    secondJumpSpeed_(ParamReader::instance()->get("secondJumpSpeed")),
+    dashStartupTime_(ParamReader::instance()->get("dashStartupTime")),
+    inputVelocityThresh_(ParamReader::instance()->get("input.velThresh")),
+    inputJumpThresh_(ParamReader::instance()->get("input.jumpThresh")),
+    inputDashThresh_(ParamReader::instance()->get("input.dashThresh")),
+    inputDashMin_(ParamReader::instance()->get("input.dashMin")),
+    inputDeadzone_(ParamReader::instance()->get("input.deadzone")),
+    inputTiltThresh_(ParamReader::instance()->get("input.tiltThresh"))
 {
     std::cout << "RESPAWN: " << respawnx_ << ' ' << respawny_ << '\n';
     // Load ground attacks
-    dashAttack_ = loadAttack(params, "dashAttack", "sfx/neutral001.wav");
-    neutralTiltAttack_ = loadAttack(params, "neutralTiltAttack", "sfx/neutral001.wav");
-    sideTiltAttack_ = loadAttack(params, "sideTiltAttack", "sfx/forwardtilt001.wav");
-    downTiltAttack_ = loadAttack(params, "downTiltAttack", "sfx/downtilt001.wav");
-    upTiltAttack_ = loadAttack(params, "upTiltAttack", "sfx/uptilt001.wav");
+    dashAttack_ = loadAttack("dashAttack", "sfx/neutral001.wav");
+    neutralTiltAttack_ = loadAttack("neutralTiltAttack", "sfx/neutral001.wav");
+    sideTiltAttack_ = loadAttack("sideTiltAttack", "sfx/forwardtilt001.wav");
+    downTiltAttack_ = loadAttack("downTiltAttack", "sfx/downtilt001.wav");
+    upTiltAttack_ = loadAttack("upTiltAttack", "sfx/uptilt001.wav");
 
     // Load air attack special as it uses a different class
-    airNeutralAttack_ = loadAttack(params, "airNeutralAttack", "sfx/uptilt001.wav");
-    airSideAttack_ = loadAttack(params, "airSideAttack", "sfx/uptilt001.wav");
-    airDownAttack_ = loadAttack(params, "airDownAttack", "sfx/uptilt001.wav");
-    airUpAttack_ = loadAttack(params, "airUpAttack", "sfx/uptilt001.wav");
+    airNeutralAttack_ = loadAttack("airNeutralAttack", "sfx/uptilt001.wav");
+    airSideAttack_ = loadAttack("airSideAttack", "sfx/uptilt001.wav");
+    airDownAttack_ = loadAttack("airDownAttack", "sfx/uptilt001.wav");
+    airUpAttack_ = loadAttack("airUpAttack", "sfx/uptilt001.wav");
 
     state_ = 0;
 
@@ -229,25 +230,24 @@ float Fighter::damageFunc() const
     return 2 * damage_ / 33;
 }
 
-Attack Fighter::loadAttack(const ParamReader &params, std::string attackName,
-        std::string soundFile)
+Attack Fighter::loadAttack(std::string attackName, std::string soundFile)
 {
     attackName += '.';
 
     Attack ret(
-            params.get(attackName + "startup"),
-            params.get(attackName + "duration"),
-            params.get(attackName + "cooldown"),
-            params.get(attackName + "damage"),
-            params.get(attackName + "stun"),
-            params.get(attackName + "knockbackpow") * glm::normalize(glm::vec2(
-                    params.get(attackName + "knockbackx"),
-                    params.get(attackName + "knockbacky"))),
+            ParamReader::instance()->get(attackName + "startup"),
+            ParamReader::instance()->get(attackName + "duration"),
+            ParamReader::instance()->get(attackName + "cooldown"),
+            ParamReader::instance()->get(attackName + "damage"),
+            ParamReader::instance()->get(attackName + "stun"),
+            ParamReader::instance()->get(attackName + "knockbackpow") * glm::normalize(glm::vec2(
+                    ParamReader::instance()->get(attackName + "knockbackx"),
+                    ParamReader::instance()->get(attackName + "knockbacky"))),
             Rectangle(
-                params.get(attackName + "hitboxx"),
-                params.get(attackName + "hitboxy"),
-                params.get(attackName + "hitboxw"),
-                params.get(attackName + "hitboxh")));
+                ParamReader::instance()->get(attackName + "hitboxx"),
+                ParamReader::instance()->get(attackName + "hitboxy"),
+                ParamReader::instance()->get(attackName + "hitboxw"),
+                ParamReader::instance()->get(attackName + "hitboxh")));
 
     if (!soundFile.empty())
     {

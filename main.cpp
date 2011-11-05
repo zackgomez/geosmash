@@ -56,6 +56,8 @@ void controllerEvent(Controller &controller, const SDL_Event &event);
 
 int main(int argc, char **argv)
 {
+    bool muteMusic = false;
+    numPlayers = 1;
     if (argc > 2)
     {
         std::cout << "usage: " << argv[0] << " [nplayers]\n";
@@ -63,7 +65,13 @@ int main(int argc, char **argv)
     }
     if (argc == 2)
     {
-        numPlayers = std::min(4, std::max(1, atoi(argv[1])));
+    }
+    for (int i = 1; i < argc; i++)
+    {
+        if (i == argc - 1)
+            numPlayers = std::min(4, std::max(1, atoi(argv[i])));
+        if (strcmp(argv[i], "--no-music") == 0)
+            muteMusic = true;
     }
 
     if (!initLibs())
@@ -81,24 +89,26 @@ int main(int argc, char **argv)
     }
 
     // Init game state
-    ParamReader params("params.dat");
-    WORLD_W = params.get("worldWidth");
-    WORLD_H = params.get("worldHeight");
+    ParamReader* params = ParamReader::instance();
+    params->loadFile("params.dat");
+    WORLD_W = params->get("worldWidth");
+    WORLD_H = params->get("worldHeight");
     for (unsigned i = 0; i < numPlayers; i++)
     {
-        Fighter *fighter = new Fighter(params, -225.0f+i*150, -100.f, playerColors[i]);
+        Fighter *fighter = new Fighter(-225.0f+i*150, -100.f, playerColors[i]);
         fighter->respawn(false);
         fighters.push_back(fighter);
     }
     ground = Rectangle(
-            params.get("level.x"),
-            params.get("level.y"),
-            params.get("level.w"),
-            params.get("level.h"));
+            params->get("level.x"),
+            params->get("level.y"),
+            params->get("level.w"),
+            params->get("level.h"));
 
 
 
-    start_song("smash002.aif");
+    if (!muteMusic)
+        start_song("smash002.aif");
 
 
     mainloop();
@@ -173,15 +183,14 @@ void update()
 
         // Cache some vals
         const Attack *attacki = fighter->getAttack();
-        bool fiattack = fighter->hasAttack();
         // Check for hitbox collisions
         for (unsigned j = i+1; j < numPlayers; j++)
         {
             const Attack *attackj = fighters[j]->getAttack();
-            bool fjattack = fighters[j]->hasAttack();
 
             // Hitboxes hit each other?
-            if (fiattack && fjattack && attacki->getHitbox().overlaps(attackj->getHitbox()))
+            if (fighter->hasAttack() && fighters[j]->hasAttack()
+                    && attacki->getHitbox().overlaps(attackj->getHitbox()))
             {
                 // Then go straight to cooldown
                 fighter->attackCollision();
@@ -195,28 +204,25 @@ void update()
                 ExplosionManager::get()->addExplosion(x, y, 0.1f);
 
                 // Cache values
-                fiattack = fighter->hasAttack();
                 attacki = fighter->getAttack();
                 continue;
             }
-            if (fiattack && fighters[j]->getRectangle().overlaps(attacki->getHitbox()))
+            if (fighter->hasAttack() && fighters[j]->getRectangle().overlaps(attacki->getHitbox()))
             {
                 // fighter has hit fighters[j]
                 fighters[j]->hitByAttack(fighter, attacki);
                 fighter->hitWithAttack();
 
                 // Cache values
-                fiattack = fighter->hasAttack();
                 attacki = fighter->getAttack();
             }
-            if (fjattack && fighter->getRectangle().overlaps(attackj->getHitbox()))
+            if (fighters[j]->hasAttack() && fighter->getRectangle().overlaps(attackj->getHitbox()))
             {
                 // fighter[j] has hit fighter
                 fighter->hitByAttack(fighters[j], attackj);
                 fighters[j]->hitWithAttack();
 
                 // Cache values
-                fiattack = fighter->hasAttack();
                 attacki = fighter->getAttack();
             }
         }
