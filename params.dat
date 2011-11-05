@@ -27,7 +27,7 @@ jumpSpeed        600.0
 hopSpeed         200.0
 jumpAirSpeed     200.0
 secondJumpSpeed  500.0
-dashStartupTime  0.12
+dashStartupTime  0.16
 
 
 dashAttack.startup      0.1
@@ -86,7 +86,7 @@ downTiltAttack.hitboxh      15
 upTiltAttack.startup      0.1
 upTiltAttack.duration     0.22
 upTiltAttack.cooldown     0.25
-upTiltAttack.damage       6
+upTiltAttack.damage       9
 upTiltAttack.stun         0.07
 upTiltAttack.knockbackx   1
 upTiltAttack.knockbacky   9
@@ -131,7 +131,7 @@ airDownAttack.damage       11
 airDownAttack.stun         0.10
 airDownAttack.knockbackx   0
 airDownAttack.knockbacky   -1
-airDownAttack.knockbackpow 80.0
+airDownAttack.knockbackpow 150.0
 airDownAttack.hitboxx      0
 airDownAttack.hitboxy      -40
 airDownAttack.hitboxw      40
@@ -144,7 +144,7 @@ airUpAttack.damage       9
 airUpAttack.stun         0.10
 airUpAttack.knockbackx   0
 airUpAttack.knockbacky   1
-airUpAttack.knockbackpow 80.0
+airUpAttack.knockbackpow 100.0
 airUpAttack.hitboxx      0
 airUpAttack.hitboxy      40
 airUpAttack.hitboxw      40
