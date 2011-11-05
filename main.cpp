@@ -58,14 +58,6 @@ int main(int argc, char **argv)
 {
     bool muteMusic = false;
     numPlayers = 1;
-    if (argc > 2)
-    {
-        std::cout << "usage: " << argv[0] << " [nplayers]\n";
-        exit(1);
-    }
-    if (argc == 2)
-    {
-    }
     for (int i = 1; i < argc; i++)
     {
         if (i == argc - 1)
@@ -177,6 +169,7 @@ void update()
     {
         Fighter *fighter = fighters[i];
         if (fighter->isAlive()) alivePlayers++;
+        else continue;
 
         // Update positions, etc
         fighter->update(controllers[i], dt);
@@ -262,7 +255,8 @@ void render()
 
     // Draw the fighters
     for (unsigned i = 0; i < numPlayers; i++)
-        fighters[i]->render(dt);
+        if (fighters[i]->isAlive())
+            fighters[i]->render(dt);
 
     // Draw any explosions
     ExplosionManager::get()->render(dt);

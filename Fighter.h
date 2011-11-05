@@ -273,7 +273,7 @@ public:
     virtual ~DeadState() {};
 
     virtual void update(const Controller&, float dt) { }
-    virtual void render(float dt) { }
+    virtual void render(float dt) { };
     virtual void collisionWithGround(const Rectangle &ground, bool collision) { assert(false); }
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack) { assert(false); }
 };
