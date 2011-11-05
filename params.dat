@@ -37,7 +37,7 @@ dashAttack.damage       5
 dashAttack.stun         0.07
 dashAttack.knockbackx   1
 dashAttack.knockbacky   4
-dashAttack.knockbackpow 40.0
+dashAttack.knockbackpow 80.0
 dashAttack.hitboxx      45
 dashAttack.hitboxy      -20
 dashAttack.hitboxw      50
@@ -51,7 +51,7 @@ neutralTiltAttack.damage       3
 neutralTiltAttack.stun         0.07
 neutralTiltAttack.knockbackx   1
 neutralTiltAttack.knockbacky   1
-neutralTiltAttack.knockbackpow 30.0
+neutralTiltAttack.knockbackpow 60.0
 neutralTiltAttack.hitboxx      40
 neutralTiltAttack.hitboxy      0
 neutralTiltAttack.hitboxw      30
@@ -64,7 +64,7 @@ sideTiltAttack.damage       6
 sideTiltAttack.stun         0.07
 sideTiltAttack.knockbackx   3
 sideTiltAttack.knockbacky   2
-sideTiltAttack.knockbackpow 60.0
+sideTiltAttack.knockbackpow 120.0
 sideTiltAttack.hitboxx      55
 sideTiltAttack.hitboxy      5
 sideTiltAttack.hitboxw      60
@@ -77,7 +77,7 @@ downTiltAttack.damage       8
 downTiltAttack.stun         0.10
 downTiltAttack.knockbackx   1
 downTiltAttack.knockbacky   5
-downTiltAttack.knockbackpow 70.0
+downTiltAttack.knockbackpow 140.0
 downTiltAttack.hitboxx      60
 downTiltAttack.hitboxy      -30
 downTiltAttack.hitboxw      70
@@ -90,7 +90,7 @@ upTiltAttack.damage       9
 upTiltAttack.stun         0.07
 upTiltAttack.knockbackx   1
 upTiltAttack.knockbacky   9
-upTiltAttack.knockbackpow 70.0
+upTiltAttack.knockbackpow 140.0
 upTiltAttack.hitboxx      25
 upTiltAttack.hitboxy      30
 upTiltAttack.hitboxw      40
@@ -105,7 +105,7 @@ airNeutralAttack.damage       8
 airNeutralAttack.stun         0.10
 airNeutralAttack.knockbackx   4
 airNeutralAttack.knockbacky   1
-airNeutralAttack.knockbackpow 50.0
+airNeutralAttack.knockbackpow 100.0
 airNeutralAttack.hitboxx      45
 airNeutralAttack.hitboxy      -10
 airNeutralAttack.hitboxw      50
@@ -118,7 +118,7 @@ airSideAttack.damage       8
 airSideAttack.stun         0.10
 airSideAttack.knockbackx   5
 airSideAttack.knockbacky   2
-airSideAttack.knockbackpow 100.0
+airSideAttack.knockbackpow 200.0
 airSideAttack.hitboxx      40
 airSideAttack.hitboxy      -5
 airSideAttack.hitboxw      35
@@ -131,7 +131,7 @@ airDownAttack.damage       11
 airDownAttack.stun         0.10
 airDownAttack.knockbackx   0
 airDownAttack.knockbacky   -1
-airDownAttack.knockbackpow 150.0
+airDownAttack.knockbackpow 300.0
 airDownAttack.hitboxx      0
 airDownAttack.hitboxy      -40
 airDownAttack.hitboxw      40
@@ -144,7 +144,7 @@ airUpAttack.damage       9
 airUpAttack.stun         0.10
 airUpAttack.knockbackx   0
 airUpAttack.knockbacky   1
-airUpAttack.knockbackpow 100.0
+airUpAttack.knockbackpow 200.0
 airUpAttack.hitboxx      0
 airUpAttack.hitboxy      40
 airUpAttack.hitboxw      40

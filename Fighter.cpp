@@ -572,7 +572,6 @@ void AirNormalState::update(const Controller &controller, float dt)
     if ((controller.pressjump || (controller.joyy > fighter_->inputJumpThresh_ && 
                     controller.joyyv > fighter_->inputVelocityThresh_)) && canSecondJump_)
     {
-        canSecondJump_ = false;
         jumpTime_ = 0;
     }
     if (jumpTime_ > fighter_->jumpStartupTime_) 
@@ -582,8 +581,9 @@ void AirNormalState::update(const Controller &controller, float dt)
             fighter_->dashSpeed_ * std::max(-1.0f, std::min(1.0f, (controller.joyx - 0.2f) / 0.6f)) :
             0.0f;
         jumpTime_ = -1;
+        canSecondJump_ = false;
     }
-    // --- Check for jump ---
+    // --- Check for attack ---
     if (controller.pressa)
     {
         // Get direction of stick
@@ -609,6 +609,7 @@ void AirNormalState::update(const Controller &controller, float dt)
         }
         // Set the owner of the attack
         fighter_->attack_->setFighter(fighter_);
+        jumpTime_ = -1;
     }
 }
 
