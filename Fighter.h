@@ -5,6 +5,7 @@
 #include <SFML/Audio.hpp>
 
 class ParamReader;
+class Fighter;
 
 struct Controller
 {
@@ -29,7 +30,6 @@ public:
     float x, y, w, h;
 };
 
-class Fighter;
 class Attack
 {
 public:
@@ -110,64 +110,6 @@ protected:
 
     void calculateHitResult(const Fighter *fighter, const Attack *attack);
 };
-
-class GroundState : public FighterState
-{
-public:
-    GroundState(Fighter *f);
-    virtual ~GroundState();
-
-    virtual void update(const Controller&, float dt);
-    virtual void render(float dt);
-    virtual void collisionWithGround(const Rectangle &ground, bool collision);
-    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
-
-private:
-    // Jump startup timer.  Value >= 0 implies that the fighter is starting a jump
-    float jumpTime_;
-    // Dash startup timer.  Value >= 0 implies that the fighter is start to dash
-    float dashTime_;
-    // Dash change direction timer
-    float dashChangeTime_;
-    bool dashing_;
-};
-
-class AirNormalState : public FighterState
-{
-public:
-    AirNormalState(Fighter *f);
-    virtual ~AirNormalState();
-
-    virtual void update(const Controller&, float dt);
-    virtual void render(float dt);
-    virtual void collisionWithGround(const Rectangle &ground, bool collision);
-    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
-
-private:
-    // True if the player has a second jump available
-    bool canSecondJump_;
-    // Jump startup timer.  Value > 0 implies that the fighter is starting a jump
-    float jumpTime_;
-};
-
-class AirStunnedState : public FighterState
-{
-public:
-    AirStunnedState(Fighter *f, float duration);
-    virtual ~AirStunnedState();
-
-    virtual void update(const Controller&, float dt);
-    virtual void render(float dt);
-    virtual void collisionWithGround(const Rectangle &ground, bool collision);
-    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
-
-private:
-    float stunDuration_;
-    float stunTime_;
-};
-
-
-
 
 
 class Fighter
@@ -262,4 +204,76 @@ private:
     friend class DashState;
     friend class AirNormalState;
     friend class AirStunnedState;
+    friend class DeadState;
+};
+
+class GroundState : public FighterState
+{
+public:
+    GroundState(Fighter *f);
+    virtual ~GroundState();
+
+    virtual void update(const Controller&, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+
+private:
+    // Jump startup timer.  Value >= 0 implies that the fighter is starting a jump
+    float jumpTime_;
+    // Dash startup timer.  Value >= 0 implies that the fighter is start to dash
+    float dashTime_;
+    // Dash change direction timer
+    float dashChangeTime_;
+    bool dashing_;
+};
+
+class AirNormalState : public FighterState
+{
+public:
+    AirNormalState(Fighter *f);
+    virtual ~AirNormalState();
+
+    virtual void update(const Controller&, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+
+private:
+    // True if the player has a second jump available
+    bool canSecondJump_;
+    // Jump startup timer.  Value > 0 implies that the fighter is starting a jump
+    float jumpTime_;
+};
+
+class AirStunnedState : public FighterState
+{
+public:
+    AirStunnedState(Fighter *f, float duration);
+    virtual ~AirStunnedState();
+
+    virtual void update(const Controller&, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+
+private:
+    float stunDuration_;
+    float stunTime_;
+};
+
+class DeadState : public FighterState
+{
+public:
+    DeadState(Fighter *f) : FighterState(f)
+    {
+        f->rect_.x = HUGE_VAL;
+        f->rect_.y = HUGE_VAL;
+    };
+    virtual ~DeadState() {};
+
+    virtual void update(const Controller&, float dt) { }
+    virtual void render(float dt) { }
+    virtual void collisionWithGround(const Rectangle &ground, bool collision) { assert(false); }
+    virtual void hitByAttack(const Fighter *attacker, const Attack *attack) { assert(false); }
 };

@@ -174,22 +174,17 @@ void Fighter::respawn(bool killed)
         --lives_;
         koSound->Play();
     }
-    /*
     // Check for death
     if (lives_ <= 0)
     {
-        // Move them way off the map
-        rect_.x = HUGE_VAL;
-        rect_.y = HUGE_VAL;
-        state_ = DEAD_STATE;
+        delete state_;
+        state_ = new DeadState(this);
     }
-    */
 }
 
 bool Fighter::isAlive() const
 {
-    return true;
-    //return state_ != DEAD_STATE;
+    return lives_ > 0;
 }
 
 void Fighter::render(float dt)
