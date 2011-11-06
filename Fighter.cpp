@@ -377,7 +377,7 @@ void GroundState::update(const Controller &controller, float dt)
     // Do nothing during dash startup
     if (dashTime_ > 0 && dashTime_ < fighter_->dashStartupTime_)
         return;
-    if (dashChangeTime_ > 0 && dashChangeTime_ < fighter_->dashStartupTime_)
+    if (dashChangeTime_ > 0 && dashChangeTime_ < ParamReader::instance()->get("dashChangeTime"))
         return;
 
     // --- Deal with dashing movement ---
@@ -461,6 +461,11 @@ void GroundState::update(const Controller &controller, float dt)
             fighter_->yvel_ = fighter_->jumpSpeed_;
         else
             fighter_->yvel_ = fighter_->hopSpeed_;
+        // Draw a little puff
+        ExplosionManager::get()->addPuff(
+                fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.1f, 
+                fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                0.3f);
     }
     else if (controller.pressjump ||
             (controller.joyy > fighter_->inputJumpThresh_
@@ -582,6 +587,11 @@ void AirNormalState::update(const Controller &controller, float dt)
             0.0f;
         jumpTime_ = -1;
         canSecondJump_ = false;
+        // Draw a puff
+        ExplosionManager::get()->addPuff(
+                fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.1f, 
+                fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                0.3f);
     }
     // --- Check for attack ---
     if (controller.pressa)
@@ -633,6 +643,15 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
     // Transition to the ground state
     if (next_) delete next_;
     next_ = new GroundState(fighter_);
+    // Draw some puffs for landing
+    ExplosionManager::get()->addPuff(
+            fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.4f, 
+            fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+            0.3f);
+    ExplosionManager::get()->addPuff(
+            fighter_->rect_.x + fighter_->rect_.w * fighter_->dir_ * 0.4f, 
+            fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+            0.3f);
 }
 
 void AirNormalState::hitByAttack(const Fighter *attacker, const Attack *attack)

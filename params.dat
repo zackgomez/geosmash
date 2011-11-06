@@ -28,6 +28,7 @@ hopSpeed         200.0
 jumpAirSpeed     200.0
 secondJumpSpeed  500.0
 dashStartupTime  0.16
+dashChangeTime   0.25
 
 
 dashAttack.startup      0.1
