@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <SFML/Audio.hpp>
+#include <map>
 
 class Fighter;
 
@@ -49,6 +50,7 @@ public:
     virtual glm::vec2 getKnockback(const Fighter *fighter) const { return knockback_; }
 
     void setFighter(const Fighter *fighter);
+    const Fighter *getOwner() const;
 
     // If hitbox can hit another player
     virtual bool hasHitbox() const;
@@ -111,7 +113,7 @@ protected:
 class Fighter
 {
 public:
-    Fighter(float respawnx, float respawny, const glm::vec3 &color);
+    Fighter(float respawnx, float respawny, const glm::vec3 &color, int id);
     ~Fighter();
 
     void update(const Controller&, float dt);
@@ -120,6 +122,11 @@ public:
     int getLives() const;
     float getDamage() const;
     float getDirection() const; // returns -1 or 1
+    // Returns the id of the player that last hit this fighter, or -1 if there
+    // is none
+    int getLastHitBy() const;
+    // True if this player has more than 0 lives
+    bool isAlive() const;
 
     // collision is true if there is a collision with ground this frame, false otherwise
     void collisionWithGround(const Rectangle &ground, bool collision);
@@ -136,8 +143,6 @@ public:
     // Respawns the fighter at its respawn location.  If killed is true, a
     // life be removed
     void respawn(bool killed);
-    // True if this player has more than 0 lives
-    bool isAlive() const;
 
 private:
     // Game state members
@@ -147,13 +152,19 @@ private:
     FighterState *state_;
     float damage_;
     int lives_;
+    // the lastHitBy_ variable should be reset
 
     // Fighter ID members
     float respawnx_, respawny_;
     glm::vec3 color_;
+    int id_;
 
     // Current attack members
     Attack* attack_;
+
+    // Game statistics members
+    int lastHitBy_; // The id of the fighter that last hit us, or -1
+    float lastHitExpireTime_; // When this timer is greater than the expire time, reset lastHitBy
 
     // Available reference attacks
     Attack dashAttack_;

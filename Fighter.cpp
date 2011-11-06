@@ -9,15 +9,16 @@
 #include "ParamReader.h"
 #include "audio.h"
 
-Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color) :
+Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
     rect_(Rectangle(0, 0, getParam("fighter.w"), getParam("fighter.h"))),
     xvel_(0), yvel_(0),
     dir_(-1),
     state_(0),
     damage_(0), lives_(getParam("fighter.lives")),
     respawnx_(respawnx), respawny_(respawny),
-    color_(color),
-    attack_(NULL)
+    color_(color), id_(id),
+    attack_(NULL),
+    lastHitBy_(-1)
 {
     // Load ground attacks
     dashAttack_ = loadAttack("dashAttack");
@@ -33,7 +34,6 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color) :
     airUpAttack_ = loadAttack("airUpAttack");
 
     state_ = 0;
-
 }
 
 Fighter::~Fighter()
@@ -52,6 +52,11 @@ float Fighter::getDamage() const
 float Fighter::getDirection() const
 {
     return dir_;
+}
+
+int Fighter::getLastHitBy() const
+{
+    return lastHitBy_;
 }
 
 void Fighter::update(const struct Controller &controller, float dt)
@@ -75,6 +80,11 @@ void Fighter::update(const struct Controller &controller, float dt)
         }
     }
 
+    // Update last hit by
+    lastHitExpireTime_ += dt;
+    if (lastHitExpireTime_ > getParam("stats.hitExpireTime"))
+            lastHitBy_ = -1;
+
     // Update state
     state_->update(controller, dt);
 
@@ -95,11 +105,15 @@ void Fighter::attackCollision()
     attack_->cancel();
 }
 
-void Fighter::hitByAttack(const Fighter *fighter, const Attack *inAttack)
+void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
 {
-    assert(inAttack);
-    assert(fighter);
-    state_->hitByAttack(fighter, inAttack);
+    assert(attack && attacker);
+    state_->hitByAttack(attacker, attack);
+
+    lastHitBy_ = attacker->id_;
+    lastHitExpireTime_ = 0;
+
+    // Play a sound
     std::string fname = "lvl";
     // we should freak out if damage is negative
     fname += '1' + floor(std::min(damage_ / 100, 2.0f));
@@ -136,6 +150,7 @@ void Fighter::respawn(bool killed)
     rect_.y = respawny_;
     xvel_ = yvel_ = 0.0f;
     damage_ = 0;
+    lastHitBy_ = -1;
     // Set state to air normal
     delete state_;
     state_ = new AirNormalState(this);
@@ -171,8 +186,8 @@ void Fighter::render(float dt)
 
 void Fighter::renderHelper(float dt, const glm::vec3 &color)
 {
-    printf("Damage: %.2f  Position: [%.4f, %.4f]   Velocity: [%.4f, %.4f]  Attack: %d  Dir: %.1f\n", 
-            damage_, rect_.x, rect_.y, xvel_, yvel_, attack_ != 0, dir_);
+    printf("ID: %d  Damage: %.1f  Position: [%.4f, %.4f]   Velocity: [%.4f, %.4f]  Attack: %d  Dir: %.1f  LastHitBy: %d  LastHitByT:  %.2f\n", 
+            id_, damage_, rect_.x, rect_.y, xvel_, yvel_, attack_ != 0, dir_, lastHitBy_, lastHitExpireTime_);
 
     // Draw body
     glm::mat4 transform(1.0);

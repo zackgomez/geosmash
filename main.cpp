@@ -24,6 +24,7 @@ SDL_Joystick *joystick;
 
 bool paused;
 int pausedPlayer = -1;
+int kills[4] = {0, 0, 0, 0};
 
 unsigned numPlayers = 1;
 
@@ -53,6 +54,8 @@ void mainloop();
 void processInput();
 void update();
 void render();
+
+void printstats();
 
 void updateController(Controller &controller);
 void controllerEvent(Controller &controller, const SDL_Event &event);
@@ -89,7 +92,7 @@ int main(int argc, char **argv)
     WORLD_H = getParam("worldHeight");
     for (unsigned i = 0; i < numPlayers; i++)
     {
-        Fighter *fighter = new Fighter(-225.0f+i*150, -50.f, playerColors[i]);
+        Fighter *fighter = new Fighter(-225.0f+i*150, -50.f, playerColors[i], i);
         fighter->respawn(false);
         fighters.push_back(fighter);
     }
@@ -113,6 +116,7 @@ int main(int argc, char **argv)
     mainloop();
 
 
+    printstats();
 
     cleanup();
     return 0;
@@ -171,9 +175,9 @@ void processInput()
 
 void update()
 {
-    printf("Paused: %d  Pause Player: %d\n", paused, pausedPlayer);
     if (paused)
         return;
+
     int alivePlayers = 0;
     AudioManager::get()->update(dt);
     for (unsigned i = 0; i < numPlayers; i++)
@@ -235,6 +239,10 @@ void update()
         if (fighter->getRectangle().y < getParam("killbox.bottom") || fighter->getRectangle().y > getParam("killbox.top")
                 || fighter->getRectangle().x < getParam("killbox.left") || fighter->getRectangle().x > getParam("killbox.right"))
         {
+            std::cout << "KILLER: " << fighter->getLastHitBy() << '\n';
+            // Record the kill if it's not a self destruct
+            if (fighter->getLastHitBy() != -1)
+                kills[fighter->getLastHitBy()] += 1;
             fighter->respawn(true);
             break;
         }
@@ -386,6 +394,14 @@ void cleanup()
     std::cout << "Quiting nicely\n";
     SDL_JoystickClose(0);
     SDL_Quit();
+}
+
+void printstats()
+{
+    for (int i = 0; i < numPlayers; i++)
+    {
+        std::cout << "Player " << i+1 << " kills: " << kills[i] << '\n';
+    }
 }
 
 void updateController(Controller &controller)
