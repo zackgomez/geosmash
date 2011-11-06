@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 
 
     if (!muteMusic)
-        start_song("smash002.aif");
+        start_song("sfx/smash.aif");
 
 
     mainloop();

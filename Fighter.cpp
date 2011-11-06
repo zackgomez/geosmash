@@ -165,7 +165,7 @@ void Fighter::respawn(bool killed)
     if (killed)
     {
         --lives_;
-        AudioManager::get()->playSound("ko002");
+        AudioManager::get()->playSound("ko");
     }
     // Check for death
     if (lives_ <= 0)
