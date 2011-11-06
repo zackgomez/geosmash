@@ -164,6 +164,7 @@ void processInput()
 void update()
 {
     int alivePlayers = 0;
+    AudioManager::get()->update(dt);
     for (unsigned i = 0; i < numPlayers; i++)
     {
         Fighter *fighter = fighters[i];

@@ -7,19 +7,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "explosion.h"
 #include "ParamReader.h"
-
-const static int AIR_NORMAL_STATE = 0;
-const static int AIR_STUNNED_STATE = 1;
-const static int GROUND_STATE = 2;
-const static int DEAD_STATE = 3;
-
-static sf::Music *koSound = NULL;
+#include "audio.h"
 
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color) :
     rect_(Rectangle(0, 0, getParam("fighter.w"), getParam("fighter.h"))),
     xvel_(0), yvel_(0),
     dir_(-1),
-    state_(AIR_NORMAL_STATE),
+    state_(0),
     damage_(0), lives_(getParam("fighter.lives")),
     respawnx_(respawnx), respawny_(respawny),
     color_(color),
@@ -27,26 +21,20 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color) :
 {
     std::cout << "RESPAWN: " << respawnx_ << ' ' << respawny_ << '\n';
     // Load ground attacks
-    dashAttack_ = loadAttack("dashAttack", "sfx/neutral001.wav");
-    neutralTiltAttack_ = loadAttack("neutralTiltAttack", "sfx/neutral001.wav");
-    sideTiltAttack_ = loadAttack("sideTiltAttack", "sfx/forwardtilt001.wav");
-    downTiltAttack_ = loadAttack("downTiltAttack", "sfx/downtilt001.wav");
-    upTiltAttack_ = loadAttack("upTiltAttack", "sfx/uptilt001.wav");
+    dashAttack_ = loadAttack("dashAttack");
+    neutralTiltAttack_ = loadAttack("neutralTiltAttack");
+    sideTiltAttack_ = loadAttack("sideTiltAttack");
+    downTiltAttack_ = loadAttack("downTiltAttack");
+    upTiltAttack_ = loadAttack("upTiltAttack");
 
     // Load air attack special as it uses a different class
-    airNeutralAttack_ = loadAttack("airNeutralAttack", "sfx/uptilt001.wav");
-    airSideAttack_ = loadAttack("airSideAttack", "sfx/uptilt001.wav");
-    airDownAttack_ = loadAttack("airDownAttack", "sfx/uptilt001.wav");
-    airUpAttack_ = loadAttack("airUpAttack", "sfx/uptilt001.wav");
+    airNeutralAttack_ = loadAttack("airNeutralAttack");
+    airSideAttack_ = loadAttack("airSideAttack");
+    airDownAttack_ = loadAttack("airDownAttack");
+    airUpAttack_ = loadAttack("airUpAttack");
 
     state_ = 0;
 
-    // Load some audio
-    if (!koSound)
-    {
-        koSound = new sf::Music();
-        koSound->OpenFromFile("sfx/ko001.wav");
-    }
 }
 
 Fighter::~Fighter()
@@ -113,6 +101,12 @@ void Fighter::hitByAttack(const Fighter *fighter, const Attack *inAttack)
     assert(inAttack);
     assert(fighter);
     state_->hitByAttack(fighter, inAttack);
+    std::string fname = "airhits/lvl";
+    // we should freak out if damage is negative
+    fname += '1' + floor(std::min(damage_ / 100, 2.0f));
+    fname += "airhit003";
+    AudioManager::get()->playSound(fname);
+
 }
 
 void Fighter::hitWithAttack()
@@ -156,7 +150,7 @@ void Fighter::respawn(bool killed)
     if (killed)
     {
         --lives_;
-        koSound->Play();
+        AudioManager::get()->playSound("ko002");
     }
     // Check for death
     if (lives_ <= 0)
@@ -213,7 +207,7 @@ float Fighter::damageFunc() const
     return (damage_) / 33 + 1;
 }
 
-Attack Fighter::loadAttack(std::string attackName, std::string soundFile)
+Attack Fighter::loadAttack(std::string attackName)
 {
     attackName += '.';
 
@@ -231,13 +225,6 @@ Attack Fighter::loadAttack(std::string attackName, std::string soundFile)
                 getParam(attackName + "hitboxy"),
                 getParam(attackName + "hitboxw"),
                 getParam(attackName + "hitboxh")));
-
-    if (!soundFile.empty())
-    {
-        sf::Music *m = new sf::Music();
-        m->OpenFromFile(soundFile);
-        ret.setSound(m);
-    }
 
     return ret;
 
@@ -317,6 +304,8 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
     // If no collision, we don't care
     if (!collision)
         return;
+    fighter_->xvel_ = 0;
+    fighter_->yvel_ = 0;
     // If we're completely below the ground, no 'real' collision
     if (fighter_->rect_.y + fighter_->rect_.h/2 < ground.y + ground.h/2)
         return;
@@ -670,16 +659,6 @@ bool Rectangle::overlaps(const Rectangle &rhs) const
 // Attack class methods
 // ----------------------------------------------------------------------------
 
-void Attack::playSound() 
-{
-    if (sound_)
-        sound_->Play();
-}
-
-void Attack::setSound(sf::Music *m) 
-{
-    sound_ = m;
-}
 
 void Attack::setFighter(const Fighter *fighter)
 {
@@ -724,6 +703,5 @@ void Attack::cancel()
 void Attack::hit()
 {
     hasHit_ = true;
-    playSound();
 }
 

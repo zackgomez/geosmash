@@ -5,6 +5,7 @@ level.y      -325
 level.w      1025
 level.h      100
 
+soundtrack.volume 50
 
 input.dashThresh    0.9
 input.dashMin       0.6

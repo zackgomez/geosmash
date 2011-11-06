@@ -38,7 +38,7 @@ public:
         hitbox_(hitbox),
         startup_(startup), duration_(duration), cooldown_(cooldown),
         damage_(damage), stun_(stun), knockback_(knockback),
-        hasHit_(false), t_(0.0f), owner_(NULL), sound_(NULL)
+        hasHit_(false), t_(0.0f), owner_(NULL)
     {}
 
     virtual ~Attack() {}
@@ -63,8 +63,6 @@ public:
     virtual void cancel();
     // Called when the attack 'connects'
     virtual void hit();
-    void playSound();
-    void setSound(sf::Music *);
 
 private:
     Rectangle hitbox_;
@@ -75,7 +73,6 @@ private:
     float t_;
 
     const Fighter *owner_;
-    sf::Music *sound_;
 };
 
 class FighterState
@@ -173,8 +170,7 @@ private:
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
-    Attack loadAttack(std::string attackName,
-            std::string soundFile = "");
+    Attack loadAttack(std::string attackName);
     void renderHelper(float dt, const glm::vec3& color);
 
     friend class FighterState;
