@@ -40,7 +40,10 @@ public:
     {
         std::map<std::string, float>::const_iterator it = params_.find(key);
         if (it == params_.end())
+        {
+            std::cerr << "Unable to find key " << key << '\n';
             assert(false && "Key not found in params");
+        }
         else
             return it->second;
     }

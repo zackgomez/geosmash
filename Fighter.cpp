@@ -100,11 +100,12 @@ void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
     state_->collisionWithGround(ground, collision);
 }
 
-void Fighter::attackCollision()
+void Fighter::attackCollision(const Attack *inAttack)
 {
     // If two attacks collide, just cancel them and go to cooldown
     assert(attack_);
-    attack_->cancel();
+    assert(inAttack);
+    attack_->attackCollision(inAttack);
 }
 
 void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
@@ -240,6 +241,7 @@ Attack Fighter::loadAttack(std::string attackName, const std::string &audioID)
                 getParam(attackName + "hitboxy"),
                 getParam(attackName + "hitboxw"),
                 getParam(attackName + "hitboxh")),
+            getParam(attackName + "priority"),
             audioID);
 
     return ret;
@@ -719,5 +721,12 @@ void Attack::cancel()
 void Attack::hit()
 {
     hasHit_ = true;
+}
+
+void Attack::attackCollision(const Attack *other)
+{
+    // Only cancel if we lose or tie priority
+    if (priority_ <= other->priority_)
+        cancel();
 }
 

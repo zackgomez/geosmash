@@ -35,11 +35,11 @@ class Attack
 public:
     Attack() {}
     Attack(float startup, float duration, float cooldown, float damage, float stun,
-            const glm::vec2& knockback, const Rectangle &hitbox, 
+            const glm::vec2& knockback, const Rectangle &hitbox, float priority,
             const std::string &audioFileprefix = "groundhit") :
         hitbox_(hitbox),
         startup_(startup), duration_(duration), cooldown_(cooldown),
-        damage_(damage), stun_(stun), knockback_(knockback),
+        damage_(damage), stun_(stun), priority_(priority), knockback_(knockback), 
         hasHit_(false), t_(0.0f), audioID_(audioFileprefix), owner_(NULL)
     {}
 
@@ -66,6 +66,8 @@ public:
     virtual void cancel();
     // Called when the attack 'connects'
     virtual void hit();
+    // Called when two attacks collide
+    virtual void attackCollision(const Attack *other);
 
     virtual std::string getAudioID() const { return audioID_; }
 
@@ -73,6 +75,7 @@ private:
     Rectangle hitbox_;
     float startup_, duration_, cooldown_;
     float damage_, stun_;
+    float priority_;
     glm::vec2 knockback_;
     bool hasHit_;
     float t_;
@@ -135,7 +138,7 @@ public:
 
     // collision is true if there is a collision with ground this frame, false otherwise
     void collisionWithGround(const Rectangle &ground, bool collision);
-    void attackCollision(); // Called when two attacks collide
+    void attackCollision(const Attack *attack); // Called when two attacks collide, with other attack
     void hitByAttack(const Fighter *fighter, const Attack* attack);  // Called when hit by an attack
     void hitWithAttack(); // Called when you hit with an attack
     // Gets the fighter's hitbox

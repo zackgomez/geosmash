@@ -55,6 +55,7 @@ dashAttack.hitboxx      45
 dashAttack.hitboxy      -20
 dashAttack.hitboxw      50
 dashAttack.hitboxh      18
+dashAttack.priority     1.0
 
 
 neutralTiltAttack.startup      0.03
@@ -69,6 +70,7 @@ neutralTiltAttack.hitboxx      40
 neutralTiltAttack.hitboxy      0
 neutralTiltAttack.hitboxw      30
 neutralTiltAttack.hitboxh      18
+neutralTiltAttack.priority     1.0
 
 sideTiltAttack.startup      0.1
 sideTiltAttack.duration     0.22
@@ -82,6 +84,7 @@ sideTiltAttack.hitboxx      55
 sideTiltAttack.hitboxy      5
 sideTiltAttack.hitboxw      60
 sideTiltAttack.hitboxh      18
+sideTiltAttack.priority     1.0
 
 downTiltAttack.startup      0.2
 downTiltAttack.duration     0.22
@@ -95,6 +98,7 @@ downTiltAttack.hitboxx      60
 downTiltAttack.hitboxy      -30
 downTiltAttack.hitboxw      70
 downTiltAttack.hitboxh      15
+downTiltAttack.priority     1.0
 
 upTiltAttack.startup      0.1
 upTiltAttack.duration     0.22
@@ -108,6 +112,7 @@ upTiltAttack.hitboxx      25
 upTiltAttack.hitboxy      30
 upTiltAttack.hitboxw      40
 upTiltAttack.hitboxh      40
+upTiltAttack.priority     1.0
 
 
 
@@ -123,6 +128,7 @@ airNeutralAttack.hitboxx      45
 airNeutralAttack.hitboxy      -10
 airNeutralAttack.hitboxw      50
 airNeutralAttack.hitboxh      25
+airNeutralAttack.priority     2.0
 
 airSideAttack.startup      0.25
 airSideAttack.duration     0.25
@@ -136,6 +142,7 @@ airSideAttack.hitboxx      40
 airSideAttack.hitboxy      -5
 airSideAttack.hitboxw      35
 airSideAttack.hitboxh      40
+airSideAttack.priority     1.0
 
 airDownAttack.startup      0.15
 airDownAttack.duration     0.15
@@ -149,6 +156,7 @@ airDownAttack.hitboxx      0
 airDownAttack.hitboxy      -40
 airDownAttack.hitboxw      40
 airDownAttack.hitboxh      20
+airDownAttack.priority     1.0
 
 airUpAttack.startup      0.15
 airUpAttack.duration     0.15
@@ -162,3 +170,4 @@ airUpAttack.hitboxx      0
 airUpAttack.hitboxy      40
 airUpAttack.hitboxw      60
 airUpAttack.hitboxh      30
+airUpAttack.priority     1.0

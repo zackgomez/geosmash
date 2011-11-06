@@ -201,8 +201,8 @@ void update()
                     && attacki->getHitbox().overlaps(attackj->getHitbox()))
             {
                 // Then go straight to cooldown
-                fighter->attackCollision();
-                fighters[j]->attackCollision();
+                fighter->attackCollision(fighters[j]->getAttack());
+                fighters[j]->attackCollision(fighter->getAttack());
 
                 // Generate small explosion
                 Rectangle hitboxi = attacki->getHitbox();
