@@ -279,7 +279,7 @@ void render()
     for (unsigned i = 0; i < numPlayers; i++)
     {
         int lives = fighters[i]->getLives();
-        glm::vec2 life_area(-225.0f - 10 + 150*i, -WORLD_H/2 + 100);
+        glm::vec2 life_area(-225.0f - 15 + 150*i, -WORLD_H/2 + 115);
         // 10unit border
         // 10unit squares
         
@@ -290,15 +290,18 @@ void render()
                     glm::translate(
                         glm::mat4(1.0f),
                         glm::vec3(life_area.x, life_area.y, 0.0f)),
-                    glm::vec3(10, 10, 1.0));
-            renderRectangle(transform, playerColors[i]);
+                    glm::vec3(20, 20, 1.0));
+            renderRectangle(transform, glm::vec3(0.25, 0.25, 0.25));
+
+            glm::mat4 transform2 = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
+            renderRectangle(transform2, glm::vec3(playerColors[i]));
 
             if (j % 2 == 0)
-                life_area.x += 20;
+                life_area.x += 30;
             else
             {
-                life_area.x -= 20;
-                life_area.y -= 20;
+                life_area.x -= 30;
+                life_area.y -= 30;
             }
 
         }
@@ -310,7 +313,7 @@ void render()
                     glm::translate(
                         glm::mat4(1.0f),
                         glm::vec3(damageBarMidpoint.x, damageBarMidpoint.y, 0.0f)),
-                    glm::vec3(100, 20, 1.0));
+                    glm::vec3(130, 30, 1.0));
         renderRectangle(transform, glm::vec3(0.25, 0.25, 0.25));
 
         float maxDamage = 100;
