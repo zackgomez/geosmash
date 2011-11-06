@@ -45,13 +45,20 @@ public:
 
     virtual ~Attack() {}
 
+    virtual Attack* clone() const;
+
     virtual Rectangle getHitbox() const;
     virtual float getDamage(const Fighter *fighter) const { return damage_; }
     virtual float getStun(const Fighter *fighter) const { return stun_; }
     virtual glm::vec2 getKnockback(const Fighter *fighter) const { return knockback_; }
 
-    void setFighter(const Fighter *fighter);
+    void setFighter(Fighter *fighter);
     const Fighter *getOwner() const;
+
+    // Called when the move is started
+    virtual void start();
+    // Called when the move is finished and going to be removed
+    virtual void finish();
 
     // If hitbox can hit another player
     virtual bool hasHitbox() const;
@@ -65,13 +72,13 @@ public:
     // Sends to cooldown time
     virtual void cancel();
     // Called when the attack 'connects'
-    virtual void hit();
+    virtual void hit(Fighter *other);
     // Called when two attacks collide
     virtual void attackCollision(const Attack *other);
 
     virtual std::string getAudioID() const { return audioID_; }
 
-private:
+protected:
     Rectangle hitbox_;
     float startup_, duration_, cooldown_;
     float damage_, stun_;
@@ -82,7 +89,31 @@ private:
 
     std::string audioID_;
 
-    const Fighter *owner_;
+    Fighter *owner_;
+};
+
+class UpSpecialAttack : public Attack
+{
+public:
+    UpSpecialAttack() : Attack() {};
+
+    UpSpecialAttack(float startup, float duration, float cooldown, float damage, float stun,
+            const glm::vec2& knockback, const Rectangle &hitbox, float priority,
+            const std::string &audioFileprefix = "groundhit") :
+        Attack(startup, duration, cooldown, damage, stun, knockback, hitbox, priority),
+        repeatTime_(0.0f)
+        {
+        }
+
+    virtual Attack* clone() const;
+    virtual void start();
+    virtual void finish();
+    virtual void update(float dt);
+    virtual void hit(Fighter *victim);
+
+private:
+    float repeatTime_;
+    bool started_;
 };
 
 class FighterState
@@ -140,7 +171,7 @@ public:
     void collisionWithGround(const Rectangle &ground, bool collision);
     void attackCollision(const Attack *attack); // Called when two attacks collide, with other attack
     void hitByAttack(const Fighter *fighter, const Attack* attack);  // Called when hit by an attack
-    void hitWithAttack(); // Called when you hit with an attack
+    void hitWithAttack(Fighter *victim); // Called when you hit with an attack
     // Gets the fighter's hitbox
     const Rectangle& getRectangle() const;
 
@@ -186,11 +217,14 @@ private:
     Attack airDownAttack_;
     Attack airUpAttack_;
 
+    UpSpecialAttack upSpecialAttack_;
+
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
-    Attack loadAttack(std::string attackName, const std::string &audioID);
     void renderHelper(float dt, const glm::vec3& color);
+    template<class AttackClass>
+    AttackClass loadAttack(std::string attackName, const std::string &audioID);
 
     friend class FighterState;
     friend class GroundState;
@@ -198,6 +232,7 @@ private:
     friend class AirNormalState;
     friend class AirStunnedState;
     friend class DeadState;
+    friend class UpSpecialAttack;
 };
 
 class GroundState : public FighterState

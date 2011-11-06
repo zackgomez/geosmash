@@ -217,18 +217,20 @@ void update()
             }
             if (fighter->hasAttack() && fighters[j]->getRectangle().overlaps(attacki->getHitbox()))
             {
+                std::cout << "HIT\n";
                 // fighter has hit fighters[j]
                 fighters[j]->hitByAttack(fighter, attacki);
-                fighter->hitWithAttack();
+                fighter->hitWithAttack(fighters[j]);
 
                 // Cache values
                 attacki = fighter->getAttack();
             }
             if (fighters[j]->hasAttack() && fighter->getRectangle().overlaps(attackj->getHitbox()))
             {
+                std::cout << "HIT\n";
                 // fighter[j] has hit fighter
                 fighter->hitByAttack(fighters[j], attackj);
-                fighters[j]->hitWithAttack();
+                fighters[j]->hitWithAttack(fighter);
 
                 // Cache values
                 attacki = fighter->getAttack();
@@ -239,7 +241,6 @@ void update()
         if (fighter->getRectangle().y < getParam("killbox.bottom") || fighter->getRectangle().y > getParam("killbox.top")
                 || fighter->getRectangle().x < getParam("killbox.left") || fighter->getRectangle().x > getParam("killbox.right"))
         {
-            std::cout << "KILLER: " << fighter->getLastHitBy() << '\n';
             // Record the kill if it's not a self destruct
             if (fighter->getLastHitBy() != -1)
                 kills[fighter->getLastHitBy()] += 1;
