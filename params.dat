@@ -5,6 +5,11 @@ level.y      -325
 level.w      1025
 level.h      100
 
+killbox.top     600
+killbox.bottom  -600
+killbox.left    -1100
+killbox.right   1100
+
 soundtrack.volume 50
 
 input.dashThresh    0.9

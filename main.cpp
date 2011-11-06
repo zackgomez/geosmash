@@ -232,8 +232,8 @@ void update()
         }
 
         // Respawn condition
-        if (fighter->getRectangle().y < -WORLD_H/2 * 1.5 || fighter->getRectangle().y > WORLD_H/2 * 1.5
-                || fighter->getRectangle().x < -WORLD_W/2 * 1.5 || fighter->getRectangle().y > WORLD_W/2 * 1.5)
+        if (fighter->getRectangle().y < getParam("killbox.bottom") || fighter->getRectangle().y > getParam("killbox.top")
+                || fighter->getRectangle().x < getParam("killbox.left") || fighter->getRectangle().x > getParam("killbox.right"))
         {
             fighter->respawn(true);
             break;
