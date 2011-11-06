@@ -1,16 +1,19 @@
 worldWidth   1500
 worldHeight  750
+
 level.x      0
-level.y      -325
+level.y      -200
 level.w      1025
-level.h      100
+level.h      80
 
 killbox.top     600
 killbox.bottom  -600
 killbox.left    -1100
 killbox.right   1100
 
+
 soundtrack.volume 50
+
 
 input.dashThresh    0.9
 input.dashMin       0.6

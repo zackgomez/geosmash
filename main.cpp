@@ -32,7 +32,7 @@ std::vector<Fighter*> fighters;
 const glm::vec3 playerColors[] =
 {
     glm::vec3(0.2, 0.2, 0.8),
-    glm::vec3(0.2, 0.8, 0.2),
+    glm::vec3(0.1, 0.6, 0.1),
     glm::vec3(0.8, 0.2, 0.2),
     glm::vec3(0.8, 0.8, 0.2)
 };
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     WORLD_H = getParam("worldHeight");
     for (unsigned i = 0; i < numPlayers; i++)
     {
-        Fighter *fighter = new Fighter(-225.0f+i*150, -100.f, playerColors[i]);
+        Fighter *fighter = new Fighter(-225.0f+i*150, -50.f, playerColors[i]);
         fighter->respawn(false);
         fighters.push_back(fighter);
     }
@@ -279,7 +279,7 @@ void render()
     for (unsigned i = 0; i < numPlayers; i++)
     {
         int lives = fighters[i]->getLives();
-        glm::vec2 life_area(-225.0f - 10 + 150*i, ground.y + 15);
+        glm::vec2 life_area(-225.0f - 10 + 150*i, -WORLD_H/2 + 100);
         // 10unit border
         // 10unit squares
         
@@ -304,14 +304,14 @@ void render()
         }
 
         // Draw damage bars
-        // First, render a black background rect
-        glm::vec2 damageBarMidpoint(-225.0f + 150*i, ground.y - 25);
+        // First, render a dark grey background rect
+        glm::vec2 damageBarMidpoint(-225.0f + 150*i, -WORLD_H/2 + 50);
         glm::mat4 transform = glm::scale(
                     glm::translate(
                         glm::mat4(1.0f),
                         glm::vec3(damageBarMidpoint.x, damageBarMidpoint.y, 0.0f)),
                     glm::vec3(100, 20, 1.0));
-        renderRectangle(transform, glm::vec3(0, 0, 0));
+        renderRectangle(transform, glm::vec3(0.25, 0.25, 0.25));
 
         float maxDamage = 100;
 
