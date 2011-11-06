@@ -55,8 +55,11 @@ void AudioManager::update(float dt)
     for (it = currentSounds_.begin(); it != currentSounds_.end(); )
     {
         bool notplaying = (*it)->GetStatus() == sf::Sound::Stopped;
-        if (notplaying)
+        if (notplaying) 
+        {
+            delete *it;
             it = currentSounds_.erase(it);
+        }
         else
             it++;
     }

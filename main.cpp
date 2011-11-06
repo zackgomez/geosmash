@@ -22,6 +22,9 @@ static int SCREEN_H = 1080;
 bool running;
 SDL_Joystick *joystick;
 
+bool paused;
+int pausedPlayer = -1;
+
 unsigned numPlayers = 1;
 
 Controller controllers[4];
@@ -96,6 +99,11 @@ int main(int argc, char **argv)
             getParam("level.w"),
             getParam("level.h"));
 
+    // Remove initial joystick events
+    processInput();
+
+    paused = false;
+
 
 
     if (!muteMusic)
@@ -163,6 +171,9 @@ void processInput()
 
 void update()
 {
+    printf("Paused: %d  Pause Player: %d\n", paused, pausedPlayer);
+    if (paused)
+        return;
     int alivePlayers = 0;
     AudioManager::get()->update(dt);
     for (unsigned i = 0; i < numPlayers; i++)
@@ -259,7 +270,7 @@ void render()
             fighters[i]->render(dt);
 
     // Draw any explosions
-    ExplosionManager::get()->render(dt);
+    ExplosionManager::get()->render(dt * !paused);
 
     //
     // Render the overlay interface (HUD)
@@ -446,6 +457,19 @@ void controllerEvent(Controller &controller, const SDL_Event &event)
         {
             controller.buttonc = false;
             controller.pressc = false;
+        }
+        else if (event.jbutton.button == 7)
+        {
+            if (paused && pausedPlayer == event.jbutton.which)
+            {
+                paused = false;
+                pausedPlayer = -1;
+            }
+            else if (!paused)
+            {
+                paused = true;
+                pausedPlayer = event.jbutton.which;
+            }
         }
         break;
 

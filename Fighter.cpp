@@ -19,7 +19,6 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color) :
     color_(color),
     attack_(NULL)
 {
-    std::cout << "RESPAWN: " << respawnx_ << ' ' << respawny_ << '\n';
     // Load ground attacks
     dashAttack_ = loadAttack("dashAttack");
     neutralTiltAttack_ = loadAttack("neutralTiltAttack");
@@ -101,12 +100,12 @@ void Fighter::hitByAttack(const Fighter *fighter, const Attack *inAttack)
     assert(inAttack);
     assert(fighter);
     state_->hitByAttack(fighter, inAttack);
-    std::string fname = "airhits/lvl";
+    std::string fname = "lvl";
     // we should freak out if damage is negative
     fname += '1' + floor(std::min(damage_ / 100, 2.0f));
-    fname += "airhit003";
+    // TODO:: determine if the attack was air or ground
+    fname += "airhit";
     AudioManager::get()->playSound(fname);
-
 }
 
 void Fighter::hitWithAttack()
