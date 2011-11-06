@@ -4,7 +4,6 @@
 #include <string>
 #include <SFML/Audio.hpp>
 
-class ParamReader;
 class Fighter;
 
 struct Controller
@@ -171,27 +170,6 @@ private:
     Attack airDownAttack_;
     Attack airUpAttack_;
 
-    // Fighter stats
-    const float walkSpeed_; // maximum walking speed
-    const float dashSpeed_; // Dashing Speed
-    const float jumpStartupTime_; // Delay before jump begins, also short hop/full jump control time
-    const float dashStartupTime_; // Time from starting dash to first movement
-    const float jumpSpeed_; // Speed of a full jump
-    const float hopSpeed_; // Speed of a short hop
-
-    const float airForce_; // Force applied to allow player air control
-    const float airAccel_; // "Gravity"
-    const float jumpAirSpeed_; // The maximum x speed for jumping (only for player control)
-    const float secondJumpSpeed_; // Speed of the second jump
-
-    // Input response parameters
-    const float inputVelocityThresh_;
-    const float inputJumpThresh_;
-    const float inputDashThresh_;
-    const float inputDashMin_;
-    const float inputDeadzone_;
-    const float inputTiltThresh_;
-
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
@@ -210,7 +188,7 @@ private:
 class GroundState : public FighterState
 {
 public:
-    GroundState(Fighter *f);
+    GroundState(Fighter *f, float delay = -1.0f);
     virtual ~GroundState();
 
     virtual void update(const Controller&, float dt);
@@ -223,8 +201,8 @@ private:
     float jumpTime_;
     // Dash startup timer.  Value >= 0 implies that the fighter is start to dash
     float dashTime_;
-    // Dash change direction timer
-    float dashChangeTime_;
+    // Generic wait time, wait while value > 0
+    float waitTime_;
     bool dashing_;
 };
 

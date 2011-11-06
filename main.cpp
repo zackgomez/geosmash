@@ -81,10 +81,9 @@ int main(int argc, char **argv)
     }
 
     // Init game state
-    ParamReader* params = ParamReader::instance();
-    params->loadFile("params.dat");
-    WORLD_W = params->get("worldWidth");
-    WORLD_H = params->get("worldHeight");
+    ParamReader::instance()->loadFile("params.dat");
+    WORLD_W = getParam("worldWidth");
+    WORLD_H = getParam("worldHeight");
     for (unsigned i = 0; i < numPlayers; i++)
     {
         Fighter *fighter = new Fighter(-225.0f+i*150, -100.f, playerColors[i]);
@@ -92,10 +91,10 @@ int main(int argc, char **argv)
         fighters.push_back(fighter);
     }
     ground = Rectangle(
-            params->get("level.x"),
-            params->get("level.y"),
-            params->get("level.w"),
-            params->get("level.h"));
+            getParam("level.x"),
+            getParam("level.y"),
+            getParam("level.w"),
+            getParam("level.h"));
 
 
 
@@ -479,4 +478,10 @@ int initLibs()
     SDL_WM_SetCaption("Geometry Smash 0.2", "geosmash");
 
     return 1;
+}
+
+// XXX this should be moved
+float getParam(const std::string &param)
+{
+    return ParamReader::instance()->get(param);
 }

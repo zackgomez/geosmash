@@ -60,3 +60,5 @@ private:
 
     std::map<std::string, float> params_;
 };
+
+float getParam(const std::string &param);
