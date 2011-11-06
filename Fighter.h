@@ -35,11 +35,12 @@ class Attack
 public:
     Attack() {}
     Attack(float startup, float duration, float cooldown, float damage, float stun,
-            const glm::vec2& knockback, const Rectangle &hitbox) :
+            const glm::vec2& knockback, const Rectangle &hitbox, 
+            const std::string &audioFileprefix = "groundhit") :
         hitbox_(hitbox),
         startup_(startup), duration_(duration), cooldown_(cooldown),
         damage_(damage), stun_(stun), knockback_(knockback),
-        hasHit_(false), t_(0.0f), owner_(NULL)
+        hasHit_(false), t_(0.0f), audioID_(audioFileprefix), owner_(NULL)
     {}
 
     virtual ~Attack() {}
@@ -66,6 +67,8 @@ public:
     // Called when the attack 'connects'
     virtual void hit();
 
+    virtual std::string getAudioID() const { return audioID_; }
+
 private:
     Rectangle hitbox_;
     float startup_, duration_, cooldown_;
@@ -73,6 +76,8 @@ private:
     glm::vec2 knockback_;
     bool hasHit_;
     float t_;
+
+    std::string audioID_;
 
     const Fighter *owner_;
 };
@@ -181,7 +186,7 @@ private:
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
-    Attack loadAttack(std::string attackName);
+    Attack loadAttack(std::string attackName, const std::string &audioID);
     void renderHelper(float dt, const glm::vec3& color);
 
     friend class FighterState;

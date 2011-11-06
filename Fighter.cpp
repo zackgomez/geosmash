@@ -21,17 +21,19 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     lastHitBy_(-1)
 {
     // Load ground attacks
-    dashAttack_ = loadAttack("dashAttack");
-    neutralTiltAttack_ = loadAttack("neutralTiltAttack");
-    sideTiltAttack_ = loadAttack("sideTiltAttack");
-    downTiltAttack_ = loadAttack("downTiltAttack");
-    upTiltAttack_ = loadAttack("upTiltAttack");
+    std::string g = "groundhit";
+    std::string a = "airhit";
+    dashAttack_ = loadAttack("dashAttack", g);
+    neutralTiltAttack_ = loadAttack("neutralTiltAttack", g);
+    sideTiltAttack_ = loadAttack("sideTiltAttack", g);
+    downTiltAttack_ = loadAttack("downTiltAttack", g);
+    upTiltAttack_ = loadAttack("upTiltAttack", g);
 
     // Load air attack special as it uses a different class
-    airNeutralAttack_ = loadAttack("airNeutralAttack");
-    airSideAttack_ = loadAttack("airSideAttack");
-    airDownAttack_ = loadAttack("airDownAttack");
-    airUpAttack_ = loadAttack("airUpAttack");
+    airNeutralAttack_ = loadAttack("airNeutralAttack", a);
+    airSideAttack_ = loadAttack("airSideAttack", a);
+    airDownAttack_ = loadAttack("airDownAttack", a);
+    airUpAttack_ = loadAttack("airUpAttack", a);
 
     state_ = 0;
 }
@@ -117,8 +119,7 @@ void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
     std::string fname = "lvl";
     // we should freak out if damage is negative
     fname += '1' + floor(std::min(damage_ / 100, 2.0f));
-    // TODO:: determine if the attack was air or ground
-    fname += "airhit";
+    fname += attack->getAudioID();
     AudioManager::get()->playSound(fname);
 }
 
@@ -221,7 +222,7 @@ float Fighter::damageFunc() const
     return (damage_) / 33 + 1;
 }
 
-Attack Fighter::loadAttack(std::string attackName)
+Attack Fighter::loadAttack(std::string attackName, const std::string &audioID)
 {
     attackName += '.';
 
@@ -238,7 +239,8 @@ Attack Fighter::loadAttack(std::string attackName)
                 getParam(attackName + "hitboxx"),
                 getParam(attackName + "hitboxy"),
                 getParam(attackName + "hitboxw"),
-                getParam(attackName + "hitboxh")));
+                getParam(attackName + "hitboxh")),
+            audioID);
 
     return ret;
 
