@@ -217,7 +217,6 @@ void update()
             }
             if (fighter->hasAttack() && fighters[j]->getRectangle().overlaps(attacki->getHitbox()))
             {
-                std::cout << "HIT\n";
                 // fighter has hit fighters[j]
                 fighters[j]->hitByAttack(fighter, attacki);
                 fighter->hitWithAttack(fighters[j]);
@@ -227,7 +226,6 @@ void update()
             }
             if (fighters[j]->hasAttack() && fighter->getRectangle().overlaps(attackj->getHitbox()))
             {
-                std::cout << "HIT\n";
                 // fighter[j] has hit fighter
                 fighter->hitByAttack(fighters[j], attackj);
                 fighters[j]->hitWithAttack(fighter);

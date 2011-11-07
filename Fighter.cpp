@@ -113,7 +113,6 @@ void Fighter::attackCollision(const Attack *inAttack)
 
 void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
 {
-    std::cout << "HITBYATTACK\n";
     assert(attack && attacker);
     state_->hitByAttack(attacker, attack);
 
@@ -371,6 +370,57 @@ void GroundState::update(const Controller &controller, float dt)
     if (waitTime_ > 0)
         return;
 
+    // -- Deal with starting an attack
+    if (controller.pressa && jumpTime_ < 0)
+    {
+        // Check for dash attack
+        if (dashing_)
+        {
+            dashing_ = false;
+            fighter_->xvel_ = fighter_->dir_ * getParam("dashSpeed");
+            fighter_->attack_ = fighter_->dashAttack_.clone();
+        }
+        // Not dashing- use a tilt
+        else
+        {
+            // No movement during attack
+            fighter_->xvel_ = 0; fighter_->yvel_ = 0;
+            // Get direction of stick
+            glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
+            if (fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
+            {
+                // Do the L/R tilt
+                fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+                fighter_->attack_ = fighter_->sideTiltAttack_.clone();
+            }
+            else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+            {
+                fighter_->attack_ = fighter_->downTiltAttack_.clone();
+            }
+            else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+            {
+                fighter_->attack_ = fighter_->upTiltAttack_.clone();
+            }
+            else
+            {
+                // Neutral tilt attack
+                fighter_->attack_ = fighter_->neutralTiltAttack_.clone();
+            }
+        }
+        // Do per attack stuff
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+        return;
+    }
+    else if (controller.pressb)
+    {
+        // Any B press is up B
+        fighter_->attack_ = new UpSpecialAttack(fighter_->upSpecialAttack_);
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+        return;
+    }
+
     // --- Deal with dashing movement ---
     if (dashing_ )
     {
@@ -438,61 +488,6 @@ void GroundState::update(const Controller &controller, float dt)
         }
     }
 
-    // -- Deal with starting an attack
-    if (controller.pressa && jumpTime_ < 0)
-    {
-        // Check for dash attack
-        if (dashing_)
-        {
-            dashing_ = false;
-            fighter_->xvel_ = fighter_->dir_ * getParam("dashSpeed");
-            fighter_->attack_ = fighter_->dashAttack_.clone();
-        }
-        // Not dashing- use a tilt
-        else
-        {
-            // No movement during attack
-            fighter_->xvel_ = 0; fighter_->yvel_ = 0;
-            // Get direction of stick
-            glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
-            if (fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
-            {
-                // Do the L/R tilt
-                fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-                fighter_->attack_ = fighter_->sideTiltAttack_.clone();
-            }
-            else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-            {
-                fighter_->attack_ = fighter_->downTiltAttack_.clone();
-            }
-            else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-            {
-                fighter_->attack_ = fighter_->upTiltAttack_.clone();
-            }
-            else
-            {
-                // Neutral tilt attack
-                fighter_->attack_ = fighter_->neutralTiltAttack_.clone();
-            }
-        }
-        // Do per attack stuff
-        fighter_->attack_->setFighter(fighter_);
-        fighter_->attack_->start();
-    }
-    else if (controller.pressb)
-    {
-        // Any B press is up B
-        fighter_->attack_ = new UpSpecialAttack(fighter_->upSpecialAttack_);
-        fighter_->attack_->setFighter(fighter_);
-        fighter_->attack_->start();
-        return;
-    }
-    // If we just added an attack, lets not jump too
-    if (fighter_->attack_)
-    {
-        jumpTime_ = -1;
-        return;
-    }
 
     // --- Deal with jumping ---
     if (jumpTime_ > getParam("jumpStartupTime"))
@@ -794,7 +789,6 @@ void UpSpecialAttack::update(float dt)
     // Update during duration
     if (t_ > startup_ && t_ < startup_ + duration_)
     {
-        std::cout << "repeat time: " << repeatTime_ << '\n';
         if (!started_)
         {
             // Move slightly up to avoid the ground, if applicable
