@@ -8,11 +8,11 @@ level.h      80
 
 killbox.top     600
 killbox.bottom  -600
-killbox.left    -1100
-killbox.right   1100
+killbox.left    -1300
+killbox.right   1300
 
 
-soundtrack.volume 50
+soundtrack.volume 35
 
 
 input.dashThresh    0.9
@@ -43,7 +43,7 @@ dashChangeTime   0.25
 landingCooldownTime 0.15
 
 
-dashAttack.startup      0.1
+dashAttack.startup      0.06
 dashAttack.duration     0.3
 dashAttack.cooldown     0.2
 dashAttack.damage       5
@@ -86,7 +86,7 @@ sideTiltAttack.hitboxw      60
 sideTiltAttack.hitboxh      18
 sideTiltAttack.priority     1.0
 
-downTiltAttack.startup      0.2
+downTiltAttack.startup      0.12
 downTiltAttack.duration     0.22
 downTiltAttack.cooldown     0.25
 downTiltAttack.damage       8
@@ -94,9 +94,9 @@ downTiltAttack.stun         0.20
 downTiltAttack.knockbackx   1
 downTiltAttack.knockbacky   5
 downTiltAttack.knockbackpow 140.0
-downTiltAttack.hitboxx      60
+downTiltAttack.hitboxx      65
 downTiltAttack.hitboxy      -30
-downTiltAttack.hitboxw      70
+downTiltAttack.hitboxw      85
 downTiltAttack.hitboxh      15
 downTiltAttack.priority     1.0
 
@@ -120,7 +120,7 @@ airNeutralAttack.startup      0.10
 airNeutralAttack.duration     0.36
 airNeutralAttack.cooldown     0.15
 airNeutralAttack.damage       8
-airNeutralAttack.stun         0.20
+airNeutralAttack.stun         0.10
 airNeutralAttack.knockbackx   4
 airNeutralAttack.knockbacky   1
 airNeutralAttack.knockbackpow 100.0

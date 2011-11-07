@@ -12,6 +12,8 @@ GLuint make_program(GLuint vertex_shader, GLuint fragment_shader);
 
 GLuint make_texture(const char *filename);
 
+GLuint loadAnimFrame(const char *filename);
+
 bool initGLUtils(const glm::mat4 &perspectiveTrans);
 void cleanGLUtils();
 

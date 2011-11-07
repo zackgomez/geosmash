@@ -377,7 +377,7 @@ void GroundState::update(const Controller &controller, float dt)
         if (dashing_)
         {
             dashing_ = false;
-            fighter_->xvel_ = fighter_->dir_ * getParam("dashSpeed");
+            fighter_->xvel_ = fighter_->dir_ * 1.25 * getParam("dashSpeed");
             fighter_->attack_ = fighter_->dashAttack_.clone();
         }
         // Not dashing- use a tilt

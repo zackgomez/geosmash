@@ -39,6 +39,7 @@ const glm::vec3 playerColors[] =
 };
 
 GLuint backgroundTex = 0;
+GLuint frameTex = 0;
 const glm::mat4 perspectiveTransform = glm::ortho(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.0f, 1.0f);
 
 Rectangle ground;
@@ -110,7 +111,7 @@ int main(int argc, char **argv)
 
 
     if (!muteMusic)
-        start_song("sfx/smash.aif");
+        start_song("sfx/geosmash_2.wav");
 
 
     mainloop();
@@ -282,6 +283,9 @@ void render()
     //
     // Render the overlay interface (HUD)
     //
+    //
+    glm::mat4 ttran = glm::scale(glm::mat4(1.0f), glm::vec3(50, 60, 1.0f));
+    renderTexturedRectangle(ttran, frameTex);
 
     for (unsigned i = 0; i < numPlayers; i++)
     {
@@ -384,6 +388,8 @@ int initGraphics()
     initGLUtils(perspectiveTransform);
 
     backgroundTex = make_texture("back003.tga");
+    frameTex = loadAnimFrame("frames/ground.running.frame");
+    std::cout << "FRAMETEX: " << frameTex << '\n';
 
     return 1;
 }

@@ -4,6 +4,8 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <fstream>
+#include <iostream>
 #include "util.h"
 #include "glutils.h"
 
@@ -113,6 +115,64 @@ GLuint make_texture(const char *filename)
             );
     free(pixels);
     return texture;
+}
+
+GLuint loadAnimFrame(const char *filename)
+{
+    // File format is
+    // 00000000
+    // 00000000
+    // 00000000
+    // 00000000
+    // 00000000
+    // 00000000
+    // 00000000
+    // 00000000
+    // 00000000
+    // 00000000
+    // Replace a zero with '1' means that pixel should be dark
+    GLubyte data[8 * 10];
+
+    std::cout << "Loading frame in " << filename << '\n';
+
+    std::ifstream file(filename);
+    if (!file)
+    {
+        std::cerr << "Unable to load animation frame: " << filename << '\n';
+        return 0;
+    }
+    char c;
+    for (int y = 0; y < 10; y++)
+        for (int x = 0; x < 8; x++)
+        {
+            file >> c;
+            if (c != '0' && c != '1')
+            {
+                std::cerr << "Bad character in file: " << c << '\n';
+                return 0;
+            }
+            else
+            {
+                data[x + 8*(9 - y)] = (c == '0' ? 0 : 255);
+                std::cout << x + 8*(9 - y) << ' ';
+            }
+            std::cout << '\n';
+        }
+
+    GLuint tex;
+    glGenTextures(1, &tex);
+    glBindTexture(GL_TEXTURE_2D, tex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_EDGE);
+    glTexImage2D(
+            GL_TEXTURE_2D, 0,
+            1,
+            8, 10, 0,
+            GL_RED, GL_UNSIGNED_BYTE,
+            data);
+    return tex;
 }
 
 bool initGLUtils(const glm::mat4 &perspectiveTransform)
