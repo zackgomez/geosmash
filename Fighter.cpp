@@ -26,17 +26,17 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     std::string a = "airhit";
     dashAttack_ = loadAttack<Attack>("dashAttack", g, "GroundNeutral");
     neutralTiltAttack_ = loadAttack<Attack>("neutralTiltAttack", g, "GroundNeutral");
-    sideTiltAttack_ = loadAttack<Attack>("sideTiltAttack", g, "GroundNeutral");
+    sideTiltAttack_ = loadAttack<Attack>("sideTiltAttack", g, "GroundSidetilt");
     downTiltAttack_ = loadAttack<Attack>("downTiltAttack", g, "GroundDowntilt");
     upTiltAttack_ = loadAttack<Attack>("upTiltAttack", g, "GroundUptilt");
 
     // Load air attack special as it uses a different class
     airNeutralAttack_ = loadAttack<Attack>("airNeutralAttack", a, "AirNeutral");
-    airSideAttack_ = loadAttack<Attack>("airSideAttack", a, "GroundNeutral");
-    airDownAttack_ = loadAttack<Attack>("airDownAttack", a, "GroundNeutral");
-    airUpAttack_ = loadAttack<Attack>("airUpAttack", a, "GroundNeutral");
+    airSideAttack_ = loadAttack<Attack>("airSideAttack", a, "AirSidetilt");
+    airDownAttack_ = loadAttack<Attack>("airDownAttack", a, "AirDowntilt");
+    airUpAttack_ = loadAttack<Attack>("airUpAttack", a, "AirUptilt");
 
-    upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "GroundNeutral");
+    upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
 
     state_ = 0;
 }
@@ -705,7 +705,7 @@ void RespawnState::update(const Controller &, float dt)
 void RespawnState::render(float dt)
 {
     // Just render the fighter, but slightly lighter
-    fighter_->renderHelper(dt, frameName_, 1.3f * fighter_->color_);
+    fighter_->renderHelper(dt, frameName_, 1.6f * fighter_->color_);
 }
 
 void RespawnState::hitByAttack(const Fighter *, const Attack *)
