@@ -24,19 +24,19 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     // Load ground attacks
     std::string g = "groundhit";
     std::string a = "airhit";
-    dashAttack_ = loadAttack<Attack>("dashAttack", g, "GroundAttacking");
-    neutralTiltAttack_ = loadAttack<Attack>("neutralTiltAttack", g, "GroundAttacking");
-    sideTiltAttack_ = loadAttack<Attack>("sideTiltAttack", g, "GroundAttacking");
+    dashAttack_ = loadAttack<Attack>("dashAttack", g, "GroundNeutral");
+    neutralTiltAttack_ = loadAttack<Attack>("neutralTiltAttack", g, "GroundNeutral");
+    sideTiltAttack_ = loadAttack<Attack>("sideTiltAttack", g, "GroundNeutral");
     downTiltAttack_ = loadAttack<Attack>("downTiltAttack", g, "GroundDowntilt");
     upTiltAttack_ = loadAttack<Attack>("upTiltAttack", g, "GroundUptilt");
 
     // Load air attack special as it uses a different class
-    airNeutralAttack_ = loadAttack<Attack>("airNeutralAttack", a, "GroundAttacking");
-    airSideAttack_ = loadAttack<Attack>("airSideAttack", a, "GroundAttacking");
-    airDownAttack_ = loadAttack<Attack>("airDownAttack", a, "GroundAttacking");
-    airUpAttack_ = loadAttack<Attack>("airUpAttack", a, "GroundAttacking");
+    airNeutralAttack_ = loadAttack<Attack>("airNeutralAttack", a, "AirNeutral");
+    airSideAttack_ = loadAttack<Attack>("airSideAttack", a, "GroundNeutral");
+    airDownAttack_ = loadAttack<Attack>("airDownAttack", a, "GroundNeutral");
+    airUpAttack_ = loadAttack<Attack>("airUpAttack", a, "GroundNeutral");
 
-    upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "GroundAttacking");
+    upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "GroundNeutral");
 
     state_ = 0;
 }
@@ -157,9 +157,6 @@ void Fighter::respawn(bool killed)
     xvel_ = yvel_ = 0.0f;
     damage_ = 0;
     lastHitBy_ = -1;
-    // Set state to air normal
-    delete state_;
-    state_ = new AirNormalState(this);
     // Remove any attacks
     if (attack_)
     {
@@ -172,12 +169,13 @@ void Fighter::respawn(bool killed)
         --lives_;
         AudioManager::get()->playSound("ko");
     }
-    // Check for death
+    delete state_;
+    // Set the new state, either respawn or dead
     if (lives_ <= 0)
-    {
-        delete state_;
         state_ = new DeadState(this);
-    }
+    else
+        // Set state to respawn state
+        state_ = new RespawnState(this);
 }
 
 bool Fighter::isAlive() const
@@ -346,6 +344,7 @@ GroundState::GroundState(Fighter *f, float delay) :
     FighterState(f), jumpTime_(-1), dashTime_(-1), waitTime_(delay),
     dashing_(false)
 {
+    frameName_ = "GroundNormal";
 }
 
 GroundState::~GroundState()
@@ -552,6 +551,7 @@ void GroundState::hitByAttack(const Fighter *attacker, const Attack *attack)
 AirNormalState::AirNormalState(Fighter *f) :
     FighterState(f), canSecondJump_(true), jumpTime_(-1)
 {
+    frameName_ = "AirNormal";
 }
 
 AirNormalState::~AirNormalState()
@@ -689,6 +689,34 @@ void AirNormalState::hitByAttack(const Fighter *attacker, const Attack *attack)
     FighterState::calculateHitResult(attacker, attack);
 }
 
+//// ----------------------- RESPAWN STATE --------------------------------
+RespawnState::RespawnState(Fighter *f) :
+    FighterState(f), t_(0.f)
+{
+}
+
+void RespawnState::update(const Controller &, float dt)
+{
+    t_ += dt;
+    if (t_ > getParam("fighter.respawnTime"))
+        next_ = new AirNormalState(fighter_);
+}
+
+void RespawnState::render(float dt)
+{
+    // Just render the fighter, but slightly lighter
+    fighter_->renderHelper(dt, frameName_, 1.3f * fighter_->color_);
+}
+
+void RespawnState::hitByAttack(const Fighter *, const Attack *)
+{
+    // Do nothing, we're invincible bitch!
+}
+
+void RespawnState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+    assert(!collision);
+}
 
 // ----------------------------------------------------------------------------
 // Rectangle class methods

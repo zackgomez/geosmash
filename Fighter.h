@@ -238,6 +238,7 @@ private:
     friend class AirNormalState;
     friend class AirStunnedState;
     friend class DeadState;
+    friend class RespawnState;
     friend class UpSpecialAttack;
 };
 
@@ -294,6 +295,21 @@ public:
 private:
     float stunDuration_;
     float stunTime_;
+};
+
+class RespawnState : public FighterState
+{
+public:
+    RespawnState(Fighter *f);
+    virtual ~RespawnState() {}
+
+    virtual void update(const Controller&, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+
+private:
+    float t_;
 };
 
 class DeadState : public FighterState
