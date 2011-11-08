@@ -28,6 +28,8 @@ int kills[4] = {0, 0, 0, 0};
 
 unsigned numPlayers = 1;
 
+size_t startTime;
+
 Controller controllers[4];
 std::vector<Fighter*> fighters;
 const glm::vec3 playerColors[] =
@@ -39,7 +41,6 @@ const glm::vec3 playerColors[] =
 };
 
 GLuint backgroundTex = 0;
-GLuint frameTex = 0;
 const glm::mat4 perspectiveTransform = glm::ortho(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.0f, 1.0f);
 
 Rectangle ground;
@@ -109,13 +110,18 @@ int main(int argc, char **argv)
     paused = false;
 
 
+    srand(time(NULL));
+    std::vector<std::string> songs;
+    songs.push_back("sfx/geosmash_2.wav");
+    songs.push_back("sfx/smash.aif");
+    songs.push_back("sfx/hand canyon.wav");
 
     if (!muteMusic)
-        start_song("sfx/geosmash_2.wav");
+        start_song(songs[rand() % songs.size()].c_str());
 
 
+    startTime = SDL_GetTicks();
     mainloop();
-
 
     printstats();
 
@@ -284,8 +290,6 @@ void render()
     // Render the overlay interface (HUD)
     //
     //
-    glm::mat4 ttran = glm::scale(glm::mat4(1.0f), glm::vec3(50, 60, 1.0f));
-    renderTexturedRectangle(ttran, frameTex);
 
     for (unsigned i = 0; i < numPlayers; i++)
     {
@@ -388,8 +392,6 @@ int initGraphics()
     initGLUtils(perspectiveTransform);
 
     backgroundTex = make_texture("back003.tga");
-    frameTex = loadAnimFrame("frames/ground.running.frame");
-    std::cout << "FRAMETEX: " << frameTex << '\n';
 
     return 1;
 }
@@ -403,6 +405,7 @@ void cleanup()
 
 void printstats()
 {
+    std::cout << "Run time (s): " << (SDL_GetTicks() - startTime) / 1000.0f << '\n';
     for (int i = 0; i < numPlayers; i++)
     {
         std::cout << "Player " << i+1 << " kills: " << kills[i] << '\n';

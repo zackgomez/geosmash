@@ -3,9 +3,11 @@
 #include <cstdio>
 #include <iostream>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include "util.h"
 #include "glutils.h"
 
@@ -16,6 +18,9 @@ static struct
     GLuint program;
     GLuint texvertex_shader, texfragment_shader;
     GLuint texprogram;
+
+    GLuint maskvertex_shader, maskfragment_shader;
+    GLuint maskprogram;
 
     glm::mat4 perspective;
 } resources;
@@ -117,33 +122,53 @@ GLuint make_texture(const char *filename)
     return texture;
 }
 
-GLuint loadAnimFrame(const char *filename)
+anim_frame* loadAnimFrame(const char *filename)
 {
     // File format is
-    // 00000000
-    // 00000000
-    // 00000000
-    // 00000000
-    // 00000000
-    // 00000000
-    // 00000000
-    // 00000000
-    // 00000000
-    // 00000000
-    // Replace a zero with '1' means that pixel should be dark
-    GLubyte data[8 * 10];
+    // name (oneword)
+    // w h
+    // x y
+    // DATA
+    // ...
+    GLubyte *data;
+    int w, h;
+    float x, y;
+    std::string name;
 
     std::cout << "Loading frame in " << filename << '\n';
-
     std::ifstream file(filename);
+    std::stringstream ss;
+    std::string line;
     if (!file)
     {
-        std::cerr << "Unable to load animation frame: " << filename << '\n';
+        std::cerr << "Unable to load file: " << filename << '\n';
         return 0;
     }
+
+    // First line is the name
+    std::getline(file, name);
+
+    // Next is the h/w
+    std::getline(file, line);
+    if (sscanf(line.c_str(), "%d %d\n", &w, &h) != 2)
+    {
+        std::cerr << "Unable to load w,h from file: " << filename << '\n';
+        return 0;
+    }
+    // Next the center
+    std::getline(file, line);
+    if (sscanf(line.c_str(), "%f %f\n", &x, &y) != 2)
+    {
+        std::cerr << "Unable to load x,y from file: " << filename << '\n';
+        return 0;
+    }
+
+    data = (GLubyte *) malloc(w * h * sizeof(GLubyte));
+
     char c;
-    for (int y = 0; y < 10; y++)
-        for (int x = 0; x < 8; x++)
+    for (int y = 0; y < h; y++)
+    {
+        for (int x = 0; x < w; x++)
         {
             file >> c;
             if (c != '0' && c != '1')
@@ -153,11 +178,10 @@ GLuint loadAnimFrame(const char *filename)
             }
             else
             {
-                data[x + 8*(9 - y)] = (c == '0' ? 0 : 255);
-                std::cout << x + 8*(9 - y) << ' ';
+                data[x + w*(h - 1 - y)] = (c == '0' ? 0 : 255);
             }
-            std::cout << '\n';
         }
+    }
 
     GLuint tex;
     glGenTextures(1, &tex);
@@ -169,10 +193,19 @@ GLuint loadAnimFrame(const char *filename)
     glTexImage2D(
             GL_TEXTURE_2D, 0,
             1,
-            8, 10, 0,
+            w, h, 0,
             GL_RED, GL_UNSIGNED_BYTE,
             data);
-    return tex;
+
+    free(data);
+
+    anim_frame *ret = new anim_frame;
+    ret->id = name;
+    ret->w = w*10.0f; ret->h = h*10.0f;
+    ret->x = x; ret->y = y;
+    ret->mask_tex = tex;
+
+    return ret;
 }
 
 bool initGLUtils(const glm::mat4 &perspectiveTransform)
@@ -206,6 +239,14 @@ bool initGLUtils(const glm::mat4 &perspectiveTransform)
     if (resources.texfragment_shader == 0)
         return false;
     resources.texprogram = make_program(resources.texvertex_shader, resources.texfragment_shader);
+
+    resources.maskvertex_shader = make_shader(GL_VERTEX_SHADER, "texbox.v.glsl");
+    if (resources.maskvertex_shader == 0)
+        return false;
+    resources.maskfragment_shader = make_shader(GL_FRAGMENT_SHADER, "maskbox.f.glsl");
+    if (resources.maskfragment_shader == 0)
+        return false;
+    resources.maskprogram = make_program(resources.maskvertex_shader, resources.maskfragment_shader);
 
     resources.perspective = perspectiveTransform;
 
@@ -262,4 +303,42 @@ void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture)
     // Clean up
     glDisableVertexAttribArray(0);
     glUseProgram(0);
+}
+
+void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec3 &color,
+        GLuint mask)
+{
+    GLuint transformUniform = glGetUniformLocation(resources.maskprogram, "transform");
+    GLuint textureUniform = glGetUniformLocation(resources.maskprogram, "texture");
+    GLuint colorUniform = glGetUniformLocation(resources.maskprogram, "color");
+
+    // Enable program and set up values
+    glUseProgram(resources.maskprogram);
+    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(resources.perspective * transform));
+    glUniform1i(textureUniform, 0);
+    glUniform3fv(colorUniform, 1, glm::value_ptr(color));
+
+    glActiveTexture(GL_TEXTURE0);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, mask);
+
+    glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
+    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
+
+    // Clean up
+    glDisableVertexAttribArray(0);
+    glUseProgram(0);
+}
+
+void renderFrame(const glm::mat4 &transform, const glm::vec3 &color, const anim_frame *frame)
+{
+    glm::mat4 finalTransform = glm::translate(
+            glm::scale(transform, glm::vec3(frame->w/2, frame->h/2, 1.0f)),
+            glm::vec3(frame->x, frame->y, 0.0f));
+
+    renderMaskedRectangle(finalTransform, color, frame->mask_tex);
 }

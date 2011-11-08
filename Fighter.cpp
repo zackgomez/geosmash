@@ -9,6 +9,8 @@
 #include "ParamReader.h"
 #include "audio.h"
 
+static anim_frame *frame = 0;
+
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
     rect_(Rectangle(0, 0, getParam("fighter.w"), getParam("fighter.h"))),
     xvel_(0), yvel_(0),
@@ -38,6 +40,9 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a);
 
     state_ = 0;
+    
+    if (!frame)
+        frame = loadAnimFrame("frames/ground.running.frame");
 }
 
 Fighter::~Fighter()
@@ -196,19 +201,15 @@ void Fighter::renderHelper(float dt, const glm::vec3 &color)
 
     // Draw body
     glm::mat4 transform(1.0);
+    /*
     transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
-            glm::vec3(rect_.w, rect_.h, 1.0));
-    renderRectangle(transform, color);
-
-    // Draw orientation tick
-    float angle = 0;
-    glm::mat4 ticktrans = glm::scale(
-            glm::rotate(
-                glm::translate(transform, glm::vec3(0.5 * dir_, 0.0, 0.0)),
-                angle, glm::vec3(0.0, 0.0, -1.0)),
-            glm::vec3(0.33, 0.1, 1.0));
-    renderRectangle(ticktrans, color);
+            glm::vec3(dir_ * rect_.w, rect_.h, 1.0));
+            */
+    transform = glm::scale(
+            glm::translate(transform, glm::vec3(rect_.x, rect_.y, 0.0)),
+            glm::vec3(dir_, 1.0f, 1.0f));
+    renderFrame(transform, color, frame);
 
     // Draw hitbox if applicable
     if (attack_ && attack_->drawHitbox())

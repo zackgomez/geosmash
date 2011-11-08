@@ -102,7 +102,7 @@ downTiltAttack.priority     1.0
 
 upTiltAttack.startup      0.1
 upTiltAttack.duration     0.22
-upTiltAttack.cooldown     0.25
+upTiltAttack.cooldown     0.20
 upTiltAttack.damage       9
 upTiltAttack.stun         0.14
 upTiltAttack.knockbackx   1
