@@ -10,6 +10,7 @@
 #include "audio.h"
 #include "explosion.h"
 #include "ParamReader.h"
+#include "FrameManager.h"
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 static const float dt = 33.0f / 1000.0f;
@@ -392,6 +393,8 @@ int initGraphics()
     initGLUtils(perspectiveTransform);
 
     backgroundTex = make_texture("back003.tga");
+    // Load some animation frames
+    FrameManager::get()->loadFile("frames/charlie.frames");
 
     return 1;
 }

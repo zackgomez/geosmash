@@ -40,7 +40,8 @@ public:
         hitbox_(hitbox),
         startup_(startup), duration_(duration), cooldown_(cooldown),
         damage_(damage), stun_(stun), priority_(priority), knockback_(knockback), 
-        hasHit_(false), t_(0.0f), audioID_(audioFileprefix), owner_(NULL)
+        hasHit_(false), t_(0.0f), audioID_(audioFileprefix), frameName_("GroundUptilt"),
+        owner_(NULL)
     {}
 
     virtual ~Attack() {}
@@ -53,6 +54,7 @@ public:
     virtual glm::vec2 getKnockback(const Fighter *fighter) const { return knockback_; }
 
     void setFighter(Fighter *fighter);
+    void setFrameName(const std::string &fname) { frameName_ = fname; }
     const Fighter *getOwner() const;
 
     // Called when the move is started
@@ -77,6 +79,7 @@ public:
     virtual void attackCollision(const Attack *other);
 
     virtual std::string getAudioID() const { return audioID_; }
+    virtual std::string getFrameName() const { return frameName_; }
 
 protected:
     Rectangle hitbox_;
@@ -88,6 +91,7 @@ protected:
     float t_;
 
     std::string audioID_;
+    std::string frameName_;
 
     Fighter *owner_;
 };
@@ -120,7 +124,7 @@ class FighterState
 {
 public:
     FighterState(Fighter *f) :
-        fighter_(f), next_(NULL)
+        fighter_(f), next_(NULL), frameName_("GroundNeutral")
     {}
     virtual ~FighterState() {}
 
@@ -144,6 +148,7 @@ public:
 protected:
     Fighter *fighter_;
     FighterState *next_;
+    std::string frameName_;
 
     void calculateHitResult(const Fighter *fighter, const Attack *attack);
 };
@@ -222,9 +227,10 @@ private:
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
-    void renderHelper(float dt, const glm::vec3& color);
+    void renderHelper(float dt, const std::string &frameName, const glm::vec3& color);
     template<class AttackClass>
-    AttackClass loadAttack(std::string attackName, const std::string &audioID);
+    AttackClass loadAttack(std::string attackName, const std::string &audioID,
+            const std::string &frameName);
 
     friend class FighterState;
     friend class GroundState;

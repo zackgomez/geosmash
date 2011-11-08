@@ -7,9 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "explosion.h"
 #include "ParamReader.h"
+#include "FrameManager.h"
 #include "audio.h"
-
-static anim_frame *frame = 0;
 
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
     rect_(Rectangle(0, 0, getParam("fighter.w"), getParam("fighter.h"))),
@@ -25,24 +24,21 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     // Load ground attacks
     std::string g = "groundhit";
     std::string a = "airhit";
-    dashAttack_ = loadAttack<Attack>("dashAttack", g);
-    neutralTiltAttack_ = loadAttack<Attack>("neutralTiltAttack", g);
-    sideTiltAttack_ = loadAttack<Attack>("sideTiltAttack", g);
-    downTiltAttack_ = loadAttack<Attack>("downTiltAttack", g);
-    upTiltAttack_ = loadAttack<Attack>("upTiltAttack", g);
+    dashAttack_ = loadAttack<Attack>("dashAttack", g, "GroundAttacking");
+    neutralTiltAttack_ = loadAttack<Attack>("neutralTiltAttack", g, "GroundAttacking");
+    sideTiltAttack_ = loadAttack<Attack>("sideTiltAttack", g, "GroundAttacking");
+    downTiltAttack_ = loadAttack<Attack>("downTiltAttack", g, "GroundDowntilt");
+    upTiltAttack_ = loadAttack<Attack>("upTiltAttack", g, "GroundUptilt");
 
     // Load air attack special as it uses a different class
-    airNeutralAttack_ = loadAttack<Attack>("airNeutralAttack", a);
-    airSideAttack_ = loadAttack<Attack>("airSideAttack", a);
-    airDownAttack_ = loadAttack<Attack>("airDownAttack", a);
-    airUpAttack_ = loadAttack<Attack>("airUpAttack", a);
+    airNeutralAttack_ = loadAttack<Attack>("airNeutralAttack", a, "GroundAttacking");
+    airSideAttack_ = loadAttack<Attack>("airSideAttack", a, "GroundAttacking");
+    airDownAttack_ = loadAttack<Attack>("airDownAttack", a, "GroundAttacking");
+    airUpAttack_ = loadAttack<Attack>("airUpAttack", a, "GroundAttacking");
 
-    upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a);
+    upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "GroundAttacking");
 
     state_ = 0;
-    
-    if (!frame)
-        frame = loadAnimFrame("frames/ground.running.frame");
 }
 
 Fighter::~Fighter()
@@ -194,22 +190,17 @@ void Fighter::render(float dt)
     state_->render(dt);
 }
 
-void Fighter::renderHelper(float dt, const glm::vec3 &color)
+void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color)
 {
     printf("ID: %d  Damage: %.1f  Position: [%.2f, %.2f]   Velocity: [%.2f, %.2f]  Attack: %d  Dir: %.1f  LastHitBy: %d\n",
             id_, damage_, rect_.x, rect_.y, xvel_, yvel_, attack_ != 0, dir_, lastHitBy_);
 
     // Draw body
-    glm::mat4 transform(1.0);
-    /*
-    transform = glm::scale(
+    glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
-            glm::vec3(dir_ * rect_.w, rect_.h, 1.0));
-            */
-    transform = glm::scale(
-            glm::translate(transform, glm::vec3(rect_.x, rect_.y, 0.0)),
             glm::vec3(dir_, 1.0f, 1.0f));
-    renderFrame(transform, color, frame);
+
+    FrameManager::get()->renderFrame(transform, color, frameName);
 
     // Draw hitbox if applicable
     if (attack_ && attack_->drawHitbox())
@@ -224,11 +215,12 @@ void Fighter::renderHelper(float dt, const glm::vec3 &color)
 
 float Fighter::damageFunc() const
 {
-    return (damage_) / 33 + 1;
+    return 1.5*(damage_) / 33 + 1.5;
 }
 
 template<class AttackClass>
-AttackClass Fighter::loadAttack(std::string attackName, const std::string &audioID)
+AttackClass Fighter::loadAttack(std::string attackName, const std::string &audioID,
+        const std::string &fname)
 {
     attackName += '.';
 
@@ -248,6 +240,7 @@ AttackClass Fighter::loadAttack(std::string attackName, const std::string &audio
                 getParam(attackName + "hitboxh")),
             getParam(attackName + "priority"),
             audioID);
+    ret.setFrameName(fname);
 
     return ret;
 
@@ -293,6 +286,7 @@ void FighterState::calculateHitResult(const Fighter *attacker, const Attack *att
 AirStunnedState::AirStunnedState(Fighter *f, float duration) : 
     FighterState(f), stunDuration_(duration), stunTime_(0)
 {
+    frameName_ = "AirStunned";
 }
 
 AirStunnedState::~AirStunnedState()
@@ -319,7 +313,10 @@ void AirStunnedState::render(float dt)
     float opacity_factor = (1 + cos(period_scale_factor * stunTime_)) * 0.5f; 
     glm::vec3 color = fighter_->color_ * (opacity_amplitude * opacity_factor + 1);
 
-    fighter_->renderHelper(dt, color);
+    std::string fname = frameName_;
+    if (fighter_->attack_)
+        fname = fighter_->attack_->getFrameName();
+    fighter_->renderHelper(dt, fname, color);
 }
 
 void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collision)
@@ -525,7 +522,13 @@ void GroundState::render(float dt)
 {
     printf("GROUND | JumpTime: %.3f  DashTime: %.3f  WaitTime: %.3f || ",
             jumpTime_, dashTime_, waitTime_);
-    fighter_->renderHelper(dt, fighter_->color_);
+
+    std::string fname = frameName_;
+    if (dashing_)
+        fname = "GroundRunning";
+    if (fighter_->attack_)
+        fname = fighter_->attack_->getFrameName();
+    fighter_->renderHelper(dt, fname, fighter_->color_);
 }
 
 void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
@@ -643,7 +646,10 @@ void AirNormalState::render(float dt)
 {
     printf("AIR NORMAL | JumpTime: %.3f  Can2ndJump: %d || ",
             jumpTime_, canSecondJump_);
-    fighter_->renderHelper(dt, fighter_->color_);
+    std::string fname = frameName_;
+    if (fighter_->attack_)
+        fname = fighter_->attack_->getFrameName();
+    fighter_->renderHelper(dt, fname, fighter_->color_);
 }
 
 void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision)

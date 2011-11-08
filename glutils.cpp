@@ -122,92 +122,6 @@ GLuint make_texture(const char *filename)
     return texture;
 }
 
-anim_frame* loadAnimFrame(const char *filename)
-{
-    // File format is
-    // name (oneword)
-    // w h
-    // x y
-    // DATA
-    // ...
-    GLubyte *data;
-    int w, h;
-    float x, y;
-    std::string name;
-
-    std::cout << "Loading frame in " << filename << '\n';
-    std::ifstream file(filename);
-    std::stringstream ss;
-    std::string line;
-    if (!file)
-    {
-        std::cerr << "Unable to load file: " << filename << '\n';
-        return 0;
-    }
-
-    // First line is the name
-    std::getline(file, name);
-
-    // Next is the h/w
-    std::getline(file, line);
-    if (sscanf(line.c_str(), "%d %d\n", &w, &h) != 2)
-    {
-        std::cerr << "Unable to load w,h from file: " << filename << '\n';
-        return 0;
-    }
-    // Next the center
-    std::getline(file, line);
-    if (sscanf(line.c_str(), "%f %f\n", &x, &y) != 2)
-    {
-        std::cerr << "Unable to load x,y from file: " << filename << '\n';
-        return 0;
-    }
-
-    data = (GLubyte *) malloc(w * h * sizeof(GLubyte));
-
-    char c;
-    for (int y = 0; y < h; y++)
-    {
-        for (int x = 0; x < w; x++)
-        {
-            file >> c;
-            if (c != '0' && c != '1')
-            {
-                std::cerr << "Bad character in file: " << c << '\n';
-                return 0;
-            }
-            else
-            {
-                data[x + w*(h - 1 - y)] = (c == '0' ? 0 : 255);
-            }
-        }
-    }
-
-    GLuint tex;
-    glGenTextures(1, &tex);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,     GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_EDGE);
-    glTexImage2D(
-            GL_TEXTURE_2D, 0,
-            1,
-            w, h, 0,
-            GL_RED, GL_UNSIGNED_BYTE,
-            data);
-
-    free(data);
-
-    anim_frame *ret = new anim_frame;
-    ret->id = name;
-    ret->w = w*10.0f; ret->h = h*10.0f;
-    ret->x = x; ret->y = y;
-    ret->mask_tex = tex;
-
-    return ret;
-}
-
 bool initGLUtils(const glm::mat4 &perspectiveTransform)
 {
     // The datas
@@ -334,11 +248,3 @@ void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec3 &color,
     glUseProgram(0);
 }
 
-void renderFrame(const glm::mat4 &transform, const glm::vec3 &color, const anim_frame *frame)
-{
-    glm::mat4 finalTransform = glm::translate(
-            glm::scale(transform, glm::vec3(frame->w/2, frame->h/2, 1.0f)),
-            glm::vec3(frame->x, frame->y, 0.0f));
-
-    renderMaskedRectangle(finalTransform, color, frame->mask_tex);
-}
