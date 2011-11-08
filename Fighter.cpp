@@ -291,10 +291,20 @@ AirStunnedState::~AirStunnedState()
 {
 }
 
-void AirStunnedState::update(const Controller&, float dt)
+void AirStunnedState::update(const Controller &controller, float dt)
 {
     // Gravity
     fighter_->yvel_ += getParam("airAccel") * dt;
+
+    // Let them control the character slightly
+    if (fabs(controller.joyx) > getParam("input.deadzone"))
+    {
+        // Don't let the player increase the velocity past a certain speed
+        if (fighter_->xvel_ * controller.joyx <= 0 || fabs(fighter_->xvel_) < getParam("jumpAirSpeed"))
+            fighter_->xvel_ += controller.joyx * getParam("airDI") * dt;
+        // You can always control your orientation
+        fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
+    }
 
     // Check for completetion
     if ((stunTime_ += dt) > stunDuration_)

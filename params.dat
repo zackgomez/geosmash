@@ -34,6 +34,7 @@ walkSpeed        133.3
 dashSpeed        400.0
 airForce         450.0
 airAccel         -1100.0
+airDI            200.0
 jumpStartupTime  0.05
 jumpSpeed        600.0
 hopSpeed         200.0
@@ -183,7 +184,7 @@ upSpecialAttack.damage       2
 upSpecialAttack.stun         0.20
 upSpecialAttack.knockbackx   1
 upSpecialAttack.knockbacky   3
-upSpecialAttack.knockbackpow 40.0
+upSpecialAttack.knockbackpow 70.0
 upSpecialAttack.hitboxx      25
 upSpecialAttack.hitboxy      30
 upSpecialAttack.hitboxw      40
