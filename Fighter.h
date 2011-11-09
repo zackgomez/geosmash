@@ -41,7 +41,7 @@ public:
         hitbox_(hitbox),
         startup_(startup), duration_(duration), cooldown_(cooldown),
         damage_(damage), stun_(stun), priority_(priority), knockback_(knockback), 
-        hasHit_(false), t_(0.0f), audioID_(audioFileprefix), frameName_("GroundUptilt"),
+        hasHit_(), t_(0.0f), audioID_(audioFileprefix), frameName_("GroundUptilt"),
         owner_(NULL)
     {}
 
@@ -69,6 +69,8 @@ public:
     virtual bool drawHitbox() const;
     // If this attack is over
     virtual bool isDone() const;
+    // True if this attack can hit the fighter right now
+    bool canHit(const Fighter *f) const;
 
     // Updates internal timer
     virtual void update(float dt);
@@ -88,7 +90,7 @@ protected:
     float damage_, stun_;
     float priority_;
     glm::vec2 knockback_;
-    bool hasHit_;
+    bool hasHit_[4];
     float t_;
 
     std::string audioID_;
@@ -165,6 +167,7 @@ public:
     void update(const Controller&, float dt);
     void render(float dt);
 
+    int getID() const { return id_; }
     int getLives() const;
     float getDamage() const;
     float getDirection() const; // returns -1 or 1

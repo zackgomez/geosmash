@@ -110,6 +110,11 @@ void Fighter::attackCollision(const Attack *inAttack)
 void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
 {
     assert(attack && attacker);
+
+    // Do nothing if this attack won't damage us
+    if (!attack->canHit(this))
+        return;
+
     state_->hitByAttack(attacker, attack);
 
     lastHitBy_ = attacker->id_;
@@ -125,7 +130,8 @@ void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
 void Fighter::hitWithAttack(Fighter *victim)
 {
     assert(attack_);
-    attack_->hit(victim);
+    if (attack_->canHit(victim))
+        attack_->hit(victim);
 }
 
 const Rectangle& Fighter::getRectangle() const
@@ -790,7 +796,7 @@ void Attack::setFighter(Fighter *fighter)
 void Attack::start()
 {
     t_ = 0.0f;
-    hasHit_ = false;
+    hasHit_[0] = hasHit_[1] = hasHit_[2] = hasHit_[3] = false;
 }
 
 void Attack::finish()
@@ -811,7 +817,7 @@ Rectangle Attack::getHitbox() const
 
 bool Attack::hasHitbox() const
 {
-    return (t_ > startup_) && (t_ < startup_ + duration_) && !hasHit_;
+    return (t_ > startup_) && (t_ < startup_ + duration_);
 }
 
 bool Attack::drawHitbox() const
@@ -822,6 +828,11 @@ bool Attack::drawHitbox() const
 bool Attack::isDone() const
 {
     return (t_ > startup_ + duration_ + cooldown_);
+}
+
+bool Attack::canHit(const Fighter *f) const
+{
+    return !hasHit_[f->getID()];
 }
 
 void Attack::update(float dt)
@@ -836,7 +847,8 @@ void Attack::cancel()
 
 void Attack::hit(Fighter *other)
 {
-    hasHit_ = true;
+    assert(!hasHit_[other->getID()]);
+    hasHit_[other->getID()] = true;
 }
 
 void Attack::attackCollision(const Attack *other)
@@ -888,7 +900,7 @@ void UpSpecialAttack::update(float dt)
     }
     if (repeatTime_ > getParam("upSpecialAttack.repeatInterval"))
     {
-        hasHit_ = false;
+        hasHit_[0] = hasHit_[1] = hasHit_[2] = hasHit_[3] = false;
         repeatTime_ -= getParam("upSpecialAttack.repeatInterval");
     }
 }
