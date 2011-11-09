@@ -294,7 +294,11 @@ void FighterState::collisionHelper(const Rectangle &ground)
     // in the ground, move them so they don't overlap in x/y
     else if (fighter_->rect_.y + fighter_->rect_.h/2 < ground.y + ground.h/2
             && (fighter_->rect_.x > ground.x + ground.w/2 || fighter_->rect_.x < ground.x - ground.w/2))
-        fighter_->rect_.x += abs(fighter_->rect_.x - ground.x) - ground.w/2 - fighter_->rect_.w/2;
+    {
+        float dist = ground.x - fighter_->rect_.x;
+        float dir = dist / fabs(dist);
+        fighter_->rect_.x += dir * (fabs(dist) - (ground.w/2 + fighter_->rect_.w/2));
+    }
 
 }
 
