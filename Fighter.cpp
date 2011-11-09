@@ -232,22 +232,23 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
             ? glm::vec2(dir.x / fabs(dir.x), 0)
             : glm::vec2(0, dir.y / fabs(dir.y));
 
-        float theta = acos(glm::dot(glm::vec2(-1, 0), dir));
+        float theta = acos(glm::dot(glm::vec2(-1, 0), dir)) * ((rect_.y > cameraPos.y) ? -1.f : 1.f);
 
         glm::vec2 screenVec(screen.w/2, screen.h/2);
         glm::vec2 arrowPos = side * screenVec +
-            move * screenVec * glm::vec2(cosf(theta), sinf(theta));
+            move * screenVec * glm::vec2(fabs(cosf(theta)), fabs(sinf(theta)));
 
         float len = glm::length(arrowPos);
         arrowPos *= (len - 20) / len;
 
         float scale = (dist / len - 1.f) * 3.f + 1.f;
+        float rot = theta * 180.f / M_PI;
 
-        glm::mat4 transform =
+            glm::mat4 transform =
             glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f),
                             glm::vec3(arrowPos, 0.0f)), 
                         glm::vec3(scale, scale, 1.f)),
-                    static_cast<float>(theta * 180.f / M_PI), glm::vec3(0, 0, 1));
+                    rot, glm::vec3(0, 0, 1));
 
         FrameManager::get()->renderFrame(transform, color, "OffscreenArrow");
     }
