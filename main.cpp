@@ -47,6 +47,9 @@ const glm::mat4 perspectiveTransform = glm::ortho(-WORLD_W/2, WORLD_W/2, -WORLD_
 Rectangle ground;
 const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
 
+void pause(int playerID);
+void unpause(int playerID);
+
 
 int initJoystick(unsigned numPlayers);
 int initGraphics();
@@ -464,8 +467,18 @@ void controllerEvent(Controller &controller, const SDL_Event &event)
         }
         else if (event.jbutton.button == 2)
         {
-            controller.pressc = !controller.buttonc;
+            controller.pressc = true;
             controller.buttonc = true;
+        }
+        else if (event.jbutton.button == 7)
+        {
+            if (paused)
+                unpause(event.jbutton.which);
+            else
+            {
+                controller.pressstart = true;
+                controller.buttonstart = true;
+            }
         }
         break;
 
@@ -492,16 +505,13 @@ void controllerEvent(Controller &controller, const SDL_Event &event)
         }
         else if (event.jbutton.button == 7)
         {
-            if (paused && pausedPlayer == event.jbutton.which)
-            {
-                paused = false;
-                pausedPlayer = -1;
-            }
-            else if (!paused)
-            {
-                paused = true;
-                pausedPlayer = event.jbutton.which;
-            }
+            controller.buttonstart = false;
+            controller.pressstart = false;
+        }
+        else
+        {
+            std::cout << "UNHANDLED BUTTON RELEASE: " << event.jbutton.button << 
+                " on controller " << event.jbutton.which << '\n';
         }
         break;
 
@@ -541,4 +551,22 @@ int initLibs()
 float getParam(const std::string &param)
 {
     return ParamReader::instance()->get(param);
+}
+
+void pause(int playerID)
+{
+    if (!paused)
+    {
+        paused = true;
+        pausedPlayer = playerID;
+    }
+}
+
+void unpause(int playerID)
+{
+    if (paused && pausedPlayer == playerID)
+    {
+        paused = false;
+        pausedPlayer = -1;
+    }
 }

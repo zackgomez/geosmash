@@ -42,7 +42,7 @@ jumpAirSpeed     200.0
 secondJumpSpeed  500.0
 dashStartupTime  0.07
 dashChangeTime   0.25
-landingCooldownTime 0.15
+landingCooldownTime 0.05
 
 
 dashAttack.startup      0.06

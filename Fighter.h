@@ -14,9 +14,9 @@ struct Controller
     // The velocities of the main analog stick over some time period
     float joyxv, joyyv;
     // nonzero if the button is pressed
-    int buttona, buttonb, buttonc, jumpbutton;
+    int buttona, buttonb, buttonc, jumpbutton, buttonstart;
     // nonzero if the button was pressed this frame
-    int pressa, pressb, pressc, pressjump;
+    int pressa, pressb, pressc, pressjump, pressstart;
 };
 
 class Rectangle

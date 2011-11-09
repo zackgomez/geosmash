@@ -10,6 +10,8 @@
 #include "FrameManager.h"
 #include "audio.h"
 
+void pause(int playerID);
+
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
     rect_(Rectangle(0, 0, getParam("fighter.w"), getParam("fighter.h"))),
     xvel_(0), yvel_(0),
@@ -329,6 +331,10 @@ AirStunnedState::~AirStunnedState()
 
 void AirStunnedState::update(const Controller &controller, float dt)
 {
+    // Check for pause
+    if (controller.pressstart)
+        pause(fighter_->id_);
+
     // Gravity
     fighter_->yvel_ += getParam("airAccel") * dt;
 
@@ -398,6 +404,10 @@ GroundState::~GroundState()
 
 void GroundState::update(const Controller &controller, float dt)
 {
+    // Check for pause
+    if (controller.pressstart)
+        pause(fighter_->id_);
+
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
     if (dashTime_ >= 0) dashTime_ += dt;
@@ -608,6 +618,10 @@ void AirNormalState::update(const Controller &controller, float dt)
     // Gravity
     fighter_->yvel_ += getParam("airAccel") * dt;
 
+    // Check for pause
+    if (controller.pressstart)
+        pause(fighter_->id_);
+
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
     // If the fighter is currently attacking, do nothing else
@@ -740,8 +754,12 @@ RespawnState::RespawnState(Fighter *f) :
 {
 }
 
-void RespawnState::update(const Controller &, float dt)
+void RespawnState::update(const Controller &controller, float dt)
 {
+    // Check for pause
+    if (controller.pressstart)
+        pause(fighter_->id_);
+
     t_ += dt;
     if (t_ > getParam("fighter.respawnTime"))
         next_ = new AirNormalState(fighter_);
