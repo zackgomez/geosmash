@@ -832,7 +832,7 @@ void Attack::update(float dt)
 
 void Attack::cancel()
 {
-    t_ = startup_ + duration_;
+    t_ = std::max(t, startup_ + duration_);
 }
 
 void Attack::hit(Fighter *other)
