@@ -223,7 +223,8 @@ void update()
                 attacki = fighter->getAttack();
                 continue;
             }
-            if (fighter->hasAttack() && fighters[j]->getRectangle().overlaps(attacki->getHitbox()))
+            if (fighter->hasAttack() && fighters[j]->getRectangle().overlaps(attacki->getHitbox())
+                    && attacki->canHit(fighters[j]) && fighters[j]->canBeHit())
             {
                 // fighter has hit fighters[j]
                 fighters[j]->hitByAttack(fighter, attacki);
@@ -232,7 +233,8 @@ void update()
                 // Cache values
                 attacki = fighter->getAttack();
             }
-            if (fighters[j]->hasAttack() && fighter->getRectangle().overlaps(attackj->getHitbox()))
+            if (fighters[j]->hasAttack() && fighter->getRectangle().overlaps(attackj->getHitbox())
+                    && attackj->canHit(fighter) && fighter->canBeHit())
             {
                 // fighter[j] has hit fighter
                 fighter->hitByAttack(fighters[j], attackj);

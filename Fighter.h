@@ -148,6 +148,9 @@ public:
     // other work is done
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack) = 0;
 
+    // This function is the value returned from fighter::canBeHit
+    virtual bool canBeHit() const;
+
 protected:
     Fighter *fighter_;
     FighterState *next_;
@@ -188,6 +191,10 @@ public:
     // Returns true if this Fighter is currently attacking and has an attack hitbox
     bool hasAttack() const;
     const Attack * getAttack() const;
+
+    // Returns true if this fighter is not invincible and can be hit by the
+    // passed in attack
+    bool canBeHit() const;
 
     // Respawns the fighter at its respawn location.  If killed is true, a
     // life be removed
@@ -311,6 +318,7 @@ public:
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+    virtual bool canBeHit() const { return false; }
 
 private:
     float t_;
@@ -330,4 +338,5 @@ public:
     virtual void render(float dt) { };
     virtual void collisionWithGround(const Rectangle &ground, bool collision) { assert(false); }
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack) { assert(false); }
+    virtual bool canBeHit() const { return false; }
 };

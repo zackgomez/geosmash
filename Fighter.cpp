@@ -110,10 +110,7 @@ void Fighter::attackCollision(const Attack *inAttack)
 void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
 {
     assert(attack && attacker);
-
-    // Do nothing if this attack won't damage us
-    if (!attack->canHit(this))
-        return;
+    assert(attack->canHit(this));
 
     state_->hitByAttack(attacker, attack);
 
@@ -130,8 +127,9 @@ void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
 void Fighter::hitWithAttack(Fighter *victim)
 {
     assert(attack_);
-    if (attack_->canHit(victim))
-        attack_->hit(victim);
+    assert(attack_->canHit(victim));
+
+    attack_->hit(victim);
 }
 
 const Rectangle& Fighter::getRectangle() const
@@ -147,6 +145,11 @@ bool Fighter::hasAttack() const
 const Attack * Fighter::getAttack() const
 {
     return attack_;
+}
+
+bool Fighter::canBeHit() const
+{
+    return state_->canBeHit();
 }
 
 void Fighter::respawn(bool killed)
@@ -247,6 +250,11 @@ AttackClass Fighter::loadAttack(std::string attackName, const std::string &audio
 // ----------------------------------------------------------------------------
 // FighterState class methods
 // ----------------------------------------------------------------------------
+
+bool FighterState::canBeHit() const
+{
+    return true;
+}
 
 void FighterState::calculateHitResult(const Fighter *attacker, const Attack *attack)
 {
