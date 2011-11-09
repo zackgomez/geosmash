@@ -26,6 +26,7 @@ public:
     Rectangle(float x, float y, float w, float h);
 
     bool overlaps(const Rectangle &rhs) const;
+    bool contains(const Rectangle &rhs) const;
 
     float x, y, w, h;
 };
@@ -151,6 +152,7 @@ protected:
     std::string frameName_;
 
     void calculateHitResult(const Fighter *fighter, const Attack *attack);
+    void collisionHelper(const Rectangle &ground);
 };
 
 

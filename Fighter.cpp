@@ -280,6 +280,30 @@ void FighterState::calculateHitResult(const Fighter *attacker, const Attack *att
     next_ = new AirStunnedState(fighter_, stunDuration);
 }
 
+void FighterState::collisionHelper(const Rectangle &ground)
+{
+    // If the player is entirely inside of the rectangle
+    // just move them on top of it, minus 1 pixel
+    if (ground.contains(fighter_->rect_))
+        fighter_->rect_.y = ground.y + ground.h/2 + fighter_->rect_.h/2 - 1;
+    // If the character has some part above the ground wihen overlap, let
+    // them 'ledge grab'
+    else if (fighter_->rect_.y + fighter_->rect_.h/2 > ground.y + ground.h/2)
+        fighter_->rect_.y = ground.y + ground.h/2 + fighter_->rect_.h/2 - 1;
+    // If the character is not above the ground, and not overlapping, then
+    // if their center is within the ground, move them down so they are not
+    // covering the rectangle
+    else if (fighter_->rect_.x < ground.x + ground.w/2
+            && fighter_->rect_.x > ground.x - ground.w/2)
+        fighter_->rect_.y = ground.y - ground.h/2 - fighter_->rect_.h/2;
+    // If the character is not above the ground, and their center is not
+    // in the ground, move them so they don't overlap in x/y
+    else if (fighter_->rect_.y + fighter_->rect_.h/2 < ground.y + ground.h/2
+            && (fighter_->rect_.x > ground.x + ground.w/2 || fighter_->rect_.x < ground.x - ground.w/2))
+        fighter_->rect_.x += abs(fighter_->rect_.x - ground.x) - ground.w/2 - fighter_->rect_.w/2;
+
+}
+
 //// ---------------------- AIR STUNNED STATE -----------------------
 AirStunnedState::AirStunnedState(Fighter *f, float duration) : 
     FighterState(f), stunDuration_(duration), stunTime_(0)
@@ -332,13 +356,12 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
     // If no collision, we don't care
     if (!collision)
         return;
+    FighterState::collisionHelper(ground);
+    // If we're not overlapping the ground anymore, no collision
+    if (!ground.overlaps(fighter_->rect_))
+        return;
     fighter_->xvel_ = 0;
     fighter_->yvel_ = 0;
-    // If we're completely below the ground, no 'real' collision
-    if (fighter_->rect_.y + fighter_->rect_.h/2 < ground.y + ground.h/2)
-        return;
-    // Overlap the ground by just one unit, only if some part of us is above
-    fighter_->rect_.y = ground.y + ground.h/2 + fighter_->rect_.h/2 - 1;
     // Transition to the ground state
     if (next_) delete next_;
     next_ = new GroundState(fighter_);
@@ -667,11 +690,10 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
     // If no collision, we don't care
     if (!collision)
         return;
-    // If we're completely below the ground, no 'real' collision
-    if (fighter_->rect_.y + fighter_->rect_.h/2 < ground.y + ground.h/2)
+    FighterState::collisionHelper(ground);
+    // If we're not overlapping the ground anymore, no collision
+    if (!ground.overlaps(fighter_->rect_))
         return;
-    // Overlap the ground by just one unit, only if some part of us is above
-    fighter_->rect_.y = ground.y + ground.h/2 + fighter_->rect_.h/2 - 1;
     fighter_->xvel_ = 0;
     fighter_->yvel_ = 0;
 
@@ -744,6 +766,12 @@ bool Rectangle::overlaps(const Rectangle &rhs) const
 {
     return (rhs.x + rhs.w/2) > (x - w/2) && (rhs.x - rhs.w/2) < (x + w/2) &&
         (rhs.y + rhs.h/2) > (y - h/2) && (rhs.y - rhs.h/2) < (y + h/2);
+}
+
+bool Rectangle::contains(const Rectangle &rhs) const
+{
+    return (rhs.x - rhs.w/2) > (x - w/2) && (rhs.x + rhs.w/2) < (x + w/2) &&
+        (rhs.y - rhs.h/2) > (y - h/2) && (rhs.y + rhs.h/2) < (y + h/2);
 }
 
 // ----------------------------------------------------------------------------
