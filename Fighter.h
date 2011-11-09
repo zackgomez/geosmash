@@ -139,7 +139,7 @@ public:
 
     // State behavior functions
     // This function is called once every call to Fighter::update
-    virtual void update(const Controller&, float dt) = 0;
+    virtual void update(Controller&, float dt) = 0;
     // TODO description
     virtual void render(float dt) = 0;
     // This function is called once every call to Fighter::collisionWithGround
@@ -167,7 +167,7 @@ public:
     Fighter(float respawnx, float respawny, const glm::vec3 &color, int id);
     ~Fighter();
 
-    void update(const Controller&, float dt);
+    void update(Controller&, float dt);
     void render(float dt);
 
     int getID() const { return id_; }
@@ -259,7 +259,7 @@ public:
     GroundState(Fighter *f, float delay = -1.0f);
     virtual ~GroundState();
 
-    virtual void update(const Controller&, float dt);
+    virtual void update(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
@@ -280,7 +280,7 @@ public:
     AirNormalState(Fighter *f);
     virtual ~AirNormalState();
 
-    virtual void update(const Controller&, float dt);
+    virtual void update(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
@@ -298,7 +298,7 @@ public:
     AirStunnedState(Fighter *f, float duration);
     virtual ~AirStunnedState();
 
-    virtual void update(const Controller&, float dt);
+    virtual void update(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
@@ -314,7 +314,7 @@ public:
     RespawnState(Fighter *f);
     virtual ~RespawnState() {}
 
-    virtual void update(const Controller&, float dt);
+    virtual void update(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
@@ -334,7 +334,7 @@ public:
     };
     virtual ~DeadState() {};
 
-    virtual void update(const Controller&, float dt) { }
+    virtual void update(Controller&, float dt);
     virtual void render(float dt) { };
     virtual void collisionWithGround(const Rectangle &ground, bool collision) { assert(false); }
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack) { assert(false); }

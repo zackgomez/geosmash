@@ -21,6 +21,7 @@ static int SCREEN_W = 1920;
 static int SCREEN_H = 1080;
 
 bool running;
+bool teams;
 SDL_Joystick *joystick;
 
 bool paused;
@@ -40,6 +41,13 @@ const glm::vec3 playerColors[] =
     glm::vec3(0.8, 0.2, 0.2),
     glm::vec3(0.8, 0.8, 0.2)
 };
+const glm::vec3 teamColors[] =
+{
+    glm::vec3(0.2, 0.2, 0.8),
+    glm::vec3(0.2, 0.6, 0.8),
+    glm::vec3(0.8, 0.2, 0.2),
+    glm::vec3(0.8, 0.35, 0.1)
+};
 
 GLuint backgroundTex = 0;
 const glm::mat4 perspectiveTransform = glm::ortho(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.0f, 1.0f);
@@ -50,6 +58,8 @@ const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
 void pause(int playerID);
 void unpause(int playerID);
 
+// Returns the partner, or NULL if there is none
+Fighter *getPartner(int playerID);
 
 int initJoystick(unsigned numPlayers);
 int initGraphics();
@@ -76,6 +86,14 @@ int main(int argc, char **argv)
             numPlayers = std::min(4, std::max(1, atoi(argv[i])));
         if (strcmp(argv[i], "--no-music") == 0)
             muteMusic = true;
+        if (strcmp(argv[i], "--teams") == 0)
+            teams = true;
+    }
+    
+    if (teams && numPlayers != 4)
+    {
+        std::cerr << "Teams only supported with 4 players\n";
+        exit(1);
     }
 
     if (!initLibs())
@@ -98,7 +116,8 @@ int main(int argc, char **argv)
     WORLD_H = getParam("worldHeight");
     for (unsigned i = 0; i < numPlayers; i++)
     {
-        Fighter *fighter = new Fighter(-225.0f+i*150, -50.f, playerColors[i], i);
+        const glm::vec3 *colors = teams ? teamColors : playerColors;
+        Fighter *fighter = new Fighter(-225.0f+i*150, -50.f, colors[i], i);
         fighter->respawn(false);
         fighters.push_back(fighter);
     }
@@ -195,10 +214,13 @@ void update()
     {
         Fighter *fighter = fighters[i];
         if (fighter->isAlive()) alivePlayers++;
-        else continue;
 
         // Update positions, etc
         fighter->update(controllers[i], dt);
+
+        // dont do other updates when player is dead
+        if (!fighter->isAlive()) continue;
+
 
         // Cache some vals
         const Attack *attacki = fighter->getAttack();
@@ -297,6 +319,7 @@ void render()
     //
     //
 
+    const glm::vec3 *colors = teams ? teamColors : playerColors;
     for (unsigned i = 0; i < numPlayers; i++)
     {
         int lives = fighters[i]->getLives();
@@ -315,7 +338,7 @@ void render()
             renderRectangle(transform, glm::vec3(0.25, 0.25, 0.25));
 
             glm::mat4 transform2 = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
-            renderRectangle(transform2, glm::vec3(playerColors[i]));
+            renderRectangle(transform2, glm::vec3(colors[i]));
 
             if (j % 2 == 0)
                 life_area.x += 30;
@@ -351,7 +374,7 @@ void render()
                         transform,
                         glm::vec3(0.0f)), //glm::vec3(-.4 * .5 * xscalefact, 0.0f, 0.0f)),
                 glm::vec3( 0.9f, 0.9f, 0.0f));
-            renderRectangle(transform, playerColors[i] * powf(darkeningFactor, floorf(damageRatio - 1)));
+            renderRectangle(transform, colors[i] * powf(darkeningFactor, floorf(damageRatio - 1)));
         }
        
         // Now fill it in with a colored bar
@@ -360,7 +383,7 @@ void render()
                     transform,
                     glm::vec3(0.0f)), //glm::vec3(-.4 * .5 * xscalefact, 0.0f, 0.0f)),
                 glm::vec3( xscalefact, 0.9f, 0.0f));
-        renderRectangle(transform, playerColors[i] * powf(darkeningFactor, floorf(damageRatio)));
+        renderRectangle(transform, colors[i] * powf(darkeningFactor, floorf(damageRatio)));
     }
 
 
@@ -508,11 +531,6 @@ void controllerEvent(Controller &controller, const SDL_Event &event)
             controller.buttonstart = false;
             controller.pressstart = false;
         }
-        else
-        {
-            std::cout << "UNHANDLED BUTTON RELEASE: " << event.jbutton.button << 
-                " on controller " << event.jbutton.which << '\n';
-        }
         break;
 
     default:
@@ -569,4 +587,16 @@ void unpause(int playerID)
         paused = false;
         pausedPlayer = -1;
     }
+}
+
+Fighter *getPartner(int playerID)
+{
+    if (!teams)
+        return NULL;
+    // Even, 0, 2 -> 1, 3
+    if (playerID % 2 == 0)
+        return fighters[playerID + 1];
+    // Odd: 1,3 -> 0, 2
+    else
+        return fighters[playerID - 1];
 }

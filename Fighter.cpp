@@ -11,6 +11,7 @@
 #include "audio.h"
 
 void pause(int playerID);
+Fighter *getPartner(int playerID);
 
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
     rect_(Rectangle(0, 0, getParam("fighter.w"), getParam("fighter.h"))),
@@ -66,7 +67,7 @@ int Fighter::getLastHitBy() const
     return lastHitBy_;
 }
 
-void Fighter::update(const struct Controller &controller, float dt)
+void Fighter::update(Controller &controller, float dt)
 {
     // Check for state transition
     if (state_->hasTransition())
@@ -329,7 +330,7 @@ AirStunnedState::~AirStunnedState()
 {
 }
 
-void AirStunnedState::update(const Controller &controller, float dt)
+void AirStunnedState::update(Controller &controller, float dt)
 {
     // Check for pause
     if (controller.pressstart)
@@ -402,7 +403,7 @@ GroundState::GroundState(Fighter *f, float delay) :
 GroundState::~GroundState()
 { /* Empty */ }
 
-void GroundState::update(const Controller &controller, float dt)
+void GroundState::update(Controller &controller, float dt)
 {
     // Check for pause
     if (controller.pressstart)
@@ -613,7 +614,7 @@ AirNormalState::AirNormalState(Fighter *f) :
 AirNormalState::~AirNormalState()
 { /* Empty */ }
 
-void AirNormalState::update(const Controller &controller, float dt)
+void AirNormalState::update(Controller &controller, float dt)
 {
     // Gravity
     fighter_->yvel_ += getParam("airAccel") * dt;
@@ -754,7 +755,7 @@ RespawnState::RespawnState(Fighter *f) :
 {
 }
 
-void RespawnState::update(const Controller &controller, float dt)
+void RespawnState::update(Controller &controller, float dt)
 {
     // Check for pause
     if (controller.pressstart)
@@ -780,6 +781,25 @@ void RespawnState::collisionWithGround(const Rectangle &ground, bool collision)
 {
     assert(!collision);
 }
+
+//// ------------------------- DEAD STATE ----------------------------------
+void DeadState::update(Controller &controller, float dt)
+{
+    if (controller.pressstart)
+    {
+        Fighter *partner = getPartner(fighter_->id_);
+        if (partner && partner->lives_ > 1)
+        {
+            partner->lives_--;
+            fighter_->lives_++;
+            fighter_->respawn(false);
+        }
+        // Consume press
+        controller.pressstart = false;
+    }
+}
+
+
 
 // ----------------------------------------------------------------------------
 // Rectangle class methods
