@@ -215,6 +215,42 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
                 glm::vec3(hitbox.w, hitbox.h, 1.0f));
         renderRectangle(attacktrans, glm::vec3(1,0,0));
     }
+
+    // If the player is off the screen, render a little arrow pointing to them
+    glm::vec2 cameraPos = glm::vec2(0, 0);
+    Rectangle screen(cameraPos.x, cameraPos.y, getParam("worldWidth"), getParam("worldHeight"));
+    if (!screen.overlaps(rect_))
+    {
+        glm::vec2 dir = glm::vec2(rect_.x, rect_.y) - cameraPos;
+        float dist = glm::length(dir);
+        dir /= dist;
+        // draw arrow
+        glm::vec2 side = (fabs(dir.x) / screen.w > fabs(dir.y) / screen.h)
+            ? glm::vec2(dir.x / fabs(dir.x), 0)
+            : glm::vec2(0, dir.y / fabs(dir.y));
+        glm::vec2 move = (fabs(dir.x) / screen.w < fabs(dir.y) / screen.h)
+            ? glm::vec2(dir.x / fabs(dir.x), 0)
+            : glm::vec2(0, dir.y / fabs(dir.y));
+
+        float theta = acos(glm::dot(glm::vec2(-1, 0), dir));
+
+        glm::vec2 screenVec(screen.w/2, screen.h/2);
+        glm::vec2 arrowPos = side * screenVec +
+            move * screenVec * glm::vec2(cosf(theta), sinf(theta));
+
+        float len = glm::length(arrowPos);
+        arrowPos *= (len - 20) / len;
+
+        float scale = (dist / len - 1.f) * 3.f + 1.f;
+
+        glm::mat4 transform =
+            glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f),
+                            glm::vec3(arrowPos, 0.0f)), 
+                        glm::vec3(scale, scale, 1.f)),
+                    static_cast<float>(theta * 180.f / M_PI), glm::vec3(0, 0, 1));
+
+        FrameManager::get()->renderFrame(transform, color, "OffscreenArrow");
+    }
 }
 
 float Fighter::damageFunc() const
