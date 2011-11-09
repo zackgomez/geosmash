@@ -19,7 +19,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     respawnx_(respawnx), respawny_(respawny),
     color_(color), id_(id),
     attack_(NULL),
-    lastHitBy_(-1), lastHitExpireTime_(0.0f)
+    lastHitBy_(-1)
 {
     // Load ground attacks
     std::string g = "groundhit";
@@ -86,11 +86,6 @@ void Fighter::update(const struct Controller &controller, float dt)
         }
     }
 
-    // Update last hit by
-    lastHitExpireTime_ += dt;
-    if (lastHitExpireTime_ > getParam("stats.hitExpireTime"))
-            lastHitBy_ = -1;
-
     // Update state
     state_->update(controller, dt);
 
@@ -118,7 +113,6 @@ void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
     state_->hitByAttack(attacker, attack);
 
     lastHitBy_ = attacker->id_;
-    lastHitExpireTime_ = 0;
 
     // Play a sound
     std::string fname = "lvl";
@@ -378,6 +372,7 @@ GroundState::GroundState(Fighter *f, float delay) :
     dashing_(false)
 {
     frameName_ = "GroundNormal";
+    fighter_->lastHitBy_ = -1;
 }
 
 GroundState::~GroundState()
@@ -832,7 +827,7 @@ void Attack::update(float dt)
 
 void Attack::cancel()
 {
-    t_ = std::max(t, startup_ + duration_);
+    t_ = std::max(t_, startup_ + duration_);
 }
 
 void Attack::hit(Fighter *other)

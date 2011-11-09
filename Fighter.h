@@ -210,7 +210,6 @@ private:
 
     // Game statistics members
     int lastHitBy_; // The id of the fighter that last hit us, or -1
-    float lastHitExpireTime_; // When this timer is greater than the expire time, reset lastHitBy
 
     // Available reference attacks
     Attack dashAttack_;
