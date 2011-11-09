@@ -27,7 +27,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     // Load ground attacks
     std::string g = "groundhit";
     std::string a = "airhit";
-    dashAttack_ = loadAttack<Attack>("dashAttack", g, "GroundNeutral");
+    dashAttack_ = loadAttack<Attack>("dashAttack", g, "DashAttack");
     neutralTiltAttack_ = loadAttack<Attack>("neutralTiltAttack", g, "GroundNeutral");
     sideTiltAttack_ = loadAttack<Attack>("sideTiltAttack", g, "GroundSidetilt");
     downTiltAttack_ = loadAttack<Attack>("downTiltAttack", g, "GroundDowntilt");

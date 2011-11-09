@@ -233,7 +233,7 @@ void update()
             if (fighter->hasAttack() && fighters[j]->hasAttack()
                     && attacki->getHitbox().overlaps(attackj->getHitbox()))
             {
-                // Then go straight to cooldown
+                // Then resolve collision
                 fighter->attackCollision(fighters[j]->getAttack());
                 fighters[j]->attackCollision(fighter->getAttack());
 
