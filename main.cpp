@@ -292,6 +292,8 @@ void update()
 
 void render()
 {
+    preRender();
+
     // Start with a blank slate
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
     glClear( GL_COLOR_BUFFER_BIT );
@@ -388,6 +390,7 @@ void render()
 
 
     // Finish
+    postRender();
     SDL_GL_SwapBuffers();
 }
 
@@ -418,7 +421,8 @@ int initGraphics()
     // Set the viewport
     glViewport(0, 0, SCREEN_W, SCREEN_H);
 
-    initGLUtils(perspectiveTransform);
+    initGLUtils(SCREEN_W, SCREEN_H);
+    setPerspective(perspectiveTransform);
 
     backgroundTex = make_texture("back003.tga");
     // Load some animation frames

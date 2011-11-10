@@ -45,15 +45,12 @@ void ExplosionManager::render(float dt)
     for (; it != explosions_.end(); )
     {
         Explosion& ex = *it;
+        // Render
+        ex.render(dt);
         // Check for explosion death
         if (ex.isDone())
             it = explosions_.erase(it);
-        // Otherwise render it
         else
-        {
-            ex.render(dt);
-            // Next explosion
             it++;
-        }
     }
 }

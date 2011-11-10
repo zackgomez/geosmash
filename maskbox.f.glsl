@@ -1,8 +1,9 @@
 #version 330
 
-out vec4 outputColor;
+layout(location = 0) out vec4 outputColor;
+layout(location = 1) out vec4 glowColor;
 uniform sampler2D tex;
-uniform vec3 color;
+uniform vec4 color;
 centroid in vec2 frag_texcoord;
 
 
@@ -11,5 +12,6 @@ void main()
     float mask = texture(tex, frag_texcoord).r;
     if (mask == 0.0)
         discard;
-    outputColor = vec4(color, 1.0f);
+    outputColor = color;
+    glowColor = vec4(color.rgb * color.a, 1.0f);
 }

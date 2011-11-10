@@ -22,6 +22,10 @@ static struct
     GLuint maskvertex_shader, maskfragment_shader;
     GLuint maskprogram;
 
+    GLuint fbo;
+    GLuint depthbuf;
+    GLuint rendertex[3];
+
     glm::mat4 perspective;
 } resources;
 
@@ -50,6 +54,38 @@ void show_info_log(
     fprintf(stderr, "%s", log);
     free(log);
 }
+
+bool checkFramebufferStatus() {
+    GLenum status;
+    status = (GLenum) glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+    switch(status) {
+    case GL_FRAMEBUFFER_COMPLETE_EXT:
+        return true;
+    case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+        printf("Framebuffer incomplete, incomplete attachment\n");
+        return false;
+    case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+        printf("Unsupported framebuffer format\n");
+        return false;
+    case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+        printf("Framebuffer incomplete, missing attachment\n");
+        return false;
+    case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+        printf("Framebuffer incomplete,  attachments must have same dimensions\n");
+        return false;
+    case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+        printf("Framebuffer incomplete, attached images must have same format\n");
+        return false;
+    case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+        printf("Framebuffer incomplete, missing draw buffer\n");
+        return false;
+    case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+        printf("Framebuffer incomplete, missing read buffer\n");
+        return false;
+    }
+    return false;
+}
+
 
 GLuint make_shader(GLenum type, const char *filename)
 {
@@ -122,7 +158,38 @@ GLuint make_texture(const char *filename)
     return texture;
 }
 
-bool initGLUtils(const glm::mat4 &perspectiveTransform)
+void setPerspective(const glm::mat4 &perspectiveTransform)
+{
+    resources.perspective = perspectiveTransform;
+}
+
+void preRender()
+{
+    GLenum MRTBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo);
+    glDrawBuffers(2, MRTBuffers);
+    checkFramebufferStatus();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void postRender()
+{
+    checkFramebufferStatus();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_BLEND);
+
+    glm::mat4 old = resources.perspective;
+    resources.perspective = glm::mat4(1.0f);
+
+    renderTexturedRectangle(glm::scale(glm::mat4(1.0f), glm::vec3(2.f, 2.f, 1.f)),
+            resources.rendertex[0]);
+
+    resources.perspective = old;
+}
+
+bool initGLUtils(int screenw, int screenh)
 {
     // The datas
     const GLfloat vertex_buffer_data[] = { 
@@ -162,13 +229,59 @@ bool initGLUtils(const glm::mat4 &perspectiveTransform)
         return false;
     resources.maskprogram = make_program(resources.maskvertex_shader, resources.maskfragment_shader);
 
-    resources.perspective = perspectiveTransform;
+    resources.perspective = glm::mat4(1.0f);
+
+
+    glGenFramebuffers(1, &resources.fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo);
+
+    // Set up depth buffer attachment 
+    glGenRenderbuffers(1, &resources.depthbuf);
+    glBindRenderbuffer(GL_RENDERBUFFER, resources.depthbuf);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, screenw, screenh);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, resources.depthbuf);
+
+    // Create the color attachment textures
+    glGenTextures(2, resources.rendertex);
+    // main
+    glBindTexture(GL_TEXTURE_2D, resources.rendertex[0]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, screenw, screenh, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glow
+    glBindTexture(GL_TEXTURE_2D, resources.rendertex[1]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, screenw, screenh, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    // glow blur
+    glBindTexture(GL_TEXTURE_2D, resources.rendertex[2]);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, screenw, screenh, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    // Bind textures
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, resources.rendertex[0], 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, resources.rendertex[1], 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, resources.rendertex[2], 0);
+
+    if (!checkFramebufferStatus())
+        return false;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return true;
 }
 
 void cleanGLUtils()
 {
+    glDeleteRenderbuffers(1, &resources.depthbuf);
+    glDeleteFramebuffers(1, &resources.fbo);
+    glDeleteTextures(3, resources.rendertex);
 }
 
 void renderRectangle(const glm::mat4 &transform, const glm::vec3 &color)
@@ -219,7 +332,7 @@ void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture)
     glUseProgram(0);
 }
 
-void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec3 &color,
+void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec4 &color,
         GLuint mask)
 {
     GLuint transformUniform = glGetUniformLocation(resources.maskprogram, "transform");
@@ -230,7 +343,7 @@ void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec3 &color,
     glUseProgram(resources.maskprogram);
     glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(resources.perspective * transform));
     glUniform1i(textureUniform, 0);
-    glUniform3fv(colorUniform, 1, glm::value_ptr(color));
+    glUniform4fv(colorUniform, 1, glm::value_ptr(color));
 
     glActiveTexture(GL_TEXTURE0);
     glEnable(GL_TEXTURE_2D);
