@@ -2,10 +2,11 @@
 
 layout(location = 0) out vec4 outputColor;
 layout(location = 1) out vec4 glowColor;
-uniform vec3 color;
+uniform vec4 color;
 
 void main()
 {
-    outputColor = vec4(color, 1.0f);
-    glowColor = vec4(0.0, 0.0, 0.0, 0.0);
+    float alpha = color.a != 0 ? color.a : 1.0;
+    outputColor = vec4(color.rgb, alpha);
+    glowColor = vec4(color.rgb * color.a, 1.0f);
 }

@@ -284,7 +284,7 @@ void cleanGLUtils()
     glDeleteTextures(3, resources.rendertex);
 }
 
-void renderRectangle(const glm::mat4 &transform, const glm::vec3 &color)
+void renderRectangle(const glm::mat4 &transform, const glm::vec4 &color)
 {
     GLuint transformUniform = glGetUniformLocation(resources.program, "transform");
     GLuint colorUniform = glGetUniformLocation(resources.program, "color");
@@ -292,7 +292,7 @@ void renderRectangle(const glm::mat4 &transform, const glm::vec3 &color)
     // Enable program and set up values
     glUseProgram(resources.program);
     glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(resources.perspective * transform));
-    glUniform3fv(colorUniform, 1, glm::value_ptr(color));
+    glUniform4fv(colorUniform, 1, glm::value_ptr(color));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
     glEnableVertexAttribArray(0);

@@ -157,11 +157,14 @@ void mainloop()
     running = true;
     while (running)
     {
+        int startms = SDL_GetTicks();
         processInput();
         update();
         render();
 
-        SDL_Delay(static_cast<int>(dt * 1000.0));
+        int endms = SDL_GetTicks();
+        std::cout << "Frame time (ms): " << endms - startms << '\n';
+        SDL_Delay(static_cast<int>(dt * 1000.0) - (endms - startms));
     }
 }
 
@@ -306,7 +309,7 @@ void render()
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.0)),
             glm::vec3(ground.w, ground.h, 1.0f));
-    renderRectangle(transform, groundColor);
+    renderRectangle(transform, glm::vec4(groundColor, 0.0f));
 
     // Draw the fighters
     for (unsigned i = 0; i < numPlayers; i++)
@@ -337,10 +340,10 @@ void render()
                         glm::mat4(1.0f),
                         glm::vec3(life_area.x, life_area.y, 0.0f)),
                     glm::vec3(20, 20, 1.0));
-            renderRectangle(transform, glm::vec3(0.25, 0.25, 0.25));
+            renderRectangle(transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
 
             glm::mat4 transform2 = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
-            renderRectangle(transform2, glm::vec3(colors[i]));
+            renderRectangle(transform2, glm::vec4(colors[i], 0.0f));
 
             if (j % 2 == 0)
                 life_area.x += 30;
@@ -360,7 +363,7 @@ void render()
                         glm::mat4(1.0f),
                         glm::vec3(damageBarMidpoint.x, damageBarMidpoint.y, 0.0f)),
                     glm::vec3(130, 30, 1.0));
-        renderRectangle(transform, glm::vec3(0.25, 0.25, 0.25));
+        renderRectangle(transform, glm::vec4(0.25, 0.25, 0.25, 0.0f));
 
         float maxDamage = 100;
 
@@ -376,7 +379,8 @@ void render()
                         transform,
                         glm::vec3(0.0f)), //glm::vec3(-.4 * .5 * xscalefact, 0.0f, 0.0f)),
                 glm::vec3( 0.9f, 0.9f, 0.0f));
-            renderRectangle(transform, colors[i] * powf(darkeningFactor, floorf(damageRatio - 1)));
+            renderRectangle(transform,
+                    glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio - 1)), 0.0f));
         }
        
         // Now fill it in with a colored bar
@@ -385,7 +389,8 @@ void render()
                     transform,
                     glm::vec3(0.0f)), //glm::vec3(-.4 * .5 * xscalefact, 0.0f, 0.0f)),
                 glm::vec3( xscalefact, 0.9f, 0.0f));
-        renderRectangle(transform, colors[i] * powf(darkeningFactor, floorf(damageRatio)));
+        renderRectangle(transform,
+                glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio)), 0.0f));
     }
 
 

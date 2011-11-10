@@ -12,7 +12,7 @@ void Explosion::render(float dt)
         glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(x_, y_, 0.0)),
                 frac * glm::vec3(size_, size_, 1.0f));
-    renderRectangle(transform, color_);
+    renderRectangle(transform, glm::vec4(color_, 0.8));
 }
 
 bool Explosion::isDone() const

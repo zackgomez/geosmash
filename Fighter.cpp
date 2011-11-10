@@ -213,7 +213,7 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
         glm::mat4 attacktrans = glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
                 glm::vec3(hitbox.w, hitbox.h, 1.0f));
-        renderRectangle(attacktrans, glm::vec3(1,0,0));
+        renderRectangle(attacktrans, glm::vec4(1,0,0,0.66));
     }
 
     // If the player is off the screen, render a little arrow pointing to them

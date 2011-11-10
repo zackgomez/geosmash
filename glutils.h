@@ -26,7 +26,7 @@ void setPerspective(const glm::mat4 &perspectiveTrans);
 bool initGLUtils(int screenw, int screenh);
 void cleanGLUtils();
 
-void renderRectangle(const glm::mat4 &transform, const glm::vec3 &color);
+void renderRectangle(const glm::mat4 &transform, const glm::vec4 &color);
 void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture);
 void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec4 &color,
         GLuint texture);
