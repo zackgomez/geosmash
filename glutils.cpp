@@ -32,6 +32,8 @@ static struct
 } resources;
 
 
+static glm::vec2 screensize;
+
 GLuint make_buffer( GLenum target, const void *buffer_data, GLsizei buffer_size)
 {
     GLuint buffer;
@@ -165,6 +167,34 @@ void setPerspective(const glm::mat4 &perspectiveTransform)
     resources.perspective = perspectiveTransform;
 }
 
+void blurTexture(GLuint texture, bool horiz)
+{
+    GLuint program = horiz ? resources.hblurprogram : resources.vblurprogram;
+    GLuint textureUniform = glGetUniformLocation(program, "tex");
+    GLuint sizeUniform = glGetUniformLocation(program, "texsize");
+
+    // Enable program and set up values
+    glUseProgram(program);
+    glUniform1i(textureUniform, 0);
+    glUniform2fv(sizeUniform, 1, glm::value_ptr(screensize));
+
+    glActiveTexture(GL_TEXTURE0);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
+    glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
+
+    // Clean up
+    glDisableVertexAttribArray(0);
+    glUseProgram(0);
+
+}
+
 void preRender()
 {
     GLenum MRTBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
@@ -178,20 +208,30 @@ void preRender()
 
 void postRender()
 {
-
-    // TODO texture this shit
-
+    glDisable(GL_BLEND);
+    // blur the glow texture
+    for (int i = 0; i < 2; i++)
+    {
+        glDrawBuffer(GL_COLOR_ATTACHMENT2);
+        blurTexture(resources.rendertex[1], true);
+        glDrawBuffer(GL_COLOR_ATTACHMENT1);
+        blurTexture(resources.rendertex[2], false);
+    }
 
     checkFramebufferStatus();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glDisable(GL_BLEND);
 
     glm::mat4 old = resources.perspective;
     resources.perspective = glm::mat4(1.0f);
 
     renderTexturedRectangle(glm::scale(glm::mat4(1.0f), glm::vec3(2.f, 2.f, 1.f)),
             resources.rendertex[0]);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+    renderTexturedRectangle(glm::scale(glm::mat4(1.0f), glm::vec3(2.f, 2.f, 1.f)),
+            resources.rendertex[1]);
 
+    glDisable(GL_BLEND);
     resources.perspective = old;
 }
 
@@ -206,6 +246,8 @@ bool initGLUtils(int screenw, int screenh)
         0.5f,  0.5f, 0.0f, 1.0f
     };
     const GLushort element_buffer_data[] = { 0, 1, 2, 3 };
+
+    screensize = glm::vec2(screenw, screenh);
 
     resources.vertex_buffer = make_buffer(GL_ARRAY_BUFFER, vertex_buffer_data, sizeof(vertex_buffer_data));
     resources.element_buffer = make_buffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_data, sizeof(element_buffer_data));
@@ -238,8 +280,8 @@ bool initGLUtils(int screenw, int screenh)
     resources.perspective = glm::mat4(1.0f);
 
     GLuint blurvertex_shader = make_shader(GL_VERTEX_SHADER, "blur.v.glsl");
-    GLuint hblurfrag_shader = make_shader(GL_VERTEX_SHADER, "hblur.f.glsl");
-    GLuint vblurfrag_shader = make_shader(GL_VERTEX_SHADER, "vblur.f.glsl");
+    GLuint hblurfrag_shader = make_shader(GL_FRAGMENT_SHADER, "hblur.f.glsl");
+    GLuint vblurfrag_shader = make_shader(GL_FRAGMENT_SHADER, "vblur.f.glsl");
 
     if (!blurvertex_shader || !hblurfrag_shader || !vblurfrag_shader)
         return false;
@@ -257,7 +299,7 @@ bool initGLUtils(int screenw, int screenh)
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, resources.depthbuf);
 
     // Create the color attachment textures
-    glGenTextures(2, resources.rendertex);
+    glGenTextures(3, resources.rendertex);
     // main
     glBindTexture(GL_TEXTURE_2D, resources.rendertex[0]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, screenw, screenh, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);

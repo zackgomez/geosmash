@@ -6,7 +6,6 @@ uniform vec4 color;
 
 void main()
 {
-    float alpha = color.a != 0 ? color.a : 1.0;
-    outputColor = vec4(color.rgb, alpha);
+    outputColor = vec4(color.rgb, 1.0f);
     glowColor = vec4(color.rgb * color.a, 1.0f);
 }

@@ -12,6 +12,6 @@ void main()
     float mask = texture(tex, frag_texcoord).r;
     if (mask == 0.0)
         discard;
-    outputColor = color;
+    outputColor = vec4(color.rgb, 1.0f);
     glowColor = vec4(color.rgb * color.a, 1.0f);
 }

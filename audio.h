@@ -27,9 +27,5 @@ private:
     // list of sounds currently playing. we need to periodically check 
     // this list to not leak memory.
     std::vector<sf::Music *> currentSounds_;
-
-
-
 };
-
 
