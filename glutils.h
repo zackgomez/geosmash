@@ -29,7 +29,7 @@ void cleanGLUtils();
 void renderRectangle(const glm::mat4 &transform, const glm::vec4 &color);
 void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture);
 void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec4 &color,
-        GLuint texture);
+        const anim_frame *frame);
 
 void preRender();
 void postRender();

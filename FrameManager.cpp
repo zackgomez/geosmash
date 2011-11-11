@@ -24,7 +24,7 @@ void FrameManager::renderFrame(const glm::mat4 &trans, const glm::vec4 &col,
             glm::scale(trans, glm::vec3(frame->w/2, frame->h/2, 1.0f)),
             glm::vec3(frame->x, frame->y, 0.0f));
 
-    renderMaskedRectangle(finalTransform, col, frame->mask_tex);
+    renderMaskedRectangle(finalTransform, col, frame);
 }
 
 void FrameManager::loadFile(const std::string &filename)

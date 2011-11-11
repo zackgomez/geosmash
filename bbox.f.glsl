@@ -9,7 +9,7 @@ void main()
 {
     outputColor = vec4(color.rgb, 1.0f);
     vec2 edgedist = abs(frag_texcoord - 0.5);
-    if (edgedist.x > 0.4 || edgedist.y > 0.4)
+    if (edgedist.x > 0.45 || edgedist.y > 0.45)
         glowColor = vec4(color.rgb * color.a, 1.0f);
     else
         glowColor = vec4(0.0f);

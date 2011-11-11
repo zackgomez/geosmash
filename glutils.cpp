@@ -390,21 +390,23 @@ void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture)
 }
 
 void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec4 &color,
-        GLuint mask)
+        const anim_frame *frame)
 {
     GLuint transformUniform = glGetUniformLocation(resources.maskprogram, "transform");
     GLuint textureUniform = glGetUniformLocation(resources.maskprogram, "texture");
     GLuint colorUniform = glGetUniformLocation(resources.maskprogram, "color");
+    GLuint texsizeUniform = glGetUniformLocation(resources.maskprogram, "texsize");
 
     // Enable fag program and set up values
     glUseProgram(resources.maskprogram);
     glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(resources.perspective * transform));
     glUniform1i(textureUniform, 0);
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
+    glUniform2fv(texsizeUniform, 1, glm::value_ptr(glm::vec2(frame->w/10, frame->h/10)));
 
     glActiveTexture(GL_TEXTURE0);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, mask);
+    glBindTexture(GL_TEXTURE_2D, frame->mask_tex);
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
     glEnableVertexAttribArray(0);
