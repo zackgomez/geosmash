@@ -354,7 +354,7 @@ void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec4 &color,
     GLuint textureUniform = glGetUniformLocation(resources.maskprogram, "texture");
     GLuint colorUniform = glGetUniformLocation(resources.maskprogram, "color");
 
-    // Enable program and set up values
+    // Enable fag program and set up values
     glUseProgram(resources.maskprogram);
     glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(resources.perspective * transform));
     glUniform1i(textureUniform, 0);
