@@ -993,6 +993,7 @@ void UpSpecialAttack::start()
     Attack::start();
     started_ = false;
     repeatTime_ = 0.0f;
+    AudioManager::get()->playSound("upspecial001");
 }
 
 void UpSpecialAttack::finish()

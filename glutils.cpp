@@ -22,6 +22,8 @@ static struct
     GLuint maskvertex_shader, maskfragment_shader;
     GLuint maskprogram;
 
+    GLuint hblurprogram, vblurprogram;
+
     GLuint fbo;
     GLuint depthbuf;
     GLuint rendertex[3];
@@ -176,6 +178,10 @@ void preRender()
 
 void postRender()
 {
+
+    // TODO texture this shit
+
+
     checkFramebufferStatus();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_BLEND);
@@ -231,6 +237,15 @@ bool initGLUtils(int screenw, int screenh)
 
     resources.perspective = glm::mat4(1.0f);
 
+    GLuint blurvertex_shader = make_shader(GL_VERTEX_SHADER, "blur.v.glsl");
+    GLuint hblurfrag_shader = make_shader(GL_VERTEX_SHADER, "hblur.f.glsl");
+    GLuint vblurfrag_shader = make_shader(GL_VERTEX_SHADER, "vblur.f.glsl");
+
+    if (!blurvertex_shader || !hblurfrag_shader || !vblurfrag_shader)
+        return false;
+
+    resources.hblurprogram = make_program(blurvertex_shader, hblurfrag_shader);
+    resources.vblurprogram = make_program(blurvertex_shader, vblurfrag_shader);
 
     glGenFramebuffers(1, &resources.fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo);

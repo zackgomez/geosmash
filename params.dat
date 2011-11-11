@@ -88,7 +88,7 @@ sideTiltAttack.hitboxw      60
 sideTiltAttack.hitboxh      18
 sideTiltAttack.priority     1.0
 
-downTiltAttack.startup      0.12
+downTiltAttack.startup      0.15
 downTiltAttack.duration     0.22
 downTiltAttack.cooldown     0.25
 downTiltAttack.damage       8
@@ -136,10 +136,10 @@ airSideAttack.startup      0.25
 airSideAttack.duration     0.25
 airSideAttack.cooldown     0.30
 airSideAttack.damage       8
-airSideAttack.stun         0.20
+airSideAttack.stun         0.14
 airSideAttack.knockbackx   5
 airSideAttack.knockbacky   2
-airSideAttack.knockbackpow 200.0
+airSideAttack.knockbackpow 175.0
 airSideAttack.hitboxx      40
 airSideAttack.hitboxy      -5
 airSideAttack.hitboxw      35

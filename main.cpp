@@ -135,9 +135,9 @@ int main(int argc, char **argv)
 
     srand(time(NULL));
     std::vector<std::string> songs;
-    songs.push_back("sfx/geosmash_2.wav");
-    //songs.push_back("sfx/smash.aif");
-    //songs.push_back("sfx/hand canyon.wav");
+    songs.push_back("sfx/geosmash.wav");
+    songs.push_back("sfx/hand canyon.wav");
+    songs.push_back("sfx/Meat DeFeat.wav");
 
     if (!muteMusic)
         start_song(songs[rand() % songs.size()].c_str());
@@ -163,7 +163,7 @@ void mainloop()
         render();
 
         int endms = SDL_GetTicks();
-        std::cout << "Frame time (ms): " << endms - startms << '\n';
+        //std::cout << "Frame time (ms): " << endms - startms << '\n';
         SDL_Delay(static_cast<int>(dt * 1000.0) - (endms - startms));
     }
 }
