@@ -210,7 +210,7 @@ void postRender()
 {
     glDisable(GL_BLEND);
     // blur the glow texture
-    for (int i = 0; i < 2; i++)
+    for (int i = 0; i < 3; i++)
     {
         glDrawBuffer(GL_COLOR_ATTACHMENT2);
         blurTexture(resources.rendertex[1], true);

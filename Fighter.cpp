@@ -204,7 +204,7 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
             glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
             glm::vec3(dir_, 1.0f, 1.0f));
 
-    FrameManager::get()->renderFrame(transform, color, frameName);
+    FrameManager::get()->renderFrame(transform, glm::vec4(color, 0.25f), frameName);
 
     // Draw hitbox if applicable
     if (attack_ && attack_->drawHitbox())
@@ -213,7 +213,7 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
         glm::mat4 attacktrans = glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
                 glm::vec3(hitbox.w, hitbox.h, 1.0f));
-        renderRectangle(attacktrans, glm::vec4(1,0,0,0.66));
+        renderRectangle(attacktrans, glm::vec4(1,0,0,0.33));
     }
 
     // If the player is off the screen, render a little arrow pointing to them
@@ -250,7 +250,7 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
                         glm::vec3(scale, scale, 1.f)),
                     rot, glm::vec3(0, 0, 1));
 
-        FrameManager::get()->renderFrame(transform, color, "OffscreenArrow");
+        FrameManager::get()->renderFrame(transform, glm::vec4(color, 0.0f), "OffscreenArrow");
     }
 }
 

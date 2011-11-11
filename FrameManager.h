@@ -7,7 +7,7 @@ class FrameManager
 public:
     static FrameManager* get();
 
-    void renderFrame(const glm::mat4 &transform, const glm::vec3 &color,
+    void renderFrame(const glm::mat4 &transform, const glm::vec4 &color,
             const std::string &name);
 
     void loadFile(const std::string &filename);
