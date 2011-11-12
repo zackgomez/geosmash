@@ -21,6 +21,7 @@ input.velThresh     0.15
 input.jumpThresh    0.9
 input.deadzone      0.2
 input.tiltThresh    0.4
+input.fallThresh    0.95
 
 stats.hitExpireTime 2.0
 
@@ -43,6 +44,10 @@ secondJumpSpeed  500.0
 dashStartupTime  0.07
 dashChangeTime   0.25
 landingCooldownTime 0.05
+fastFallAccel    -600.0
+fastFallInitialSpeed -250.0
+fastFallMaxInitialSpeed -500
+fastFallMaxSpeed -1000
 
 
 dashAttack.startup      0.06
@@ -123,8 +128,8 @@ airNeutralAttack.duration     0.36
 airNeutralAttack.cooldown     0.15
 airNeutralAttack.damage       8
 airNeutralAttack.stun         0.10
-airNeutralAttack.knockbackx   4
-airNeutralAttack.knockbacky   1
+airNeutralAttack.knockbackx   3
+airNeutralAttack.knockbacky   2
 airNeutralAttack.knockbackpow 100.0
 airNeutralAttack.hitboxx      45
 airNeutralAttack.hitboxy      -10

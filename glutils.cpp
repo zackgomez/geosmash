@@ -252,36 +252,36 @@ bool initGLUtils(int screenw, int screenh)
     resources.vertex_buffer = make_buffer(GL_ARRAY_BUFFER, vertex_buffer_data, sizeof(vertex_buffer_data));
     resources.element_buffer = make_buffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_data, sizeof(element_buffer_data));
 
-    resources.vertex_shader = make_shader(GL_VERTEX_SHADER, "bbox.v.glsl");
+    resources.vertex_shader = make_shader(GL_VERTEX_SHADER, "shaders/bbox.v.glsl");
     if (resources.vertex_shader == 0)
         return false;
-    resources.fragment_shader = make_shader(GL_FRAGMENT_SHADER, "bbox.f.glsl");
+    resources.fragment_shader = make_shader(GL_FRAGMENT_SHADER, "shaders/bbox.f.glsl");
     if (resources.fragment_shader == 0)
         return false;
 
     resources.program = make_program(resources.vertex_shader, resources.fragment_shader);
     
-    resources.texvertex_shader = make_shader(GL_VERTEX_SHADER, "texbox.v.glsl");
+    resources.texvertex_shader = make_shader(GL_VERTEX_SHADER, "shaders/texbox.v.glsl");
     if (resources.texvertex_shader == 0)
         return false;
-    resources.texfragment_shader = make_shader(GL_FRAGMENT_SHADER, "texbox.f.glsl");
+    resources.texfragment_shader = make_shader(GL_FRAGMENT_SHADER, "shaders/texbox.f.glsl");
     if (resources.texfragment_shader == 0)
         return false;
     resources.texprogram = make_program(resources.texvertex_shader, resources.texfragment_shader);
 
-    resources.maskvertex_shader = make_shader(GL_VERTEX_SHADER, "texbox.v.glsl");
+    resources.maskvertex_shader = make_shader(GL_VERTEX_SHADER, "shaders/texbox.v.glsl");
     if (resources.maskvertex_shader == 0)
         return false;
-    resources.maskfragment_shader = make_shader(GL_FRAGMENT_SHADER, "maskbox.f.glsl");
+    resources.maskfragment_shader = make_shader(GL_FRAGMENT_SHADER, "shaders/maskbox.f.glsl");
     if (resources.maskfragment_shader == 0)
         return false;
     resources.maskprogram = make_program(resources.maskvertex_shader, resources.maskfragment_shader);
 
     resources.perspective = glm::mat4(1.0f);
 
-    GLuint blurvertex_shader = make_shader(GL_VERTEX_SHADER, "blur.v.glsl");
-    GLuint hblurfrag_shader = make_shader(GL_FRAGMENT_SHADER, "hblur.f.glsl");
-    GLuint vblurfrag_shader = make_shader(GL_FRAGMENT_SHADER, "vblur.f.glsl");
+    GLuint blurvertex_shader = make_shader(GL_VERTEX_SHADER, "shaders/blur.v.glsl");
+    GLuint hblurfrag_shader = make_shader(GL_FRAGMENT_SHADER, "shaders/hblur.f.glsl");
+    GLuint vblurfrag_shader = make_shader(GL_FRAGMENT_SHADER, "shaders/vblur.f.glsl");
 
     if (!blurvertex_shader || !hblurfrag_shader || !vblurfrag_shader)
         return false;

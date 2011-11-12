@@ -290,6 +290,8 @@ private:
     bool canSecondJump_;
     // Jump startup timer.  Value > 0 implies that the fighter is starting a jump
     float jumpTime_;
+    // True if this player has begun fastfalling
+    bool fastFalling_;
 };
 
 class AirStunnedState : public FighterState

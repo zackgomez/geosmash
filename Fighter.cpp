@@ -684,6 +684,15 @@ void AirNormalState::update(Controller &controller, float dt)
         // You can always control your orientation
         fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
     }
+    // Fast falling
+    if (fighter_->yvel_ < 0 && fighter_->yvel_ > getParam("fastFallMaxSpeed") && controller.joyy < -getParam("input.fallThresh"))
+    {
+        if (!fastFalling_ && fighter_->yvel_ > getParam("fastFallMaxInitialSpeed"))
+            fighter_->yvel_ += getParam("fastFallInitialSpeed");
+        else
+            fighter_->yvel_ += getParam("fastFallAccel") * dt;
+        fastFalling_ = true;
+    }
 
     // --- Check for attack ---
     if (controller.pressa)
