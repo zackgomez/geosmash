@@ -627,7 +627,17 @@ void GroundState::render(float dt)
 void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
 {
     if (!collision)
-        next_ = new AirNormalState(fighter_);
+    {
+        if (fighter_->attack_)
+        {
+            fighter_->attack_->cancel();
+            dashing_ = false;
+            float dir = (ground.x - fighter_->rect_.x) > 0 ? 1 : -1;
+            fighter_->rect_.x += dir * (fabs(ground.x - fighter_->rect_.x) - ground.w/2 - fighter_->rect_.w/2 + 2);
+        }
+        else
+            next_ = new AirNormalState(fighter_);
+    }
 
     // If there is a collision, we don't need to do anything, because we're
     // already in the GroundState
@@ -962,7 +972,6 @@ void UpSpecialAttack::update(float dt)
             owner_->rect_.y += 2;
             owner_->xvel_ = owner_->dir_ * getParam("upSpecialAttack.xvel");
             owner_->yvel_ = getParam("upSpecialAttack.yvel");
-
             // Draw a little puff
             ExplosionManager::get()->addPuff(
                     owner_->rect_.x - owner_->rect_.w * owner_->dir_ * 0.1f, 
@@ -972,6 +981,8 @@ void UpSpecialAttack::update(float dt)
                     owner_->rect_.x - owner_->rect_.w * owner_->dir_ * 0.3f, 
                     owner_->rect_.y - owner_->rect_.h * 0.45f,
                     0.3f);
+            // Play the UP Special sound
+            AudioManager::get()->playSound("upspecial001-loud");
 
             // Go to air normal state
             delete owner_->state_;
@@ -993,7 +1004,6 @@ void UpSpecialAttack::start()
     Attack::start();
     started_ = false;
     repeatTime_ = 0.0f;
-    AudioManager::get()->playSound("upspecial001");
 }
 
 void UpSpecialAttack::finish()

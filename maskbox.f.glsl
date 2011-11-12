@@ -14,7 +14,7 @@ void main()
     vec2 bixeldist = abs(fract(frag_texcoord * texsize) - 0.5);
     if (mask == 0.0)
         discard;
-    if (bixeldist.x < 0.35 && bixeldist.y < 0.35)
+    if (bixeldist.x < 0.34 && bixeldist.y < 0.34)
         discard;
 
     outputColor = vec4(color.rgb, 1.0f);
