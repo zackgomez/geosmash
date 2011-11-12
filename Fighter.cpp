@@ -747,7 +747,7 @@ void AirNormalState::update(Controller &controller, float dt)
     {
         fighter_->yvel_ = getParam("secondJumpSpeed");
         fighter_->xvel_ = fabs(controller.joyx) > getParam("input.deadzone") ?
-            getParam("dashSpeed") * std::max(-1.0f, std::min(1.0f, (controller.joyx - 0.2f) / 0.6f)) :
+            0.8f * getParam("dashSpeed") * std::max(-1.0f, std::min(1.0f, (controller.joyx - 0.2f) / 0.6f)) :
             0.0f;
         jumpTime_ = -1;
         canSecondJump_ = false;

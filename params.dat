@@ -38,10 +38,10 @@ airAccel         -1100.0
 airDI            200.0
 jumpStartupTime  0.05
 jumpSpeed        600.0
-hopSpeed         200.0
+hopSpeed         275.0
 jumpAirSpeed     200.0
 secondJumpSpeed  500.0
-dashStartupTime  0.07
+dashStartupTime  0.06
 dashChangeTime   0.25
 landingCooldownTime 0.05
 fastFallAccel    -600.0
@@ -50,18 +50,18 @@ fastFallMaxInitialSpeed -500
 fastFallMaxSpeed -1000
 
 
-dashAttack.startup      0.06
-dashAttack.duration     0.3
+dashAttack.startup      0.11
+dashAttack.duration     0.25
 dashAttack.cooldown     0.2
 dashAttack.damage       5
 dashAttack.stun         0.10
-dashAttack.knockbackx   1
-dashAttack.knockbacky   4
+dashAttack.knockbackx   -2
+dashAttack.knockbacky   5
 dashAttack.knockbackpow 80.0
 dashAttack.hitboxx      45
-dashAttack.hitboxy      -20
-dashAttack.hitboxw      50
-dashAttack.hitboxh      18
+dashAttack.hitboxy      -15
+dashAttack.hitboxw      40
+dashAttack.hitboxh      25
 dashAttack.priority     1.0
 
 
@@ -73,7 +73,7 @@ neutralTiltAttack.stun         0.10
 neutralTiltAttack.knockbackx   1
 neutralTiltAttack.knockbacky   1
 neutralTiltAttack.knockbackpow 60.0
-neutralTiltAttack.hitboxx      40
+neutralTiltAttack.hitboxx      30
 neutralTiltAttack.hitboxy      0
 neutralTiltAttack.hitboxw      30
 neutralTiltAttack.hitboxh      18
@@ -87,9 +87,9 @@ sideTiltAttack.stun         0.10
 sideTiltAttack.knockbackx   3
 sideTiltAttack.knockbacky   2
 sideTiltAttack.knockbackpow 120.0
-sideTiltAttack.hitboxx      55
+sideTiltAttack.hitboxx      50
 sideTiltAttack.hitboxy      5
-sideTiltAttack.hitboxw      60
+sideTiltAttack.hitboxw      50
 sideTiltAttack.hitboxh      18
 sideTiltAttack.priority     1.0
 
@@ -101,9 +101,9 @@ downTiltAttack.stun         0.16
 downTiltAttack.knockbackx   1
 downTiltAttack.knockbacky   5
 downTiltAttack.knockbackpow 140.0
-downTiltAttack.hitboxx      65
+downTiltAttack.hitboxx      60
 downTiltAttack.hitboxy      -30
-downTiltAttack.hitboxw      85
+downTiltAttack.hitboxw      65
 downTiltAttack.hitboxh      15
 downTiltAttack.priority     1.0
 
@@ -161,8 +161,8 @@ airDownAttack.knockbacky   -1
 airDownAttack.knockbackpow 300.0
 airDownAttack.hitboxx      0
 airDownAttack.hitboxy      -40
-airDownAttack.hitboxw      40
-airDownAttack.hitboxh      20
+airDownAttack.hitboxw      35
+airDownAttack.hitboxh      30
 airDownAttack.priority     1.0
 
 airUpAttack.startup      0.15
@@ -175,7 +175,7 @@ airUpAttack.knockbacky   1
 airUpAttack.knockbackpow 200.0
 airUpAttack.hitboxx      0
 airUpAttack.hitboxy      40
-airUpAttack.hitboxw      60
+airUpAttack.hitboxw      90
 airUpAttack.hitboxh      30
 airUpAttack.priority     1.0
 
