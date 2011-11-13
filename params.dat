@@ -175,8 +175,8 @@ airUpAttack.knockbacky   1
 airUpAttack.knockbackpow 200.0
 airUpAttack.hitboxx      0
 airUpAttack.hitboxy      40
-airUpAttack.hitboxw      90
-airUpAttack.hitboxh      30
+airUpAttack.hitboxw      45
+airUpAttack.hitboxh      25
 airUpAttack.priority     1.0
 
 
