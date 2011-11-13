@@ -41,6 +41,10 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
 
+
+    // Set up the twinkle moves
+    airSideAttack_.setTwinkle(true);
+
     state_ = 0;
 }
 
@@ -207,13 +211,24 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
     FrameManager::get()->renderFrame(transform, glm::vec4(color, 0.25f), frameName);
 
     // Draw hitbox if applicable
-    if (attack_ && attack_->drawHitbox())
+    if (attack_ && attack_->hasHitbox())
     {
         Rectangle hitbox = attack_->getHitbox();
         glm::mat4 attacktrans = glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
                 glm::vec3(hitbox.w, hitbox.h, 1.0f));
         renderRectangle(attacktrans, glm::vec4(1,0,0,0.33));
+    }
+    // Draw twinkle if applicable
+    if (attack_ && attack_->hasTwinkle())
+    {
+        glm::mat4 transform =
+            glm::rotate(
+                    glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
+                    45.f,
+                    glm::vec3(0,0,1));
+        FrameManager::get()->renderFrame(transform, glm::vec4(0.6f, 0.6f, 0.8f, 0.3f),
+                "StrongAttackInd");
     }
 
     // If the player is off the screen, render a little arrow pointing to them
@@ -917,12 +932,12 @@ Rectangle Attack::getHitbox() const
     return ret;
 }
 
-bool Attack::hasHitbox() const
+bool Attack::hasTwinkle() const
 {
-    return (t_ > startup_) && (t_ < startup_ + duration_);
+    return (t_ < startup_) && twinkle_;
 }
 
-bool Attack::drawHitbox() const
+bool Attack::hasHitbox() const
 {
     return (t_ > startup_) && (t_ < startup_ + duration_);
 }

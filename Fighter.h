@@ -42,13 +42,14 @@ public:
         startup_(startup), duration_(duration), cooldown_(cooldown),
         damage_(damage), stun_(stun), priority_(priority), knockback_(knockback), 
         hasHit_(), t_(0.0f), audioID_(audioFileprefix), frameName_("GroundUptilt"),
-        owner_(NULL)
+        twinkle_(false), owner_(NULL)
     {}
 
     virtual ~Attack() {}
 
     virtual Attack* clone() const;
 
+    virtual bool hasTwinkle() const;
     virtual Rectangle getHitbox() const;
     virtual float getDamage(const Fighter *fighter) const { return damage_; }
     virtual float getStun(const Fighter *fighter) const { return stun_; }
@@ -65,8 +66,6 @@ public:
 
     // If hitbox can hit another player
     virtual bool hasHitbox() const;
-    // If hitbox should be drawn
-    virtual bool drawHitbox() const;
     // If this attack is over
     virtual bool isDone() const;
     // True if this attack can hit the fighter right now
@@ -83,6 +82,7 @@ public:
 
     virtual std::string getAudioID() const { return audioID_; }
     virtual std::string getFrameName() const { return frameName_; }
+    void setTwinkle(bool twinkle) { twinkle_ = twinkle; }
 
 protected:
     Rectangle hitbox_;
@@ -95,6 +95,7 @@ protected:
 
     std::string audioID_;
     std::string frameName_;
+    bool twinkle_;
 
     Fighter *owner_;
 };

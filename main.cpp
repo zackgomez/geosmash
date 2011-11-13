@@ -39,7 +39,7 @@ const glm::vec3 playerColors[] =
     glm::vec3(0.0, 0.2, 1.0),
     glm::vec3(0.1, 0.6, 0.1),
     glm::vec3(0.8, 0.2, 0.2),
-    glm::vec3(0.8, 0.8, 0.2)
+    glm::vec3(0.7, 0.7, 0.2)
 };
 const glm::vec3 teamColors[] =
 {
@@ -329,8 +329,6 @@ void render()
     {
         int lives = fighters[i]->getLives();
         glm::vec2 life_area(-225.0f - 15 + 150*i, -WORLD_H/2 + 115);
-        // 10unit border
-        // 10unit squares
         
         // Draw life counts first
         for (int j = 0; j < lives; j++)
@@ -372,25 +370,22 @@ void render()
         float darkeningFactor = 0.60;
 
         // Draw the last color bar and then draw on top of it
-        if (damageRatio >= 1.0f)
-        {
-            glm::mat4 curtransform = glm::scale(
-                    glm::translate(
-                        transform,
-                        glm::vec3(0.0f)),
+        glm::mat4 curtransform = glm::scale(
+                glm::translate(
+                    transform,
+                    glm::vec3(0.0f)),
                 glm::vec3( 0.9f, 0.9f, 0.0f));
-            renderRectangle(curtransform,
-                    glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio - 1)), 0.0f));
-        }
+        renderRectangle(curtransform,
+                glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio)), 0.0f));
        
         // Now fill it in with a colored bar
         transform = glm::scale(
                 glm::translate(
                     transform,
-                    glm::vec3(.5 * xscalefact - 0.5 * 0.9, 0.0f, 0.0f)),
+                    glm::vec3(-.5 * xscalefact + 0.5 * 0.9, 0.0f, 0.0f)),
                 glm::vec3( xscalefact, 0.9f, 0.0f));
         renderRectangle(transform,
-                glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio)), 0.0f));
+                glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio+1)), 0.0f));
     }
 
 

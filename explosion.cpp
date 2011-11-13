@@ -2,6 +2,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "explosion.h"
 #include "glutils.h"
+#include "FrameManager.h"
 
 void Explosion::render(float dt)
 {
@@ -16,6 +17,25 @@ void Explosion::render(float dt)
 }
 
 bool Explosion::isDone() const
+{
+    return t_ > duration_;
+}
+
+void Twinkle::render(float dt)
+{
+    t_ += dt;
+    glm::mat4 transform =
+        glm::rotate(
+                glm::scale(
+                    glm::translate(glm::mat4(1.0f), glm::vec3(x_, y_, 0.0)),
+                    glm::vec3(size_, size_, 1.0f)),
+                static_cast<float>(45.f),
+                glm::vec3(0,0,1));
+    FrameManager::get()->renderFrame(transform, glm::vec4(.7, .7 ,.7, .3),
+            "StrongAttackInd");
+}
+
+bool Twinkle::isDone() const
 {
     return t_ > duration_;
 }
@@ -39,6 +59,11 @@ void ExplosionManager::addPuff(float x, float y, float t)
     explosions_.push_back(Explosion(x, y, t, glm::vec3(0.8f, 0.8f, 0.8f), 20.0f));
 }
 
+void ExplosionManager::addTwinkle(float x, float y)
+{
+    twinkles_.push_back(Twinkle(x, y, 0.25, 1.0f));
+}
+
 void ExplosionManager::render(float dt)
 {
     std::vector<Explosion>::iterator it = explosions_.begin();
@@ -52,5 +77,18 @@ void ExplosionManager::render(float dt)
             it = explosions_.erase(it);
         else
             it++;
+    }
+
+    std::vector<Twinkle>::iterator tit = twinkles_.begin();
+    for (; tit != twinkles_.end(); )
+    {
+        Twinkle& twinkle = *tit;
+        // Render
+        twinkle.render(dt);
+        // Check for explosion death
+        if (twinkle.isDone())
+            tit = twinkles_.erase(tit);
+        else
+            tit++;
     }
 }
