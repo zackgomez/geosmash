@@ -54,7 +54,7 @@ dashAttack.startup      0.11
 dashAttack.duration     0.55
 dashAttack.cooldown     0.2
 dashAttack.damage       5
-dashAttack.stun         0.10
+dashAttack.stun         0.15
 dashAttack.knockbackx   -2
 dashAttack.knockbacky   5
 dashAttack.knockbackpow 80.0
@@ -132,9 +132,9 @@ airNeutralAttack.stun         0.10
 airNeutralAttack.knockbackx   3
 airNeutralAttack.knockbacky   2
 airNeutralAttack.knockbackpow 100.0
-airNeutralAttack.hitboxx      45
+airNeutralAttack.hitboxx      25
 airNeutralAttack.hitboxy      -10
-airNeutralAttack.hitboxw      50
+airNeutralAttack.hitboxw      40
 airNeutralAttack.hitboxh      25
 airNeutralAttack.priority     2.0
 

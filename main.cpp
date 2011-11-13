@@ -50,6 +50,7 @@ const glm::vec3 teamColors[] =
 };
 
 GLuint backgroundTex = 0;
+GLuint groundTex = 0;
 const glm::mat4 perspectiveTransform = glm::ortho(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.0f, 1.0f);
 
 Rectangle ground;
@@ -310,6 +311,7 @@ void render()
             glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.0)),
             glm::vec3(ground.w, ground.h, 1.0f));
     renderRectangle(transform, glm::vec4(groundColor, 0.0f));
+    //renderTexturedRectangle(transform, groundTex);
 
     // Draw the fighters
     for (unsigned i = 0; i < numPlayers; i++)
@@ -368,6 +370,9 @@ void render()
         float damageRatio = fighters[i]->getDamage() / maxDamage;
         float xscalefact = 0.9f * std::min(1.0f, damageRatio - floorf(damageRatio));
         float darkeningFactor = 0.60;
+        
+        if (!fighters[i]->isAlive())
+            continue;
 
         // Draw the last color bar and then draw on top of it
         glm::mat4 curtransform = glm::scale(
@@ -425,6 +430,7 @@ int initGraphics()
     setPerspective(perspectiveTransform);
 
     backgroundTex = make_texture("back003.tga");
+    groundTex = make_texture("ground.tga");
     // Load some animation frames
     FrameManager::get()->loadFile("frames/charlie.frames");
 

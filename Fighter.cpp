@@ -1074,7 +1074,6 @@ void DashAttack::finish()
 void DashAttack::update(float dt)
 {
     Attack::update(dt);
-    std::cout << "UPDATE\n";
 
     // Deccelerate during duration
     if (t_ > startup_ && t_ < startup_ + duration_)
