@@ -107,8 +107,8 @@ public:
 
     UpSpecialAttack(float startup, float duration, float cooldown, float damage, float stun,
             const glm::vec2& knockback, const Rectangle &hitbox, float priority,
-            const std::string &audioFileprefix = "groundhit") :
-        Attack(startup, duration, cooldown, damage, stun, knockback, hitbox, priority),
+            const std::string &audioPrefix) :
+        Attack(startup, duration, cooldown, damage, stun, knockback, hitbox, priority, audioPrefix),
         repeatTime_(0.0f)
         {
         }
@@ -122,6 +122,26 @@ public:
 private:
     float repeatTime_;
     bool started_;
+};
+
+class DashAttack : public Attack
+{
+public:
+    DashAttack(float startup, float duration, float cooldown, float damage, float stun,
+            const glm::vec2& knockback, const Rectangle &hitbox, float priority,
+            const std::string& audioPrefix) : 
+        Attack(startup, duration, cooldown, damage, stun, knockback, hitbox, priority,
+                audioPrefix)
+        {
+        }
+
+    virtual Attack* clone() const;
+    virtual void start();
+    virtual void finish();
+    virtual void update(float dt);
+
+private:
+    float accel_;
 };
 
 class FighterState
@@ -223,25 +243,25 @@ private:
     int lastHitBy_; // The id of the fighter that last hit us, or -1
 
     // Available reference attacks
-    Attack dashAttack_;
-    Attack neutralTiltAttack_;
-    Attack sideTiltAttack_;
-    Attack downTiltAttack_;
-    Attack upTiltAttack_;
+    Attack *dashAttack_;
+    Attack *neutralTiltAttack_;
+    Attack *sideTiltAttack_;
+    Attack *downTiltAttack_;
+    Attack *upTiltAttack_;
 
-    Attack airNeutralAttack_;
-    Attack airSideAttack_;
-    Attack airDownAttack_;
-    Attack airUpAttack_;
+    Attack *airNeutralAttack_;
+    Attack *airSideAttack_;
+    Attack *airDownAttack_;
+    Attack *airUpAttack_;
 
-    UpSpecialAttack upSpecialAttack_;
+    Attack *upSpecialAttack_;
 
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
     void renderHelper(float dt, const std::string &frameName, const glm::vec3& color);
     template<class AttackClass>
-    AttackClass loadAttack(std::string attackName, const std::string &audioID,
+    AttackClass* loadAttack(std::string attackName, const std::string &audioID,
             const std::string &frameName);
 
     friend class FighterState;
@@ -252,6 +272,7 @@ private:
     friend class DeadState;
     friend class RespawnState;
     friend class UpSpecialAttack;
+    friend class DashAttack;
 };
 
 class GroundState : public FighterState

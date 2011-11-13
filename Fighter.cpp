@@ -27,7 +27,9 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     // Load ground attacks
     std::string g = "groundhit";
     std::string a = "airhit";
-    dashAttack_ = loadAttack<Attack>("dashAttack", g, "DashAttack");
+
+    dashAttack_ = loadAttack<DashAttack>("dashAttack", g, "DashAttack");
+
     neutralTiltAttack_ = loadAttack<Attack>("neutralTiltAttack", g, "GroundNeutral");
     sideTiltAttack_ = loadAttack<Attack>("sideTiltAttack", g, "GroundSidetilt");
     downTiltAttack_ = loadAttack<Attack>("downTiltAttack", g, "GroundDowntilt");
@@ -43,7 +45,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
 
     // Set up the twinkle moves
-    airSideAttack_.setTwinkle(true);
+    airSideAttack_->setTwinkle(true);
 
     state_ = 0;
 }
@@ -275,12 +277,12 @@ float Fighter::damageFunc() const
 }
 
 template<class AttackClass>
-AttackClass Fighter::loadAttack(std::string attackName, const std::string &audioID,
+AttackClass* Fighter::loadAttack(std::string attackName, const std::string &audioID,
         const std::string &fname)
 {
     attackName += '.';
 
-    AttackClass ret(
+    AttackClass* ret = new AttackClass(
             getParam(attackName + "startup"),
             getParam(attackName + "duration"),
             getParam(attackName + "cooldown"),
@@ -296,7 +298,7 @@ AttackClass Fighter::loadAttack(std::string attackName, const std::string &audio
                 getParam(attackName + "hitboxh")),
             getParam(attackName + "priority"),
             audioID);
-    ret.setFrameName(fname);
+    ret->setFrameName(fname);
 
     return ret;
 
@@ -483,8 +485,8 @@ void GroundState::update(Controller &controller, float dt)
         if (dashing_)
         {
             dashing_ = false;
-            fighter_->xvel_ = fighter_->dir_ * 1.25 * getParam("dashSpeed");
-            fighter_->attack_ = fighter_->dashAttack_.clone();
+            fighter_->xvel_ = fighter_->dir_ * getParam("dashSpeed");
+            fighter_->attack_ = fighter_->dashAttack_->clone();
         }
         // Not dashing- use a tilt
         else
@@ -497,20 +499,20 @@ void GroundState::update(Controller &controller, float dt)
             {
                 // Do the L/R tilt
                 fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-                fighter_->attack_ = fighter_->sideTiltAttack_.clone();
+                fighter_->attack_ = fighter_->sideTiltAttack_->clone();
             }
             else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
             {
-                fighter_->attack_ = fighter_->downTiltAttack_.clone();
+                fighter_->attack_ = fighter_->downTiltAttack_->clone();
             }
             else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
             {
-                fighter_->attack_ = fighter_->upTiltAttack_.clone();
+                fighter_->attack_ = fighter_->upTiltAttack_->clone();
             }
             else
             {
                 // Neutral tilt attack
-                fighter_->attack_ = fighter_->neutralTiltAttack_.clone();
+                fighter_->attack_ = fighter_->neutralTiltAttack_->clone();
             }
         }
         // Do per attack stuff
@@ -521,7 +523,7 @@ void GroundState::update(Controller &controller, float dt)
     else if (controller.pressb)
     {
         // Any B press is up B
-        fighter_->attack_ = new UpSpecialAttack(fighter_->upSpecialAttack_);
+        fighter_->attack_ = fighter_->upSpecialAttack_->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return;
@@ -718,20 +720,20 @@ void AirNormalState::update(Controller &controller, float dt)
         {
             // Do the L/R tilt
             fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-            fighter_->attack_ = fighter_->airSideAttack_.clone();
+            fighter_->attack_ = fighter_->airSideAttack_->clone();
         }
         else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
         {
-            fighter_->attack_ = fighter_->airDownAttack_.clone();
+            fighter_->attack_ = fighter_->airDownAttack_->clone();
         }
         else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
         {
-            fighter_->attack_ = fighter_->airUpAttack_.clone();
+            fighter_->attack_ = fighter_->airUpAttack_->clone();
         }
         else
         {
             // Neutral tilt attack
-            fighter_->attack_ = new Attack(fighter_->airNeutralAttack_);
+            fighter_->attack_ = fighter_->airNeutralAttack_->clone();
         }
         // Do stuff to all attacks
         fighter_->attack_->setFighter(fighter_);
@@ -740,7 +742,7 @@ void AirNormalState::update(Controller &controller, float dt)
     else if (controller.pressb)
     {
         // Any B press is up B
-        fighter_->attack_ = new UpSpecialAttack(fighter_->upSpecialAttack_);
+        fighter_->attack_ = fighter_->upSpecialAttack_->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
     }
@@ -1043,4 +1045,38 @@ void UpSpecialAttack::finish()
     Attack::hit(victim);
 
     victim->rect_.y += 20;
+}
+
+// ----------------------------------------------------------------------------
+// DashAttack class methods
+// ----------------------------------------------------------------------------
+
+Attack * DashAttack::clone() const
+{
+    return new DashAttack(*this);
+}
+
+void DashAttack::start()
+{
+    Attack::start();
+
+    owner_->xvel_ = getParam("dashAttack.initialSpeed") * owner_->dir_;
+    // Calculate acceleration needed to completely decelerate over duration
+    accel_ = -owner_->xvel_ / duration_ * 0.95;
+}
+
+void DashAttack::finish()
+{
+    Attack::finish();
+    owner_->xvel_ = 0.f;
+}
+
+void DashAttack::update(float dt)
+{
+    Attack::update(dt);
+    std::cout << "UPDATE\n";
+
+    // Deccelerate during duration
+    if (t_ > startup_ && t_ < startup_ + duration_)
+        owner_->xvel_ += accel_ * dt;
 }

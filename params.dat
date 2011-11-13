@@ -2,9 +2,9 @@ worldWidth   1500
 worldHeight  750
 
 level.x      0
-level.y      -200
-level.w      1025
-level.h      80
+level.y      -185
+level.w      1024
+level.h      64
 
 killbox.top     600
 killbox.bottom  -600
@@ -51,7 +51,7 @@ fastFallMaxSpeed -1000
 
 
 dashAttack.startup      0.11
-dashAttack.duration     0.25
+dashAttack.duration     0.55
 dashAttack.cooldown     0.2
 dashAttack.damage       5
 dashAttack.stun         0.10
@@ -63,6 +63,7 @@ dashAttack.hitboxy      -15
 dashAttack.hitboxw      40
 dashAttack.hitboxh      25
 dashAttack.priority     1.0
+dashAttack.initialSpeed 500.0
 
 
 neutralTiltAttack.startup      0.03
