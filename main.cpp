@@ -22,6 +22,7 @@ static int SCREEN_H = 1080;
 
 bool running;
 bool teams;
+bool muteMusic;
 SDL_Joystick *joystick;
 
 bool paused;
@@ -79,7 +80,7 @@ void controllerEvent(Controller &controller, const SDL_Event &event);
 
 int main(int argc, char **argv)
 {
-    bool muteMusic = false;
+    muteMusic = false;
     numPlayers = 1;
     for (int i = 1; i < argc; i++)
     {
@@ -197,9 +198,15 @@ void processInput()
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
             if (event.key.keysym.sym == SDLK_m)
+            {
                 AudioManager::get()->pauseSoundtrack();
+                muteMusic = true;
+            }
             if (event.key.keysym.sym == SDLK_p)
+            {
                 AudioManager::get()->startSoundtrack();
+                muteMusic = false;
+            }
             break;
         case SDL_QUIT:
             running = false;
@@ -571,7 +578,7 @@ int initLibs()
         return 0;
     }
 
-    SDL_WM_SetCaption("Geometry Smash 0.2", "geosmash");
+    SDL_WM_SetCaption("Geometry Smash 0.4", "geosmash");
 
     return 1;
 }
@@ -588,6 +595,7 @@ void pause(int playerID)
     {
         paused = true;
         pausedPlayer = playerID;
+        AudioManager::get()->pauseSoundtrack();
     }
 }
 
@@ -597,6 +605,8 @@ void unpause(int playerID)
     {
         paused = false;
         pausedPlayer = -1;
+        if (!muteMusic)
+            AudioManager::get()->startSoundtrack();
     }
 }
 
@@ -610,4 +620,4 @@ Fighter *getPartner(int playerID)
     // Odd: 1,3 -> 0, 2
     else
         return fighters[playerID - 1];
-}
+};
