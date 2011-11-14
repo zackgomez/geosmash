@@ -23,6 +23,7 @@ static int SCREEN_H = 1080;
 bool running;
 bool teams;
 bool muteMusic;
+bool criticalMusic = false;
 SDL_Joystick *joystick;
 
 bool paused;
@@ -221,10 +222,12 @@ void update()
         return;
 
     int alivePlayers = 0;
+    int totalLives = 0;
     AudioManager::get()->update(dt);
     for (unsigned i = 0; i < numPlayers; i++)
     {
         Fighter *fighter = fighters[i];
+        totalLives += fighters[i]->getLives();
         if (fighter->isAlive()) alivePlayers++;
 
         // Update positions, etc
@@ -295,6 +298,15 @@ void update()
         // Ground check
         fighter->collisionWithGround(ground,
                 fighter->getRectangle().overlaps(ground));
+    }
+
+    // Play the tense music when two players with one life each left
+    // XXX this could not work with teams
+    if (alivePlayers == 2 && totalLives == 2 && !muteMusic && !criticalMusic)
+    {
+        criticalMusic = true;
+        AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
+        AudioManager::get()->startSoundtrack();
     }
 
     // End the game when no one is left
