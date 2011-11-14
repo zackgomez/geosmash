@@ -1,5 +1,5 @@
 worldWidth   1500
-worldHeight  750
+worldHeight  800
 
 level.x      0
 level.y      -185
@@ -10,6 +10,11 @@ killbox.top     600
 killbox.bottom  -600
 killbox.left    -1300
 killbox.right   1300
+
+hud.x       0
+hud.y       -0.70
+hud.w       1.4
+hud.h       0.125
 
 
 soundtrack.volume 35
@@ -64,6 +69,7 @@ dashAttack.hitboxw      40
 dashAttack.hitboxh      25
 dashAttack.priority     1.0
 dashAttack.initialSpeed 500.0
+dashAttack.deceleration 700.0
 
 
 neutralTiltAttack.startup      0.03
@@ -156,10 +162,10 @@ airDownAttack.startup      0.15
 airDownAttack.duration     0.15
 airDownAttack.cooldown     0.15
 airDownAttack.damage       11
-airDownAttack.stun         0.20
+airDownAttack.stun         0.30
 airDownAttack.knockbackx   0
 airDownAttack.knockbacky   -1
-airDownAttack.knockbackpow 300.0
+airDownAttack.knockbackpow 200.0
 airDownAttack.hitboxx      0
 airDownAttack.hitboxy      -40
 airDownAttack.hitboxw      35
@@ -180,6 +186,19 @@ airUpAttack.hitboxw      45
 airUpAttack.hitboxh      25
 airUpAttack.priority     1.0
 
+tauntAttack.startup      0.4
+tauntAttack.duration     0.0
+tauntAttack.cooldown     0.4
+tauntAttack.damage       0
+tauntAttack.stun         0
+tauntAttack.knockbackx   0
+tauntAttack.knockbacky   1
+tauntAttack.knockbackpow 0
+tauntAttack.hitboxx      0
+tauntAttack.hitboxy      0
+tauntAttack.hitboxw      0
+tauntAttack.hitboxh      0
+tauntAttack.priority     0
 
 
 

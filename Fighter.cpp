@@ -43,6 +43,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
 
+    tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "TauntAttack");
 
     // Set up the twinkle moves
     airSideAttack_->setTwinkle(true);
@@ -163,18 +164,19 @@ bool Fighter::canBeHit() const
 
 void Fighter::respawn(bool killed)
 {
+    // Remove any attacks
+    if (attack_)
+    {
+        attack_->finish();
+        delete attack_;
+        attack_ = 0;
+    }
     // Reset vars
     rect_.x = respawnx_;
     rect_.y = respawny_;
     xvel_ = yvel_ = 0.0f;
     damage_ = 0;
     lastHitBy_ = -1;
-    // Remove any attacks
-    if (attack_)
-    {
-        delete attack_;
-        attack_ = 0;
-    }
     // If we died remove a life and play a sound
     if (killed)
     {
@@ -318,6 +320,7 @@ void FighterState::calculateHitResult(const Fighter *attacker, const Attack *att
     // Cancel any current attack
     if (fighter_->attack_)
     {
+        fighter_->attack_->finish();
         delete fighter_->attack_;
         fighter_->attack_ = 0;
     }
@@ -524,6 +527,13 @@ void GroundState::update(Controller &controller, float dt)
     {
         // Any B press is up B
         fighter_->attack_ = fighter_->upSpecialAttack_->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+        return;
+    }
+    else if (controller.pressc && !dashing_)
+    {
+        fighter_->attack_ = fighter_->tauntAttack_->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return;
@@ -1062,7 +1072,7 @@ void DashAttack::start()
 
     owner_->xvel_ = getParam("dashAttack.initialSpeed") * owner_->dir_;
     // Calculate acceleration needed to completely decelerate over duration
-    accel_ = -owner_->xvel_ / duration_ * 0.95;
+    accel_ = - getParam("dashAttack.deceleration") * owner_->dir_;
 }
 
 void DashAttack::finish()
@@ -1078,4 +1088,32 @@ void DashAttack::update(float dt)
     // Deccelerate during duration
     if (t_ > startup_ && t_ < startup_ + duration_)
         owner_->xvel_ += accel_ * dt;
+}
+
+// ----------------------------------------------------------------------------
+// TauntAttack class methods
+// ----------------------------------------------------------------------------
+
+Attack * TauntAttack::clone() const
+{
+    return new TauntAttack(*this);
+}
+
+void TauntAttack::start()
+{
+    Attack::start();
+    oldrect_ = owner_->rect_;
+
+    owner_->rect_.w += 10;
+    owner_->rect_.h += 10;
+}
+
+void TauntAttack::finish()
+{
+    Attack::finish();
+}
+
+void TauntAttack::update(float dt)
+{
+    Attack::update(dt);
 }

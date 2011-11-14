@@ -17,8 +17,8 @@ static const float dt = 33.0f / 1000.0f;
 
 static float WORLD_W = 1500.0f;
 static float WORLD_H = 750.0f;
-static int SCREEN_W = 1920;
-static int SCREEN_H = 1080;
+static int SCREEN_W = 2560;
+static int SCREEN_H = 1600;
 
 bool running;
 bool teams;
@@ -166,9 +166,11 @@ void mainloop()
         update();
         render();
 
+        // XXX fix this
         int endms = SDL_GetTicks();
+        int delay = std::max(1, endms - startms);
         //std::cout << "Frame time (ms): " << endms - startms << '\n';
-        SDL_Delay(static_cast<int>(dt * 1000.0) - (endms - startms));
+        SDL_Delay(static_cast<int>(dt * 1000.0));
     }
 }
 
@@ -350,7 +352,7 @@ void render()
     for (unsigned i = 0; i < numPlayers; i++)
     {
         int lives = fighters[i]->getLives();
-        glm::vec2 life_area(-225.0f - 15 + 150*i, -WORLD_H/2 + 115);
+        glm::vec2 life_area(-225.0f - 15 + 150*i, -WORLD_H/2 + 150);
         
         // Draw life counts first
         for (int j = 0; j < lives; j++)
@@ -377,7 +379,7 @@ void render()
 
         // Draw damage bars
         // First, render a dark grey background rect
-        glm::vec2 damageBarMidpoint(-225.0f + 150*i, -WORLD_H/2 + 50);
+        glm::vec2 damageBarMidpoint(-225.0f + 150*i, -WORLD_H/2 + 75);
         glm::mat4 transform = glm::scale(
                     glm::translate(
                         glm::mat4(1.0f),

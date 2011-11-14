@@ -144,6 +144,20 @@ private:
     float accel_;
 };
 
+class TauntAttack : public Attack
+{
+public:
+    TauntAttack() : Attack() { }
+
+    virtual Attack* clone() const;
+    virtual void start();
+    virtual void finish();
+    virtual void update(float dt);
+
+private:
+    Rectangle oldrect_;
+};
+
 class FighterState
 {
 public:
@@ -256,6 +270,8 @@ private:
 
     Attack *upSpecialAttack_;
 
+    Attack *tauntAttack_;
+
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
@@ -273,6 +289,7 @@ private:
     friend class RespawnState;
     friend class UpSpecialAttack;
     friend class DashAttack;
+    friend class TauntAttack;
 };
 
 class GroundState : public FighterState
