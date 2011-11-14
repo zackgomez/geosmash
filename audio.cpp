@@ -3,32 +3,6 @@
 #include <cassert>
 #include "ParamReader.h"
 
-static sf::Music music;
-
-void start_song(const char *filename)
-{
-    if (!music.OpenFromFile(filename))
-    {
-        std::cout << "Unable to open music file\n";
-        return;
-    }
-    music.SetLoop(true);
-    music.SetVolume(getParam("soundtrack.volume"));
-    music.Play();
-}
-
-void stop_song()
-{
-    music.Stop();
-};
-
-void play_song()
-{
-    music.Play();
-}
-
-
-
 AudioManager::AudioManager() {}
 
 void AudioManager::playSound(const std::string &fname)
@@ -41,6 +15,24 @@ void AudioManager::playSound(const std::string &fname)
 
     currentSounds_.push_back(music);
 
+}
+
+void AudioManager::setSoundtrack(const std::string &file)
+{
+    soundtrack_.Stop();
+    soundtrack_.OpenFromFile(file);
+    soundtrack_.SetLoop(true);
+    soundtrack_.SetVolume(getParam("soundtrack.volume"));
+}
+
+void AudioManager::startSoundtrack()
+{
+    soundtrack_.Play();
+}
+
+void AudioManager::pauseSoundtrack()
+{
+    soundtrack_.Pause();
 }
 
 AudioManager* AudioManager::get() 

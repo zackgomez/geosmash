@@ -2,11 +2,6 @@
 
 #include <SFML/Audio.hpp>
 
-void start_song(const char *filename);
-void play_song();
-void stop_song();
-
-
 class AudioManager
 {
 public:
@@ -15,7 +10,15 @@ public:
     // Play an audio file (for example, on being hit with an attack)
     // (Calling object is responsible for building the identifier, 
     // not the full filename)
-    void playSound(const std::string &audioFilename);
+    void playSound(const std::string &audioIdentifier);
+
+    // Loads the filename as the soundtrack - does not start playing it until
+    // startSoundtrack() is called.
+    void setSoundtrack(const std::string &filename);
+    // Starts the soundtrack song
+    void startSoundtrack();
+    // Pauses the soundtrack song
+    void pauseSoundtrack();
 
     // Called every frame, allows AudioManager to cleanup its state 
     // (free members, etc)
@@ -27,5 +30,7 @@ private:
     // list of sounds currently playing. we need to periodically check 
     // this list to not leak memory.
     std::vector<sf::Music *> currentSounds_;
+
+    sf::Music soundtrack_;
 };
 

@@ -139,9 +139,10 @@ int main(int argc, char **argv)
     songs.push_back("sfx/geosmash.wav");
     songs.push_back("sfx/hand canyon.wav");
     songs.push_back("sfx/Meat DeFeat.wav");
+    AudioManager::get()->setSoundtrack(songs[rand() % songs.size()]);
 
     if (!muteMusic)
-        start_song(songs[rand() % songs.size()].c_str());
+        AudioManager::get()->startSoundtrack();
 
 
     startTime = SDL_GetTicks();
@@ -196,9 +197,9 @@ void processInput()
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
             if (event.key.keysym.sym == SDLK_m)
-                stop_song();
+                AudioManager::get()->pauseSoundtrack();
             if (event.key.keysym.sym == SDLK_p)
-                play_song();
+                AudioManager::get()->startSoundtrack();
             break;
         case SDL_QUIT:
             running = false;
