@@ -502,6 +502,20 @@ void controllerEvent(Controller &controller, const SDL_Event &event)
             controller.joyyv += (newPos - controller.joyy);
             controller.joyy = newPos;
         }
+        else if (event.jaxis.axis == 5)
+        {
+            float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
+            controller.ltrigger = newPos;
+        }
+        else if (event.jaxis.axis == 4)
+        {
+            float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
+            controller.rtrigger = newPos;
+        }
+        else
+        {
+            std::cout << "Axis event: " << (int) event.jaxis.axis << '\n';
+        }
         break;
 
     case SDL_JOYBUTTONDOWN:
@@ -524,6 +538,16 @@ void controllerEvent(Controller &controller, const SDL_Event &event)
         {
             controller.pressc = true;
             controller.buttonc = true;
+        }
+        else if (event.jbutton.button == 4)
+        {
+            controller.presslb = true;
+            controller.lbumper = true;
+        }
+        else if (event.jbutton.button == 5)
+        {
+            controller.pressrb = true;
+            controller.rbumper = true;
         }
         else if (event.jbutton.button == 7)
         {
@@ -562,6 +586,20 @@ void controllerEvent(Controller &controller, const SDL_Event &event)
         {
             controller.buttonstart = false;
             controller.pressstart = false;
+        }
+        else if (event.jbutton.button == 4)
+        {
+            controller.presslb = false;
+            controller.lbumper = false;
+        }
+        else if (event.jbutton.button == 5)
+        {
+            controller.pressrb = false;
+            controller.rbumper = false;
+        }
+        else
+        {
+            std::cout << "Got button number : " << (int) event.jbutton.button << '\n';
         }
         break;
 

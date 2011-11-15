@@ -17,6 +17,10 @@ struct Controller
     int buttona, buttonb, buttonc, jumpbutton, buttonstart;
     // nonzero if the button was pressed this frame
     int pressa, pressb, pressc, pressjump, pressstart;
+
+    float rtrigger, ltrigger;
+    int lbumper, rbumper;
+    int presslb, pressrb;
 };
 
 class Rectangle
@@ -285,6 +289,7 @@ private:
     friend class DashState;
     friend class AirNormalState;
     friend class AirStunnedState;
+    friend class DodgeState;
     friend class DeadState;
     friend class RespawnState;
     friend class UpSpecialAttack;
@@ -347,6 +352,25 @@ public:
 private:
     float stunDuration_;
     float stunTime_;
+};
+
+class DodgeState : public FighterState
+{
+public:
+    DodgeState(Fighter *f);
+    virtual ~DodgeState() {}
+
+    virtual void update(Controller&, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+    virtual bool canBeHit() const;
+
+private:
+    float t_;
+    float dodgeTime_;
+    float invincTime_;
+    float cooldown_;
 };
 
 class RespawnState : public FighterState

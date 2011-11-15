@@ -523,6 +523,15 @@ void GroundState::update(Controller &controller, float dt)
         fighter_->attack_->start();
         return;
     }
+    // Check for dodge
+    else if ((controller.rbumper || controller.rtrigger < -getParam("input.trigThresh"))
+            && fabs(controller.joyx) > getParam("input.dodgeThresh")
+            && fabs(controller.joyxv) > getParam("input.velThresh"))
+    {
+        fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+        next_ = new DodgeState(fighter_);
+        return;
+    }
     else if (controller.pressb)
     {
         // Any B press is up B
@@ -673,7 +682,7 @@ void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
 void GroundState::hitByAttack(const Fighter *attacker, const Attack *attack)
 {
     // Pop up a bit so that we're not overlapping the ground
-    fighter_->rect_.x += 2;
+    fighter_->rect_.y += 2;
     // Then do the normal stuff
     FighterState::calculateHitResult(attacker, attack);
 }
@@ -830,6 +839,75 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
 void AirNormalState::hitByAttack(const Fighter *attacker, const Attack *attack)
 {
     FighterState::calculateHitResult(attacker, attack);
+}
+
+//// ----------------------- DODGE STATE --------------------------------
+DodgeState::DodgeState(Fighter *f) :
+    FighterState(f), t_(0.f), dodgeTime_(getParam("dodge.duration")),
+    invincTime_(getParam("dodge.invincTime")), cooldown_(getParam("dodge.cooldown"))
+{
+    frameName_ = "GroundRoll";
+}
+
+void DodgeState::update(Controller &controller, float dt)
+{
+    // Check for pause
+    if (controller.pressstart)
+        pause(fighter_->id_);
+
+    t_ += dt;
+    fighter_->xvel_ = fighter_->dir_ * getParam("dodge.speed");
+    
+    if (t_ > dodgeTime_)
+        fighter_->xvel_ = 0;
+
+    if (t_ > dodgeTime_ && t_ - dt < dodgeTime_)
+        fighter_->dir_ = -fighter_->dir_;
+
+    if (t_ > dodgeTime_ + cooldown_)
+        next_ = new GroundState(fighter_);
+
+}
+
+void DodgeState::render(float dt)
+{
+    float period_scale_factor = 20.0;
+    float opacity_amplitude = 3;
+    float opacity_factor = (1 + cos(period_scale_factor * t_)) * 0.5f; 
+    glm::vec3 color = fighter_->color_ * (opacity_amplitude * opacity_factor + 1);
+
+    if (t_ > invincTime_)
+        color = fighter_->color_;
+
+
+    printf("DODGE | t: %.3f  invincTime: %.3f  dodgeTime: %.3f || ",
+            t_, invincTime_, dodgeTime_);
+    // Just render the fighter, but flashing
+    fighter_->renderHelper(dt, frameName_, color);
+}
+
+void DodgeState::hitByAttack(const Fighter *attacker, const Attack *attack)
+{
+    // Pop up a bit so that we're not overlapping the ground
+    fighter_->rect_.y += 2;
+    // Then do the normal stuff
+    FighterState::calculateHitResult(attacker, attack);
+}
+
+void DodgeState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+    if (!collision && !next_)
+    {
+        float dir = (ground.x - fighter_->rect_.x) > 0 ? 1 : -1;
+        fighter_->rect_.x += dir * (fabs(ground.x - fighter_->rect_.x) - ground.w/2 - fighter_->rect_.w/2 + 2);
+        fighter_->xvel_ = 0.0f;
+        t_ = std::max(t_, invincTime_);
+    }
+}
+
+bool DodgeState::canBeHit() const
+{
+    return t_ > invincTime_;
 }
 
 //// ----------------------- RESPAWN STATE --------------------------------

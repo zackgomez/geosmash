@@ -26,7 +26,9 @@ input.velThresh     0.15
 input.jumpThresh    0.9
 input.deadzone      0.2
 input.tiltThresh    0.4
+input.dodgeThresh   0.6
 input.fallThresh    0.95
+input.trigThresh     0.5
 
 stats.hitExpireTime 2.0
 
@@ -54,6 +56,10 @@ fastFallInitialSpeed -250.0
 fastFallMaxInitialSpeed -500
 fastFallMaxSpeed -1000
 
+dodge.duration    0.4
+dodge.invincTime  0.32
+dodge.speed       500
+dodge.cooldown    0.15
 
 dashAttack.startup      0.11
 dashAttack.duration     0.55
