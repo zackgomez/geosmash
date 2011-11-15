@@ -27,14 +27,12 @@ static struct
     GLuint fbo;
     GLuint depthbuf;
     GLuint rendertex[3];
-
-    glm::mat4 perspective;
 } resources;
 
 
 static glm::vec2 screensize;
 
-GLuint make_buffer( GLenum target, const void *buffer_data, GLsizei buffer_size)
+GLuint make_buffer(GLenum target, const void *buffer_data, GLsizei buffer_size)
 {
     GLuint buffer;
     glGenBuffers(1, &buffer);
@@ -162,11 +160,6 @@ GLuint make_texture(const char *filename)
     return texture;
 }
 
-void setPerspective(const glm::mat4 &perspectiveTransform)
-{
-    resources.perspective = perspectiveTransform;
-}
-
 void blurTexture(GLuint texture, bool horiz)
 {
     GLuint program = horiz ? resources.hblurprogram : resources.vblurprogram;
@@ -221,9 +214,6 @@ void postRender()
     checkFramebufferStatus();
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    glm::mat4 old = resources.perspective;
-    resources.perspective = glm::mat4(1.0f);
-
     renderTexturedRectangle(glm::scale(glm::mat4(1.0f), glm::vec3(2.f, 2.f, 1.f)),
             resources.rendertex[0]);
     glEnable(GL_BLEND);
@@ -232,7 +222,6 @@ void postRender()
             resources.rendertex[1]);
 
     glDisable(GL_BLEND);
-    resources.perspective = old;
 }
 
 bool initGLUtils(int screenw, int screenh)
@@ -276,8 +265,6 @@ bool initGLUtils(int screenw, int screenh)
     if (resources.maskfragment_shader == 0)
         return false;
     resources.maskprogram = make_program(resources.maskvertex_shader, resources.maskfragment_shader);
-
-    resources.perspective = glm::mat4(1.0f);
 
     GLuint blurvertex_shader = make_shader(GL_VERTEX_SHADER, "shaders/blur.v.glsl");
     GLuint hblurfrag_shader = make_shader(GL_FRAGMENT_SHADER, "shaders/hblur.f.glsl");
@@ -348,7 +335,7 @@ void renderRectangle(const glm::mat4 &transform, const glm::vec4 &color)
 
     // Enable program and set up values
     glUseProgram(resources.program);
-    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(resources.perspective * transform));
+    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(transform));
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
@@ -370,7 +357,7 @@ void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture)
 
     // Enable program and set up values
     glUseProgram(resources.texprogram);
-    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(resources.perspective * transform));
+    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(transform));
     glUniform1i(textureUniform, 0);
 
     glActiveTexture(GL_TEXTURE0);
@@ -399,7 +386,7 @@ void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec4 &color,
 
     // Enable fag program and set up values
     glUseProgram(resources.maskprogram);
-    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(resources.perspective * transform));
+    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(transform));
     glUniform1i(textureUniform, 0);
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     glUniform2fv(texsizeUniform, 1, glm::value_ptr(glm::vec2(frame->w/10, frame->h/10)));
