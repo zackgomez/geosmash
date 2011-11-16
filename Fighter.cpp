@@ -43,7 +43,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
 
-    tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "TauntAttack");
+    tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "Bong");
 
     // Set up the twinkle moves
     airSideAttack_->setTwinkle(true);
