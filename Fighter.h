@@ -77,6 +77,8 @@ public:
 
     // Updates internal timer
     virtual void update(float dt);
+    // Renders any attack specific stuff (in this case, the hitbox)
+    virtual void render(const glm::mat4 &trans, float dt);
     // Sends to cooldown time
     virtual void cancel();
     // Called when the attack 'connects'

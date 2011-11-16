@@ -215,26 +215,8 @@ void Fighter::renderHelper(const glm::mat4 &trans, float dt, const std::string &
 
     FrameManager::get()->renderFrame(trans * transform, glm::vec4(color, 0.25f), frameName);
 
-    // Draw hitbox if applicable
-    if (attack_ && attack_->hasHitbox())
-    {
-        Rectangle hitbox = attack_->getHitbox();
-        glm::mat4 attacktrans = glm::scale(
-                glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
-                glm::vec3(hitbox.w, hitbox.h, 1.0f));
-        renderRectangle(trans * attacktrans, glm::vec4(1,0,0,0.33));
-    }
-    // Draw twinkle if applicable
-    if (attack_ && attack_->hasTwinkle())
-    {
-        glm::mat4 transform =
-            glm::rotate(
-                    glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
-                    45.f,
-                    glm::vec3(0,0,1));
-        FrameManager::get()->renderFrame(trans * transform, glm::vec4(0.6f, 0.6f, 0.8f, 0.3f),
-                "StrongAttackInd");
-    }
+    if (attack_)
+        attack_->render(trans, dt);
 
     // If the player is off the screen, render a little arrow pointing to them
     glm::vec2 cameraPos = glm::vec2(0, 0);
@@ -1058,6 +1040,34 @@ bool Attack::canHit(const Fighter *f) const
 void Attack::update(float dt)
 {
     t_ += dt;
+}
+
+void Attack::render(const glm::mat4 &trans, float dt)
+{
+    // Draw the hitbox if we should
+    if (hasHitbox())
+    {
+        Rectangle hitbox = getHitbox();
+        glm::mat4 attacktrans = glm::scale(
+                glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
+                glm::vec3(hitbox.w, hitbox.h, 1.0f));
+        renderRectangle(trans * attacktrans, glm::vec4(1,0,0,0.33));
+    }
+    // Draw twinkle if applicable
+    if (twinkle_ && t_ < startup_)
+    {
+        float fact = 0.5 + (t_ / startup_) * 1.5;
+        glm::mat4 transform =
+            glm::scale(
+                    glm::rotate(
+                        glm::translate(glm::mat4(1.0f), glm::vec3(owner_->getRectangle().x,
+                                owner_->getRectangle().y, 0.0f)),
+                        90 * fact,
+                        glm::vec3(0,0,1)),
+                    glm::vec3(fact, fact, 1.f));
+        FrameManager::get()->renderFrame(trans * transform, glm::vec4(0.6f, 0.6f, 0.8f, 0.3f),
+                "StrongAttackInd");
+    }
 }
 
 void Attack::cancel()
