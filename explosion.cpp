@@ -4,14 +4,14 @@
 #include "glutils.h"
 #include "FrameManager.h"
 
-void Explosion::render(float dt)
+void Explosion::render(const glm::mat4 &trans, float dt)
 {
     t_ += dt;
 
     float frac = std::min(1.0f, t_ / duration_);
     glm::mat4 transform = 
         glm::scale(
-                glm::translate(glm::mat4(1.0f), glm::vec3(x_, y_, 0.0)),
+                glm::translate(trans, glm::vec3(x_, y_, 0.1)),
                 frac * glm::vec3(size_, size_, 1.0f));
     renderRectangle(transform, glm::vec4(color_, 0.2));
 }
@@ -21,7 +21,7 @@ bool Explosion::isDone() const
     return t_ > duration_;
 }
 
-void Twinkle::render(float dt)
+void Twinkle::render(const glm::mat4 &trans, float dt)
 {
     t_ += dt;
     glm::mat4 transform =
@@ -64,14 +64,14 @@ void ExplosionManager::addTwinkle(float x, float y)
     twinkles_.push_back(Twinkle(x, y, 0.25, 1.0f));
 }
 
-void ExplosionManager::render(float dt)
+void ExplosionManager::render(const glm::mat4 &trans, float dt)
 {
     std::vector<Explosion>::iterator it = explosions_.begin();
     for (; it != explosions_.end(); )
     {
         Explosion& ex = *it;
         // Render
-        ex.render(dt);
+        ex.render(trans, dt);
         // Check for explosion death
         if (ex.isDone())
             it = explosions_.erase(it);
@@ -84,7 +84,7 @@ void ExplosionManager::render(float dt)
     {
         Twinkle& twinkle = *tit;
         // Render
-        twinkle.render(dt);
+        twinkle.render(trans, dt);
         // Check for explosion death
         if (twinkle.isDone())
             tit = twinkles_.erase(tit);

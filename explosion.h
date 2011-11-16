@@ -8,7 +8,7 @@ public:
         x_(x), y_(y), t_(0), duration_(dur), color_(col), size_(size)
     {}
 
-    void render(float dt);
+    void render(const glm::mat4& trans, float dt);
     bool isDone() const;
 
 private:
@@ -26,7 +26,7 @@ public:
         x_(x), y_(y), t_(0), duration_(dur), size_(size)
     {}
 
-    void render(float dt);
+    void render(const glm::mat4& trans, float dt);
     bool isDone() const;
 
 private:
@@ -51,7 +51,7 @@ public:
     void addTwinkle(float x, float y);
 
     // Renders all explosions on the screen
-    void render(float dt);
+    void render(const glm::mat4& trans, float dt);
 
 private:
     // Private shits for singleton

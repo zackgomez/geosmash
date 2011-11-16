@@ -524,7 +524,7 @@ void GroundState::update(Controller &controller, float dt)
         return;
     }
     // Check for dodge
-    else if ((controller.rbumper || controller.rtrigger < -getParam("input.trigThresh"))
+    else if ((controller.rbumper || controller.rtrigger < -getParam("input.trigThresh") || controller.ltrigger < -getParam("input.trigThresh"))
             && fabs(controller.joyx) > getParam("input.dodgeThresh")
             && fabs(controller.joyxv) > getParam("input.velThresh"))
     {

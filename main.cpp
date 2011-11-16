@@ -304,7 +304,7 @@ void update()
 
     // Play the tense music when two players with one life each left
     // XXX this could not work with teams
-    if (alivePlayers == 2 && totalLives == 2 && !muteMusic && !criticalMusic)
+    if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
     {
         criticalMusic = true;
         AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
@@ -338,9 +338,6 @@ void render()
     for (unsigned i = 0; i < numPlayers; i++)
         if (fighters[i]->isAlive())
             fighters[i]->render(perspectiveTransform, dt);
-
-    // Draw any explosions
-    ExplosionManager::get()->render(dt * !paused);
 
     //
     // Render the overlay interface (HUD)
@@ -415,6 +412,10 @@ void render()
     }
 
 
+    // Draw any explosions
+    ExplosionManager::get()->render(perspectiveTransform, dt * !paused);
+
+
     // Finish
     postRender();
     SDL_GL_SwapBuffers();
@@ -442,17 +443,22 @@ int initJoystick(unsigned numPlayers)
     return numPlayers;
 }
 
+void setCamera(const glm::vec3 &pos, float angle)
+{
+    //perspectiveTransform = glm::frustum(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.f, 1.f);
+    perspectiveTransform = glm::frustum(-1.f, 1.f, -9.f/16, 9.f/16, -1.f, 1.f);
+    perspectiveTransform = glm::translate(perspectiveTransform, pos);
+    perspectiveTransform = glm::rotate(perspectiveTransform, 180.f + angle, glm::vec3(0, 0, 1));
+}
+
 int initGraphics()
 {
     // Set the viewport
     glViewport(0, 0, SCREEN_W, SCREEN_H);
 
     initGLUtils(SCREEN_W, SCREEN_H);
-    perspectiveTransform = glm::frustum(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2,
-            -1.f, 1.f);
-    perspectiveTransform = glm::translate(perspectiveTransform, glm::vec3(0, 0, -4));
-    perspectiveTransform = glm::rotate(perspectiveTransform, 180.f, glm::vec3(0, 0, 1));
-    perspectiveTransform = glm::scale(perspectiveTransform, glm::vec3(4, 4, 1));
+
+    setCamera(glm::vec3(0.f, 0.f, -750.f), 0);
 
     backgroundTex = make_texture("back003.tga");
     groundTex = make_texture("ground.tga");

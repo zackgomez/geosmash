@@ -140,7 +140,7 @@ airNeutralAttack.startup      0.05
 airNeutralAttack.duration     0.36
 airNeutralAttack.cooldown     0.15
 airNeutralAttack.damage       8
-airNeutralAttack.stun         0.10
+airNeutralAttack.stun         0.09
 airNeutralAttack.knockbackx   3
 airNeutralAttack.knockbacky   2
 airNeutralAttack.knockbackpow 100.0
@@ -148,7 +148,7 @@ airNeutralAttack.hitboxx      25
 airNeutralAttack.hitboxy      -10
 airNeutralAttack.hitboxw      40
 airNeutralAttack.hitboxh      25
-airNeutralAttack.priority     2.0
+airNeutralAttack.priority     1.5
 
 airSideAttack.startup      0.25
 airSideAttack.duration     0.25
@@ -220,7 +220,7 @@ upSpecialAttack.hitboxx      25
 upSpecialAttack.hitboxy      30
 upSpecialAttack.hitboxw      40
 upSpecialAttack.hitboxh      60
-upSpecialAttack.priority     1.5
+upSpecialAttack.priority     2.0
 
 upSpecialAttack.repeatInterval  0.04
 upSpecialAttack.xvel            100
