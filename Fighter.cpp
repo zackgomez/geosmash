@@ -43,7 +43,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
 
-    tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "Bong");
+    tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "TauntAttack");
 
     // Set up the twinkle moves
     airSideAttack_->setTwinkle(true);
@@ -76,14 +76,6 @@ int Fighter::getLastHitBy() const
 
 void Fighter::update(Controller &controller, float dt)
 {
-    // Check for state transition
-    if (state_->hasTransition())
-    {
-        FighterState *next = state_->nextState();
-        delete state_;
-        state_ = next;
-    }
-
     // Update the attack
     if (attack_)
     {
@@ -96,8 +88,17 @@ void Fighter::update(Controller &controller, float dt)
         }
     }
 
+    // Check for state transition
+    if (state_->hasTransition())
+    {
+        FighterState *next = state_->nextState();
+        delete state_;
+        state_ = next;
+    }
+
     // Update state
     state_->update(controller, dt);
+
 
     // Update position
     rect_.x += xvel_ * dt;
@@ -345,6 +346,7 @@ void FighterState::calculateHitResult(const Fighter *attacker, const Attack *att
 
     // Go to the stunned state
     float stunDuration = attack->getStun(fighter_) * fighter_->damageFunc();
+    std::cout << "StunDuration: " << stunDuration << '\n';
     next_ = new AirStunnedState(fighter_, stunDuration);
 }
 
@@ -381,6 +383,8 @@ AirStunnedState::AirStunnedState(Fighter *f, float duration) :
     FighterState(f), stunDuration_(duration), stunTime_(0)
 {
     frameName_ = "AirStunned";
+
+    std::cout << "AIR STUNNED CONSTRUCTED.\n";
 }
 
 AirStunnedState::~AirStunnedState()
@@ -432,6 +436,8 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
     // If no collision, we don't care
     if (!collision)
         return;
+
+    std::cout << "Air Stun collision\n";
     FighterState::collisionHelper(ground);
     // If we're not overlapping the ground anymore, no collision
     if (!ground.overlaps(fighter_->rect_))
@@ -666,6 +672,8 @@ void GroundState::render(const glm::mat4 &trans, float dt)
 
 void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
 {
+    if (next_)
+        return;
     if (!collision)
     {
         if (fighter_->attack_)
@@ -676,7 +684,9 @@ void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
             fighter_->rect_.x += dir * (fabs(ground.x - fighter_->rect_.x) - ground.w/2 - fighter_->rect_.w/2 + 2);
         }
         else
+        {
             next_ = new AirNormalState(fighter_);
+        }
     }
 
     // If there is a collision, we don't need to do anything, because we're
@@ -686,7 +696,7 @@ void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
 void GroundState::hitByAttack(const Fighter *attacker, const Attack *attack)
 {
     // Pop up a bit so that we're not overlapping the ground
-    fighter_->rect_.y += 2;
+    fighter_->rect_.y += 4;
     // Then do the normal stuff
     FighterState::calculateHitResult(attacker, attack);
 }

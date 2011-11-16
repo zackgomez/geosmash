@@ -56,16 +56,16 @@ fastFallInitialSpeed -250.0
 fastFallMaxInitialSpeed -500
 fastFallMaxSpeed -1000
 
-dodge.duration    0.4
+dodge.duration    0.42
 dodge.invincTime  0.32
-dodge.speed       500
+dodge.speed       450
 dodge.cooldown    0.15
 
-dashAttack.startup      0.11
+dashAttack.startup      0.05
 dashAttack.duration     0.55
-dashAttack.cooldown     0.2
+dashAttack.cooldown     0.15
 dashAttack.damage       5
-dashAttack.stun         0.15
+dashAttack.stun         0.10
 dashAttack.knockbackx   -2
 dashAttack.knockbacky   5
 dashAttack.knockbackpow 80.0
@@ -74,8 +74,8 @@ dashAttack.hitboxy      -15
 dashAttack.hitboxw      40
 dashAttack.hitboxh      25
 dashAttack.priority     1.0
-dashAttack.initialSpeed 500.0
-dashAttack.deceleration 700.0
+dashAttack.initialSpeed 550.0
+dashAttack.deceleration 800.0
 
 
 neutralTiltAttack.startup      0.03
@@ -166,7 +166,7 @@ airSideAttack.priority     1.0
 
 airDownAttack.startup      0.15
 airDownAttack.duration     0.15
-airDownAttack.cooldown     0.15
+airDownAttack.cooldown     0.30
 airDownAttack.damage       11
 airDownAttack.stun         0.30
 airDownAttack.knockbackx   0
@@ -180,7 +180,7 @@ airDownAttack.priority     1.0
 
 airUpAttack.startup      0.15
 airUpAttack.duration     0.15
-airUpAttack.cooldown     0.15
+airUpAttack.cooldown     0.20
 airUpAttack.damage       9
 airUpAttack.stun         0.20
 airUpAttack.knockbackx   0
