@@ -21,6 +21,9 @@ struct Controller
     float rtrigger, ltrigger;
     int lbumper, rbumper;
     int presslb, pressrb;
+
+    // Dpad directions, true if they're press currently
+    int dpadl, dpadr, dpadu, dpadd;
 };
 
 class Rectangle

@@ -18,8 +18,8 @@ static const float dt = 33.0f / 1000.0f;
 
 static float WORLD_W = 1500.0f;
 static float WORLD_H = 750.0f;
-static int SCREEN_W = 2560;
-static int SCREEN_H = 1600;
+static int SCREEN_W = 1920;
+static int SCREEN_H = 1080;
 
 bool running;
 bool teams;
@@ -515,27 +515,51 @@ void controllerEvent(Controller &controller, const SDL_Event &event)
     switch (event.type)
     {
     case SDL_JOYAXISMOTION:
+        // left joy stick X axis
         if (event.jaxis.axis == 0)
         {
             float newPos = event.jaxis.value / MAX_JOYSTICK_VALUE;
             controller.joyxv += (newPos - controller.joyx);
             controller.joyx = newPos;
         }
+        // left joy stick Y axis
         else if (event.jaxis.axis == 1)
         {
             float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
             controller.joyyv += (newPos - controller.joyy);
             controller.joyy = newPos;
         }
+        // Left trigger
         else if (event.jaxis.axis == 5)
         {
             float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
             controller.ltrigger = newPos;
         }
+        // Right trigger
         else if (event.jaxis.axis == 4)
         {
             float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
             controller.rtrigger = newPos;
+        }
+        // DPAD L/R
+        else if (event.jaxis.axis == 6)
+        {
+            if (event.jaxis.value > 0)
+                controller.dpadr = true;
+            else if (event.jaxis.value < 0)
+                controller.dpadl = true;
+            else
+                controller.dpadl = controller.dpadr = false;
+        }
+        // DPAD U/D
+        else if (event.jaxis.axis == 7)
+        {
+            if (event.jaxis.value > 0)
+                controller.dpadd = true;
+            else if (event.jaxis.value < 0)
+                controller.dpadu = true;
+            else
+                controller.dpadd = controller.dpadu = false;
         }
         else
         {

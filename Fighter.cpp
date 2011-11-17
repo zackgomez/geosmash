@@ -99,7 +99,6 @@ void Fighter::update(Controller &controller, float dt)
     // Update state
     state_->update(controller, dt);
 
-
     // Update position
     rect_.x += xvel_ * dt;
     rect_.y += yvel_ * dt;
@@ -524,6 +523,7 @@ void GroundState::update(Controller &controller, float dt)
                 0.3f);
         return;
     }
+    // Check for B moves
     else if (controller.pressb)
     {
         // Any B press is up B
@@ -532,7 +532,8 @@ void GroundState::update(Controller &controller, float dt)
         fighter_->attack_->start();
         return;
     }
-    else if (controller.pressc && !dashing_)
+    // Check for taunt
+    else if (controller.dpadu && !dashing_)
     {
         fighter_->attack_ = fighter_->tauntAttack_->clone();
         fighter_->attack_->setFighter(fighter_);
