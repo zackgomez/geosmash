@@ -53,7 +53,6 @@ const glm::vec3 teamColors[] =
 
 GLuint backgroundTex = 0;
 GLuint groundTex = 0;
-glm::mat4 perspectiveTransform = glm::ortho(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.0f, 1.0f);
 
 Rectangle ground;
 const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
@@ -341,25 +340,25 @@ void render()
     glm::mat4 backtrans = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -100)),
                 glm::vec3(1500.0f, 750.0f, 1.0f));
-    renderTexturedRectangle(perspectiveTransform * backtrans, backgroundTex);
+    renderTexturedRectangle(backtrans, backgroundTex);
 
     // Draw the land
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.1)),
             glm::vec3(ground.w, ground.h, ground.h));
     //renderRectangle(perspectiveTransform * transform, glm::vec4(groundColor, 0.0f));
-    renderMesh(groundMesh, perspectiveTransform * transform, groundColor);
+    renderMesh(groundMesh, transform, groundColor);
 
     // Draw the fighters
     for (unsigned i = 0; i < numPlayers; i++)
         if (fighters[i]->isAlive())
-            fighters[i]->render(perspectiveTransform, dt);
+            fighters[i]->render(dt);
 
     // XXX remove this
     //renderMesh(fighterMesh, perspectiveTransform, groundColor);
 
     // Draw any explosions
-    ExplosionManager::get()->render(perspectiveTransform, dt * !paused);
+    ExplosionManager::get()->render(dt * !paused);
 
     // Render the overlay interface (HUD)
     glDisable(GL_DEPTH_TEST);
@@ -378,10 +377,10 @@ void render()
                         glm::mat4(1.0f),
                         glm::vec3(life_area.x, life_area.y, 0.0f)),
                     glm::vec3(20, 20, 1.0));
-            renderRectangle(perspectiveTransform * transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
+            renderRectangle(transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
 
             glm::mat4 transform2 = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
-            renderRectangle(perspectiveTransform * transform2, glm::vec4(colors[i], 0.0f));
+            renderRectangle(transform2, glm::vec4(colors[i], 0.0f));
 
             if (j % 2 == 0)
                 life_area.x += 30;
@@ -401,7 +400,7 @@ void render()
                         glm::mat4(1.0f),
                         glm::vec3(damageBarMidpoint.x, damageBarMidpoint.y, 0.0f)),
                     glm::vec3(130, 30, 1.0));
-        renderRectangle(perspectiveTransform * transform, glm::vec4(0.25, 0.25, 0.25, 0.0f));
+        renderRectangle(transform, glm::vec4(0.25, 0.25, 0.25, 0.0f));
 
         float maxDamage = 100;
 
@@ -418,7 +417,7 @@ void render()
                     transform,
                     glm::vec3(0.0f)),
                 glm::vec3( 0.9f, 0.9f, 0.0f));
-        renderRectangle(perspectiveTransform * curtransform,
+        renderRectangle(curtransform,
                 glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio)), 0.0f));
        
         // Now fill it in with a colored bar
@@ -427,7 +426,7 @@ void render()
                     transform,
                     glm::vec3(-.5 * xscalefact + 0.5 * 0.9, 0.0f, 0.0f)),
                 glm::vec3( xscalefact, 0.9f, 0.0f));
-        renderRectangle(perspectiveTransform * transform,
+        renderRectangle(transform,
                 glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio+1)), 0.0f));
     }
     glDisable(GL_DEPTH_TEST);
@@ -462,16 +461,8 @@ int initJoystick(unsigned numPlayers)
 
 void setCamera(const glm::vec3 &pos, float angle)
 {
-    //perspectiveTransform = glm::frustum(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.f, 1.f);
-    //perspectiveTransform = glm::frustum(-1.f, 1.f, -9.f/16, 9.f/16, 0.1f, 100.f);
-    perspectiveTransform = glm::perspective(90.f, 16.f / 9.f, 0.1f, 1000.f);
-    //perspectiveTransform = glm::translate(perspectiveTransform, glm::vec3(0, 0, 5));
-    perspectiveTransform = glm::translate(perspectiveTransform, pos);
-    //perspectiveTransform = glm::rotate(perspectiveTransform, 180.f + angle, glm::vec3(0, 0, 1));
-
-    glm::vec4 res = perspectiveTransform * glm::vec4(0, 0, 0, 1);
-    res /= res[3];
-    std::cout << "Res: " << res[0] << ' ' << res[1] << ' ' << res[2] << ' ' << res[3] << '\n';
+    setProjectionMatrix(glm::perspective(90.f, 16.f / 9.f, 0.1f, 1000.f));
+    setViewMatrix(glm::translate(glm::mat4(1.f), pos));
 }
 
 int initGraphics()

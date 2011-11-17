@@ -198,12 +198,12 @@ bool Fighter::isAlive() const
     return lives_ > 0;
 }
 
-void Fighter::render(const glm::mat4 &trans, float dt)
+void Fighter::render(float dt)
 {
-    state_->render(trans, dt);
+    state_->render(dt);
 }
 
-void Fighter::renderHelper(const glm::mat4 &trans, float dt, const std::string &frameName, const glm::vec3 &color)
+void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color)
 {
     printf("ID: %d  Damage: %.1f  Position: [%.2f, %.2f]   Velocity: [%.2f, %.2f]  Attack: %d  Dir: %.1f  LastHitBy: %d\n",
             id_, damage_, rect_.x, rect_.y, xvel_, yvel_, attack_ != 0, dir_, lastHitBy_);
@@ -213,10 +213,10 @@ void Fighter::renderHelper(const glm::mat4 &trans, float dt, const std::string &
             glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
             glm::vec3(dir_, 1.0f, 1.0f));
 
-    FrameManager::get()->renderFrame(trans * transform, glm::vec4(color, 0.25f), frameName);
+    FrameManager::get()->renderFrame(transform, glm::vec4(color, 0.25f), frameName);
 
     if (attack_)
-        attack_->render(trans, dt);
+        attack_->render(dt);
 
     // If the player is off the screen, render a little arrow pointing to them
     glm::vec2 cameraPos = glm::vec2(0, 0);
@@ -252,7 +252,7 @@ void Fighter::renderHelper(const glm::mat4 &trans, float dt, const std::string &
                         glm::vec3(scale, scale, 1.f)),
                     rot, glm::vec3(0, 0, 1));
 
-        FrameManager::get()->renderFrame(trans * transform, glm::vec4(color, 0.0f), "OffscreenArrow");
+        FrameManager::get()->renderFrame(transform, glm::vec4(color, 0.0f), "OffscreenArrow");
     }
 }
 
@@ -397,7 +397,7 @@ void AirStunnedState::update(Controller &controller, float dt)
         next_ = new AirNormalState(fighter_);
 }
 
-void AirStunnedState::render(const glm::mat4 &trans, float dt)
+void AirStunnedState::render(float dt)
 {
     printf("AIR STUNNED | StunTime: %.3f  StunDuration: %.3f || ",
             stunTime_, stunDuration_);
@@ -410,7 +410,7 @@ void AirStunnedState::render(const glm::mat4 &trans, float dt)
     std::string fname = frameName_;
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
-    fighter_->renderHelper(trans, dt, fname, color);
+    fighter_->renderHelper(dt, fname, color);
 }
 
 void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collision)
@@ -639,7 +639,7 @@ void GroundState::update(Controller &controller, float dt)
 
 }
 
-void GroundState::render(const glm::mat4 &trans, float dt)
+void GroundState::render(float dt)
 {
     printf("GROUND | JumpTime: %.3f  DashTime: %.3f  WaitTime: %.3f || ",
             jumpTime_, dashTime_, waitTime_);
@@ -649,7 +649,7 @@ void GroundState::render(const glm::mat4 &trans, float dt)
         fname = "GroundRunning";
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
-    fighter_->renderHelper(trans, dt, fname, fighter_->color_);
+    fighter_->renderHelper(dt, fname, fighter_->color_);
 }
 
 void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
@@ -792,14 +792,14 @@ void AirNormalState::update(Controller &controller, float dt)
     }
 }
 
-void AirNormalState::render(const glm::mat4 &trans, float dt)
+void AirNormalState::render(float dt)
 {
     printf("AIR NORMAL | JumpTime: %.3f  Can2ndJump: %d || ",
             jumpTime_, canSecondJump_);
     std::string fname = frameName_;
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
-    fighter_->renderHelper(trans, dt, fname, fighter_->color_);
+    fighter_->renderHelper(dt, fname, fighter_->color_);
 }
 
 void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision)
@@ -866,7 +866,7 @@ void DodgeState::update(Controller &controller, float dt)
 
 }
 
-void DodgeState::render(const glm::mat4 &trans, float dt)
+void DodgeState::render(float dt)
 {
     float period_scale_factor = 20.0;
     float opacity_amplitude = 3;
@@ -879,7 +879,7 @@ void DodgeState::render(const glm::mat4 &trans, float dt)
     printf("DODGE | t: %.3f  invincTime: %.3f  dodgeTime: %.3f || ",
             t_, invincTime_, dodgeTime_);
     // Just render the fighter, but flashing
-    fighter_->renderHelper(trans, dt, frameName_, color);
+    fighter_->renderHelper(dt, frameName_, color);
 }
 
 void DodgeState::hitByAttack(const Fighter *attacker, const Attack *attack)
@@ -923,10 +923,10 @@ void RespawnState::update(Controller &controller, float dt)
         next_ = new AirNormalState(fighter_);
 }
 
-void RespawnState::render(const glm::mat4 &trans, float dt)
+void RespawnState::render(float dt)
 {
     // Just render the fighter, but slightly lighter
-    fighter_->renderHelper(trans, dt, frameName_, 1.6f * fighter_->color_);
+    fighter_->renderHelper(dt, frameName_, 1.6f * fighter_->color_);
 }
 
 void RespawnState::hitByAttack(const Fighter *, const Attack *)
@@ -1043,7 +1043,7 @@ void Attack::update(float dt)
     t_ += dt;
 }
 
-void Attack::render(const glm::mat4 &trans, float dt)
+void Attack::render(float dt)
 {
     // Draw the hitbox if we should
     if (hasHitbox())
@@ -1052,7 +1052,7 @@ void Attack::render(const glm::mat4 &trans, float dt)
         glm::mat4 attacktrans = glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
                 glm::vec3(hitbox.w, hitbox.h, 1.0f));
-        renderRectangle(trans * attacktrans, glm::vec4(1,0,0,0.33));
+        renderRectangle(attacktrans, glm::vec4(1,0,0,0.33));
     }
     // Draw twinkle if applicable
     if (twinkle_ && t_ < startup_)
@@ -1066,7 +1066,7 @@ void Attack::render(const glm::mat4 &trans, float dt)
                         90 * fact,
                         glm::vec3(0,0,1)),
                     glm::vec3(fact, fact, 1.f));
-        FrameManager::get()->renderFrame(trans * transform, glm::vec4(0.6f, 0.6f, 0.8f, 0.3f),
+        FrameManager::get()->renderFrame(transform, glm::vec4(0.6f, 0.6f, 0.8f, 0.3f),
                 "StrongAttackInd");
     }
 }

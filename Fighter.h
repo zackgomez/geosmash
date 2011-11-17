@@ -78,7 +78,7 @@ public:
     // Updates internal timer
     virtual void update(float dt);
     // Renders any attack specific stuff (in this case, the hitbox)
-    virtual void render(const glm::mat4 &trans, float dt);
+    virtual void render(float dt);
     // Sends to cooldown time
     virtual void cancel();
     // Called when the attack 'connects'
@@ -182,7 +182,7 @@ public:
     // This function is called once every call to Fighter::update
     virtual void update(Controller&, float dt) = 0;
     // TODO description
-    virtual void render(const glm::mat4 &trans, float dt) = 0;
+    virtual void render(float dt) = 0;
     // This function is called once every call to Fighter::collisionWithGround
     virtual void collisionWithGround(const Rectangle &ground, bool collision) = 0;
     // This function is called when Fighter::hitByAttack is called, before any
@@ -209,7 +209,7 @@ public:
     ~Fighter();
 
     void update(Controller&, float dt);
-    void render(const glm::mat4 &trans, float dt);
+    void render(float dt);
 
     int getID() const { return id_; }
     int getLives() const;
@@ -281,7 +281,7 @@ private:
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
-    void renderHelper(const glm::mat4 &trans, float dt, const std::string &frameName, const glm::vec3& color);
+    void renderHelper(float dt, const std::string &frameName, const glm::vec3& color);
     template<class AttackClass>
     AttackClass* loadAttack(std::string attackName, const std::string &audioID,
             const std::string &frameName);
@@ -306,7 +306,7 @@ public:
     virtual ~GroundState();
 
     virtual void update(Controller&, float dt);
-    virtual void render(const glm::mat4 &trans, float dt);
+    virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
 
@@ -327,7 +327,7 @@ public:
     virtual ~AirNormalState();
 
     virtual void update(Controller&, float dt);
-    virtual void render(const glm::mat4 &trans, float dt);
+    virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
 
@@ -347,7 +347,7 @@ public:
     virtual ~AirStunnedState();
 
     virtual void update(Controller&, float dt);
-    virtual void render(const glm::mat4 &trans, float dt);
+    virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
 
@@ -363,7 +363,7 @@ public:
     virtual ~DodgeState() {}
 
     virtual void update(Controller&, float dt);
-    virtual void render(const glm::mat4 &trans, float dt);
+    virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
     virtual bool canBeHit() const;
@@ -382,7 +382,7 @@ public:
     virtual ~RespawnState() {}
 
     virtual void update(Controller&, float dt);
-    virtual void render(const glm::mat4 &trans, float dt);
+    virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
     virtual bool canBeHit() const { return false; }
@@ -402,7 +402,7 @@ public:
     virtual ~DeadState() {};
 
     virtual void update(Controller&, float dt);
-    virtual void render(const glm::mat4 &trans, float dt) { };
+    virtual void render(float dt) { };
     virtual void collisionWithGround(const Rectangle &ground, bool collision) { assert(false); }
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack) { assert(false); }
     virtual bool canBeHit() const { return false; }
