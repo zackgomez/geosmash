@@ -6,7 +6,7 @@
 AudioManager::AudioManager() 
 {
     // Load in all small sound files, like attack noise
-    std::string fname = "ko.aif";
+    std::string fname = "sfx/ko.aif";
     sf::SoundBuffer sb;
     sb.LoadFromFile(fname);
     sf::Sound s1;
