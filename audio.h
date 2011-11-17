@@ -31,6 +31,14 @@ private:
     // this list to not leak memory.
     std::vector<sf::Music *> currentSounds_;
 
+    // List of all buffers representing small sounds, like attack noises
+    std::vector<sf::SoundBuffer *>soundBuffers_;
+
+    // List of small sounds playing 
+    // Each sound will point to a buffer in soundBuffers_.
+    std::vector<sf::Sound *> playingSounds_;
+
     sf::Music soundtrack_;
 };
+
 

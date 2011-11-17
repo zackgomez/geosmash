@@ -3,7 +3,22 @@
 #include <cassert>
 #include "ParamReader.h"
 
-AudioManager::AudioManager() {}
+AudioManager::AudioManager() 
+{
+    // Load in all small sound files, like attack noise
+    std::string fname = "ko.aif";
+    sf::SoundBuffer sb;
+    sb.LoadFromFile(fname);
+    sf::Sound s1;
+    sf::Sound s2;
+    s1.SetBuffer(sb);
+    s2.SetBuffer(sb);
+    s1.SetPosition(1, 0, 0);
+    s2.SetPosition(-1, 0, 0);
+    s1.Play();
+    while (s1.GetStatus() == sf::Sound::Playing)
+    s2.Play();
+}
 
 void AudioManager::playSound(const std::string &fname)
 {
