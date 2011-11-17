@@ -344,9 +344,6 @@ void render()
         if (fighters[i]->isAlive())
             fighters[i]->render(perspectiveTransform, dt);
 
-    // XXX remove this
-    renderMesh(fighterMesh, perspectiveTransform, groundColor);
-
     // Draw any explosions
     ExplosionManager::get()->render(perspectiveTransform, dt * !paused);
 
@@ -470,7 +467,7 @@ int initGraphics()
 
     initGLUtils(SCREEN_W, SCREEN_H);
 
-    setCamera(glm::vec3(0.f, 0.f, -500.0f), 0);
+    setCamera(glm::vec3(0.f, 0.f, -425.0f), 0);
 
     backgroundTex = make_texture("back003.tga");
     groundTex = make_texture("ground.tga");
