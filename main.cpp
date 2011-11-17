@@ -11,6 +11,7 @@
 #include "explosion.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
+#include "StatsManager.h"
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 static const float dt = 33.0f / 1000.0f;
@@ -28,7 +29,6 @@ SDL_Joystick *joystick;
 
 bool paused;
 int pausedPlayer = -1;
-int kills[4] = {0, 0, 0, 0};
 
 unsigned numPlayers = 1;
 
@@ -293,9 +293,20 @@ void update()
         if (fighter->getRectangle().y < getParam("killbox.bottom") || fighter->getRectangle().y > getParam("killbox.top")
                 || fighter->getRectangle().x < getParam("killbox.left") || fighter->getRectangle().x > getParam("killbox.right"))
         {
+            std::stringstream ss;
+            ss << "Player" << fighter->getID();
+            std::string died = ss.str();
+            ss.str("");
             // Record the kill if it's not a self destruct
             if (fighter->getLastHitBy() != -1)
-                kills[fighter->getLastHitBy()] += 1;
+            {
+                ss << "Player" << fighter->getLastHitBy();
+                std::string killer = ss.str();
+                StatsManager::get()->addStat(killer + ".kills." + died, 1);
+                StatsManager::get()->addStat(killer + ".kills.total", 1);
+            }
+            else
+                StatsManager::get()->addStat(died + ".suicides", 1);
             fighter->respawn(true);
             break;
         }
@@ -343,6 +354,9 @@ void render()
     for (unsigned i = 0; i < numPlayers; i++)
         if (fighters[i]->isAlive())
             fighters[i]->render(perspectiveTransform, dt);
+
+    // XXX remove this
+    //renderMesh(fighterMesh, perspectiveTransform, groundColor);
 
     // Draw any explosions
     ExplosionManager::get()->render(perspectiveTransform, dt * !paused);
@@ -491,10 +505,8 @@ void cleanup()
 void printstats()
 {
     std::cout << "Run time (s): " << (SDL_GetTicks() - startTime) / 1000.0f << '\n';
-    for (int i = 0; i < numPlayers; i++)
-    {
-        std::cout << "Player " << i+1 << " kills: " << kills[i] << '\n';
-    }
+
+    StatsManager::get()->printStats();
 }
 
 void updateController(Controller &controller)
