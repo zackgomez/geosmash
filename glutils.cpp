@@ -486,10 +486,26 @@ mesh createMesh(std::string objfile)
         std::string cmd;
         float a, b, c;
         ss >> cmd;
-        if (cmd == "v")
+        if (!ss)
+            continue;
+
+        if (cmd.empty())
+        {
+            continue;
+        }
+        else if (cmd == "g")
+            std::cout << "Ignoring 'g' command: " << buf << '\n';
+        else if (cmd == "s")
+            std::cout << "Ignoring 's' command: " << buf << '\n';
+        else if (cmd == "v")
         {
             ss >> a >> b >> c;
             positions.push_back(glm::vec4(a, b, c, 1.0f));
+        }
+        // ignore comments
+        else if (cmd[0] == '#')
+        {
+            continue;
         }
         else if (cmd == "vn")
         {

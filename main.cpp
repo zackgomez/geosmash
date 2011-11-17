@@ -58,6 +58,7 @@ glm::mat4 perspectiveTransform = glm::ortho(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, W
 Rectangle ground;
 const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
 mesh groundMesh;
+mesh fighterMesh;
 
 void pause(int playerID);
 void unpause(int playerID);
@@ -343,10 +344,14 @@ void render()
         if (fighters[i]->isAlive())
             fighters[i]->render(perspectiveTransform, dt);
 
-    //
+    // XXX remove this
+    renderMesh(fighterMesh, perspectiveTransform, groundColor);
+
+    // Draw any explosions
+    ExplosionManager::get()->render(perspectiveTransform, dt * !paused);
+
     // Render the overlay interface (HUD)
-    //
-    //
+    glDisable(GL_DEPTH_TEST);
 
     const glm::vec3 *colors = teams ? teamColors : playerColors;
     for (unsigned i = 0; i < numPlayers; i++)
@@ -414,10 +419,7 @@ void render()
         renderRectangle(perspectiveTransform * transform,
                 glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio+1)), 0.0f));
     }
-
-
-    // Draw any explosions
-    ExplosionManager::get()->render(perspectiveTransform, dt * !paused);
+    glDisable(GL_DEPTH_TEST);
 
 
     // Finish
@@ -477,6 +479,7 @@ int initGraphics()
 
     // Load the ground mesh
     groundMesh = createMesh("ground.obj");
+    fighterMesh = createMesh("fighter.obj");
 
     return 1;
 }
