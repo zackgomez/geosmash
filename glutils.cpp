@@ -32,8 +32,9 @@ static struct
     GLuint rendertex[3];
 } resources;
 
-
 static glm::vec2 screensize;
+static glm::mat4 projectionMatrix;
+static glm::mat4 viewMatrix;
 
 GLuint make_buffer(GLenum target, const void *buffer_data, GLsizei buffer_size)
 {
@@ -206,6 +207,9 @@ void preRender()
 
 void postRender()
 {
+    glm::mat4 projMat = projectionMatrix;
+    glm::mat4 viewMat = viewMatrix;
+    projectionMatrix = viewMatrix = glm::mat4(1.f);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     // blur the glow texture
@@ -234,6 +238,9 @@ void postRender()
     renderTexturedRectangle(glm::scale(glm::mat4(1.0f), glm::vec3(2.f, 2.f, 1.f)),
             resources.rendertex[1]);
     glDisable(GL_BLEND);
+
+    projectionMatrix = projMat;
+    viewMatrix = viewMat;
 }
 
 bool initGLUtils(int screenw, int screenh)
@@ -345,14 +352,16 @@ void cleanGLUtils()
     glDeleteTextures(3, resources.rendertex);
 }
 
-void renderRectangle(const glm::mat4 &transform, const glm::vec4 &color)
+void renderRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color)
 {
-    GLuint transformUniform = glGetUniformLocation(resources.program, "transform");
+    GLuint projectionUniform = glGetUniformLocation(resources.program, "projectionMatrix");
+    GLuint modelViewUniform = glGetUniformLocation(resources.program, "modelViewMatrix");
     GLuint colorUniform = glGetUniformLocation(resources.program, "color");
 
     // Enable program and set up values
     glUseProgram(resources.program);
-    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix * modelMatrix));
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
@@ -367,14 +376,16 @@ void renderRectangle(const glm::mat4 &transform, const glm::vec4 &color)
     glUseProgram(0);
 }
 
-void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture)
+void renderTexturedRectangle(const glm::mat4 &modelMatrix, GLuint texture)
 {
-    GLuint transformUniform = glGetUniformLocation(resources.texprogram, "transform");
+    GLuint projectionUniform = glGetUniformLocation(resources.texprogram, "projectionMatrix");
+    GLuint modelViewUniform = glGetUniformLocation(resources.texprogram, "modelViewMatrix");
     GLuint textureUniform = glGetUniformLocation(resources.texprogram, "texture");
 
     // Enable program and set up values
     glUseProgram(resources.texprogram);
-    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix * modelMatrix));
     glUniform1i(textureUniform, 0);
 
     glActiveTexture(GL_TEXTURE0);
@@ -393,17 +404,19 @@ void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture)
     glUseProgram(0);
 }
 
-void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec4 &color,
+void renderMaskedRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color,
         const anim_frame *frame)
 {
-    GLuint transformUniform = glGetUniformLocation(resources.maskprogram, "transform");
+    GLuint projectionUniform = glGetUniformLocation(resources.maskprogram, "projectionMatrix");
+    GLuint modelViewUniform = glGetUniformLocation(resources.maskprogram, "modelViewMatrix");
     GLuint textureUniform = glGetUniformLocation(resources.maskprogram, "texture");
     GLuint colorUniform = glGetUniformLocation(resources.maskprogram, "color");
     GLuint texsizeUniform = glGetUniformLocation(resources.maskprogram, "texsize");
 
     // Enable program and set up values
     glUseProgram(resources.maskprogram);
-    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(transform));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix * modelMatrix));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
     glUniform1i(textureUniform, 0);
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     glUniform2fv(texsizeUniform, 1, glm::value_ptr(glm::vec2(frame->w/10, frame->h/10)));
@@ -449,9 +462,11 @@ void addVert(std::vector<vert> &verts, const std::vector<glm::vec4> &positions,
     glm::vec4 norm = norms.at(fv.n - 1);
     glm::vec2 texcoord = texcoords.at(fv.t - 1);
 
+    /*
     std::cout << "v t n: " << fv.v << ' ' << fv.t << ' ' << fv.n << '\t'
         << "norm: " << norm.x << ' ' << norm.y << ' ' << norm.z << '\t'
         << "uv: " << texcoord.x << ' ' << texcoord.y << '\n';
+        */
         
     vert v;
     v.pos[0] = pos[0]; v.pos[1] = pos[1]; v.pos[2] = pos[2]; v.pos[3] = pos[3];
@@ -573,14 +588,19 @@ mesh createMesh(std::string objfile)
     return ret;
 }
 
-void renderMesh(const mesh &m, const glm::mat4 &trans, const glm::vec3 &color)
+void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &color)
 {
     // Uniform locations
-    GLuint transformUniform = glGetUniformLocation(resources.meshprogram, "transform");
+    GLuint modelViewUniform = glGetUniformLocation(resources.meshprogram, "modelViewMatrix");
+    GLuint projectionUniform = glGetUniformLocation(resources.meshprogram, "projectionMatrix");
+    GLuint normalUniform = glGetUniformLocation(resources.meshprogram, "normalMatrix");
     GLuint colorUniform = glGetUniformLocation(resources.meshprogram, "color");
     // Enable program and set up values
     glUseProgram(resources.meshprogram);
-    glUniformMatrix4fv(transformUniform, 1, GL_FALSE, glm::value_ptr(trans));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix * modelMatrix));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniformMatrix4fv(normalUniform, 1, GL_FALSE, glm::value_ptr(glm::inverse(modelMatrix)));
+    // TODO the normal matrix
     glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(color, 1.0f)));
 
     // Bind data
@@ -600,4 +620,14 @@ void renderMesh(const mesh &m, const glm::mat4 &trans, const glm::vec3 &color)
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(2);
     glUseProgram(0);
+}
+
+void setProjectionMatrix(const glm::mat4 &mat)
+{
+    projectionMatrix = mat;
+}
+
+void setViewMatrix(const glm::mat4 &mat)
+{
+    viewMatrix = mat;
 }

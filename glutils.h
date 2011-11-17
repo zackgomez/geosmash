@@ -21,8 +21,6 @@ GLuint make_program(GLuint vertex_shader, GLuint fragment_shader);
 
 GLuint make_texture(const char *filename);
 
-void setPerspective(const glm::mat4 &perspectiveTrans);
-
 bool initGLUtils(int screenw, int screenh);
 void cleanGLUtils();
 
@@ -37,3 +35,8 @@ void postRender();
 // For now just creates a cube
 mesh createMesh(std::string objfile);
 void renderMesh(const mesh &m, const glm::mat4 &trans, const glm::vec3 &color);
+
+// Matrix operations
+void setProjectionMatrix(const glm::mat4 &mat);
+void setViewMatrix(const glm::mat4 &mat);
+// The model matrix is passed in to the render call

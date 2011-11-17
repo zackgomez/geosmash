@@ -11,14 +11,15 @@
 #include "explosion.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
+#include "StatsManager.h"
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 static const float dt = 33.0f / 1000.0f;
 
 static float WORLD_W = 1500.0f;
 static float WORLD_H = 750.0f;
-static int SCREEN_W = 2560;
-static int SCREEN_H = 1600;
+static int SCREEN_W = 1920;
+static int SCREEN_H = 1080;
 
 bool running;
 bool teams;
@@ -28,7 +29,6 @@ SDL_Joystick *joystick;
 
 bool paused;
 int pausedPlayer = -1;
-int kills[4] = {0, 0, 0, 0};
 
 unsigned numPlayers = 1;
 
@@ -53,7 +53,6 @@ const glm::vec3 teamColors[] =
 
 GLuint backgroundTex = 0;
 GLuint groundTex = 0;
-glm::mat4 perspectiveTransform = glm::ortho(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.0f, 1.0f);
 
 Rectangle ground;
 const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
@@ -293,9 +292,20 @@ void update()
         if (fighter->getRectangle().y < getParam("killbox.bottom") || fighter->getRectangle().y > getParam("killbox.top")
                 || fighter->getRectangle().x < getParam("killbox.left") || fighter->getRectangle().x > getParam("killbox.right"))
         {
+            std::stringstream ss;
+            ss << "Player" << fighter->getID();
+            std::string died = ss.str();
+            ss.str("");
             // Record the kill if it's not a self destruct
             if (fighter->getLastHitBy() != -1)
-                kills[fighter->getLastHitBy()] += 1;
+            {
+                ss << "Player" << fighter->getLastHitBy();
+                std::string killer = ss.str();
+                StatsManager::get()->addStat(killer + ".kills." + died, 1);
+                StatsManager::get()->addStat(killer + ".kills.total", 1);
+            }
+            else
+                StatsManager::get()->addStat(died + ".suicides", 1);
             fighter->respawn(true);
             break;
         }
@@ -305,7 +315,7 @@ void update()
     }
 
     // Play the tense music when two players with one life each left
-    // XXX this could not work with teams
+    // XXX this is broken sometimes
     if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
     {
         criticalMusic = true;
@@ -330,25 +340,25 @@ void render()
     glm::mat4 backtrans = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -100)),
                 glm::vec3(1500.0f, 750.0f, 1.0f));
-    renderTexturedRectangle(perspectiveTransform * backtrans, backgroundTex);
+    renderTexturedRectangle(backtrans, backgroundTex);
 
     // Draw the land
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.1)),
             glm::vec3(ground.w, ground.h, ground.h));
     //renderRectangle(perspectiveTransform * transform, glm::vec4(groundColor, 0.0f));
-    renderMesh(groundMesh, perspectiveTransform * transform, groundColor);
+    renderMesh(groundMesh, transform, groundColor);
 
     // Draw the fighters
     for (unsigned i = 0; i < numPlayers; i++)
         if (fighters[i]->isAlive())
-            fighters[i]->render(perspectiveTransform, dt);
+            fighters[i]->render(dt);
 
     // XXX remove this
-    renderMesh(fighterMesh, perspectiveTransform, groundColor);
+    //renderMesh(fighterMesh, glm::mat4(1.f), groundColor);
 
     // Draw any explosions
-    ExplosionManager::get()->render(perspectiveTransform, dt * !paused);
+    ExplosionManager::get()->render(dt * !paused);
 
     // Render the overlay interface (HUD)
     glDisable(GL_DEPTH_TEST);
@@ -367,10 +377,10 @@ void render()
                         glm::mat4(1.0f),
                         glm::vec3(life_area.x, life_area.y, 0.0f)),
                     glm::vec3(20, 20, 1.0));
-            renderRectangle(perspectiveTransform * transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
+            renderRectangle(transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
 
             glm::mat4 transform2 = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
-            renderRectangle(perspectiveTransform * transform2, glm::vec4(colors[i], 0.0f));
+            renderRectangle(transform2, glm::vec4(colors[i], 0.0f));
 
             if (j % 2 == 0)
                 life_area.x += 30;
@@ -390,7 +400,7 @@ void render()
                         glm::mat4(1.0f),
                         glm::vec3(damageBarMidpoint.x, damageBarMidpoint.y, 0.0f)),
                     glm::vec3(130, 30, 1.0));
-        renderRectangle(perspectiveTransform * transform, glm::vec4(0.25, 0.25, 0.25, 0.0f));
+        renderRectangle(transform, glm::vec4(0.25, 0.25, 0.25, 0.0f));
 
         float maxDamage = 100;
 
@@ -407,7 +417,7 @@ void render()
                     transform,
                     glm::vec3(0.0f)),
                 glm::vec3( 0.9f, 0.9f, 0.0f));
-        renderRectangle(perspectiveTransform * curtransform,
+        renderRectangle(curtransform,
                 glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio)), 0.0f));
        
         // Now fill it in with a colored bar
@@ -416,7 +426,7 @@ void render()
                     transform,
                     glm::vec3(-.5 * xscalefact + 0.5 * 0.9, 0.0f, 0.0f)),
                 glm::vec3( xscalefact, 0.9f, 0.0f));
-        renderRectangle(perspectiveTransform * transform,
+        renderRectangle(transform,
                 glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio+1)), 0.0f));
     }
     glDisable(GL_DEPTH_TEST);
@@ -451,16 +461,8 @@ int initJoystick(unsigned numPlayers)
 
 void setCamera(const glm::vec3 &pos, float angle)
 {
-    //perspectiveTransform = glm::frustum(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.f, 1.f);
-    //perspectiveTransform = glm::frustum(-1.f, 1.f, -9.f/16, 9.f/16, 0.1f, 100.f);
-    perspectiveTransform = glm::perspective(90.f, 16.f / 9.f, 0.1f, 1000.f);
-    //perspectiveTransform = glm::translate(perspectiveTransform, glm::vec3(0, 0, 5));
-    perspectiveTransform = glm::translate(perspectiveTransform, pos);
-    //perspectiveTransform = glm::rotate(perspectiveTransform, 180.f + angle, glm::vec3(0, 0, 1));
-
-    glm::vec4 res = perspectiveTransform * glm::vec4(0, 0, 0, 1);
-    res /= res[3];
-    std::cout << "Res: " << res[0] << ' ' << res[1] << ' ' << res[2] << ' ' << res[3] << '\n';
+    setProjectionMatrix(glm::perspective(90.f, 16.f / 9.f, 0.1f, 1000.f));
+    setViewMatrix(glm::translate(glm::mat4(1.f), pos));
 }
 
 int initGraphics()
@@ -470,7 +472,7 @@ int initGraphics()
 
     initGLUtils(SCREEN_W, SCREEN_H);
 
-    setCamera(glm::vec3(0.f, 0.f, -500.0f), 0);
+    setCamera(glm::vec3(0.f, 0.f, -425.0f), 0);
 
     backgroundTex = make_texture("back003.tga");
     groundTex = make_texture("ground.tga");
@@ -494,10 +496,8 @@ void cleanup()
 void printstats()
 {
     std::cout << "Run time (s): " << (SDL_GetTicks() - startTime) / 1000.0f << '\n';
-    for (int i = 0; i < numPlayers; i++)
-    {
-        std::cout << "Player " << i+1 << " kills: " << kills[i] << '\n';
-    }
+
+    StatsManager::get()->printStats();
 }
 
 void updateController(Controller &controller)
@@ -515,27 +515,51 @@ void controllerEvent(Controller &controller, const SDL_Event &event)
     switch (event.type)
     {
     case SDL_JOYAXISMOTION:
+        // left joy stick X axis
         if (event.jaxis.axis == 0)
         {
             float newPos = event.jaxis.value / MAX_JOYSTICK_VALUE;
             controller.joyxv += (newPos - controller.joyx);
             controller.joyx = newPos;
         }
+        // left joy stick Y axis
         else if (event.jaxis.axis == 1)
         {
             float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
             controller.joyyv += (newPos - controller.joyy);
             controller.joyy = newPos;
         }
+        // Left trigger
         else if (event.jaxis.axis == 5)
         {
             float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
             controller.ltrigger = newPos;
         }
+        // Right trigger
         else if (event.jaxis.axis == 4)
         {
             float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
             controller.rtrigger = newPos;
+        }
+        // DPAD L/R
+        else if (event.jaxis.axis == 6)
+        {
+            if (event.jaxis.value > 0)
+                controller.dpadr = true;
+            else if (event.jaxis.value < 0)
+                controller.dpadl = true;
+            else
+                controller.dpadl = controller.dpadr = false;
+        }
+        // DPAD U/D
+        else if (event.jaxis.axis == 7)
+        {
+            if (event.jaxis.value > 0)
+                controller.dpadd = true;
+            else if (event.jaxis.value < 0)
+                controller.dpadu = true;
+            else
+                controller.dpadd = controller.dpadu = false;
         }
         else
         {
