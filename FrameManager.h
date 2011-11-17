@@ -2,6 +2,14 @@
 #include <map>
 #include "glutils.h"
 
+struct anim_frame
+{
+    std::string id;
+    GLuint mask_tex;
+    float w, h; // game units
+    float x, y; // Center inside texture, [-0.5, 0.5]
+};
+
 class FrameManager
 {
 public:

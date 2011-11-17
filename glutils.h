@@ -3,12 +3,12 @@
 #include <glm/glm.hpp>
 #include <string>
 
-struct anim_frame
+struct anim_frame;
+
+struct mesh
 {
-    std::string id;
-    GLuint mask_tex;
-    float w, h; // game units
-    float x, y; // Center inside texture, [-0.5, 0.5]
+    GLuint data_buffer;
+    size_t nverts;
 };
 
 GLuint make_buffer( GLenum target, const void *buffer_data, GLsizei buffer_size);
@@ -33,3 +33,7 @@ void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec4 &color,
 
 void preRender();
 void postRender();
+
+// For now just creates a cube
+mesh createMesh(std::string objfile);
+void renderMesh(const mesh &m, const glm::mat4 &trans, const glm::vec3 &color);

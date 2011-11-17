@@ -57,6 +57,7 @@ glm::mat4 perspectiveTransform = glm::ortho(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, W
 
 Rectangle ground;
 const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
+mesh groundMesh;
 
 void pause(int playerID);
 void unpause(int playerID);
@@ -322,17 +323,20 @@ void render()
 
     // Start with a blank slate
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-    glClear( GL_COLOR_BUFFER_BIT );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     // Draw the background
-    glm::mat4 backtrans = glm::scale(glm::mat4(1.0f), glm::vec3(1500.0f, 750.0f, 1.0f));
+    glm::mat4 backtrans = glm::scale(
+            glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -100)),
+                glm::vec3(1500.0f, 750.0f, 1.0f));
     renderTexturedRectangle(perspectiveTransform * backtrans, backgroundTex);
 
     // Draw the land
     glm::mat4 transform = glm::scale(
-            glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.0)),
-            glm::vec3(ground.w, ground.h, 1.0f));
-    renderRectangle(perspectiveTransform * transform, glm::vec4(groundColor, 0.0f));
+            glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.1)),
+            glm::vec3(ground.w, ground.h, ground.h));
+    //renderRectangle(perspectiveTransform * transform, glm::vec4(groundColor, 0.0f));
+    renderMesh(groundMesh, perspectiveTransform * transform, groundColor);
 
     // Draw the fighters
     for (unsigned i = 0; i < numPlayers; i++)
@@ -446,9 +450,15 @@ int initJoystick(unsigned numPlayers)
 void setCamera(const glm::vec3 &pos, float angle)
 {
     //perspectiveTransform = glm::frustum(-WORLD_W/2, WORLD_W/2, -WORLD_H/2, WORLD_H/2, -1.f, 1.f);
-    perspectiveTransform = glm::frustum(-1.f, 1.f, -9.f/16, 9.f/16, -1.f, 1.f);
+    //perspectiveTransform = glm::frustum(-1.f, 1.f, -9.f/16, 9.f/16, 0.1f, 100.f);
+    perspectiveTransform = glm::perspective(90.f, 16.f / 9.f, 0.1f, 1000.f);
+    //perspectiveTransform = glm::translate(perspectiveTransform, glm::vec3(0, 0, 5));
     perspectiveTransform = glm::translate(perspectiveTransform, pos);
-    perspectiveTransform = glm::rotate(perspectiveTransform, 180.f + angle, glm::vec3(0, 0, 1));
+    //perspectiveTransform = glm::rotate(perspectiveTransform, 180.f + angle, glm::vec3(0, 0, 1));
+
+    glm::vec4 res = perspectiveTransform * glm::vec4(0, 0, 0, 1);
+    res /= res[3];
+    std::cout << "Res: " << res[0] << ' ' << res[1] << ' ' << res[2] << ' ' << res[3] << '\n';
 }
 
 int initGraphics()
@@ -458,12 +468,15 @@ int initGraphics()
 
     initGLUtils(SCREEN_W, SCREEN_H);
 
-    setCamera(glm::vec3(0.f, 0.f, -750.f), 0);
+    setCamera(glm::vec3(0.f, 0.f, -500.0f), 0);
 
     backgroundTex = make_texture("back003.tga");
     groundTex = make_texture("ground.tga");
     // Load some animation frames
     FrameManager::get()->loadFile("frames/charlie.frames");
+
+    // Load the ground mesh
+    groundMesh = createMesh("ground.obj");
 
     return 1;
 }

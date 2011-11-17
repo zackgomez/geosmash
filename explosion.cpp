@@ -11,7 +11,7 @@ void Explosion::render(const glm::mat4 &trans, float dt)
     float frac = std::min(1.0f, t_ / duration_);
     glm::mat4 transform = 
         glm::scale(
-                glm::translate(trans, glm::vec3(x_, y_, 0.1)),
+                glm::translate(trans, glm::vec3(x_, y_, -0.1)),
                 frac * glm::vec3(size_, size_, 1.0f));
     renderRectangle(transform, glm::vec4(color_, 0.2));
 }
@@ -27,7 +27,7 @@ void Twinkle::render(const glm::mat4 &trans, float dt)
     glm::mat4 transform =
         glm::rotate(
                 glm::scale(
-                    glm::translate(glm::mat4(1.0f), glm::vec3(x_, y_, 0.0)),
+                    glm::translate(glm::mat4(1.0f), glm::vec3(x_, y_, -0.1)),
                     glm::vec3(size_, size_, 1.0f)),
                 static_cast<float>(45.f),
                 glm::vec3(0,0,1));
