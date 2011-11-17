@@ -17,9 +17,9 @@ void main()
 {
     gl_Position = projectionMatrix * modelViewMatrix * position;
     frag_texcoord = texcoord;
-    frag_normal = normal;
-    frag_pos = gl_Position;
+    frag_normal = normalMatrix * vec4(normal.xyz, 0.f);
+    frag_pos = modelViewMatrix * position;
 
-    lightpos = vec4(0, 0, 0, 1);
+    lightpos = vec4(400, 1000, 0, 1);
     lightpos /= lightpos.w;
 }

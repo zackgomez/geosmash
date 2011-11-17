@@ -315,7 +315,7 @@ void update()
     }
 
     // Play the tense music when two players with one life each left
-    // XXX this could not work with teams
+    // XXX this is broken sometimes
     if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
     {
         criticalMusic = true;
@@ -355,7 +355,7 @@ void render()
             fighters[i]->render(dt);
 
     // XXX remove this
-    //renderMesh(fighterMesh, perspectiveTransform, groundColor);
+    //renderMesh(fighterMesh, glm::mat4(1.f), groundColor);
 
     // Draw any explosions
     ExplosionManager::get()->render(dt * !paused);
