@@ -35,7 +35,7 @@ stats.hitExpireTime 2.0
 
 fighter.w        50
 fighter.h        60
-fighter.lives    4
+fighter.lives    3
 fighter.respawnTime 1.0
 
 walkSpeed        133.3
@@ -150,19 +150,33 @@ airNeutralAttack.hitboxw      40
 airNeutralAttack.hitboxh      25
 airNeutralAttack.priority     1.5
 
-airSideAttack.startup      0.25
-airSideAttack.duration     0.25
-airSideAttack.cooldown     0.30
-airSideAttack.damage       8
-airSideAttack.stun         0.13
-airSideAttack.knockbackx   5
-airSideAttack.knockbacky   2
-airSideAttack.knockbackpow 175.0
-airSideAttack.hitboxx      40
-airSideAttack.hitboxy      -5
-airSideAttack.hitboxw      35
-airSideAttack.hitboxh      40
-airSideAttack.priority     1.0
+airFrontAttack.startup      0.25
+airFrontAttack.duration     0.25
+airFrontAttack.cooldown     0.30
+airFrontAttack.damage       8
+airFrontAttack.stun         0.13
+airFrontAttack.knockbackx   5
+airFrontAttack.knockbacky   2
+airFrontAttack.knockbackpow 175.0
+airFrontAttack.hitboxx      40
+airFrontAttack.hitboxy      -5
+airFrontAttack.hitboxw      35
+airFrontAttack.hitboxh      40
+airFrontAttack.priority     1.0
+
+airBackAttack.startup      0.25
+airBackAttack.duration     0.25
+airBackAttack.cooldown     0.30
+airBackAttack.damage       8
+airBackAttack.stun         0.13
+airBackAttack.knockbackx   -5
+airBackAttack.knockbacky   2
+airBackAttack.knockbackpow 140.0
+airBackAttack.hitboxx      -40
+airBackAttack.hitboxy      0
+airBackAttack.hitboxw      30
+airBackAttack.hitboxh      20
+airBackAttack.priority     1.0
 
 airDownAttack.startup      0.15
 airDownAttack.duration     0.15
@@ -248,8 +262,8 @@ downSmashAttack.duration     0.25
 downSmashAttack.cooldown     0.30
 downSmashAttack.damage       15
 downSmashAttack.stun         0.13
-downSmashAttack.knockbackx   1
-downSmashAttack.knockbacky   5
+downSmashAttack.knockbackx   0
+downSmashAttack.knockbacky   0
 downSmashAttack.knockbackpow 200.0
 downSmashAttack.hitboxx      0
 downSmashAttack.hitboxy      -20
@@ -258,7 +272,7 @@ downSmashAttack.hitboxh      20
 downSmashAttack.priority     1.0
 
 upSmashAttack.startup      0.28
-upSmashAttack.duration     0.26
+upSmashAttack.duration     0.20
 upSmashAttack.cooldown     0.30
 upSmashAttack.damage       18
 upSmashAttack.stun         0.13

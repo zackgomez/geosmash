@@ -54,7 +54,7 @@ public:
     virtual Rectangle getHitbox() const;
     virtual float getDamage(const Fighter *fighter) const { return damage_; }
     virtual float getStun(const Fighter *fighter) const { return stun_; }
-    virtual glm::vec2 getKnockback(const Fighter *fighter) const { return knockback_; }
+    virtual glm::vec2 getKnockback(const Fighter *fighter) const;
 
     void setFighter(Fighter *fighter);
     void setFrameName(const std::string &fname) { frameName_ = fname; }
@@ -94,7 +94,8 @@ protected:
     float startup_, duration_, cooldown_;
     float damage_, stun_;
     float priority_;
-    glm::vec2 knockback_;
+    glm::vec2 knockbackdir_;
+    float knockbackpow_;
     bool hasHit_[4];
     float t_;
 
@@ -265,7 +266,8 @@ private:
     Attack *upTiltAttack_;
 
     Attack *airNeutralAttack_;
-    Attack *airSideAttack_;
+    Attack *airFrontAttack_;
+    Attack *airBackAttack_;
     Attack *airDownAttack_;
     Attack *airUpAttack_;
 

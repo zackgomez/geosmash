@@ -37,7 +37,8 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     // Load air attack special as it uses a different class
     airNeutralAttack_ = loadAttack<Attack>("airNeutralAttack", a, "AirNeutral");
-    airSideAttack_ = loadAttack<Attack>("airSideAttack", a, "AirSidetilt");
+    airFrontAttack_ = loadAttack<Attack>("airFrontAttack", a, "AirFronttilt");
+    airBackAttack_ = loadAttack<Attack>("airBackAttack", a, "AirBacktilt");
     airDownAttack_ = loadAttack<Attack>("airDownAttack", a, "AirDowntilt");
     airUpAttack_ = loadAttack<Attack>("airUpAttack", a, "AirUptilt");
 
@@ -58,7 +59,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     upSmashAttack_->setHitboxFrame("UpSmashHitbox");
 
     // Set up the twinkle moves
-    airSideAttack_->setTwinkle(true);
+    airFrontAttack_->setTwinkle(true);
 
     state_ = 0;
 }
@@ -721,8 +722,6 @@ void AirNormalState::update(Controller &controller, float dt)
         // Don't let the player increase the velocity past a certain speed
         if (fighter_->xvel_ * controller.joyx <= 0 || fabs(fighter_->xvel_) < getParam("jumpAirSpeed"))
             fighter_->xvel_ += controller.joyx * getParam("airForce") * dt;
-        // You can always control your orientation
-        fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
     }
     // Fast falling
     if (fighter_->yvel_ < 0 && fighter_->yvel_ > getParam("fastFallMaxSpeed") && controller.joyy < -getParam("input.fallThresh"))
@@ -739,12 +738,13 @@ void AirNormalState::update(Controller &controller, float dt)
     {
         // Get direction of stick
         glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
-        if (fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
-        {
-            // Do the L/R tilt
-            fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-            fighter_->attack_ = fighter_->airSideAttack_->clone();
-        }
+
+        if (tiltDir.x * fighter_->dir_ > 0 && fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
+            // front tilt
+            fighter_->attack_ = fighter_->airFrontAttack_->clone();
+        else if (tiltDir.x * fighter_->dir_ < 0 && fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
+            // Do the back
+            fighter_->attack_ = fighter_->airBackAttack_->clone();
         else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
         {
             fighter_->attack_ = fighter_->airDownAttack_->clone();
@@ -764,6 +764,7 @@ void AirNormalState::update(Controller &controller, float dt)
     }
     else if (controller.pressb)
     {
+        fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
         // Any B press is up B
         fighter_->attack_ = fighter_->upSpecialAttack_->clone();
         fighter_->attack_->setFighter(fighter_);
@@ -1006,9 +1007,10 @@ Attack::Attack(const std::string &paramPrefix, const std::string &audioID,
     cooldown_ = getParam(pp + "cooldown");
     damage_ = getParam(pp + "damage");
     stun_ = getParam(pp + "stun");
-    knockback_ = getParam(pp + "knockbackpow") * glm::normalize(glm::vec2(
+    knockbackdir_ = glm::vec2(
                 getParam(pp + "knockbackx"),
-                getParam(pp + "knockbacky")));
+                getParam(pp + "knockbacky"));
+    knockbackpow_ = getParam(pp + "knockbackpow");
     hitbox_ = Rectangle(
             getParam(pp + "hitboxx"),
             getParam(pp + "hitboxy"),
@@ -1019,6 +1021,8 @@ Attack::Attack(const std::string &paramPrefix, const std::string &audioID,
     frameName_ = frameName;
 
     twinkle_ = false;
+
+    knockbackdir_ = knockbackdir_ == glm::vec2(0, 0) ? knockbackdir_ : glm::normalize(knockbackdir_);
 }
 
 Attack* Attack::clone() const
@@ -1041,6 +1045,21 @@ void Attack::start()
 void Attack::finish()
 {
     /* Empty */
+}
+
+glm::vec2 Attack::getKnockback(const Fighter *fighter) const
+{
+    if (knockbackdir_ == glm::vec2(0,0))
+    {
+        glm::vec2 apos = glm::vec2(getHitbox().x, getHitbox().y);
+        glm::vec2 fpos = glm::vec2(fighter->getRectangle().x, fighter->getRectangle().y);
+        glm::vec2 dir = glm::normalize(fpos - apos);
+        std::cout << "fpos: " << fpos.x << ' ' << fpos.y << "   apos: " << apos.x << ' ' << apos.y << '\n';
+        return glm::vec2(owner_->getDirection(), 1.f) * knockbackpow_ * dir;
+    }
+    else
+        return knockbackdir_ * knockbackpow_;
+
 }
 
 Rectangle Attack::getHitbox() const
