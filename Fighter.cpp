@@ -206,7 +206,8 @@ void Fighter::render(float dt)
     state_->render(dt);
 }
 
-void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color)
+void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color,
+        const glm::mat4 &postTrans)
 {
     printf("ID: %d  Damage: %.1f  Position: [%.2f, %.2f]   Velocity: [%.2f, %.2f]  Attack: %d  Dir: %.1f  LastHitBy: %d\n",
             id_, damage_, rect_.x, rect_.y, xvel_, yvel_, attack_ != 0, dir_, lastHitBy_);
@@ -216,7 +217,7 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
             glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
             glm::vec3(dir_, 1.0f, 1.0f));
 
-    FrameManager::get()->renderFrame(transform, glm::vec4(color, 0.25f), frameName);
+    FrameManager::get()->renderFrame(transform * postTrans, glm::vec4(color, 0.25f), frameName);
 
     if (attack_)
         attack_->render(dt);
@@ -854,13 +855,16 @@ void DodgeState::render(float dt)
     float opacity_factor = (1 + cos(period_scale_factor * t_)) * 0.5f; 
     glm::vec3 color = fighter_->color_ * (opacity_amplitude * opacity_factor + 1);
 
+    float angle = t_ < dodgeTime_ ? t_ / dodgeTime_ * 360 : 0.f;
+
     if (t_ > invincTime_)
         color = fighter_->color_;
 
     printf("DODGE | t: %.3f  invincTime: %.3f  dodgeTime: %.3f || ",
             t_, invincTime_, dodgeTime_);
     // Just render the fighter, but flashing
-    fighter_->renderHelper(dt, frameName_, color);
+    fighter_->renderHelper(dt, frameName_, color,
+            glm::rotate(glm::mat4(1.f), -angle, glm::vec3(0,0,1)));
 }
 
 void DodgeState::hitByAttack(const Fighter *attacker, const Attack *attack)

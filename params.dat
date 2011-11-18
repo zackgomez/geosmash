@@ -232,10 +232,10 @@ sideSmashAttack.startup      0.30
 sideSmashAttack.duration     0.25
 sideSmashAttack.cooldown     0.40
 sideSmashAttack.damage       17
-sideSmashAttack.stun         0.12
+sideSmashAttack.stun         0.10
 sideSmashAttack.knockbackx   1
 sideSmashAttack.knockbacky   1
-sideSmashAttack.knockbackpow 150.0
+sideSmashAttack.knockbackpow 160.0
 sideSmashAttack.hitboxx      50
 sideSmashAttack.hitboxy      15
 sideSmashAttack.hitboxw      50

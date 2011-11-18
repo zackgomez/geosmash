@@ -276,7 +276,7 @@ private:
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
-    void renderHelper(float dt, const std::string &frameName, const glm::vec3& color);
+    void renderHelper(float dt, const std::string &frameName, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
     template<class AttackClass>
     AttackClass* loadAttack(std::string attackName, const std::string &audioID,
             const std::string &frameName);
