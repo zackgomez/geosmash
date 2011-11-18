@@ -204,8 +204,8 @@ void Fighter::render(float dt)
 
 void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color)
 {
-    printf("ID: %d  Damage: %.1f  Position: [%.2f, %.2f]   Velocity: [%.2f, %.2f]  Attack: %d  Dir: %.1f  LastHitBy: %d\n",
-            id_, damage_, rect_.x, rect_.y, xvel_, yvel_, attack_ != 0, dir_, lastHitBy_);
+    //printf("ID: %d  Damage: %.1f  Position: [%.2f, %.2f]   Velocity: [%.2f, %.2f]  Attack: %d  Dir: %.1f  LastHitBy: %d\n",
+    //        id_, damage_, rect_.x, rect_.y, xvel_, yvel_, attack_ != 0, dir_, lastHitBy_);
 
     // Draw body
     glm::mat4 transform = glm::scale(
@@ -649,8 +649,8 @@ void GroundState::update(Controller &controller, float dt)
 
 void GroundState::render(float dt)
 {
-    printf("GROUND | JumpTime: %.3f  DashTime: %.3f  WaitTime: %.3f || ",
-            jumpTime_, dashTime_, waitTime_);
+    //printf("GROUND | JumpTime: %.3f  DashTime: %.3f  WaitTime: %.3f || ",
+    //        jumpTime_, dashTime_, waitTime_);
 
     std::string fname = frameName_;
     if (dashing_)
@@ -797,8 +797,8 @@ void AirNormalState::update(Controller &controller, float dt)
 
 void AirNormalState::render(float dt)
 {
-    printf("AIR NORMAL | JumpTime: %.3f  Can2ndJump: %d || ",
-            jumpTime_, canSecondJump_);
+    //printf("AIR NORMAL | JumpTime: %.3f  Can2ndJump: %d || ",
+            //jumpTime_, canSecondJump_);
     std::string fname = frameName_;
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
