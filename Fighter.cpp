@@ -43,7 +43,11 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
 
-    tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "Bong");
+    tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "TauntAttack");
+
+    sideSmashAttack_ = loadAttack<Attack>("sideSmashAttack", g, "SideSmash");
+    sideSmashAttack_->setTwinkle(true);
+    sideSmashAttack_->setHitboxFrame("SideSmashHitbox");
 
     // Set up the twinkle moves
     airSideAttack_->setTwinkle(true);
@@ -468,8 +472,32 @@ void GroundState::update(Controller &controller, float dt)
     if (waitTime_ > 0)
         return;
 
+    // --- Deal with jump transition ---
+    if (jumpTime_ > getParam("jumpStartupTime"))
+    {
+        // Jump; transition to Air Normal
+        next_ = new AirNormalState(fighter_);
+        // Set the xvelocity of the jump
+        fighter_->xvel_ = fabs(controller.joyx) > getParam("input.deadzone") ?
+            controller.joyx * 0.5 * getParam("dashSpeed") :
+            0.0f;
+        // If they are still "holding down" the jump button now, then full jump
+        // otherwise short hop
+        if (controller.jumpbutton || controller.joyy > getParam("input.jumpThresh"))
+            fighter_->yvel_ = getParam("jumpSpeed");
+        else
+            fighter_->yvel_ = getParam("hopSpeed");
+        // Draw a little puff
+        ExplosionManager::get()->addPuff(
+                fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.1f, 
+                fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                0.3f);
+        return;
+    }
+
+
     // -- Deal with starting an attack
-    if (controller.pressa && jumpTime_ < 0)
+    if (controller.pressa)
     {
         // Check for dash attack
         if (dashing_)
@@ -536,6 +564,16 @@ void GroundState::update(Controller &controller, float dt)
     else if (controller.dpadu && !dashing_)
     {
         fighter_->attack_ = fighter_->tauntAttack_->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+        return;
+    }
+    // Check for smash attacks
+    else if (controller.pressc && !dashing_)
+    {
+        // No movement during smash attacks
+        fighter_->xvel_ = 0; fighter_->yvel_ = 0;
+        fighter_->attack_ = fighter_->sideSmashAttack_->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return;
@@ -608,29 +646,8 @@ void GroundState::update(Controller &controller, float dt)
         }
     }
 
-
-    // --- Deal with jumping ---
-    if (jumpTime_ > getParam("jumpStartupTime"))
-    {
-        // Jump; transition to Air Normal
-        next_ = new AirNormalState(fighter_);
-        // Set the xvelocity of the jump
-        fighter_->xvel_ = fabs(controller.joyx) > getParam("input.deadzone") ?
-            controller.joyx * 0.5 * getParam("dashSpeed") :
-            0.0f;
-        // If they are still "holding down" the jump button now, then full jump
-        // otherwise short hop
-        if (controller.jumpbutton || controller.joyy > getParam("input.jumpThresh"))
-            fighter_->yvel_ = getParam("jumpSpeed");
-        else
-            fighter_->yvel_ = getParam("hopSpeed");
-        // Draw a little puff
-        ExplosionManager::get()->addPuff(
-                fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.1f, 
-                fighter_->rect_.y - fighter_->rect_.h * 0.45f,
-                0.3f);
-    }
-    else if (controller.pressjump ||
+    // --- Check to see if they want to start a jump ---
+    if (controller.pressjump ||
             (controller.joyy > getParam("input.jumpThresh")
              && controller.joyyv > getParam("input.velThresh")))
     {
@@ -1050,23 +1067,31 @@ void Attack::render(float dt)
     if (hasHitbox())
     {
         Rectangle hitbox = getHitbox();
-        glm::mat4 attacktrans = glm::scale(
-                glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
-                glm::vec3(hitbox.w, hitbox.h, 1.0f));
-        renderRectangle(attacktrans, glm::vec4(1,0,0,0.33));
+        glm::mat4 attacktrans =
+                glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0));
+
+        glm::vec4 color = glm::vec4(1,0,0,0.33);
+        if (hbframe_.empty())
+            renderRectangle(glm::scale(attacktrans, glm::vec3(hitbox.w, hitbox.h, 1.f)), color);
+        else
+            FrameManager::get()->renderFrame(glm::scale(attacktrans, glm::vec3(owner_->getDirection(), 1.f, 1.f)),
+                    glm::vec4(owner_->getColor(), 0.33f), hbframe_);
+
     }
     // Draw twinkle if applicable
     if (twinkle_ && t_ < startup_)
     {
+        Rectangle rect = owner_->getRectangle();
         float fact = 0.5 + (t_ / startup_) * 1.5;
         glm::mat4 transform =
             glm::scale(
                     glm::rotate(
-                        glm::translate(glm::mat4(1.0f), glm::vec3(owner_->getRectangle().x,
-                                owner_->getRectangle().y, 0.0f)),
+                        glm::translate(glm::mat4(1.0f),
+                            glm::vec3(rect.x - owner_->getDirection() * rect.w/3, rect.y, 0.f)),
                         90 * fact,
                         glm::vec3(0,0,1)),
                     glm::vec3(fact, fact, 1.f));
+
         FrameManager::get()->renderFrame(transform, glm::vec4(0.6f, 0.6f, 0.8f, 0.3f),
                 "StrongAttackInd");
     }
@@ -1191,32 +1216,4 @@ void DashAttack::update(float dt)
     // Deccelerate during duration
     if (t_ > startup_ && t_ < startup_ + duration_)
         owner_->xvel_ += accel_ * dt;
-}
-
-// ----------------------------------------------------------------------------
-// TauntAttack class methods
-// ----------------------------------------------------------------------------
-
-Attack * TauntAttack::clone() const
-{
-    return new TauntAttack(*this);
-}
-
-void TauntAttack::start()
-{
-    Attack::start();
-    oldrect_ = owner_->rect_;
-
-    owner_->rect_.w += 10;
-    owner_->rect_.h += 10;
-}
-
-void TauntAttack::finish()
-{
-    Attack::finish();
-}
-
-void TauntAttack::update(float dt)
-{
-    Attack::update(dt);
 }

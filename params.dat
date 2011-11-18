@@ -154,7 +154,7 @@ airSideAttack.startup      0.25
 airSideAttack.duration     0.25
 airSideAttack.cooldown     0.30
 airSideAttack.damage       8
-airSideAttack.stun         0.14
+airSideAttack.stun         0.13
 airSideAttack.knockbackx   5
 airSideAttack.knockbacky   2
 airSideAttack.knockbackpow 175.0
@@ -225,3 +225,19 @@ upSpecialAttack.priority     2.0
 upSpecialAttack.repeatInterval  0.04
 upSpecialAttack.xvel            160
 upSpecialAttack.yvel            800
+
+
+
+sideSmashAttack.startup      0.30
+sideSmashAttack.duration     0.25
+sideSmashAttack.cooldown     0.40
+sideSmashAttack.damage       17
+sideSmashAttack.stun         0.12
+sideSmashAttack.knockbackx   1
+sideSmashAttack.knockbacky   1
+sideSmashAttack.knockbackpow 150.0
+sideSmashAttack.hitboxx      50
+sideSmashAttack.hitboxy      15
+sideSmashAttack.hitboxw      50
+sideSmashAttack.hitboxh      30
+sideSmashAttack.priority     1.0

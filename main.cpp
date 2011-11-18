@@ -52,7 +52,6 @@ const glm::vec3 teamColors[] =
 };
 
 GLuint backgroundTex = 0;
-GLuint groundTex = 0;
 
 Rectangle ground;
 const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
@@ -475,7 +474,6 @@ int initGraphics()
     setCamera(glm::vec3(0.f, 0.f, -425.0f), 0);
 
     backgroundTex = make_texture("back003.tga");
-    groundTex = make_texture("ground.tga");
     // Load some animation frames
     FrameManager::get()->loadFile("frames/charlie.frames");
 
