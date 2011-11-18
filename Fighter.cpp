@@ -54,6 +54,8 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     downSmashAttack_->setHitboxFrame("DownSmashHitbox");
     
     upSmashAttack_ = loadAttack<Attack>("upSmashAttack", g, "UpSmash");
+    upSmashAttack_->setTwinkle(true);
+    upSmashAttack_->setHitboxFrame("UpSmashHitbox");
 
     // Set up the twinkle moves
     airSideAttack_->setTwinkle(true);
@@ -550,7 +552,7 @@ void GroundState::update(Controller &controller, float dt)
             fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
             fighter_->attack_ = fighter_->sideSmashAttack_->clone();
         }
-        else if (controller.joyy < getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+        else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
             fighter_->attack_ = fighter_->downSmashAttack_->clone();
         else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
             fighter_->attack_ = fighter_->upSmashAttack_->clone();

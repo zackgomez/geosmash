@@ -18,5 +18,5 @@ void main()
     ndotl = min(max(ndotl, 0) + 0.3, 1);
 
     outputColor = vec4(ndotl * vec3(color), 1.0f);
-    glowColor = vec4(0.0f);
+    glowColor = vec4(0.0f, 0.0f, 0.0f, 1.f);
 }
