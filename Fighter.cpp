@@ -131,7 +131,11 @@ void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
     // we should freak out if damage is negative
     fname += '1' + floor(std::min(damage_ / 100, 2.0f));
     fname += attack->getAudioID();
-    AudioManager::get()->playSound(fname);
+
+    glm::vec2 a(attacker->getRectangle().x, 
+                attacker->getRectangle().y);
+    
+    AudioManager::get()->playSound(fname, a, this->getDamage());
 }
 
 void Fighter::hitWithAttack(Fighter *victim)

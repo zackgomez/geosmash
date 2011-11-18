@@ -6,27 +6,18 @@
 AudioManager::AudioManager() 
 {
     // Load in all small sound files, like attack noise
-    std::string fname = "sfx/ko.aif";
+    // Sample code for loading and playing a sound file
+    // played through the left speaker follows 
+    /*std::string fname = "sfx/ko-01.wav";
     sf::SoundBuffer *sb = new sf::SoundBuffer();
     sb->LoadFromFile(fname);
-    sf::Sound *s1, *s2;
-    s2 = new sf::Sound();
-    s1 = new sf::Sound();
-    s1->SetBuffer(*sb);
-    s2->SetBuffer(*sb);
-    s1->SetRelativeToListener(1);
-    s1->SetPosition(10000, 10000, 1e8);
-    s2->SetPosition(1, 0, 0);
-    s1->Play();
-    while (s1->GetStatus() == sf::Sound::Playing) {}
-    std::cout << "Playing sound 2 (ko?)" << std::endl;
-    s2->Play();
-    s1->SetAttenuation(100);
-    std::cout << "min distance, attenuation: " << 
-    s1->GetMinDistance() << ", " <<
-        s1->GetAttenuation() << std::endl;
+    s2->SetPosition(-1, 0, 0);
+    s1->SetAttenuation(100);*/
 }
-
+#define D1 25.0f
+#define D2 300.0f
+#define V1 25.0f
+#define V2 100.0f
 
 void AudioManager::playSound(const std::string &fname)
 {
@@ -37,9 +28,44 @@ void AudioManager::playSound(const std::string &fname)
         sb->LoadFromFile("sfx" + fname + ".aif");
         buffers_[fname] = sb;
     }
-    // play that shit
     sf::Sound *s = new sf::Sound();
-    
+    s->SetBuffer(*buffers_[fname]);
+    s->Play();
+    currentSounds_.push_back(s);
+
+}
+void AudioManager::playSound(const std::string &fname, 
+        glm::vec2 pos,
+        double damage)
+{
+    assert(damage >= 0);
+    double panningFactor = -2;
+    if (damage > 300) damage = 300;
+    // check if the file has already been loaded in
+    if (buffers_.count(fname) != 1) {
+        sf::SoundBuffer *sb = new sf::SoundBuffer();
+        assert(sb);
+        sb->LoadFromFile("sfx" + fname + ".aif");
+        buffers_[fname] = sb;
+    }
+    sf::Sound *s = new sf::Sound();
+    s->SetBuffer(*buffers_[fname]);
+    s->SetPosition(panningFactor, 0, 0);
+    assert(panningFactor >= -1 && panningFactor <= 1);
+    double vol;
+    if (damage > 0 && damage < D1) {
+        vol = V1;
+    }
+    else if (damage < D2) {
+        vol = V1 + ((V2 - V1) / (D2 - D1)) * (damage - D1);
+    }
+    else if (damage > D2) {
+        vol = V2;
+    }
+    assert(vol >= V1 && vol <= V2);
+    s->SetVolume(vol);
+    // play that shit
+    s->Play();
 }
 
 void AudioManager::setSoundtrack(const std::string &file)
