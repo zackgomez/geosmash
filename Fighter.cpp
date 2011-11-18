@@ -53,7 +53,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     downSmashAttack_->setTwinkle(true);
     downSmashAttack_->setHitboxFrame("DownSmashHitbox");
     
-    upSmashAttack_ = loadAttack<Attack>("upSmashAttack", g, "UpSmash");
+    upSmashAttack_ = loadAttack<MovingAttack>("upSmashAttack", g, "UpSmash");
     upSmashAttack_->setTwinkle(true);
     upSmashAttack_->setHitboxFrame("UpSmashHitbox");
 
@@ -240,6 +240,7 @@ template<class AttackClass>
 AttackClass* Fighter::loadAttack(std::string attackName, const std::string &audioID,
         const std::string &fname)
 {
+    /*
     attackName += '.';
 
     AttackClass* ret = new AttackClass(
@@ -259,6 +260,9 @@ AttackClass* Fighter::loadAttack(std::string attackName, const std::string &audi
             getParam(attackName + "priority"),
             audioID);
     ret->setFrameName(fname);
+    */
+
+    AttackClass *ret = new AttackClass(attackName, audioID, fname);
 
     return ret;
 
@@ -993,6 +997,30 @@ bool Rectangle::contains(const Rectangle &rhs) const
 // Attack class methods
 // ----------------------------------------------------------------------------
 
+Attack::Attack(const std::string &paramPrefix, const std::string &audioID,
+            const std::string &frameName)
+{
+    std::string pp = paramPrefix + '.';
+    startup_ = getParam(pp + "startup");
+    duration_ = getParam(pp + "duration");
+    cooldown_ = getParam(pp + "cooldown");
+    damage_ = getParam(pp + "damage");
+    stun_ = getParam(pp + "stun");
+    knockback_ = getParam(pp + "knockbackpow") * glm::normalize(glm::vec2(
+                getParam(pp + "knockbackx"),
+                getParam(pp + "knockbacky")));
+    hitbox_ = Rectangle(
+            getParam(pp + "hitboxx"),
+            getParam(pp + "hitboxy"),
+            getParam(pp + "hitboxw"),
+            getParam(pp + "hitboxh"));
+    priority_ = getParam(pp + "priority");
+    audioID_ = audioID;
+    frameName_ = frameName;
+
+    twinkle_ = false;
+}
+
 Attack* Attack::clone() const
 {
     return new Attack(*this);
@@ -1005,6 +1033,7 @@ void Attack::setFighter(Fighter *fighter)
 
 void Attack::start()
 {
+    assert(owner_);
     t_ = 0.0f;
     hasHit_[0] = hasHit_[1] = hasHit_[2] = hasHit_[3] = false;
 }
@@ -1205,4 +1234,36 @@ void DashAttack::update(float dt)
     // Deccelerate during duration
     if (t_ > startup_ && t_ < startup_ + duration_)
         owner_->xvel_ += accel_ * dt;
+}
+
+// ----------------------------------------------------------------------------
+// MovingAttack class methods
+// ----------------------------------------------------------------------------
+MovingAttack::MovingAttack(const std::string &paramPrefix, const std::string &audioID,
+        const std::string &frameName) :
+    Attack(paramPrefix, audioID, frameName)
+{
+    std::string pp = paramPrefix + '.';
+    hb0 = glm::vec2(getParam(pp + "hitboxx"), getParam(pp + "hitboxy"));
+    hb1 = glm::vec2(getParam(pp + "hitboxx1"), getParam(pp + "hitboxy1"));
+}
+
+Attack *MovingAttack::clone() const
+{
+    return new MovingAttack(*this);
+}
+
+Rectangle MovingAttack::getHitbox() const
+{
+    float u = std::min(duration_, std::max(t_ - startup_, 0.f)) / duration_;
+    std::cout << "yay: " << u << '\n';
+
+    glm::vec2 pos = (1 - u) * hb0 + u * hb1;
+
+    Rectangle ret;
+    ret.x = pos.x * owner_->getDirection() + owner_->getRectangle().x;
+    ret.y = pos.y + owner_->getRectangle().y;
+    ret.w = hitbox_.w; ret.h = hitbox_.h;
+
+    return ret;
 }

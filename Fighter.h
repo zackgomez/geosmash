@@ -42,15 +42,9 @@ class Attack
 {
 public:
     Attack() {}
-    Attack(float startup, float duration, float cooldown, float damage, float stun,
-            const glm::vec2& knockback, const Rectangle &hitbox, float priority,
-            const std::string &audioFileprefix = "groundhit") :
-        hitbox_(hitbox),
-        startup_(startup), duration_(duration), cooldown_(cooldown),
-        damage_(damage), stun_(stun), priority_(priority), knockback_(knockback), 
-        hasHit_(), t_(0.0f), audioID_(audioFileprefix), frameName_("GroundUptilt"),
-        twinkle_(false), owner_(NULL)
-    {}
+
+    Attack(const std::string &paramPrefix, const std::string &audioID,
+            const std::string &frameName);
 
     virtual ~Attack() {}
 
@@ -115,12 +109,14 @@ protected:
 class MovingAttack : public Attack
 {
 public:
-    MovingAttack(std::string &paramPrefix, const std::string &audioID);
+    MovingAttack(const std::string &paramPrefix, const std::string &audioID,
+            const std::string &frameName);
 
+    virtual Attack *clone() const;
     virtual Rectangle getHitbox() const;
 
 private:
-    glm::vec2 hb0, hb1; // Stores the starting and ending hb location
+    glm::vec2 hb0, hb1;
 };
 
 
@@ -128,14 +124,11 @@ class UpSpecialAttack : public Attack
 {
 public:
     UpSpecialAttack() : Attack() {};
+    UpSpecialAttack(const std::string &paramPrefix, const std::string &audioID,
+            const std::string &frameName) :
+        Attack(paramPrefix, audioID, frameName)
+    {}
 
-    UpSpecialAttack(float startup, float duration, float cooldown, float damage, float stun,
-            const glm::vec2& knockback, const Rectangle &hitbox, float priority,
-            const std::string &audioPrefix) :
-        Attack(startup, duration, cooldown, damage, stun, knockback, hitbox, priority, audioPrefix),
-        repeatTime_(0.0f)
-        {
-        }
 
     virtual Attack* clone() const;
     virtual void start();
@@ -151,13 +144,10 @@ private:
 class DashAttack : public Attack
 {
 public:
-    DashAttack(float startup, float duration, float cooldown, float damage, float stun,
-            const glm::vec2& knockback, const Rectangle &hitbox, float priority,
-            const std::string& audioPrefix) : 
-        Attack(startup, duration, cooldown, damage, stun, knockback, hitbox, priority,
-                audioPrefix)
-        {
-        }
+    DashAttack(const std::string &paramPrefix, const std::string &audioID,
+            const std::string &frameName) :
+        Attack(paramPrefix, audioID, frameName)
+    {}
 
     virtual Attack* clone() const;
     virtual void start();
