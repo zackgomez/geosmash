@@ -253,12 +253,12 @@ downSmashAttack.knockbacky   5
 downSmashAttack.knockbackpow 200.0
 downSmashAttack.hitboxx      0
 downSmashAttack.hitboxy      -20
-downSmashAttack.hitboxw      110
+downSmashAttack.hitboxw      130
 downSmashAttack.hitboxh      20
 downSmashAttack.priority     1.0
 
 upSmashAttack.startup      0.28
-upSmashAttack.duration     0.35
+upSmashAttack.duration     0.26
 upSmashAttack.cooldown     0.30
 upSmashAttack.damage       18
 upSmashAttack.stun         0.13
