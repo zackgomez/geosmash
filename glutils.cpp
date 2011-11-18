@@ -630,3 +630,13 @@ void setViewMatrix(const glm::mat4 &mat)
 {
     viewMatrix = mat;
 }
+
+const glm::mat4 & getProjectionMatrix()
+{
+    return projectionMatrix;
+}
+
+const glm::mat4 & getViewMatrix()
+{
+    return viewMatrix;
+}
