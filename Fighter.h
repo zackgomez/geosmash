@@ -273,6 +273,7 @@ private:
 
     Attack *upSpecialAttack_;
 
+    Attack *neutralSmashAttack_;
     Attack *sideSmashAttack_;
     Attack *downSmashAttack_;
     Attack *upSmashAttack_;

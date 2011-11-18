@@ -242,6 +242,20 @@ upSpecialAttack.yvel            800
 
 
 
+neutralSmashAttack.startup      0.40
+neutralSmashAttack.duration     0.05
+neutralSmashAttack.cooldown     0.20
+neutralSmashAttack.damage       24
+neutralSmashAttack.stun         0.15
+neutralSmashAttack.knockbackx   0
+neutralSmashAttack.knockbacky   0
+neutralSmashAttack.knockbackpow 350.0
+neutralSmashAttack.hitboxx      0
+neutralSmashAttack.hitboxy      -20
+neutralSmashAttack.hitboxw      30
+neutralSmashAttack.hitboxh      50
+neutralSmashAttack.priority     1.0
+
 sideSmashAttack.startup      0.30
 sideSmashAttack.duration     0.25
 sideSmashAttack.cooldown     0.35
@@ -255,7 +269,6 @@ sideSmashAttack.hitboxy      15
 sideSmashAttack.hitboxw      50
 sideSmashAttack.hitboxh      30
 sideSmashAttack.priority     1.0
-
 
 downSmashAttack.startup      0.21
 downSmashAttack.duration     0.25

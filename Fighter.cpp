@@ -46,14 +46,15 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "TauntAttack");
 
+    neutralSmashAttack_ = loadAttack<Attack>("neutralSmashAttack", g, "NeutralSmash");
+    neutralSmashAttack_->setTwinkle(true);
+    //neutralSmashAttack_->setHitboxFrame("NeutralSmashHitbox");
     sideSmashAttack_ = loadAttack<Attack>("sideSmashAttack", g, "SideSmash");
     sideSmashAttack_->setTwinkle(true);
     sideSmashAttack_->setHitboxFrame("SideSmashHitbox");
-
     downSmashAttack_ = loadAttack<Attack>("downSmashAttack", g, "DownSmash");
     downSmashAttack_->setTwinkle(true);
     downSmashAttack_->setHitboxFrame("DownSmashHitbox");
-    
     upSmashAttack_ = loadAttack<MovingAttack>("upSmashAttack", g, "UpSmash");
     upSmashAttack_->setTwinkle(true);
     upSmashAttack_->setHitboxFrame("UpSmashHitbox");
@@ -368,8 +369,6 @@ void AirStunnedState::update(Controller &controller, float dt)
         // Don't let the player increase the velocity past a certain speed
         if (fighter_->xvel_ * controller.joyx <= 0 || fabs(fighter_->xvel_) < getParam("jumpAirSpeed"))
             fighter_->xvel_ += controller.joyx * getParam("airDI") * dt;
-        // You can always control your orientation
-        fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
     }
 
     // Check for completetion
@@ -561,13 +560,12 @@ void GroundState::update(Controller &controller, float dt)
             fighter_->attack_ = fighter_->downSmashAttack_->clone();
         else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
             fighter_->attack_ = fighter_->upSmashAttack_->clone();
+        else
+            fighter_->attack_ = fighter_->neutralSmashAttack_->clone();
 
-        if (fighter_->attack_)
-        {
-            fighter_->attack_->setFighter(fighter_);
-            fighter_->attack_->start();
-            return;
-        }
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+        return;
     }
 
     // --- Deal with dashing movement ---
