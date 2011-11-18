@@ -43,7 +43,11 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
 
-    tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "Bong");
+    tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "TauntAttack");
+
+    sideSmashAttack_ = loadAttack<Attack>("sideSmashAttack", g, "SideSmash");
+    sideSmashAttack_->setTwinkle(true);
+    sideSmashAttack_->setHitboxFrame("SideSmashHitbox");
 
     // Set up the twinkle moves
     airSideAttack_->setTwinkle(true);
@@ -202,7 +206,8 @@ void Fighter::render(float dt)
     state_->render(dt);
 }
 
-void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color)
+void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color,
+        const glm::mat4 &postTrans)
 {
     printf("ID: %d  Damage: %.1f  Position: [%.2f, %.2f]   Velocity: [%.2f, %.2f]  Attack: %d  Dir: %.1f  LastHitBy: %d\n",
             id_, damage_, rect_.x, rect_.y, xvel_, yvel_, attack_ != 0, dir_, lastHitBy_);
@@ -212,47 +217,10 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
             glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
             glm::vec3(dir_, 1.0f, 1.0f));
 
-    FrameManager::get()->renderFrame(transform, glm::vec4(color, 0.25f), frameName);
+    FrameManager::get()->renderFrame(transform * postTrans, glm::vec4(color, 0.25f), frameName);
 
     if (attack_)
         attack_->render(dt);
-
-    // If the player is off the screen, render a little arrow pointing to them
-    glm::vec2 cameraPos = glm::vec2(0, 0);
-    Rectangle screen(cameraPos.x, cameraPos.y, getParam("worldWidth"), getParam("worldHeight"));
-    if (!screen.overlaps(rect_))
-    {
-        glm::vec2 dir = glm::vec2(rect_.x, rect_.y) - cameraPos;
-        float dist = glm::length(dir);
-        dir /= dist;
-        // draw arrow
-        glm::vec2 side = (fabs(dir.x) / screen.w > fabs(dir.y) / screen.h)
-            ? glm::vec2(dir.x / fabs(dir.x), 0)
-            : glm::vec2(0, dir.y / fabs(dir.y));
-        glm::vec2 move = (fabs(dir.x) / screen.w < fabs(dir.y) / screen.h)
-            ? glm::vec2(dir.x / fabs(dir.x), 0)
-            : glm::vec2(0, dir.y / fabs(dir.y));
-
-        float theta = acos(glm::dot(glm::vec2(-1, 0), dir)) * ((rect_.y > cameraPos.y) ? -1.f : 1.f);
-
-        glm::vec2 screenVec(screen.w/2, screen.h/2);
-        glm::vec2 arrowPos = side * screenVec +
-            move * screenVec * glm::vec2(fabs(cosf(theta)), fabs(sinf(theta)));
-
-        float len = glm::length(arrowPos);
-        arrowPos *= (len - 20) / len;
-
-        float scale = (dist / len - 1.f) * 3.f + 1.f;
-        float rot = theta * 180.f / M_PI;
-
-            glm::mat4 transform =
-            glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f),
-                            glm::vec3(arrowPos, 0.0f)), 
-                        glm::vec3(scale, scale, 1.f)),
-                    rot, glm::vec3(0, 0, 1));
-
-        FrameManager::get()->renderFrame(transform, glm::vec4(color, 0.0f), "OffscreenArrow");
-    }
 }
 
 float Fighter::damageFunc() const
@@ -468,8 +436,32 @@ void GroundState::update(Controller &controller, float dt)
     if (waitTime_ > 0)
         return;
 
+    // --- Deal with jump transition ---
+    if (jumpTime_ > getParam("jumpStartupTime"))
+    {
+        // Jump; transition to Air Normal
+        next_ = new AirNormalState(fighter_);
+        // Set the xvelocity of the jump
+        fighter_->xvel_ = fabs(controller.joyx) > getParam("input.deadzone") ?
+            controller.joyx * 0.5 * getParam("dashSpeed") :
+            0.0f;
+        // If they are still "holding down" the jump button now, then full jump
+        // otherwise short hop
+        if (controller.jumpbutton || controller.joyy > getParam("input.jumpThresh"))
+            fighter_->yvel_ = getParam("jumpSpeed");
+        else
+            fighter_->yvel_ = getParam("hopSpeed");
+        // Draw a little puff
+        ExplosionManager::get()->addPuff(
+                fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.1f, 
+                fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                0.3f);
+        return;
+    }
+
+
     // -- Deal with starting an attack
-    if (controller.pressa && jumpTime_ < 0)
+    if (controller.pressa)
     {
         // Check for dash attack
         if (dashing_)
@@ -536,6 +528,16 @@ void GroundState::update(Controller &controller, float dt)
     else if (controller.dpadu && !dashing_)
     {
         fighter_->attack_ = fighter_->tauntAttack_->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+        return;
+    }
+    // Check for smash attacks
+    else if (controller.pressc && !dashing_)
+    {
+        // No movement during smash attacks
+        fighter_->xvel_ = 0; fighter_->yvel_ = 0;
+        fighter_->attack_ = fighter_->sideSmashAttack_->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return;
@@ -608,29 +610,8 @@ void GroundState::update(Controller &controller, float dt)
         }
     }
 
-
-    // --- Deal with jumping ---
-    if (jumpTime_ > getParam("jumpStartupTime"))
-    {
-        // Jump; transition to Air Normal
-        next_ = new AirNormalState(fighter_);
-        // Set the xvelocity of the jump
-        fighter_->xvel_ = fabs(controller.joyx) > getParam("input.deadzone") ?
-            controller.joyx * 0.5 * getParam("dashSpeed") :
-            0.0f;
-        // If they are still "holding down" the jump button now, then full jump
-        // otherwise short hop
-        if (controller.jumpbutton || controller.joyy > getParam("input.jumpThresh"))
-            fighter_->yvel_ = getParam("jumpSpeed");
-        else
-            fighter_->yvel_ = getParam("hopSpeed");
-        // Draw a little puff
-        ExplosionManager::get()->addPuff(
-                fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.1f, 
-                fighter_->rect_.y - fighter_->rect_.h * 0.45f,
-                0.3f);
-    }
-    else if (controller.pressjump ||
+    // --- Check to see if they want to start a jump ---
+    if (controller.pressjump ||
             (controller.joyy > getParam("input.jumpThresh")
              && controller.joyyv > getParam("input.velThresh")))
     {
@@ -874,13 +855,16 @@ void DodgeState::render(float dt)
     float opacity_factor = (1 + cos(period_scale_factor * t_)) * 0.5f; 
     glm::vec3 color = fighter_->color_ * (opacity_amplitude * opacity_factor + 1);
 
+    float angle = t_ < dodgeTime_ ? t_ / dodgeTime_ * 360 : 0.f;
+
     if (t_ > invincTime_)
         color = fighter_->color_;
 
     printf("DODGE | t: %.3f  invincTime: %.3f  dodgeTime: %.3f || ",
             t_, invincTime_, dodgeTime_);
     // Just render the fighter, but flashing
-    fighter_->renderHelper(dt, frameName_, color);
+    fighter_->renderHelper(dt, frameName_, color,
+            glm::rotate(glm::mat4(1.f), -angle, glm::vec3(0,0,1)));
 }
 
 void DodgeState::hitByAttack(const Fighter *attacker, const Attack *attack)
@@ -1050,23 +1034,31 @@ void Attack::render(float dt)
     if (hasHitbox())
     {
         Rectangle hitbox = getHitbox();
-        glm::mat4 attacktrans = glm::scale(
-                glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0)),
-                glm::vec3(hitbox.w, hitbox.h, 1.0f));
-        renderRectangle(attacktrans, glm::vec4(1,0,0,0.33));
+        glm::mat4 attacktrans =
+                glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0));
+
+        glm::vec4 color = glm::vec4(1,0,0,0.33);
+        if (hbframe_.empty())
+            renderRectangle(glm::scale(attacktrans, glm::vec3(hitbox.w, hitbox.h, 1.f)), color);
+        else
+            FrameManager::get()->renderFrame(glm::scale(attacktrans, glm::vec3(owner_->getDirection(), 1.f, 1.f)),
+                    glm::vec4(owner_->getColor(), 0.33f), hbframe_);
+
     }
     // Draw twinkle if applicable
     if (twinkle_ && t_ < startup_)
     {
+        Rectangle rect = owner_->getRectangle();
         float fact = 0.5 + (t_ / startup_) * 1.5;
         glm::mat4 transform =
             glm::scale(
                     glm::rotate(
-                        glm::translate(glm::mat4(1.0f), glm::vec3(owner_->getRectangle().x,
-                                owner_->getRectangle().y, 0.0f)),
+                        glm::translate(glm::mat4(1.0f),
+                            glm::vec3(rect.x - owner_->getDirection() * rect.w/3, rect.y, 0.f)),
                         90 * fact,
                         glm::vec3(0,0,1)),
                     glm::vec3(fact, fact, 1.f));
+
         FrameManager::get()->renderFrame(transform, glm::vec4(0.6f, 0.6f, 0.8f, 0.3f),
                 "StrongAttackInd");
     }
@@ -1191,32 +1183,4 @@ void DashAttack::update(float dt)
     // Deccelerate during duration
     if (t_ > startup_ && t_ < startup_ + duration_)
         owner_->xvel_ += accel_ * dt;
-}
-
-// ----------------------------------------------------------------------------
-// TauntAttack class methods
-// ----------------------------------------------------------------------------
-
-Attack * TauntAttack::clone() const
-{
-    return new TauntAttack(*this);
-}
-
-void TauntAttack::start()
-{
-    Attack::start();
-    oldrect_ = owner_->rect_;
-
-    owner_->rect_.w += 10;
-    owner_->rect_.h += 10;
-}
-
-void TauntAttack::finish()
-{
-    Attack::finish();
-}
-
-void TauntAttack::update(float dt)
-{
-    Attack::update(dt);
 }

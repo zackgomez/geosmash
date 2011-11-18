@@ -419,7 +419,7 @@ void renderMaskedRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color,
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
     glUniform1i(textureUniform, 0);
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
-    glUniform2fv(texsizeUniform, 1, glm::value_ptr(glm::vec2(frame->w/10, frame->h/10)));
+    glUniform2fv(texsizeUniform, 1, glm::value_ptr(glm::vec2(frame->w, frame->h)));
 
     glActiveTexture(GL_TEXTURE0);
     glEnable(GL_TEXTURE_2D);
@@ -600,7 +600,6 @@ void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &co
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix * modelMatrix));
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
     glUniformMatrix4fv(normalUniform, 1, GL_FALSE, glm::value_ptr(glm::inverse(modelMatrix)));
-    // TODO the normal matrix
     glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(color, 1.0f)));
 
     // Bind data
@@ -630,4 +629,14 @@ void setProjectionMatrix(const glm::mat4 &mat)
 void setViewMatrix(const glm::mat4 &mat)
 {
     viewMatrix = mat;
+}
+
+const glm::mat4 & getProjectionMatrix()
+{
+    return projectionMatrix;
+}
+
+const glm::mat4 & getViewMatrix()
+{
+    return viewMatrix;
 }

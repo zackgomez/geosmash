@@ -21,8 +21,8 @@ void FrameManager::renderFrame(const glm::mat4 &trans, const glm::vec4 &col,
     const anim_frame *frame = frames_[name];
 
     glm::mat4 finalTransform = glm::translate(
-            glm::scale(trans, glm::vec3(frame->w/2, frame->h/2, 1.0f)),
-            glm::vec3(frame->x, frame->y, 0.0f));
+            glm::scale(trans, glm::vec3(frame->w*5, frame->h*5, 1.0f)),
+            glm::vec3(frame->x / frame->w, frame->y / frame->h, 0.0f));
 
     renderMaskedRectangle(finalTransform, col, frame);
 }
@@ -130,7 +130,7 @@ anim_frame* FrameManager::loadAnimFrame(std::istream &stream)
 
     anim_frame *ret = new anim_frame();
     ret->id = name;
-    ret->w = w*10.f; ret->h = h*10.f;
+    ret->w = w; ret->h = h;
     ret->x = x; ret->y = y;
     ret->mask_tex = mask;
 

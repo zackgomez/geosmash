@@ -52,7 +52,6 @@ const glm::vec3 teamColors[] =
 };
 
 GLuint backgroundTex = 0;
-GLuint groundTex = 0;
 
 Rectangle ground;
 const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
@@ -74,6 +73,7 @@ void mainloop();
 void processInput();
 void update();
 void render();
+void renderArrow(const Fighter *fighter);
 
 void printstats();
 
@@ -352,7 +352,10 @@ void render()
     // Draw the fighters
     for (unsigned i = 0; i < numPlayers; i++)
         if (fighters[i]->isAlive())
+        {
             fighters[i]->render(dt);
+            renderArrow(fighters[i]);
+        }
 
     // XXX remove this
     //renderMesh(fighterMesh, glm::mat4(1.f), groundColor);
@@ -437,6 +440,57 @@ void render()
     SDL_GL_SwapBuffers();
 }
 
+void renderArrow(const Fighter *f)
+{
+    glm::vec4 fpos = glm::vec4(f->getRectangle().x, f->getRectangle().y, 0.f, 1.f);
+    glm::vec4 fndc = getProjectionMatrix() * getViewMatrix() * fpos;
+    fndc /= fndc.w;
+    if (fabs(fndc.x) > 1 || fabs(fndc.y) > 1)
+    {
+        std::cout << "DRAWING ARROW\n";
+
+        glm::vec2 dir = glm::vec2(fndc);
+        float dist = glm::length(dir);
+        dir /= dist;
+        // draw arrow
+        glm::vec2 side = (fabs(dir.x) > fabs(dir.y))
+            ? glm::vec2(dir.x / fabs(dir.x), 0)
+            : glm::vec2(0, dir.y / fabs(dir.y));
+        glm::vec2 move = (fabs(dir.x) < fabs(dir.y))
+            ? glm::vec2(dir.x / fabs(dir.x), 0)
+            : glm::vec2(0, dir.y / fabs(dir.y));
+
+        float theta = acos(glm::dot(glm::vec2(-1, 0), dir)) * ((fndc.y > 0) ? -1.f : 1.f);
+
+        glm::vec2 arrowPos = side +
+            move * glm::vec2(1,1) * glm::vec2(fabs(cosf(theta)), fabs(sinf(theta)));
+
+        const float arrowsz = 0.005;
+        float len = glm::length(arrowPos);
+        arrowPos *= (len - 10*arrowsz) / len;
+
+        float scale = 0.002 * ((dist / len - 1.f) * 5.f + 0.5f);
+        float rot = theta * 180.f / M_PI;
+
+        std::cout << "Arrow pos: " << arrowPos.x << ' ' << arrowPos.y << '\n';
+        glm::mat4 transform =
+            glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f),
+                            glm::vec3(arrowPos, 0.0f)), 
+                        glm::vec3(scale, scale, 1.f)),
+                    rot, glm::vec3(0, 0, 1));
+
+        glm::mat4 pmat = getProjectionMatrix();
+        glm::mat4 vmat = getViewMatrix();
+        setProjectionMatrix(glm::mat4(1.f));
+        setViewMatrix(glm::mat4(1.f));
+
+        FrameManager::get()->renderFrame(transform, glm::vec4(f->getColor(), 0.0f), "OffscreenArrow");
+
+        setProjectionMatrix(pmat);
+        setViewMatrix(vmat);
+    }
+}
+
 int initJoystick(unsigned numPlayers)
 {
     unsigned numJoysticks = SDL_NumJoysticks();
@@ -475,7 +529,6 @@ int initGraphics()
     setCamera(glm::vec3(0.f, 0.f, -425.0f), 0);
 
     backgroundTex = make_texture("back003.tga");
-    groundTex = make_texture("ground.tga");
     // Load some animation frames
     FrameManager::get()->loadFile("frames/charlie.frames");
 

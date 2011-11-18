@@ -91,7 +91,9 @@ public:
 
     virtual std::string getAudioID() const { return audioID_; }
     virtual std::string getFrameName() const { return frameName_; }
+
     void setTwinkle(bool twinkle) { twinkle_ = twinkle; }
+    void setHitboxFrame(const std::string &frame) { hbframe_ = frame; }
 
 protected:
     Rectangle hitbox_;
@@ -104,6 +106,7 @@ protected:
 
     std::string audioID_;
     std::string frameName_;
+    std::string hbframe_;
     bool twinkle_;
 
     Fighter *owner_;
@@ -151,20 +154,6 @@ public:
 
 private:
     float accel_;
-};
-
-class TauntAttack : public Attack
-{
-public:
-    TauntAttack() : Attack() { }
-
-    virtual Attack* clone() const;
-    virtual void start();
-    virtual void finish();
-    virtual void update(float dt);
-
-private:
-    Rectangle oldrect_;
 };
 
 class FighterState
@@ -218,6 +207,7 @@ public:
     int getLives() const;
     float getDamage() const;
     float getDirection() const; // returns -1 or 1
+    const glm::vec3& getColor() const { return color_; }
     // Returns the id of the player that last hit this fighter, or -1 if there
     // is none
     int getLastHitBy() const;
@@ -279,12 +269,14 @@ private:
 
     Attack *upSpecialAttack_;
 
+    Attack *sideSmashAttack_;
+
     Attack *tauntAttack_;
 
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
     // Loads an attack from the params using the attackName.param syntax
-    void renderHelper(float dt, const std::string &frameName, const glm::vec3& color);
+    void renderHelper(float dt, const std::string &frameName, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
     template<class AttackClass>
     AttackClass* loadAttack(std::string attackName, const std::string &audioID,
             const std::string &frameName);
@@ -299,7 +291,6 @@ private:
     friend class RespawnState;
     friend class UpSpecialAttack;
     friend class DashAttack;
-    friend class TauntAttack;
 };
 
 class GroundState : public FighterState
