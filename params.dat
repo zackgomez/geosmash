@@ -230,7 +230,7 @@ upSpecialAttack.yvel            800
 
 sideSmashAttack.startup      0.30
 sideSmashAttack.duration     0.25
-sideSmashAttack.cooldown     0.40
+sideSmashAttack.cooldown     0.35
 sideSmashAttack.damage       17
 sideSmashAttack.stun         0.10
 sideSmashAttack.knockbackx   1
@@ -241,3 +241,34 @@ sideSmashAttack.hitboxy      15
 sideSmashAttack.hitboxw      50
 sideSmashAttack.hitboxh      30
 sideSmashAttack.priority     1.0
+
+
+downSmashAttack.startup      0.30
+downSmashAttack.duration     0.25
+downSmashAttack.cooldown     0.35
+downSmashAttack.damage       15
+downSmashAttack.stun         0.13
+downSmashAttack.knockbackx   1
+downSmashAttack.knockbacky   5
+downSmashAttack.knockbackpow 140.0
+downSmashAttack.hitboxx      0
+downSmashAttack.hitboxy      -20
+downSmashAttack.hitboxw      110
+downSmashAttack.hitboxh      20
+downSmashAttack.priority     1.0
+
+upSmashAttack.startup      0.30
+upSmashAttack.duration     0.25
+upSmashAttack.cooldown     0.35
+upSmashAttack.damage       18
+upSmashAttack.stun         0.13
+upSmashAttack.knockbackx   1
+upSmashAttack.knockbacky   4
+upSmashAttack.knockbackpow 150.0
+upSmashAttack.hitboxw      110
+upSmashAttack.hitboxh      20
+upSmashAttack.priority     1.0
+upSmashAttack.hitboxx     -20
+upSmashAttack.hitboxy     30
+upSmashAttack.hitboxx1     20
+upSmashAttack.hitboxy1     30

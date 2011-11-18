@@ -54,7 +54,7 @@ const glm::vec3 teamColors[] =
 GLuint backgroundTex = 0;
 
 Rectangle ground;
-const glm::vec3 groundColor(0.5f, 0.5f, 0.5f);
+const glm::vec3 groundColor(0.2f, 0.2f, 0.2f);
 mesh groundMesh;
 mesh fighterMesh;
 

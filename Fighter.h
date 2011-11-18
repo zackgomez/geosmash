@@ -112,6 +112,18 @@ protected:
     Fighter *owner_;
 };
 
+class MovingAttack : public Attack
+{
+public:
+    MovingAttack(std::string &paramPrefix, const std::string &audioID);
+
+    virtual Rectangle getHitbox() const;
+
+private:
+    glm::vec2 hb0, hb1; // Stores the starting and ending hb location
+};
+
+
 class UpSpecialAttack : public Attack
 {
 public:
@@ -270,6 +282,8 @@ private:
     Attack *upSpecialAttack_;
 
     Attack *sideSmashAttack_;
+    Attack *downSmashAttack_;
+    Attack *upSmashAttack_;
 
     Attack *tauntAttack_;
 

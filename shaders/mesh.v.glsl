@@ -20,6 +20,6 @@ void main()
     frag_normal = normalMatrix * vec4(normal.xyz, 0.f);
     frag_pos = modelViewMatrix * position;
 
-    lightpos = vec4(400, 1000, 0, 1);
+    lightpos = vec4(400, 100, 0, 1);
     lightpos /= lightpos.w;
 }

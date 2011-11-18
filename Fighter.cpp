@@ -49,6 +49,12 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     sideSmashAttack_->setTwinkle(true);
     sideSmashAttack_->setHitboxFrame("SideSmashHitbox");
 
+    downSmashAttack_ = loadAttack<Attack>("downSmashAttack", g, "DownSmash");
+    downSmashAttack_->setTwinkle(true);
+    downSmashAttack_->setHitboxFrame("DownSmashHitbox");
+    
+    upSmashAttack_ = loadAttack<Attack>("upSmashAttack", g, "UpSmash");
+
     // Set up the twinkle moves
     airSideAttack_->setTwinkle(true);
 
@@ -535,12 +541,26 @@ void GroundState::update(Controller &controller, float dt)
     // Check for smash attacks
     else if (controller.pressc && !dashing_)
     {
+        glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
         // No movement during smash attacks
         fighter_->xvel_ = 0; fighter_->yvel_ = 0;
-        fighter_->attack_ = fighter_->sideSmashAttack_->clone();
-        fighter_->attack_->setFighter(fighter_);
-        fighter_->attack_->start();
-        return;
+
+        if (fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
+        {
+            fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+            fighter_->attack_ = fighter_->sideSmashAttack_->clone();
+        }
+        else if (controller.joyy < getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+            fighter_->attack_ = fighter_->downSmashAttack_->clone();
+        else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+            fighter_->attack_ = fighter_->upSmashAttack_->clone();
+
+        if (fighter_->attack_)
+        {
+            fighter_->attack_->setFighter(fighter_);
+            fighter_->attack_->start();
+            return;
+        }
     }
 
     // --- Deal with dashing movement ---
