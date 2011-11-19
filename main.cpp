@@ -142,6 +142,7 @@ int main(int argc, char **argv)
     songs.push_back("sfx/geosmash.wav");
     songs.push_back("sfx/hand canyon.wav");
     songs.push_back("sfx/Meat DeFeat.wav");
+    songs.push_back("sfx/Pixel Party.wav");
     AudioManager::get()->setSoundtrack(songs[rand() % songs.size()]);
 
     if (!muteMusic)
@@ -316,6 +317,7 @@ void update()
 
     // Play the tense music when two players with one life each left
     // XXX this is broken sometimes
+    std::cout << "Alive players: " << alivePlayers << " total lives: " << totalLives << '\n';
     if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
     {
         criticalMusic = true;

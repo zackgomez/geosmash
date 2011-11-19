@@ -242,28 +242,6 @@ template<class AttackClass>
 AttackClass* Fighter::loadAttack(std::string attackName, const std::string &audioID,
         const std::string &fname)
 {
-    /*
-    attackName += '.';
-
-    AttackClass* ret = new AttackClass(
-            getParam(attackName + "startup"),
-            getParam(attackName + "duration"),
-            getParam(attackName + "cooldown"),
-            getParam(attackName + "damage"),
-            getParam(attackName + "stun"),
-            getParam(attackName + "knockbackpow") * glm::normalize(glm::vec2(
-                    getParam(attackName + "knockbackx"),
-                    getParam(attackName + "knockbacky"))),
-            Rectangle(
-                getParam(attackName + "hitboxx"),
-                getParam(attackName + "hitboxy"),
-                getParam(attackName + "hitboxw"),
-                getParam(attackName + "hitboxh")),
-            getParam(attackName + "priority"),
-            audioID);
-    ret->setFrameName(fname);
-    */
-
     AttackClass *ret = new AttackClass(attackName, audioID, fname);
 
     return ret;
@@ -737,12 +715,17 @@ void AirNormalState::update(Controller &controller, float dt)
         // Get direction of stick
         glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
 
-        if (tiltDir.x * fighter_->dir_ > 0 && fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
-            // front tilt
+        if (fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
+        {
+            // side aerial
+            fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
             fighter_->attack_ = fighter_->airFrontAttack_->clone();
+        }
+        /*
         else if (tiltDir.x * fighter_->dir_ < 0 && fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
             // Do the back
             fighter_->attack_ = fighter_->airBackAttack_->clone();
+        */
         else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
         {
             fighter_->attack_ = fighter_->airDownAttack_->clone();
