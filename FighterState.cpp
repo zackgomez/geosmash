@@ -40,11 +40,11 @@ void FighterState::calculateHitResult(const Fighter *attacker, const Attack *att
     fighter_->yvel_ = knockback.y;
 
     // Generate a tiny explosion here
-    glm::vec2 hitdir = glm::vec2(fighter_->rect_.x, fighter_->rect_.y)
+    glm::vec2 hitdir = glm::vec2(fighter_->pos_.x, fighter_->pos_.y)
         - glm::vec2(attack->getHitbox().x, attack->getHitbox().y);
     hitdir = glm::normalize(hitdir);
-    float exx = -hitdir.x * fighter_->rect_.w / 2 + fighter_->rect_.x;
-    float exy = -hitdir.y * fighter_->rect_.h / 2 + fighter_->rect_.y;
+    float exx = -hitdir.x * fighter_->size_.x / 2 + fighter_->pos_.x;
+    float exy = -hitdir.y * fighter_->size_.y / 2 + fighter_->pos_.y;
     ExplosionManager::get()->addExplosion(exx, exy, 0.2);
 
     // Go to the stunned state
@@ -57,26 +57,26 @@ void FighterState::collisionHelper(const Rectangle &ground)
 {
     // If the player is entirely inside of the rectangle
     // just move them on top of it, minus 1 pixel
-    if (ground.contains(fighter_->rect_))
-        fighter_->rect_.y = ground.y + ground.h/2 + fighter_->rect_.h/2 - 1;
+    if (ground.contains(fighter_->getHitbox()))
+        fighter_->pos_.y = ground.y + ground.h/2 + fighter_->size_.y/2 - 1;
     // If the character has some part above the ground wihen overlap, let
     // them 'ledge grab'
-    else if (fighter_->rect_.y + fighter_->rect_.h/2 > ground.y + ground.h/2)
-        fighter_->rect_.y = ground.y + ground.h/2 + fighter_->rect_.h/2 - 1;
+    else if (fighter_->pos_.y + fighter_->size_.y/2 > ground.y + ground.h/2)
+        fighter_->pos_.y = ground.y + ground.h/2 + fighter_->size_.y/2 - 1;
     // If the character is not above the ground, and not overlapping, then
     // if their center is within the ground, move them down so they are not
     // covering the rectangle
-    else if (fighter_->rect_.x < ground.x + ground.w/2
-            && fighter_->rect_.x > ground.x - ground.w/2)
-        fighter_->rect_.y = ground.y - ground.h/2 - fighter_->rect_.h/2;
+    else if (fighter_->pos_.x < ground.x + ground.w/2
+            && fighter_->pos_.x > ground.x - ground.w/2)
+        fighter_->pos_.y = ground.y - ground.h/2 - fighter_->size_.y/2;
     // If the character is not above the ground, and their center is not
     // in the ground, move them so they don't overlap in x/y
-    else if (fighter_->rect_.y + fighter_->rect_.h/2 < ground.y + ground.h/2
-            && (fighter_->rect_.x > ground.x + ground.w/2 || fighter_->rect_.x < ground.x - ground.w/2))
+    else if (fighter_->pos_.y + fighter_->size_.y/2 < ground.y + ground.h/2
+            && (fighter_->pos_.x > ground.x + ground.w/2 || fighter_->pos_.x < ground.x - ground.w/2))
     {
-        float dist = ground.x - fighter_->rect_.x;
+        float dist = ground.x - fighter_->pos_.x;
         float dir = dist / fabs(dist);
-        fighter_->rect_.x += dir * (fabs(dist) - (ground.w/2 + fighter_->rect_.w/2));
+        fighter_->pos_.x += dir * (fabs(dist) - (ground.w/2 + fighter_->size_.x/2));
     }
 
 }
@@ -135,7 +135,7 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
     std::cout << "Air Stun collision\n";
     FighterState::collisionHelper(ground);
     // If we're not overlapping the ground anymore, no collision
-    if (!ground.overlaps(fighter_->rect_))
+    if (!ground.overlaps(fighter_->getHitbox()))
         return;
     fighter_->xvel_ = 0;
     fighter_->yvel_ = 0;
@@ -199,8 +199,8 @@ void GroundState::update(Controller &controller, float dt)
             fighter_->yvel_ = getParam("hopSpeed");
         // Draw a little puff
         ExplosionManager::get()->addPuff(
-                fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.1f, 
-                fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
+                fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
         return;
     }
@@ -256,8 +256,8 @@ void GroundState::update(Controller &controller, float dt)
         fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
         next_ = new DodgeState(fighter_);
         ExplosionManager::get()->addPuff(
-                fighter_->rect_.x + fighter_->rect_.w * fighter_->dir_ * 0.4f, 
-                fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                fighter_->pos_.x + fighter_->size_.x * fighter_->dir_ * 0.4f, 
+                fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
         return;
     }
@@ -314,8 +314,8 @@ void GroundState::update(Controller &controller, float dt)
             waitTime_ = getParam("dashChangeTime");
             // Draw a little puff
             ExplosionManager::get()->addPuff(
-                    fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.4f, 
-                    fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                    fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.4f, 
+                    fighter_->pos_.y - fighter_->size_.y * 0.45f,
                     0.3f);
         }
         // Check for drop out of dash
@@ -325,8 +325,8 @@ void GroundState::update(Controller &controller, float dt)
             waitTime_ = getParam("dashChangeTime");
             fighter_->xvel_ = 0;
             ExplosionManager::get()->addPuff(
-                    fighter_->rect_.x + fighter_->rect_.w * fighter_->dir_ * 0.4f, 
-                    fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                    fighter_->pos_.x + fighter_->size_.x * fighter_->dir_ * 0.4f, 
+                    fighter_->pos_.y - fighter_->size_.y * 0.45f,
                     0.3f);
         }
         // Otherwise just set the velocity
@@ -363,8 +363,8 @@ void GroundState::update(Controller &controller, float dt)
             fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
             // Draw a little puff
             ExplosionManager::get()->addPuff(
-                    fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.4f, 
-                    fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                    fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.4f, 
+                    fighter_->pos_.y - fighter_->size_.y * 0.45f,
                     0.3f);
         }
     }
@@ -403,8 +403,8 @@ void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
         {
             fighter_->attack_->cancel();
             dashing_ = false;
-            float dir = (ground.x - fighter_->rect_.x) > 0 ? 1 : -1;
-            fighter_->rect_.x += dir * (fabs(ground.x - fighter_->rect_.x) - ground.w/2 - fighter_->rect_.w/2 + 2);
+            float dir = (ground.x - fighter_->pos_.x) > 0 ? 1 : -1;
+            fighter_->pos_.x += dir * (fabs(ground.x - fighter_->pos_.x) - ground.w/2 - fighter_->size_.x/2 + 2);
         }
         else
         {
@@ -419,7 +419,7 @@ void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
 void GroundState::hitByAttack(const Fighter *attacker, const Attack *attack)
 {
     // Pop up a bit so that we're not overlapping the ground
-    fighter_->rect_.y += 4;
+    fighter_->pos_.y += 4;
     // Then do the normal stuff
     FighterState::calculateHitResult(attacker, attack);
 }
@@ -532,8 +532,8 @@ void AirNormalState::update(Controller &controller, float dt)
         canSecondJump_ = false;
         // Draw a puff
         ExplosionManager::get()->addPuff(
-                fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.1f, 
-                fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+                fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
+                fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
     }
 }
@@ -555,7 +555,7 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
         return;
     FighterState::collisionHelper(ground);
     // If we're not overlapping the ground anymore, no collision
-    if (!ground.overlaps(fighter_->rect_))
+    if (!ground.overlaps(fighter_->getHitbox()))
         return;
     fighter_->xvel_ = 0;
     fighter_->yvel_ = 0;
@@ -569,12 +569,12 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
 
     // Draw some puffs for landing
     ExplosionManager::get()->addPuff(
-            fighter_->rect_.x - fighter_->rect_.w * fighter_->dir_ * 0.4f, 
-            fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+            fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.4f, 
+            fighter_->pos_.y - fighter_->size_.y * 0.45f,
             0.3f);
     ExplosionManager::get()->addPuff(
-            fighter_->rect_.x + fighter_->rect_.w * fighter_->dir_ * 0.4f, 
-            fighter_->rect_.y - fighter_->rect_.h * 0.45f,
+            fighter_->pos_.x + fighter_->size_.x * fighter_->dir_ * 0.4f, 
+            fighter_->pos_.y - fighter_->size_.y * 0.45f,
             0.3f);
 
 }
@@ -634,7 +634,7 @@ void DodgeState::render(float dt)
 void DodgeState::hitByAttack(const Fighter *attacker, const Attack *attack)
 {
     // Pop up a bit so that we're not overlapping the ground
-    fighter_->rect_.y += 2;
+    fighter_->pos_.y += 2;
     // Then do the normal stuff
     FighterState::calculateHitResult(attacker, attack);
 }
@@ -643,8 +643,8 @@ void DodgeState::collisionWithGround(const Rectangle &ground, bool collision)
 {
     if (!collision && !next_)
     {
-        float dir = (ground.x - fighter_->rect_.x) > 0 ? 1 : -1;
-        fighter_->rect_.x += dir * (fabs(ground.x - fighter_->rect_.x) - ground.w/2 - fighter_->rect_.w/2 + 2);
+        float dir = (ground.x - fighter_->pos_.x) > 0 ? 1 : -1;
+        fighter_->pos_.x += dir * (fabs(ground.x - fighter_->pos_.x) - ground.w/2 - fighter_->size_.x/2 + 2);
         fighter_->xvel_ = 0.0f;
         t_ = std::max(t_, invincTime_);
     }
@@ -697,8 +697,8 @@ void RespawnState::collisionWithGround(const Rectangle &ground, bool collision)
 DeadState::DeadState(Fighter *f) :
     FighterState(f)
 {
-    f->rect_.x = HUGE_VAL;
-    f->rect_.y = HUGE_VAL;
+    f->pos_.x = HUGE_VAL;
+    f->pos_.y = HUGE_VAL;
 }
 
 void DeadState::collisionWithGround(const Rectangle &, bool)

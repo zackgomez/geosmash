@@ -15,7 +15,8 @@ void pause(int playerID);
 Fighter *getPartner(int playerID);
 
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
-    rect_(Rectangle(0, 0, getParam("fighter.w"), getParam("fighter.h"))),
+    pos_(0, 0),
+    size_(getParam("fighter.w"), getParam("fighter.h")),
     xvel_(0), yvel_(0),
     dir_(-1),
     state_(0),
@@ -115,8 +116,8 @@ void Fighter::update(Controller &controller, float dt)
     state_->update(controller, dt);
 
     // Update position
-    rect_.x += xvel_ * dt;
-    rect_.y += yvel_ * dt;
+    pos_.x += xvel_ * dt;
+    pos_.y += yvel_ * dt;
 }
 
 void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
@@ -157,9 +158,9 @@ void Fighter::hitWithAttack(Fighter *victim)
     attack_->hit(victim);
 }
 
-const Rectangle& Fighter::getRectangle() const
+Rectangle Fighter::getHitbox() const
 {
-    return rect_;
+    return Rectangle(pos_.x, pos_.y, size_.x, size_.y);
 }
 
 bool Fighter::hasAttack() const
@@ -187,8 +188,8 @@ void Fighter::respawn(bool killed)
         attack_ = 0;
     }
     // Reset vars
-    rect_.x = respawnx_;
-    rect_.y = respawny_;
+    pos_.x = respawnx_;
+    pos_.y = respawny_;
     xvel_ = yvel_ = 0.0f;
     damage_ = 0;
     lastHitBy_ = -1;
@@ -221,11 +222,11 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
         const glm::mat4 &postTrans)
 {
     printf("ID: %d  Damage: %.1f  Position: [%.2f, %.2f]   Velocity: [%.2f, %.2f]  Attack: %d  Dir: %.1f  LastHitBy: %d\n",
-            id_, damage_, rect_.x, rect_.y, xvel_, yvel_, attack_ != 0, dir_, lastHitBy_);
+            id_, damage_, pos_.x, pos_.y, xvel_, yvel_, attack_ != 0, dir_, lastHitBy_);
 
     // Draw body
     glm::mat4 transform = glm::scale(
-            glm::translate(glm::mat4(1.0f), glm::vec3(rect_.x, rect_.y, 0.0)),
+            glm::translate(glm::mat4(1.0f), glm::vec3(pos_.x, pos_.y, 0.0)),
             glm::vec3(dir_, 1.0f, 1.0f));
 
     FrameManager::get()->renderFrame(transform * postTrans, glm::vec4(color, 0.25f), frameName);

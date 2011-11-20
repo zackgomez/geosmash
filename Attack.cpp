@@ -63,7 +63,7 @@ glm::vec2 Attack::getKnockback(const Fighter *fighter) const
     if (knockbackdir_ == glm::vec2(0,0))
     {
         glm::vec2 apos = glm::vec2(getHitbox().x, getHitbox().y);
-        glm::vec2 fpos = glm::vec2(fighter->getRectangle().x, fighter->getRectangle().y);
+        glm::vec2 fpos = glm::vec2(fighter->getHitbox().x, fighter->getHitbox().y);
         glm::vec2 dir = glm::normalize(fpos - apos);
         std::cout << "fpos: " << fpos.x << ' ' << fpos.y << "   apos: " << apos.x << ' ' << apos.y << '\n';
         return glm::vec2(owner_->getDirection(), 1.f) * knockbackpow_ * dir;
@@ -76,8 +76,8 @@ glm::vec2 Attack::getKnockback(const Fighter *fighter) const
 Rectangle Attack::getHitbox() const
 {
     Rectangle ret;
-    ret.x = hboffset_.x * owner_->getDirection() + owner_->getRectangle().x;
-    ret.y = hboffset_.y + owner_->getRectangle().y;
+    ret.x = hboffset_.x * owner_->getDirection() + owner_->getHitbox().x;
+    ret.y = hboffset_.y + owner_->getHitbox().y;
     ret.w = hbsize_.x;
     ret.h = hbsize_.y;
 
@@ -137,7 +137,7 @@ void Attack::render(float dt)
     // Draw twinkle if applicable
     if (twinkle_ && t_ < startup_)
     {
-        Rectangle rect = owner_->getRectangle();
+        Rectangle rect = owner_->getHitbox();
         float fact = 0.5 + (t_ / startup_) * 1.5;
         glm::mat4 transform =
             glm::scale(
@@ -196,17 +196,17 @@ void UpSpecialAttack::update(float dt)
         if (!started_)
         {
             // Move slightly up to avoid the ground, if applicable
-            owner_->rect_.y += 2;
+            owner_->pos_.y += 2;
             owner_->xvel_ = owner_->dir_ * getParam("upSpecialAttack.xvel");
             owner_->yvel_ = getParam("upSpecialAttack.yvel");
             // Draw a little puff
             ExplosionManager::get()->addPuff(
-                    owner_->rect_.x - owner_->rect_.w * owner_->dir_ * 0.1f, 
-                    owner_->rect_.y - owner_->rect_.h * 0.45f,
+                    owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.1f, 
+                    owner_->pos_.y - owner_->size_.y * 0.45f,
                     0.3f);
             ExplosionManager::get()->addPuff(
-                    owner_->rect_.x - owner_->rect_.w * owner_->dir_ * 0.3f, 
-                    owner_->rect_.y - owner_->rect_.h * 0.45f,
+                    owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.3f, 
+                    owner_->pos_.y - owner_->size_.y * 0.45f,
                     0.3f);
             // Play the UP Special sound
             AudioManager::get()->playSound("upspecial001-loud");
@@ -245,7 +245,7 @@ void UpSpecialAttack::finish()
 {
     Attack::hit(victim);
 
-    victim->rect_.y += 20;
+    victim->pos_.y += 20;
 }
 
 // ----------------------------------------------------------------------------
@@ -314,8 +314,8 @@ Rectangle MovingAttack::getHitbox() const
     glm::vec2 pos = (1 - u) * hb0 + u * hb1;
 
     Rectangle ret;
-    ret.x = pos.x * owner_->getDirection() + owner_->getRectangle().x;
-    ret.y = pos.y + owner_->getRectangle().y;
+    ret.x = pos.x * owner_->getDirection() + owner_->getHitbox().x;
+    ret.y = pos.y + owner_->getHitbox().y;
     ret.w = hbsize_.x; ret.h = hbsize_.y;
 
     return ret;

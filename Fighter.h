@@ -64,7 +64,7 @@ public:
     void hitByAttack(const Fighter *fighter, const Attack* attack);  // Called when hit by an attack
     void hitWithAttack(Fighter *victim); // Called when you hit with an attack
     // Gets the fighter's hitbox
-    const Rectangle& getRectangle() const;
+    Rectangle getHitbox() const;
 
     // Returns true if this Fighter is currently attacking and has an attack hitbox
     bool hasAttack() const;
@@ -80,7 +80,8 @@ public:
 
 private:
     // Game state members
-    Rectangle rect_;
+    glm::vec2 pos_;
+    glm::vec2 size_;
     float xvel_, yvel_;
     float dir_; // 1 or -1 look in xdir
     FighterState *state_;

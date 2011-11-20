@@ -262,7 +262,7 @@ void update()
                 attacki = fighter->getAttack();
                 continue;
             }
-            if (fighter->hasAttack() && fighters[j]->getRectangle().overlaps(attacki->getHitbox())
+            if (fighter->hasAttack() && fighters[j]->getHitbox().overlaps(attacki->getHitbox())
                     && attacki->canHit(fighters[j]) && fighters[j]->canBeHit())
             {
                 // fighter has hit fighters[j]
@@ -272,7 +272,7 @@ void update()
                 // Cache values
                 attacki = fighter->getAttack();
             }
-            if (fighters[j]->hasAttack() && fighter->getRectangle().overlaps(attackj->getHitbox())
+            if (fighters[j]->hasAttack() && fighter->getHitbox().overlaps(attackj->getHitbox())
                     && attackj->canHit(fighter) && fighter->canBeHit())
             {
                 // fighter[j] has hit fighter
@@ -285,8 +285,8 @@ void update()
         }
 
         // Respawn condition
-        if (fighter->getRectangle().y < getParam("killbox.bottom") || fighter->getRectangle().y > getParam("killbox.top")
-                || fighter->getRectangle().x < getParam("killbox.left") || fighter->getRectangle().x > getParam("killbox.right"))
+        if (fighter->getHitbox().y < getParam("killbox.bottom") || fighter->getHitbox().y > getParam("killbox.top")
+                || fighter->getHitbox().x < getParam("killbox.left") || fighter->getHitbox().x > getParam("killbox.right"))
         {
             std::stringstream ss;
             ss << "Player" << fighter->getID();
@@ -307,7 +307,7 @@ void update()
         }
         // Ground check
         fighter->collisionWithGround(ground,
-                fighter->getRectangle().overlaps(ground));
+                fighter->getHitbox().overlaps(ground));
     }
 
     AudioManager::get()->update(dt);
@@ -443,7 +443,7 @@ void render()
 
 void renderArrow(const Fighter *f)
 {
-    glm::vec4 fpos = glm::vec4(f->getRectangle().x, f->getRectangle().y, 0.f, 1.f);
+    glm::vec4 fpos = glm::vec4(f->getHitbox().x, f->getHitbox().y, 0.f, 1.f);
     glm::vec4 fndc = getProjectionMatrix() * getViewMatrix() * fpos;
     fndc /= fndc.w;
     if (fabs(fndc.x) > 1 || fabs(fndc.y) > 1)
