@@ -174,6 +174,7 @@ void Attack::attackCollision(const Attack *other)
 // ----------------------------------------------------------------------------
 // UpSpecialAttack class methods
 // ----------------------------------------------------------------------------
+
 UpSpecialAttack::UpSpecialAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
     Attack(paramPrefix, audioID, frameName)
@@ -250,6 +251,7 @@ void UpSpecialAttack::finish()
 // ----------------------------------------------------------------------------
 // DashAttack class methods
 // ----------------------------------------------------------------------------
+
 DashAttack::DashAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
     Attack(paramPrefix, audioID, frameName)
@@ -289,6 +291,7 @@ void DashAttack::update(float dt)
 // ----------------------------------------------------------------------------
 // MovingAttack class methods
 // ----------------------------------------------------------------------------
+
 MovingAttack::MovingAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
     Attack(paramPrefix, audioID, frameName)
