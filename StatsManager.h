@@ -14,6 +14,9 @@ public:
 
     void printStats() const;
 
+    // Removes all stats
+    void clear();
+
 private:
     StatsManager();
     StatsManager(const StatsManager &);

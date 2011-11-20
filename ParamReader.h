@@ -7,7 +7,7 @@
 class ParamReader
 {
 public:
-    static ParamReader *instance()
+    static ParamReader *get()
     {
         static ParamReader pr;
         return &pr;

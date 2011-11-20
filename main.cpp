@@ -12,6 +12,7 @@
 #include "ParamReader.h"
 #include "FrameManager.h"
 #include "StatsManager.h"
+#include "Attack.h"
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 static const float dt = 33.0f / 1000.0f;
@@ -56,7 +57,6 @@ GLuint backgroundTex = 0;
 Rectangle ground;
 const glm::vec3 groundColor(0.2f, 0.2f, 0.2f);
 mesh groundMesh;
-mesh fighterMesh;
 
 void pause(int playerID);
 void unpause(int playerID);
@@ -115,7 +115,7 @@ int main(int argc, char **argv)
     }
 
     // Init game state
-    ParamReader::instance()->loadFile("params.dat");
+    ParamReader::get()->loadFile("params.dat");
     WORLD_W = getParam("worldWidth");
     WORLD_H = getParam("worldHeight");
     for (unsigned i = 0; i < numPlayers; i++)
@@ -225,14 +225,9 @@ void update()
     if (paused)
         return;
 
-    int alivePlayers = 0;
-    int totalLives = 0;
-    AudioManager::get()->update(dt);
     for (unsigned i = 0; i < numPlayers; i++)
     {
         Fighter *fighter = fighters[i];
-        totalLives += fighters[i]->getLives();
-        if (fighter->isAlive()) alivePlayers++;
 
         // Update positions, etc
         fighter->update(controllers[i], dt);
@@ -315,9 +310,17 @@ void update()
                 fighter->getRectangle().overlaps(ground));
     }
 
+    AudioManager::get()->update(dt);
+
+    int alivePlayers = 0;
+    int totalLives = 0;
+    for (int i = 0; i < numPlayers; i++)
+    {
+        totalLives += fighters[i]->getLives();
+        if (fighters[i]->isAlive()) alivePlayers++;
+    }
+
     // Play the tense music when two players with one life each left
-    // XXX this is broken sometimes
-    std::cout << "Alive players: " << alivePlayers << " total lives: " << totalLives << '\n';
     if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
     {
         criticalMusic = true;
@@ -348,7 +351,6 @@ void render()
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.1)),
             glm::vec3(ground.w, ground.h, ground.h));
-    //renderRectangle(perspectiveTransform * transform, glm::vec4(groundColor, 0.0f));
     renderMesh(groundMesh, transform, groundColor);
 
     // Draw the fighters
@@ -358,9 +360,6 @@ void render()
             fighters[i]->render(dt);
             renderArrow(fighters[i]);
         }
-
-    // XXX remove this
-    //renderMesh(fighterMesh, glm::mat4(1.f), groundColor);
 
     // Draw any explosions
     ExplosionManager::get()->render(dt * !paused);
@@ -536,7 +535,6 @@ int initGraphics()
 
     // Load the ground mesh
     groundMesh = createMesh("ground.obj");
-    fighterMesh = createMesh("fighter.obj");
 
     return 1;
 }
@@ -742,7 +740,7 @@ int initLibs()
 // XXX this should be moved
 float getParam(const std::string &param)
 {
-    return ParamReader::instance()->get(param);
+    return ParamReader::get()->get(param);
 }
 
 void pause(int playerID)

@@ -75,7 +75,7 @@ dashAttack.hitboxw      40
 dashAttack.hitboxh      25
 dashAttack.priority     1.0
 dashAttack.initialSpeed 550.0
-dashAttack.deceleration 800.0
+dashAttack.deceleration -800.0
 
 
 neutralTiltAttack.startup      0.03

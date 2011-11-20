@@ -43,3 +43,8 @@ void StatsManager::printStats() const
         std::cout << it->first << ": " << it->second << '\n';
     }
 }
+
+void StatsManager::clear()
+{
+    stats_.clear();
+}
