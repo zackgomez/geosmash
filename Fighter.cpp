@@ -15,9 +15,6 @@ void pause(int playerID);
 Fighter *getPartner(int playerID);
 
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
-    pos_(0, 0),
-    size_(getParam("fighter.w"), getParam("fighter.h")),
-    xvel_(0), yvel_(0),
     dir_(-1),
     state_(0),
     damage_(0), lives_(getParam("fighter.lives")),
@@ -26,6 +23,10 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     attack_(NULL),
     lastHitBy_(-1)
 {
+    // Set GameEntity members
+    pos_ = vel_ = accel_ = glm::vec2(0.f, 0.f);
+    size_ = glm::vec2(getParam("fighter.w"), getParam("fighter.h"));
+
     // Load ground attacks
     std::string g = "groundhit";
     std::string a = "airhit";
@@ -90,7 +91,7 @@ int Fighter::getLastHitBy() const
     return lastHitBy_;
 }
 
-void Fighter::update(Controller &controller, float dt)
+void Fighter::processInput(Controller &controller, float dt)
 {
     // Update the attack
     if (attack_)
@@ -104,6 +105,25 @@ void Fighter::update(Controller &controller, float dt)
         }
     }
 
+    // Check for pause/life steal
+    if (controller.pressstart)
+    {
+        // Pause when character is alive
+        if (isAlive())
+            pause(id_);
+        // Otherwise check for life steal from partner
+        else
+        {
+            Fighter *partner = getPartner(id_);
+            if (partner && partner->lives_ > 1)
+            {
+                partner->lives_--;
+                lives_++;
+                respawn(false);
+            }
+        }
+    }
+
     // Check for state transition
     if (state_->hasTransition())
     {
@@ -113,11 +133,9 @@ void Fighter::update(Controller &controller, float dt)
     }
 
     // Update state
-    state_->update(controller, dt);
+    state_->processInput(controller, dt);
 
-    // Update position
-    pos_.x += xvel_ * dt;
-    pos_.y += yvel_ * dt;
+    // Integration is done in update()
 }
 
 void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
@@ -158,11 +176,6 @@ void Fighter::hitWithAttack(Fighter *victim)
     attack_->hit(victim);
 }
 
-Rectangle Fighter::getHitbox() const
-{
-    return Rectangle(pos_.x, pos_.y, size_.x, size_.y);
-}
-
 bool Fighter::hasAttack() const
 {
     return attack_ && attack_->hasHitbox();
@@ -190,7 +203,8 @@ void Fighter::respawn(bool killed)
     // Reset vars
     pos_.x = respawnx_;
     pos_.y = respawny_;
-    xvel_ = yvel_ = 0.0f;
+    vel_ = glm::vec2(0.f);
+    accel_ = glm::vec2(0.f);
     damage_ = 0;
     lastHitBy_ = -1;
     // If we died remove a life and play a sound
@@ -221,8 +235,8 @@ void Fighter::render(float dt)
 void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color,
         const glm::mat4 &postTrans)
 {
-    printf("ID: %d  Damage: %.1f  Position: [%.2f, %.2f]   Velocity: [%.2f, %.2f]  Attack: %d  Dir: %.1f  LastHitBy: %d\n",
-            id_, damage_, pos_.x, pos_.y, xvel_, yvel_, attack_ != 0, dir_, lastHitBy_);
+    printf("ID: %d  Damage: %.1f  Pos: [%.2f, %.2f]  Vel: [%.2f, %.2f]  Accel: [%.2f, %.2f]  Attack: %d  Dir: %.1f\n",
+            id_, damage_, pos_.x, pos_.y, vel_.x, vel_.y, accel_.x, accel_.y, attack_ != 0, dir_);
 
     // Draw body
     glm::mat4 transform = glm::scale(

@@ -1,4 +1,5 @@
 #include "GameEntity.h"
+#include "Fighter.h"
 
 GameEntity::GameEntity() :
     pos_(), vel_(), accel_(), size_()

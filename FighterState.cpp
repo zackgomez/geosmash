@@ -5,11 +5,6 @@
 #include "ParamReader.h"
 #include "explosion.h"
 
-// XXX REMOVE THESE
-int pause(int);
-int unpause(int);
-Fighter *getPartner(int);
-
 // ----------------------------------------------------------------------------
 // FighterState class methods
 // ----------------------------------------------------------------------------
@@ -36,8 +31,7 @@ void FighterState::calculateHitResult(const Fighter *attacker, const Attack *att
         * fighter_->damageFunc();
 
     // Get knocked back
-    fighter_->xvel_ = knockback.x;
-    fighter_->yvel_ = knockback.y;
+    fighter_->vel_ = knockback;
 
     // Generate a tiny explosion here
     glm::vec2 hitdir = glm::vec2(fighter_->pos_.x, fighter_->pos_.y)
@@ -57,7 +51,7 @@ void FighterState::collisionHelper(const Rectangle &ground)
 {
     // If the player is entirely inside of the rectangle
     // just move them on top of it, minus 1 pixel
-    if (ground.contains(fighter_->getHitbox()))
+    if (ground.contains(fighter_->getRect()))
         fighter_->pos_.y = ground.y + ground.h/2 + fighter_->size_.y/2 - 1;
     // If the character has some part above the ground wihen overlap, let
     // them 'ledge grab'
@@ -88,21 +82,17 @@ AirStunnedState::AirStunnedState(Fighter *f, float duration) :
     frameName_ = "AirStunned";
 }
 
-void AirStunnedState::update(Controller &controller, float dt)
+void AirStunnedState::processInput(Controller &controller, float dt)
 {
-    // Check for pause
-    if (controller.pressstart)
-        pause(fighter_->id_);
-
     // Gravity
-    fighter_->yvel_ += getParam("airAccel") * dt;
+    fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
 
     // Let them control the character slightly
     if (fabs(controller.joyx) > getParam("input.deadzone"))
     {
         // Don't let the player increase the velocity past a certain speed
-        if (fighter_->xvel_ * controller.joyx <= 0 || fabs(fighter_->xvel_) < getParam("jumpAirSpeed"))
-            fighter_->xvel_ += controller.joyx * getParam("airDI") * dt;
+        if (fighter_->vel_.x * controller.joyx <= 0 || fabs(fighter_->vel_.x) < getParam("jumpAirSpeed"))
+            fighter_->vel_.x += controller.joyx * getParam("airDI") * dt;
     }
 
     // Check for completetion
@@ -135,10 +125,10 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
     std::cout << "Air Stun collision\n";
     FighterState::collisionHelper(ground);
     // If we're not overlapping the ground anymore, no collision
-    if (!ground.overlaps(fighter_->getHitbox()))
+    if (!ground.overlaps(fighter_->getRect()))
         return;
-    fighter_->xvel_ = 0;
-    fighter_->yvel_ = 0;
+    fighter_->vel_ = glm::vec2(0.f);
+    fighter_->accel_ = glm::vec2(0.f);
     // Transition to the ground state
     if (next_) delete next_;
     next_ = new GroundState(fighter_);
@@ -161,12 +151,8 @@ GroundState::GroundState(Fighter *f, float delay) :
 GroundState::~GroundState()
 { /* Empty */ }
 
-void GroundState::update(Controller &controller, float dt)
+void GroundState::processInput(Controller &controller, float dt)
 {
-    // Check for pause
-    if (controller.pressstart)
-        pause(fighter_->id_);
-
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
     if (dashTime_ >= 0) dashTime_ += dt;
@@ -188,15 +174,15 @@ void GroundState::update(Controller &controller, float dt)
         // Jump; transition to Air Normal
         next_ = new AirNormalState(fighter_);
         // Set the xvelocity of the jump
-        fighter_->xvel_ = fabs(controller.joyx) > getParam("input.deadzone") ?
+        fighter_->vel_.x = fabs(controller.joyx) > getParam("input.deadzone") ?
             controller.joyx * 0.5 * getParam("dashSpeed") :
             0.0f;
         // If they are still "holding down" the jump button now, then full jump
         // otherwise short hop
         if (controller.jumpbutton || controller.joyy > getParam("input.jumpThresh"))
-            fighter_->yvel_ = getParam("jumpSpeed");
+            fighter_->vel_.y = getParam("jumpSpeed");
         else
-            fighter_->yvel_ = getParam("hopSpeed");
+            fighter_->vel_.y = getParam("hopSpeed");
         // Draw a little puff
         ExplosionManager::get()->addPuff(
                 fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
@@ -213,14 +199,14 @@ void GroundState::update(Controller &controller, float dt)
         if (dashing_)
         {
             dashing_ = false;
-            fighter_->xvel_ = fighter_->dir_ * getParam("dashSpeed");
+            fighter_->vel_.x = fighter_->dir_ * getParam("dashSpeed");
             fighter_->attack_ = fighter_->dashAttack_->clone();
         }
         // Not dashing- use a tilt
         else
         {
             // No movement during attack
-            fighter_->xvel_ = 0; fighter_->yvel_ = 0;
+            fighter_->vel_ = glm::vec2(0.f);
             // Get direction of stick
             glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
             if (fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
@@ -283,7 +269,7 @@ void GroundState::update(Controller &controller, float dt)
     {
         glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
         // No movement during smash attacks
-        fighter_->xvel_ = 0; fighter_->yvel_ = 0;
+        fighter_->vel_ = glm::vec2(0.f);
 
         if (fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
         {
@@ -310,7 +296,7 @@ void GroundState::update(Controller &controller, float dt)
         if (fighter_->dir_ != newdir && fabs(controller.joyxv) > getParam("input.velThresh") && fabs(controller.joyx) > getParam("input.dashMin"))
         {
             fighter_->dir_ = newdir;
-            fighter_->xvel_ = 0;
+            fighter_->vel_.x = 0;
             waitTime_ = getParam("dashChangeTime");
             // Draw a little puff
             ExplosionManager::get()->addPuff(
@@ -323,7 +309,7 @@ void GroundState::update(Controller &controller, float dt)
         {
             dashing_ = false;
             waitTime_ = getParam("dashChangeTime");
-            fighter_->xvel_ = 0;
+            fighter_->vel_.x = 0;
             ExplosionManager::get()->addPuff(
                     fighter_->pos_.x + fighter_->size_.x * fighter_->dir_ * 0.4f, 
                     fighter_->pos_.y - fighter_->size_.y * 0.45f,
@@ -332,7 +318,7 @@ void GroundState::update(Controller &controller, float dt)
         // Otherwise just set the velocity
         else
         {
-            fighter_->xvel_ = fighter_->dir_ * getParam("dashSpeed");
+            fighter_->vel_.x = fighter_->dir_ * getParam("dashSpeed");
             // TODO add puffs every x amount of time
         }
     }
@@ -342,24 +328,25 @@ void GroundState::update(Controller &controller, float dt)
         // Just move around a bit based on the controller
         if (fabs(controller.joyx) > getParam("input.deadzone"))
         {
-            fighter_->xvel_ = controller.joyx * getParam("walkSpeed");
-            fighter_->dir_ = fighter_->xvel_ < 0 ? -1 : 1;
+            fighter_->vel_.x = controller.joyx * getParam("walkSpeed");
+            fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
         }
         // Only move when controller is held
         else
-            fighter_->xvel_ = 0;
+            fighter_->vel_ = glm::vec2(0.f);
 
-        // --- Check for dashing ---
+        // --- Check for dashing startup complete ---
         if (dashTime_ > getParam("dashStartupTime"))
         {
             dashing_ = true;
             dashTime_ = -1;
         }
+        // --- Check for dashing transition start
         else if (fabs(controller.joyx) > getParam("input.dashThresh")
                 && fabs(controller.joyxv) > getParam("input.velThresh"))
         {
             dashTime_ = 0;
-            fighter_->xvel_ = 0;
+            fighter_->vel_.x = 0;
             fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
             // Draw a little puff
             ExplosionManager::get()->addPuff(
@@ -382,7 +369,7 @@ void GroundState::update(Controller &controller, float dt)
 
 void GroundState::render(float dt)
 {
-    printf("GROUND | JumpTime: %.3f  DashTime: %.3f  WaitTime: %.3f || ",
+    printf("GROUND | JumpT: %.3f  DashT: %.3f  WaitT: %.3f || ",
             jumpTime_, dashTime_, waitTime_);
 
     std::string fname = frameName_;
@@ -434,14 +421,10 @@ AirNormalState::AirNormalState(Fighter *f) :
 AirNormalState::~AirNormalState()
 { /* Empty */ }
 
-void AirNormalState::update(Controller &controller, float dt)
+void AirNormalState::processInput(Controller &controller, float dt)
 {
     // Gravity
-    fighter_->yvel_ += getParam("airAccel") * dt;
-
-    // Check for pause
-    if (controller.pressstart)
-        pause(fighter_->id_);
+    fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
 
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
@@ -452,16 +435,16 @@ void AirNormalState::update(Controller &controller, float dt)
     if (fabs(controller.joyx) > getParam("input.deadzone"))
     {
         // Don't let the player increase the velocity past a certain speed
-        if (fighter_->xvel_ * controller.joyx <= 0 || fabs(fighter_->xvel_) < getParam("jumpAirSpeed"))
-            fighter_->xvel_ += controller.joyx * getParam("airForce") * dt;
+        if (fighter_->vel_.x * controller.joyx <= 0 || fabs(fighter_->vel_.x) < getParam("jumpAirSpeed"))
+            fighter_->vel_.x += controller.joyx * getParam("airForce") * dt;
     }
     // Fast falling
-    if (fighter_->yvel_ < 0 && fighter_->yvel_ > getParam("fastFallMaxSpeed") && controller.joyy < -getParam("input.fallThresh"))
+    if (fighter_->vel_.y < 0 && fighter_->vel_.y > getParam("fastFallMaxSpeed") && controller.joyy < -getParam("input.fallThresh"))
     {
-        if (!fastFalling_ && fighter_->yvel_ > getParam("fastFallMaxInitialSpeed"))
-            fighter_->yvel_ += getParam("fastFallInitialSpeed");
+        if (!fastFalling_ && fighter_->vel_.y > getParam("fastFallMaxInitialSpeed"))
+            fighter_->vel_.y += getParam("fastFallInitialSpeed");
         else
-            fighter_->yvel_ += getParam("fastFallAccel") * dt;
+            fighter_->accel_ += glm::vec2(0.f, getParam("fastFallAccel"));
         fastFalling_ = true;
     }
 
@@ -524,10 +507,10 @@ void AirNormalState::update(Controller &controller, float dt)
     // 
     if (jumpTime_ > getParam("jumpStartupTime"))
     {
-        fighter_->yvel_ = getParam("secondJumpSpeed");
-        fighter_->xvel_ = fabs(controller.joyx) > getParam("input.deadzone") ?
+        fighter_->vel_.x = fabs(controller.joyx) > getParam("input.deadzone") ?
             0.8f * getParam("dashSpeed") * std::max(-1.0f, std::min(1.0f, (controller.joyx - 0.2f) / 0.6f)) :
             0.0f;
+        fighter_->vel_.y = getParam("secondJumpSpeed");
         jumpTime_ = -1;
         canSecondJump_ = false;
         // Draw a puff
@@ -540,7 +523,7 @@ void AirNormalState::update(Controller &controller, float dt)
 
 void AirNormalState::render(float dt)
 {
-    printf("AIR NORMAL | JumpTime: %.3f  Can2ndJump: %d || ",
+    printf("AIR NORMAL | JumpT: %.3f  Can2ndJump: %d || ",
             jumpTime_, canSecondJump_);
     std::string fname = frameName_;
     if (fighter_->attack_)
@@ -555,10 +538,11 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
         return;
     FighterState::collisionHelper(ground);
     // If we're not overlapping the ground anymore, no collision
-    if (!ground.overlaps(fighter_->getHitbox()))
+    if (!ground.overlaps(fighter_->getRect()))
         return;
-    fighter_->xvel_ = 0;
-    fighter_->yvel_ = 0;
+    // Reset vel/accel
+    fighter_->vel_ = glm::vec2(0.f, 0.f);
+    fighter_->accel_ = glm::vec2(0.f);
 
     // Cancel any attack if it exists
     if (fighter_->attack_)
@@ -592,17 +576,13 @@ DodgeState::DodgeState(Fighter *f) :
     frameName_ = "GroundRoll";
 }
 
-void DodgeState::update(Controller &controller, float dt)
+void DodgeState::processInput(Controller &controller, float dt)
 {
-    // Check for pause
-    if (controller.pressstart)
-        pause(fighter_->id_);
-
     t_ += dt;
-    fighter_->xvel_ = fighter_->dir_ * getParam("dodge.speed");
+    fighter_->vel_.x = fighter_->dir_ * getParam("dodge.speed");
     
     if (t_ > dodgeTime_)
-        fighter_->xvel_ = 0;
+        fighter_->vel_.x = 0;
 
     if (t_ > dodgeTime_ && t_ - dt < dodgeTime_)
         fighter_->dir_ = -fighter_->dir_;
@@ -624,7 +604,7 @@ void DodgeState::render(float dt)
     if (t_ > invincTime_)
         color = fighter_->color_;
 
-    printf("DODGE | t: %.3f  invincTime: %.3f  dodgeTime: %.3f || ",
+    printf("DODGE | t: %.3f  invincT: %.3f  dodgeT: %.3f || ",
             t_, invincTime_, dodgeTime_);
     // Just render the fighter, but flashing
     fighter_->renderHelper(dt, frameName_, color,
@@ -645,7 +625,7 @@ void DodgeState::collisionWithGround(const Rectangle &ground, bool collision)
     {
         float dir = (ground.x - fighter_->pos_.x) > 0 ? 1 : -1;
         fighter_->pos_.x += dir * (fabs(ground.x - fighter_->pos_.x) - ground.w/2 - fighter_->size_.x/2 + 2);
-        fighter_->xvel_ = 0.0f;
+        fighter_->vel_.x = 0.0f;
         t_ = std::max(t_, invincTime_);
     }
 }
@@ -661,12 +641,8 @@ RespawnState::RespawnState(Fighter *f) :
 {
 }
 
-void RespawnState::update(Controller &controller, float dt)
+void RespawnState::processInput(Controller &controller, float dt)
 {
-    // Check for pause
-    if (controller.pressstart)
-        pause(fighter_->id_);
-
     t_ += dt;
     if (t_ > getParam("fighter.respawnTime"))
         next_ = new AirNormalState(fighter_);
@@ -674,6 +650,7 @@ void RespawnState::update(Controller &controller, float dt)
 
 void RespawnState::render(float dt)
 {
+    printf("RESPAWN | t: %d || ", t_);
     // Just render the fighter, but slightly lighter
     fighter_->renderHelper(dt, frameName_, 1.6f * fighter_->color_);
 }
@@ -716,18 +693,7 @@ bool DeadState::canBeHit() const
     return false;
 }
 
-void DeadState::update(Controller &controller, float dt)
+void DeadState::processInput(Controller &controller, float dt)
 {
-    if (controller.pressstart)
-    {
-        Fighter *partner = getPartner(fighter_->id_);
-        if (partner && partner->lives_ > 1)
-        {
-            partner->lives_--;
-            fighter_->lives_++;
-            fighter_->respawn(false);
-        }
-        // Consume press
-        controller.pressstart = false;
-    }
+    // NOTHING
 }

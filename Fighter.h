@@ -3,6 +3,7 @@
 #include <string>
 #include <map>
 #include "FighterState.h"
+#include "GameEntity.h"
 
 class Attack;
 
@@ -38,13 +39,14 @@ public:
 };
 
 
-class Fighter
+class Fighter : public GameEntity
 {
 public:
     Fighter(float respawnx, float respawny, const glm::vec3 &color, int id);
     ~Fighter();
 
-    void update(Controller&, float dt);
+    // dt is time from last call to processInput
+    void processInput(Controller &, float dt);
     void render(float dt);
 
     int getID() const { return id_; }
@@ -63,8 +65,6 @@ public:
     void attackCollision(const Attack *attack); // Called when two attacks collide, with other attack
     void hitByAttack(const Fighter *fighter, const Attack* attack);  // Called when hit by an attack
     void hitWithAttack(Fighter *victim); // Called when you hit with an attack
-    // Gets the fighter's hitbox
-    Rectangle getHitbox() const;
 
     // Returns true if this Fighter is currently attacking and has an attack hitbox
     bool hasAttack() const;
@@ -79,15 +79,10 @@ public:
     void respawn(bool killed);
 
 private:
-    // Game state members
-    glm::vec2 pos_;
-    glm::vec2 size_;
-    float xvel_, yvel_;
     float dir_; // 1 or -1 look in xdir
     FighterState *state_;
     float damage_;
     int lives_;
-    // the lastHitBy_ variable should be reset
 
     // Fighter ID members
     float respawnx_, respawny_;
@@ -124,8 +119,8 @@ private:
 
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage
-    // Loads an attack from the params using the attackName.param syntax
     void renderHelper(float dt, const std::string &frameName, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
+    // Loads an attack from the params using the attackName.param syntax
     template<class AttackClass>
     AttackClass* loadAttack(std::string attackName, const std::string &audioID,
             const std::string &frameName);

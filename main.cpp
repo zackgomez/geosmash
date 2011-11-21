@@ -219,6 +219,12 @@ void processInput()
             break;
         }
     }
+
+    // Now have the fighters process their input
+    if (paused)
+        return;
+    for (unsigned i = 0; i < numPlayers; i++)
+        fighters[i]->processInput(controllers[i], dt);
 }
 
 void update()
@@ -226,12 +232,13 @@ void update()
     if (paused)
         return;
 
+
     for (unsigned i = 0; i < numPlayers; i++)
     {
         Fighter *fighter = fighters[i];
 
         // Update positions, etc
-        fighter->update(controllers[i], dt);
+        fighter->update(dt);
 
         // dont do other updates when player is dead
         if (!fighter->isAlive()) continue;
@@ -263,7 +270,7 @@ void update()
                 attacki = fighter->getAttack();
                 continue;
             }
-            if (fighter->hasAttack() && fighters[j]->getHitbox().overlaps(attacki->getHitbox())
+            if (fighter->hasAttack() && fighters[j]->getRect().overlaps(attacki->getHitbox())
                     && attacki->canHit(fighters[j]) && fighters[j]->canBeHit())
             {
                 // fighter has hit fighters[j]
@@ -273,7 +280,7 @@ void update()
                 // Cache values
                 attacki = fighter->getAttack();
             }
-            if (fighters[j]->hasAttack() && fighter->getHitbox().overlaps(attackj->getHitbox())
+            if (fighters[j]->hasAttack() && fighter->getRect().overlaps(attackj->getHitbox())
                     && attackj->canHit(fighter) && fighter->canBeHit())
             {
                 // fighter[j] has hit fighter
@@ -286,8 +293,8 @@ void update()
         }
 
         // Respawn condition
-        if (fighter->getHitbox().y < getParam("killbox.bottom") || fighter->getHitbox().y > getParam("killbox.top")
-                || fighter->getHitbox().x < getParam("killbox.left") || fighter->getHitbox().x > getParam("killbox.right"))
+        if (fighter->getRect().y < getParam("killbox.bottom") || fighter->getRect().y > getParam("killbox.top")
+                || fighter->getRect().x < getParam("killbox.left") || fighter->getRect().x > getParam("killbox.right"))
         {
             std::stringstream ss;
             ss << "Player" << fighter->getID();
@@ -308,7 +315,7 @@ void update()
         }
         // Ground check
         fighter->collisionWithGround(ground,
-                fighter->getHitbox().overlaps(ground));
+                fighter->getRect().overlaps(ground));
     }
 
     AudioManager::get()->update(dt);
@@ -351,10 +358,8 @@ void render()
     // Draw the land
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.1)),
-            glm::vec3(ground.w/2, ground.h/2, ground.h/2));
+            glm::vec3(ground.w/2, ground.h/2, getParam("level.d")/2));
     renderMesh(levelMesh, transform, groundColor);
-
-    //renderMesh(levelMesh, glm::scale(glm::mat4(1.f), glm::vec3(ground.w/10, ground.h/10, 10)), groundColor);
 
     // Draw the fighters
     for (unsigned i = 0; i < numPlayers; i++)
@@ -446,7 +451,7 @@ void render()
 
 void renderArrow(const Fighter *f)
 {
-    glm::vec4 fpos = glm::vec4(f->getHitbox().x, f->getHitbox().y, 0.f, 1.f);
+    glm::vec4 fpos = glm::vec4(f->getRect().x, f->getRect().y, 0.f, 1.f);
     glm::vec4 fndc = getProjectionMatrix() * getViewMatrix() * fpos;
     fndc /= fndc.w;
     if (fabs(fndc.x) > 1 || fabs(fndc.y) > 1)
@@ -563,6 +568,9 @@ void updateController(Controller &controller)
     controller.pressb = false;
     controller.pressc = false;
     controller.pressjump = false;
+    controller.pressstart = false;
+    controller.pressrb = false;
+    controller.presslb = false;
     controller.joyxv = 0;
     controller.joyyv = 0;
 }

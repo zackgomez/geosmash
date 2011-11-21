@@ -21,8 +21,8 @@ public:
     FighterState* nextState() const { return next_; }
 
     // State behavior functions
-    // This function is called once every call to Fighter::update
-    virtual void update(Controller&, float dt) = 0;
+    // This function is called once every call to Fighter::processInput
+    virtual void processInput(Controller&, float dt) = 0;
     // TODO description
     virtual void render(float dt) = 0;
     // This function is called once every call to Fighter::collisionWithGround
@@ -53,7 +53,7 @@ public:
     GroundState(Fighter *f, float delay = -1.0f);
     virtual ~GroundState();
 
-    virtual void update(Controller&, float dt);
+    virtual void processInput(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
@@ -74,7 +74,7 @@ public:
     AirNormalState(Fighter *f);
     virtual ~AirNormalState();
 
-    virtual void update(Controller&, float dt);
+    virtual void processInput(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
@@ -94,7 +94,7 @@ public:
     AirStunnedState(Fighter *f, float duration);
     virtual ~AirStunnedState() { }
 
-    virtual void update(Controller&, float dt);
+    virtual void processInput(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
@@ -110,7 +110,7 @@ public:
     DodgeState(Fighter *f);
     virtual ~DodgeState() {}
 
-    virtual void update(Controller&, float dt);
+    virtual void processInput(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
@@ -129,7 +129,7 @@ public:
     RespawnState(Fighter *f);
     virtual ~RespawnState() {}
 
-    virtual void update(Controller&, float dt);
+    virtual void processInput(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
@@ -145,7 +145,7 @@ public:
     DeadState(Fighter *f);
     virtual ~DeadState() {};
 
-    virtual void update(Controller&, float dt);
+    virtual void processInput(Controller&, float dt);
     virtual void render(float dt) { };
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Fighter *attacker, const Attack *attack);

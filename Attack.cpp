@@ -63,7 +63,7 @@ glm::vec2 Attack::getKnockback(const Fighter *fighter) const
     if (knockbackdir_ == glm::vec2(0,0))
     {
         glm::vec2 apos = glm::vec2(getHitbox().x, getHitbox().y);
-        glm::vec2 fpos = glm::vec2(fighter->getHitbox().x, fighter->getHitbox().y);
+        glm::vec2 fpos = glm::vec2(fighter->getPosition().x, fighter->getPosition().y);
         glm::vec2 dir = glm::normalize(fpos - apos);
         std::cout << "fpos: " << fpos.x << ' ' << fpos.y << "   apos: " << apos.x << ' ' << apos.y << '\n';
         return glm::vec2(owner_->getDirection(), 1.f) * knockbackpow_ * dir;
@@ -76,8 +76,8 @@ glm::vec2 Attack::getKnockback(const Fighter *fighter) const
 Rectangle Attack::getHitbox() const
 {
     Rectangle ret;
-    ret.x = hboffset_.x * owner_->getDirection() + owner_->getHitbox().x;
-    ret.y = hboffset_.y + owner_->getHitbox().y;
+    ret.x = hboffset_.x * owner_->getDirection() + owner_->getPosition().x;
+    ret.y = hboffset_.y + owner_->getPosition().y;
     ret.w = hbsize_.x;
     ret.h = hbsize_.y;
 
@@ -137,7 +137,7 @@ void Attack::render(float dt)
     // Draw twinkle if applicable
     if (twinkle_ && t_ < startup_)
     {
-        Rectangle rect = owner_->getHitbox();
+        Rectangle rect = owner_->getRect();
         float fact = 0.5 + (t_ / startup_) * 1.5;
         glm::mat4 transform =
             glm::scale(
@@ -197,8 +197,8 @@ void UpSpecialAttack::update(float dt)
         {
             // Move slightly up to avoid the ground, if applicable
             owner_->pos_.y += 2;
-            owner_->xvel_ = owner_->dir_ * getParam("upSpecialAttack.xvel");
-            owner_->yvel_ = getParam("upSpecialAttack.yvel");
+            owner_->vel_.x = owner_->dir_ * getParam("upSpecialAttack.xvel");
+            owner_->vel_.y = getParam("upSpecialAttack.yvel");
             // Draw a little puff
             ExplosionManager::get()->addPuff(
                     owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.1f, 
@@ -270,13 +270,14 @@ void DashAttack::start()
 {
     Attack::start();
 
-    owner_->xvel_ = initialSpeed_ * owner_->dir_;
+    owner_->vel_.x = initialSpeed_ * owner_->dir_;
 }
 
 void DashAttack::finish()
 {
     Attack::finish();
-    owner_->xvel_ = 0.f;
+    owner_->vel_.x = 0.f;
+    owner_->accel_ = glm::vec2(0.f);
 }
 
 void DashAttack::update(float dt)
@@ -285,7 +286,7 @@ void DashAttack::update(float dt)
 
     // Deccelerate during duration
     if (t_ > startup_ && t_ < startup_ + duration_)
-        owner_->xvel_ += deceleration_ * owner_->dir_ * dt;
+        owner_->accel_ = glm::vec2(deceleration_, 0.f) * owner_->dir_;
 }
 
 // ----------------------------------------------------------------------------
@@ -314,8 +315,8 @@ Rectangle MovingAttack::getHitbox() const
     glm::vec2 pos = (1 - u) * hb0 + u * hb1;
 
     Rectangle ret;
-    ret.x = pos.x * owner_->getDirection() + owner_->getHitbox().x;
-    ret.y = pos.y + owner_->getHitbox().y;
+    ret.x = pos.x * owner_->getDirection() + owner_->getRect().x;
+    ret.y = pos.y + owner_->getRect().y;
     ret.w = hbsize_.x; ret.h = hbsize_.y;
 
     return ret;
