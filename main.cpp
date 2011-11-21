@@ -15,7 +15,7 @@
 #include "Attack.h"
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
-static const float dt = 33.0f / 1000.0f;
+static const float dt = 1.f / 60.f;
 
 static float WORLD_W = 1500.0f;
 static float WORLD_H = 750.0f;
@@ -175,9 +175,10 @@ void mainloop()
 
         // XXX fix this
         int endms = SDL_GetTicks();
-        int delay = std::max(1, endms - startms);
-        //std::cout << "Frame time (ms): " << endms - startms << '\n';
-        SDL_Delay(static_cast<int>(dt * 1000.0));
+        int delay = std::min(16, std::max(1, endms - startms));
+        std::cout << "Frame time (ms): " << endms - startms << 
+            "Delay time (ms): " << delay << '\n';
+        SDL_Delay(16 - delay);
     }
 }
 
@@ -236,6 +237,8 @@ void update()
     if (paused)
         return;
 
+    // TODO: something fancy (or not so fancy) to make this dt smaller,
+    // if necessary (if a velocity is over some threshold)
     integrate(dt);
     collisionDetection();
 
