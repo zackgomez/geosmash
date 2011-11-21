@@ -374,6 +374,8 @@ void GroundState::render(float dt)
     std::string fname = frameName_;
     if (dashing_)
         fname = "GroundRunning";
+    if (waitTime_ > 0)
+        fname = "Ducking";
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
     fighter_->renderHelper(dt, fname, fighter_->color_);

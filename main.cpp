@@ -173,12 +173,11 @@ void mainloop()
         update();
         render();
 
-        // XXX fix this
         int endms = SDL_GetTicks();
-        int delay = std::min(16, std::max(1, endms - startms));
+        int delay = 16 - std::min(16, std::max(1, endms - startms));
         std::cout << "Frame time (ms): " << endms - startms << 
-            "Delay time (ms): " << delay << '\n';
-        SDL_Delay(16 - delay);
+            "   Delay time (ms): " << delay << '\n';
+        SDL_Delay(delay);
     }
 }
 
