@@ -27,7 +27,7 @@ public:
 
     void setFighter(Fighter *fighter);
     void setFrameName(const std::string &fname);
-    const Fighter *getOwner() const;
+    const GameEntity *getOwner() const;
 
     // Called when the move is started
     virtual void start();

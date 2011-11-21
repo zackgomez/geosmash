@@ -50,7 +50,6 @@ public:
     void update(float dt);
     void render(float dt);
 
-    int getID() const { return id_; }
     int getLives() const;
     float getDamage() const;
     float getDirection() const; // returns -1 or 1
@@ -68,12 +67,12 @@ public:
     virtual void attackConnected(GameEntity *victim);
 
     // Returns true if this Fighter is currently attacking and has an attack hitbox
-    bool hasAttack() const;
-    const Attack * getAttack() const;
+    virtual bool hasAttack() const;
+    virtual const Attack * getAttack() const;
 
     // Returns true if this fighter is not invincible and can be hit by the
     // passed in attack
-    bool canBeHit() const;
+    virtual bool canBeHit() const;
 
     // Respawns the fighter at its respawn location.  If killed is true, a
     // life be removed
@@ -88,7 +87,6 @@ private:
     // Fighter ID members
     float respawnx_, respawny_;
     glm::vec3 color_;
-    int id_;
 
     // Current attack members
     Attack* attack_;

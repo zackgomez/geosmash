@@ -30,6 +30,9 @@ public:
     // Returns the Attack
     virtual const Attack * getAttack() const = 0;
 
+    // When false attacks will not ever connect, or even have their hit
+    // methods called on this object
+    virtual bool canBeHit() const = 0;
     // When two attacks hit each other- called on both GameEntities
     virtual void attackCollision(const Attack *other) = 0;
     // When this game entity is hit by an attack

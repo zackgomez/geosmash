@@ -547,7 +547,6 @@ mesh createMesh(std::string objfile)
                     break;
 
                 facevert f;
-                if (sscanf(facestr.c_str(), "%d//%d", &f.v, &f.t, &f.n) != 3)
                 if (sscanf(facestr.c_str(), "%d/%d/%d", &f.v, &f.t, &f.n) != 3)
                 {
                     std::cerr << "Error reading " << objfile << '\n';

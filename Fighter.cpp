@@ -163,7 +163,7 @@ void Fighter::hitByAttack(const Attack *attack)
 
     state_->hitByAttack(attack);
 
-    lastHitBy_ = attack->getOwner()->getID();
+    lastHitBy_ = attack->getOwner()->getPlayerID();
 
     // Play a sound
     std::string fname = "lvl";

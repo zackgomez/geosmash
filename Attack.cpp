@@ -46,7 +46,7 @@ void Attack::setFighter(Fighter *fighter)
     owner_ = fighter;
 }
 
-const Fighter* Attack::getOwner() const
+const GameEntity* Attack::getOwner() const
 {
     return owner_;
 }
@@ -113,7 +113,6 @@ bool Attack::isDone() const
 
 bool Attack::canHit(const GameEntity *f) const
 {
-    std::set<int>::const_iterator it = hasHit_.begin();
     return hasHit_.find(f->getID()) == hasHit_.end();
 }
 

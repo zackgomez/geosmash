@@ -37,6 +37,7 @@ size_t startTime;
 
 Controller controllers[4];
 std::vector<Fighter*> fighters;
+std::vector<GameEntity *> entities;
 const glm::vec3 playerColors[] =
 {
     glm::vec3(0.0, 0.2, 1.0),
@@ -127,6 +128,7 @@ int main(int argc, char **argv)
         Fighter *fighter = new Fighter(-225.0f+i*150, -50.f, colors[i], i);
         fighter->respawn(false);
         fighters.push_back(fighter);
+        entities.push_back(fighter);
     }
     ground = Rectangle(
             getParam("level.x"),
@@ -270,59 +272,68 @@ void integrate(float dt)
 
 void collisionDetection()
 {
-    for (unsigned i = 0; i < numPlayers; i++)
+    // First check for hitbox collisions
+    for (unsigned i = 0; i < entities.size(); i++)
     {
-        Fighter *fighter = fighters[i];
-        // dont do collision detection when the fighter is dead
-        if (!fighter->isAlive()) continue;
+        GameEntity *entityi = entities[i];
+        if (!entityi->hasAttack()) continue;
 
-        // Cache some vals
-        // Check for hitbox collisions
-        for (unsigned j = i+1; j < numPlayers; j++)
+        const Attack *attacki = entityi->getAttack();
+
+        for (unsigned j = i + 1; j < entities.size(); j++)
         {
-            const Attack *attacki = fighter->getAttack();
-            const Attack *attackj = fighters[j]->getAttack();
+            GameEntity *entityj = entities[j];
+            if (!entityj->hasAttack()) continue;
 
-            // Hitboxes hit each other?
-            if (fighter->hasAttack() && fighters[j]->hasAttack()
-                    && attacki->getHitbox().overlaps(attackj->getHitbox()))
+            const Attack *attackj = entityj->getAttack();
+
+            if (attacki->getHitbox().overlaps(attackj->getHitbox()))
             {
-                // Then resolve collision
-                fighter->attackCollision(fighters[j]->getAttack());
-                fighters[j]->attackCollision(fighter->getAttack());
-
-                // Generate small explosion
+                entityi->attackCollision(attackj);
+                entityj->attackCollision(attacki);
+                // Generate a small explosion to show cancelling
                 Rectangle hitboxi = attacki->getHitbox();
                 Rectangle hitboxj = attackj->getHitbox();
                 float x = (hitboxi.x + hitboxj.x) / 2;
                 float y = (hitboxi.y + hitboxj.y) / 2;
                 ExplosionManager::get()->addExplosion(x, y, 0.1f);
-
-                // Cache values
-                attacki = fighter->getAttack();
-                continue;
-            }
-            if (fighter->hasAttack() && fighters[j]->getRect().overlaps(attacki->getHitbox())
-                    && attacki->canHit(fighters[j]) && fighters[j]->canBeHit())
-            {
-                // fighter has hit fighters[j]
-                fighters[j]->hitByAttack(attacki);
-                fighter->attackConnected(fighters[j]);
-
-                // Cache values
-                attacki = fighter->getAttack();
-            }
-            if (fighters[j]->hasAttack() && fighter->getRect().overlaps(attackj->getHitbox())
-                    && attackj->canHit(fighter) && fighter->canBeHit())
-            {
-                // fighter[j] has hit fighter
-                fighter->hitByAttack(attackj);
-                fighters[j]->attackConnected(fighter);
-
-                // Cache values
-                attacki = fighter->getAttack();
             }
         }
+    }
+
+    // Now go through and check for hitboxes hitting game entities
+    for (unsigned i = 0; i < entities.size(); i++)
+    {
+        GameEntity *attacker = entities[i];
+        if (!attacker->hasAttack()) continue;
+
+        const Attack *attack = attacker->getAttack();
+
+        for (unsigned j = 0; j < entities.size(); j++)
+        {
+            // Don't check for hitting themself
+            if (i == j) continue;
+
+            GameEntity *victim = entities[j];
+            // If the victim cannot be hit, just quit now
+            if (!victim->canBeHit()) continue;
+
+            // Hit occurs when there is overlap and attack can hit
+            if (attack->getHitbox().overlaps(victim->getRect()) &&
+                attack->canHit(victim))
+            {
+                victim->hitByAttack(attack);
+                attacker->attackConnected(victim);
+            }
+        }
+    }
+
+    // Figher specific checks here
+    // Check for fighter death and ground hit
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        Fighter *fighter = fighters[i];
+        if (!fighter->isAlive()) continue;
 
         // Respawn condition
         if (fighter->getRect().y < getParam("killbox.bottom") || fighter->getRect().y > getParam("killbox.top")
@@ -345,6 +356,7 @@ void collisionDetection()
             fighter->respawn(true);
             break;
         }
+
         // Ground check
         fighter->collisionWithGround(ground,
                 fighter->getRect().overlaps(ground));
@@ -552,8 +564,8 @@ int initGraphics()
     FrameManager::get()->loadFile("frames/charlie.frames");
 
     // Load the ground mesh
-    cubeMesh = createMesh("cube.obj");
-    levelMesh = createMesh("level.obj");
+    cubeMesh = createMesh("models/cube.obj");
+    levelMesh = createMesh("models/level.obj");
 
     return 1;
 }
