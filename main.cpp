@@ -56,7 +56,8 @@ GLuint backgroundTex = 0;
 
 Rectangle ground;
 const glm::vec3 groundColor(0.2f, 0.2f, 0.2f);
-mesh groundMesh;
+mesh cubeMesh;
+mesh levelMesh;
 
 void pause(int playerID);
 void unpause(int playerID);
@@ -350,8 +351,10 @@ void render()
     // Draw the land
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.1)),
-            glm::vec3(ground.w, ground.h, ground.h));
-    renderMesh(groundMesh, transform, groundColor);
+            glm::vec3(ground.w/2, ground.h/2, ground.h/2));
+    renderMesh(levelMesh, transform, groundColor);
+
+    //renderMesh(levelMesh, glm::scale(glm::mat4(1.f), glm::vec3(ground.w/10, ground.h/10, 10)), groundColor);
 
     // Draw the fighters
     for (unsigned i = 0; i < numPlayers; i++)
@@ -534,7 +537,8 @@ int initGraphics()
     FrameManager::get()->loadFile("frames/charlie.frames");
 
     // Load the ground mesh
-    groundMesh = createMesh("ground.obj");
+    cubeMesh = createMesh("cube.obj");
+    levelMesh = createMesh("level.obj");
 
     return 1;
 }

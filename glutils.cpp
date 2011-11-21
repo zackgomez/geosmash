@@ -512,6 +512,10 @@ mesh createMesh(std::string objfile)
             std::cout << "Ignoring 'g' command: " << buf << '\n';
         else if (cmd == "s")
             std::cout << "Ignoring 's' command: " << buf << '\n';
+        else if (cmd == "o")
+            std::cout << "Ignoring 'o' command: " << buf << '\n';
+        else if (cmd == "usemtl")
+            std::cout << "Ignoring 'usemtl' command: " << buf << '\n';
         else if (cmd == "v")
         {
             ss >> a >> b >> c;
@@ -543,6 +547,7 @@ mesh createMesh(std::string objfile)
                     break;
 
                 facevert f;
+                if (sscanf(facestr.c_str(), "%d//%d", &f.v, &f.t, &f.n) != 3)
                 if (sscanf(facestr.c_str(), "%d/%d/%d", &f.v, &f.t, &f.n) != 3)
                 {
                     std::cerr << "Error reading " << objfile << '\n';
