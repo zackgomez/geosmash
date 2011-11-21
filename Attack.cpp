@@ -46,11 +46,16 @@ void Attack::setFighter(Fighter *fighter)
     owner_ = fighter;
 }
 
+const Fighter* Attack::getOwner() const
+{
+    return owner_;
+}
+
 void Attack::start()
 {
     assert(owner_);
     t_ = 0.0f;
-    hasHit_[0] = hasHit_[1] = hasHit_[2] = hasHit_[3] = false;
+    hasHit_.clear();
 }
 
 void Attack::finish()
@@ -65,11 +70,10 @@ glm::vec2 Attack::getKnockback(const Fighter *fighter) const
         glm::vec2 apos = glm::vec2(getHitbox().x, getHitbox().y);
         glm::vec2 fpos = glm::vec2(fighter->getPosition().x, fighter->getPosition().y);
         glm::vec2 dir = glm::normalize(fpos - apos);
-        std::cout << "fpos: " << fpos.x << ' ' << fpos.y << "   apos: " << apos.x << ' ' << apos.y << '\n';
-        return glm::vec2(owner_->getDirection(), 1.f) * knockbackpow_ * dir;
+        return knockbackpow_ * dir;
     }
     else
-        return knockbackdir_ * knockbackpow_;
+        return knockbackdir_ * knockbackpow_ * glm::vec2(owner_->getDirection(), 1.f);
 
 }
 
@@ -107,9 +111,10 @@ bool Attack::isDone() const
     return (t_ > startup_ + duration_ + cooldown_);
 }
 
-bool Attack::canHit(const Fighter *f) const
+bool Attack::canHit(const GameEntity *f) const
 {
-    return !hasHit_[f->getID()];
+    std::set<int>::const_iterator it = hasHit_.begin();
+    return hasHit_.find(f->getID()) == hasHit_.end();
 }
 
 void Attack::update(float dt)
@@ -158,10 +163,10 @@ void Attack::cancel()
     t_ = std::max(t_, startup_ + duration_);
 }
 
-void Attack::hit(Fighter *other)
+void Attack::hit(GameEntity *other)
 {
-    assert(!hasHit_[other->getID()]);
-    hasHit_[other->getID()] = true;
+    assert(hasHit_.find(other->getID()) == hasHit_.end());
+    hasHit_.insert(other->getID());
 }
 
 void Attack::attackCollision(const Attack *other)
@@ -221,7 +226,7 @@ void UpSpecialAttack::update(float dt)
     }
     if (repeatTime_ > getParam("upSpecialAttack.repeatInterval"))
     {
-        hasHit_[0] = hasHit_[1] = hasHit_[2] = hasHit_[3] = false;
+        hasHit_.clear();
         repeatTime_ -= getParam("upSpecialAttack.repeatInterval");
     }
 }
@@ -241,11 +246,13 @@ void UpSpecialAttack::finish()
     delete owner_->state_;
     owner_->state_ = new AirStunnedState(owner_, HUGE_VAL);
 }
- void UpSpecialAttack::hit(Fighter *victim)
+
+
+void UpSpecialAttack::hit(GameEntity *victim)
 {
     Attack::hit(victim);
 
-    victim->pos_.y += 20;
+    victim->push(glm::vec2(0, 20));
 }
 
 // ----------------------------------------------------------------------------
@@ -310,7 +317,6 @@ Attack *MovingAttack::clone() const
 Rectangle MovingAttack::getHitbox() const
 {
     float u = std::min(duration_, std::max(t_ - startup_, 0.f)) / duration_;
-    std::cout << "yay: " << u << '\n';
 
     glm::vec2 pos = (1 - u) * hb0 + u * hb1;
 

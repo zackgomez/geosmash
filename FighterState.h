@@ -29,7 +29,7 @@ public:
     virtual void collisionWithGround(const Rectangle &ground, bool collision) = 0;
     // This function is called when Fighter::hitByAttack is called, before any
     // other work is done
-    virtual void hitByAttack(const Fighter *attacker, const Attack *attack) = 0;
+    virtual void hitByAttack(const Attack *attack) = 0;
 
     // This function is the value returned from fighter::canBeHit
     virtual bool canBeHit() const;
@@ -39,7 +39,7 @@ protected:
     FighterState *next_;
     std::string frameName_;
 
-    void calculateHitResult(const Fighter *fighter, const Attack *attack);
+    void calculateHitResult(const Attack *attack);
     void collisionHelper(const Rectangle &ground);
 };
 
@@ -56,7 +56,7 @@ public:
     virtual void processInput(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
-    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+    virtual void hitByAttack(const Attack *attack);
 
 private:
     // Jump startup timer.  Value >= 0 implies that the fighter is starting a jump
@@ -77,7 +77,7 @@ public:
     virtual void processInput(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
-    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+    virtual void hitByAttack(const Attack *attack);
 
 private:
     // True if the player has a second jump available
@@ -97,7 +97,7 @@ public:
     virtual void processInput(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
-    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+    virtual void hitByAttack(const Attack *attack);
 
 private:
     float stunDuration_;
@@ -113,7 +113,7 @@ public:
     virtual void processInput(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
-    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+    virtual void hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
 
 private:
@@ -132,7 +132,7 @@ public:
     virtual void processInput(Controller&, float dt);
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
-    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+    virtual void hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
 
 private:
@@ -148,6 +148,6 @@ public:
     virtual void processInput(Controller&, float dt);
     virtual void render(float dt) { };
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
-    virtual void hitByAttack(const Fighter *attacker, const Attack *attack);
+    virtual void hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
 };

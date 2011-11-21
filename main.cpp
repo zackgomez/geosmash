@@ -19,8 +19,8 @@ static const float dt = 33.0f / 1000.0f;
 
 static float WORLD_W = 1500.0f;
 static float WORLD_H = 750.0f;
-static int SCREEN_W = 2560;
-static int SCREEN_H = 1600;
+static int SCREEN_W = 1920;
+static int SCREEN_H = 1080;
 
 bool running;
 bool teams;
@@ -73,6 +73,8 @@ void cleanup();
 void mainloop();
 void processInput();
 void update();
+void integrate(float dt);
+void collisionDetection();
 void render();
 void renderArrow(const Fighter *fighter);
 
@@ -232,23 +234,53 @@ void update()
     if (paused)
         return;
 
+    integrate(dt);
+    collisionDetection();
 
+    AudioManager::get()->update(dt);
+
+    int alivePlayers = 0;
+    int totalLives = 0;
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        totalLives += fighters[i]->getLives();
+        if (fighters[i]->isAlive()) alivePlayers++;
+    }
+
+    // Play the tense music when two players with one life each left
+    if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
+    {
+        criticalMusic = true;
+        AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
+        AudioManager::get()->startSoundtrack();
+    }
+
+    // End the game when no one is left
+    if (alivePlayers <= 0)
+        running = false;
+}
+
+void integrate(float dt)
+{
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        fighters[i]->update(dt);
+    }
+}
+
+void collisionDetection()
+{
     for (unsigned i = 0; i < numPlayers; i++)
     {
         Fighter *fighter = fighters[i];
-
-        // Update positions, etc
-        fighter->update(dt);
-
-        // dont do other updates when player is dead
+        // dont do collision detection when the fighter is dead
         if (!fighter->isAlive()) continue;
 
-
         // Cache some vals
-        const Attack *attacki = fighter->getAttack();
         // Check for hitbox collisions
         for (unsigned j = i+1; j < numPlayers; j++)
         {
+            const Attack *attacki = fighter->getAttack();
             const Attack *attackj = fighters[j]->getAttack();
 
             // Hitboxes hit each other?
@@ -274,8 +306,8 @@ void update()
                     && attacki->canHit(fighters[j]) && fighters[j]->canBeHit())
             {
                 // fighter has hit fighters[j]
-                fighters[j]->hitByAttack(fighter, attacki);
-                fighter->hitWithAttack(fighters[j]);
+                fighters[j]->hitByAttack(attacki);
+                fighter->attackConnected(fighters[j]);
 
                 // Cache values
                 attacki = fighter->getAttack();
@@ -284,8 +316,8 @@ void update()
                     && attackj->canHit(fighter) && fighter->canBeHit())
             {
                 // fighter[j] has hit fighter
-                fighter->hitByAttack(fighters[j], attackj);
-                fighters[j]->hitWithAttack(fighter);
+                fighter->hitByAttack(attackj);
+                fighters[j]->attackConnected(fighter);
 
                 // Cache values
                 attacki = fighter->getAttack();
@@ -317,28 +349,6 @@ void update()
         fighter->collisionWithGround(ground,
                 fighter->getRect().overlaps(ground));
     }
-
-    AudioManager::get()->update(dt);
-
-    int alivePlayers = 0;
-    int totalLives = 0;
-    for (int i = 0; i < numPlayers; i++)
-    {
-        totalLives += fighters[i]->getLives();
-        if (fighters[i]->isAlive()) alivePlayers++;
-    }
-
-    // Play the tense music when two players with one life each left
-    if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
-    {
-        criticalMusic = true;
-        AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
-        AudioManager::get()->startSoundtrack();
-    }
-
-    // End the game when no one is left
-    if (alivePlayers <= 0)
-        running = false;
 }
 
 void render()

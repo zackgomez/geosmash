@@ -47,6 +47,7 @@ public:
 
     // dt is time from last call to processInput
     void processInput(Controller &, float dt);
+    void update(float dt);
     void render(float dt);
 
     int getID() const { return id_; }
@@ -62,9 +63,9 @@ public:
 
     // collision is true if there is a collision with ground this frame, false otherwise
     void collisionWithGround(const Rectangle &ground, bool collision);
-    void attackCollision(const Attack *attack); // Called when two attacks collide, with other attack
-    void hitByAttack(const Fighter *fighter, const Attack* attack);  // Called when hit by an attack
-    void hitWithAttack(Fighter *victim); // Called when you hit with an attack
+    virtual void attackCollision(const Attack *other);
+    virtual void hitByAttack(const Attack* attack);
+    virtual void attackConnected(GameEntity *victim);
 
     // Returns true if this Fighter is currently attacking and has an attack hitbox
     bool hasAttack() const;

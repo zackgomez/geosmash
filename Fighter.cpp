@@ -19,13 +19,15 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     state_(0),
     damage_(0), lives_(getParam("fighter.lives")),
     respawnx_(respawnx), respawny_(respawny),
-    color_(color), id_(id),
+    color_(color),
     attack_(NULL),
     lastHitBy_(-1)
 {
     // Set GameEntity members
     pos_ = vel_ = accel_ = glm::vec2(0.f, 0.f);
     size_ = glm::vec2(getParam("fighter.w"), getParam("fighter.h"));
+    id_ = id;
+    playerID_ = id;
 
     // Load ground attacks
     std::string g = "groundhit";
@@ -134,8 +136,11 @@ void Fighter::processInput(Controller &controller, float dt)
 
     // Update state
     state_->processInput(controller, dt);
+}
 
-    // Integration is done in update()
+void Fighter::update(float dt)
+{
+    GameEntity::update(dt);
 }
 
 void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
@@ -151,14 +156,14 @@ void Fighter::attackCollision(const Attack *inAttack)
     attack_->attackCollision(inAttack);
 }
 
-void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
+void Fighter::hitByAttack(const Attack *attack)
 {
-    assert(attack && attacker);
+    assert(attack);
     assert(attack->canHit(this));
 
-    state_->hitByAttack(attacker, attack);
+    state_->hitByAttack(attack);
 
-    lastHitBy_ = attacker->id_;
+    lastHitBy_ = attack->getOwner()->getID();
 
     // Play a sound
     std::string fname = "lvl";
@@ -168,7 +173,7 @@ void Fighter::hitByAttack(const Fighter *attacker, const Attack *attack)
     AudioManager::get()->playSound(fname);
 }
 
-void Fighter::hitWithAttack(Fighter *victim)
+void Fighter::attackConnected(GameEntity *victim)
 {
     assert(attack_);
     assert(attack_->canHit(victim));

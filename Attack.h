@@ -1,9 +1,11 @@
 #pragma once
 #include <string>
 #include <glm/glm.hpp>
+#include <set>
 
 class Fighter;
 class Rectangle;
+class GameEntity;
 
 class Attack
 {
@@ -37,7 +39,7 @@ public:
     // If this attack is over
     virtual bool isDone() const;
     // True if this attack can hit the fighter right now
-    bool canHit(const Fighter *f) const;
+    bool canHit(const GameEntity *f) const;
 
     // Updates internal timer
     virtual void update(float dt);
@@ -46,7 +48,7 @@ public:
     // Sends to cooldown time
     virtual void cancel();
     // Called when the attack 'connects'
-    virtual void hit(Fighter *other);
+    virtual void hit(GameEntity *other);
     // Called when two attacks collide
     virtual void attackCollision(const Attack *other);
 
@@ -65,7 +67,7 @@ protected:
     float priority_;
     glm::vec2 knockbackdir_;
     float knockbackpow_;
-    bool hasHit_[4];
+    std::set<int> hasHit_;
     float t_;
 
     std::string audioID_;
@@ -102,7 +104,7 @@ public:
     virtual void start();
     virtual void finish();
     virtual void update(float dt);
-    virtual void hit(Fighter *victim);
+    virtual void hit(GameEntity *victim);
 
 private:
     float repeatTime_;

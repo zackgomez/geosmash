@@ -14,7 +14,7 @@ bool FighterState::canBeHit() const
     return true;
 }
 
-void FighterState::calculateHitResult(const Fighter *attacker, const Attack *attack)
+void FighterState::calculateHitResult(const Attack *attack)
 {
     // Cancel any current attack
     if (fighter_->attack_)
@@ -27,8 +27,7 @@ void FighterState::calculateHitResult(const Fighter *attacker, const Attack *att
     fighter_->damage_ += attack->getDamage(fighter_);
 
     // Calculate direction of hit
-    glm::vec2 knockback = attack->getKnockback(fighter_) * glm::vec2(attacker->dir_, 1.0f)
-        * fighter_->damageFunc();
+    glm::vec2 knockback = attack->getKnockback(fighter_) * fighter_->damageFunc();
 
     // Get knocked back
     fighter_->vel_ = knockback;
@@ -134,9 +133,9 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
     next_ = new GroundState(fighter_);
 }
 
-void AirStunnedState::hitByAttack(const Fighter *attacker, const Attack *attack)
+void AirStunnedState::hitByAttack(const Attack *attack)
 {
-    FighterState::calculateHitResult(attacker, attack);
+    FighterState::calculateHitResult(attack);
 }
 
 //// ------------------------ GROUND STATE -------------------------
@@ -403,12 +402,12 @@ void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
     // already in the GroundState
 }
 
-void GroundState::hitByAttack(const Fighter *attacker, const Attack *attack)
+void GroundState::hitByAttack(const Attack *attack)
 {
     // Pop up a bit so that we're not overlapping the ground
     fighter_->pos_.y += 4;
     // Then do the normal stuff
-    FighterState::calculateHitResult(attacker, attack);
+    FighterState::calculateHitResult(attack);
 }
 
 //// -------------------- AIR NORMAL STATE -----------------------------
@@ -563,9 +562,9 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
 
 }
 
-void AirNormalState::hitByAttack(const Fighter *attacker, const Attack *attack)
+void AirNormalState::hitByAttack(const Attack *attack)
 {
-    FighterState::calculateHitResult(attacker, attack);
+    FighterState::calculateHitResult(attack);
 }
 
 //// ----------------------- DODGE STATE --------------------------------
@@ -611,12 +610,12 @@ void DodgeState::render(float dt)
             glm::rotate(glm::mat4(1.f), -angle, glm::vec3(0,0,1)));
 }
 
-void DodgeState::hitByAttack(const Fighter *attacker, const Attack *attack)
+void DodgeState::hitByAttack(const Attack *attack)
 {
     // Pop up a bit so that we're not overlapping the ground
     fighter_->pos_.y += 2;
     // Then do the normal stuff
-    FighterState::calculateHitResult(attacker, attack);
+    FighterState::calculateHitResult(attack);
 }
 
 void DodgeState::collisionWithGround(const Rectangle &ground, bool collision)
@@ -655,7 +654,7 @@ void RespawnState::render(float dt)
     fighter_->renderHelper(dt, frameName_, 1.6f * fighter_->color_);
 }
 
-void RespawnState::hitByAttack(const Fighter *, const Attack *)
+void RespawnState::hitByAttack(const Attack *)
 {
     // Do nothing, we're invincible bitch!
 }
@@ -683,7 +682,7 @@ void DeadState::collisionWithGround(const Rectangle &, bool)
     assert(false);
 }
 
-void DeadState::hitByAttack(const Fighter *, const Attack *)
+void DeadState::hitByAttack(const Attack *)
 {
     assert(false);
 }
