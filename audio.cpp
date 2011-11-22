@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cassert>
 #include "ParamReader.h"
+#include "glutils.h"
 
 AudioManager::AudioManager() 
 {
@@ -16,7 +17,7 @@ AudioManager::AudioManager()
 }
 #define D1 25.0f
 #define D2 300.0f
-#define V1 25.0f
+#define V1 40.0f
 #define V2 100.0f
 
 void AudioManager::playSound(const std::string &fname)
@@ -25,7 +26,7 @@ void AudioManager::playSound(const std::string &fname)
     if (buffers_.count(fname) != 1) {
         sf::SoundBuffer *sb = new sf::SoundBuffer();
         assert(sb);
-        sb->LoadFromFile("sfx" + fname + ".aif");
+        sb->LoadFromFile("sfx/" + fname + ".aif");
         buffers_[fname] = sb;
     }
     sf::Sound *s = new sf::Sound();
@@ -39,19 +40,19 @@ void AudioManager::playSound(const std::string &fname,
         double damage)
 {
     assert(damage >= 0);
-    double panningFactor = -2;
+    double panningFactor = getPanningFactor(pos);
     if (damage > 300) damage = 300;
     // check if the file has already been loaded in
-    if (buffers_.count(fname) != 1) {
+    if (buffers_.count(fname) != 1)
+    {
         sf::SoundBuffer *sb = new sf::SoundBuffer();
         assert(sb);
-        sb->LoadFromFile("sfx" + fname + ".aif");
+        sb->LoadFromFile("sfx/" + fname + ".aif");
         buffers_[fname] = sb;
     }
     sf::Sound *s = new sf::Sound();
     s->SetBuffer(*buffers_[fname]);
     s->SetPosition(panningFactor, 0, 0);
-    assert(panningFactor >= -1 && panningFactor <= 1);
     double vol;
     if (damage > 0 && damage < D1) {
         vol = V1;
@@ -66,6 +67,21 @@ void AudioManager::playSound(const std::string &fname,
     s->SetVolume(vol);
     // play that shit
     s->Play();
+    currentSounds_.push_back(s);
+}
+
+float AudioManager::getPanningFactor(const glm::vec2 &worldPos)
+{
+    glm::vec4 screenPos = getProjectionMatrix() * getViewMatrix() * glm::vec4(worldPos, 0.f, 1.f);
+    screenPos /= screenPos.w;
+
+    // if the player is hit off the screen, we need to clip this val to be in
+    // the valid range (-1,1)
+    if (screenPos.x < -1)
+        return -1;
+    if (screenPos.x > 1)
+        return 1;
+    return screenPos.x;
 }
 
 void AudioManager::setSoundtrack(const std::string &file)

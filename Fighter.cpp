@@ -166,11 +166,9 @@ void Fighter::hitByAttack(const Attack *attack)
     lastHitBy_ = attack->getPlayerID();
 
     // Play a sound
-    std::string fname = "lvl";
-    // we should freak out if damage is negative
-    fname += '1' + floor(std::min(damage_ / 100, 2.0f));
+    std::string fname = "lvl3";
     fname += attack->getAudioID();
-    AudioManager::get()->playSound(fname);
+    AudioManager::get()->playSound(fname, pos_, damage_);
 }
 
 void Fighter::attackConnected(GameEntity *victim)

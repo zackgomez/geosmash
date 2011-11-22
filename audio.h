@@ -24,14 +24,13 @@ public:
     // not the full filename)
     //
     // @param fighterLocation: Where is the fighter in world coords
-    //                       We will figure out the rest
-    //                       TODO: change this
+    //                       We will figure out the rest 
     //
     // @param damage: at 300 damage, sound will be saturated, or full volume.
     // 
     // Intended use: playing small sounds like KO or attack noises.
     void playSound(const std::string &audioIdentifier,
-            glm::vec2 loc, // between -1 and 1
+            glm::vec2 loc, 
             double damage); // between 0, ~300 usually
 
     void playSound(const std::string &audioID);
@@ -59,6 +58,9 @@ private:
     std::vector<sf::Sound *> currentSounds_;
 
     sf::Music soundtrack_;
+
+    // Helper functions
+    float getPanningFactor(const glm::vec2 &worldPos);
 };
 
 
