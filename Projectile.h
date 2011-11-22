@@ -1,5 +1,7 @@
 #pragma once
 #include "GameEntity.h"
+#include <string>
+#include "Attack.h"
 
 class ProjectileAttack;
 
@@ -7,7 +9,8 @@ class Projectile : public GameEntity
 {
 public:
     Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
-            const std::string &paramPrefix, const std::string &frameName);
+            const std::string &paramPrefix, const std::string &frameName,
+            const int playerID);
     virtual ~Projectile();
 
     virtual bool hasAttack() const;
