@@ -67,5 +67,6 @@ protected:
 
     int id_, playerID_;
 
+private:
     static int lastID_;
 };

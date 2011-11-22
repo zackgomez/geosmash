@@ -46,9 +46,9 @@ void Attack::setFighter(Fighter *fighter)
     owner_ = fighter;
 }
 
-const GameEntity* Attack::getOwner() const
+int Attack::getPlayerID() const
 {
-    return owner_;
+    return owner_->getPlayerID();
 }
 
 void Attack::start()
@@ -63,12 +63,12 @@ void Attack::finish()
     /* Empty */
 }
 
-glm::vec2 Attack::getKnockback(const Fighter *fighter) const
+glm::vec2 Attack::getKnockback(const GameEntity *victim) const
 {
     if (knockbackdir_ == glm::vec2(0,0))
     {
         glm::vec2 apos = glm::vec2(getHitbox().x, getHitbox().y);
-        glm::vec2 fpos = glm::vec2(fighter->getPosition().x, fighter->getPosition().y);
+        glm::vec2 fpos = glm::vec2(victim->getPosition().x, victim->getPosition().y);
         glm::vec2 dir = glm::normalize(fpos - apos);
         return knockbackpow_ * dir;
     }
@@ -88,8 +88,8 @@ Rectangle Attack::getHitbox() const
     return ret;
 }
 
-float Attack::getDamage(const Fighter *) const { return damage_; }
-float Attack::getStun(const Fighter *) const { return stun_; }
+float Attack::getDamage(const GameEntity *) const { return damage_; }
+float Attack::getStun(const GameEntity *) const { return stun_; }
 std::string Attack::getAudioID() const { return audioID_; }
 std::string Attack::getFrameName() const { return frameName_; }
 

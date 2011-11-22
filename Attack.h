@@ -21,13 +21,13 @@ public:
 
     virtual bool hasTwinkle() const;
     virtual Rectangle getHitbox() const;
-    virtual float getDamage(const Fighter *fighter) const;
-    virtual float getStun(const Fighter *fighter) const;
-    virtual glm::vec2 getKnockback(const Fighter *fighter) const;
+    virtual float getDamage(const GameEntity *fighter) const;
+    virtual float getStun(const GameEntity *fighter) const;
+    virtual glm::vec2 getKnockback(const GameEntity *fighter) const;
 
     void setFighter(Fighter *fighter);
     void setFrameName(const std::string &fname);
-    const GameEntity *getOwner() const;
+    virtual int getPlayerID() const;
 
     // Called when the move is started
     virtual void start();
@@ -126,4 +126,3 @@ private:
     float deceleration_;
     float initialSpeed_;
 };
-

@@ -4,6 +4,7 @@
 #include "Attack.h"
 #include "ParamReader.h"
 #include "explosion.h"
+#include "Projectile.h"
 
 // ----------------------------------------------------------------------------
 // FighterState class methods
@@ -71,7 +72,6 @@ void FighterState::collisionHelper(const Rectangle &ground)
         float dir = dist / fabs(dist);
         fighter_->pos_.x += dir * (fabs(dist) - (ground.w/2 + fighter_->size_.x/2));
     }
-
 }
 
 //// ---------------------- AIR STUNNED STATE -----------------------
@@ -651,7 +651,7 @@ void RespawnState::processInput(Controller &controller, float dt)
 
 void RespawnState::render(float dt)
 {
-    printf("RESPAWN | t: %d || ", t_);
+    printf("RESPAWN | t: %f || ", t_);
     // Just render the fighter, but slightly lighter
     fighter_->renderHelper(dt, frameName_, 1.6f * fighter_->color_);
 }
