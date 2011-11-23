@@ -128,7 +128,7 @@ int main(int argc, char **argv)
     for (unsigned i = 0; i < numPlayers; i++)
     {
         const glm::vec3 *colors = teams ? teamColors : playerColors;
-        Fighter *fighter = new Fighter(-225.0f+i*150, -50.f, colors[i], i);
+        Fighter *fighter = new Fighter(-225.0f+i*150, 50.f, colors[i], i);
         fighter->respawn(false);
         fighters.push_back(fighter);
         entities.push_back(fighter);
@@ -391,7 +391,7 @@ void render()
 
     // Draw the background
     glm::mat4 backtrans = glm::scale(
-            glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -100)),
+            glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -300)),
                 glm::vec3(1500.0f, 750.0f, 1.0f));
     renderTexturedRectangle(backtrans, backgroundTex);
 

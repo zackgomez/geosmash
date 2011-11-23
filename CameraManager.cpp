@@ -58,7 +58,7 @@ void CameraManager::updateTarget_(const std::vector<Fighter *> &fighters) {
     Z -= (minZ - maxZ) * (1 - spread);
     assert(Z <= minZ);
     assert(Z >= maxZ);
-    target_ = glm::vec3(totalPos.x, totalPos.y, Z);
+    target_ = glm::vec3(totalPos.x, getParam("camera.yfactor") * totalPos.y, Z);
 
 }
 

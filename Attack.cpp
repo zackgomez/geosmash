@@ -263,6 +263,7 @@ void UpSpecialAttack::hit(GameEntity *victim)
 
     Attack::hit(victim);
 
+    // XXX this can create problems...
     victim->push(glm::vec2(0, 20));
 }
 
@@ -377,7 +378,7 @@ void NeutralSpecialAttack::update(float dt)
         Projectile *projectile =
             new Projectile(owner_->getPosition(),
                     glm::vec2(owner_->getDirection(), 0.f), paramPrefix_,
-                    "", owner_->getPlayerID());
+                    "Projectile", "projectilehit", owner_->getPlayerID());
         addEntity(projectile);
 
         released_ = true;
