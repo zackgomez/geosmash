@@ -213,7 +213,7 @@ void UpSpecialAttack::update(float dt)
                     owner_->pos_.y - owner_->size_.y * 0.45f,
                     0.3f);
             // Play the UP Special sound
-            AudioManager::get()->playSound("upspecial001-loud");
+            AudioManager::get()->playSound("upspecial", owner_->pos_);
 
             // Go to air normal state
             delete owner_->state_;

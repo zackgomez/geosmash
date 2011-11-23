@@ -39,8 +39,13 @@ void AudioManager::playSound(const std::string &fname,
         glm::vec2 pos,
         double damage)
 {
-    assert(damage >= 0);
+    double vol;
     double panningFactor = getPanningFactor(pos);
+    if (damage == -1) {
+        // No damage was specified. Play the sound at max volume
+        vol = 100;
+    }
+    assert(damage >= 0);
     if (damage > 300) damage = 300;
     // check if the file has already been loaded in
     if (buffers_.count(fname) != 1)
@@ -53,11 +58,10 @@ void AudioManager::playSound(const std::string &fname,
     sf::Sound *s = new sf::Sound();
     s->SetBuffer(*buffers_[fname]);
     s->SetPosition(panningFactor, 0, 0);
-    double vol;
     if (damage > 0 && damage < D1) {
         vol = V1;
     }
-    else if (damage < D2) {
+    else if (damage > 0 && damage < D2) {
         vol = V1 + ((V2 - V1) / (D2 - D1)) * (damage - D1);
     }
     else if (damage > D2) {
