@@ -312,3 +312,10 @@ neutralSpecialAttack.knockbackx   1
 neutralSpecialAttack.knockbacky   1
 neutralSpecialAttack.knockbackpow 20.0
 neutralSpecialAttack.lifetime     2.0
+
+camera.maxVx 100 
+camera.maxVy 100
+camera.maxVz 20
+camera.minZoom 500
+camera.maxZoom 350
+camera.maxSpread 800

@@ -26,7 +26,7 @@ private:
     // Sets where we'd like to move to, based on fighter positions
     void updateTarget_(const std::vector<Fighter *> &fighters);
     // Moves the camera position
-    void updateCurrent_();
+    void updateCurrent_(float dt);
 
 };
 
