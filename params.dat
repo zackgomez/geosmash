@@ -262,7 +262,7 @@ sideSmashAttack.startup      0.30
 sideSmashAttack.duration     0.25
 sideSmashAttack.cooldown     0.35
 sideSmashAttack.damage       17
-sideSmashAttack.stun         0.10
+sideSmashAttack.stun         0.13
 sideSmashAttack.knockbackx   3
 sideSmashAttack.knockbacky   2
 sideSmashAttack.knockbackpow 240.0
@@ -294,12 +294,12 @@ upSmashAttack.stun         0.13
 upSmashAttack.knockbackx   1
 upSmashAttack.knockbacky   4
 upSmashAttack.knockbackpow 220.0
-upSmashAttack.hitboxw      40
-upSmashAttack.hitboxh      40
+upSmashAttack.hitboxw      48
+upSmashAttack.hitboxh      48
 upSmashAttack.priority     1.0
 upSmashAttack.hitboxx      -20
 upSmashAttack.hitboxy      30
-upSmashAttack.hitboxx1     20
+upSmashAttack.hitboxx1     35
 upSmashAttack.hitboxy1     30
 
 neutralSpecialAttack.startup      0.30

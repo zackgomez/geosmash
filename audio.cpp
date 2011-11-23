@@ -68,7 +68,7 @@ void AudioManager::playSound(const std::string &fname,
         vol = V2;
     }
     assert(vol >= V1 && vol <= V2);
-    s->SetVolume(getParam("sfx.volume") * vol);
+    s->SetVolume(getParam("sfx.volume")/100.f * vol);
     // play that shit
     s->Play();
     currentSounds_.push_back(s);
