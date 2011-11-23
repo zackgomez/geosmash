@@ -101,6 +101,9 @@ int main(int argc, char **argv)
         if (strcmp(argv[i], "--teams") == 0)
             teams = true;
     }
+
+    // Init game state
+    ParamReader::get()->loadFile("params.dat");
     
     if (teams && numPlayers != 4)
     {
@@ -122,8 +125,6 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    // Init game state
-    ParamReader::get()->loadFile("params.dat");
     WORLD_W = getParam("worldWidth");
     WORLD_H = getParam("worldHeight");
     for (unsigned i = 0; i < numPlayers; i++)

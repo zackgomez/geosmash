@@ -12,6 +12,7 @@
 #include "util.h"
 #include "glutils.h"
 #include "FrameManager.h"
+#include "ParamReader.h"
 
 static struct 
 {
@@ -637,7 +638,7 @@ void setViewMatrix(const glm::mat4 &mat)
 
 void setCamera(const glm::vec3 &pos)
 {
-    setProjectionMatrix(glm::perspective(90.f, 16.f / 9.f, 0.1f, 1000.f));
+    setProjectionMatrix(glm::perspective(getParam("camera.fov"), 16.f / 9.f, 0.1f, 1000.f));
     setViewMatrix(glm::translate(glm::mat4(1.f), -pos));
 }
 

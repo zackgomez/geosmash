@@ -11,11 +11,11 @@ CameraManager::CameraManager()
 
 void CameraManager::update(float dt, const std::vector<Fighter *> &fighters)
 {
-    const float fov = 90.f;
+    const float fov = getParam("camera.fov");
     /*
     updateTarget_(fighters);
     */
-    Rectangle rect = getCameraRect(fighters);
+    Rectangle rect = getCameraRect_(fighters);
 
     //std::cout << "Bounding rect - " << rect.x << ' ' << rect.y << ' ' << rect.w << ' ' << rect.h << '\n';
     float z = rect.w / (2 * tanf(fov / 2));
@@ -103,7 +103,7 @@ void CameraManager::updateCurrent_(float dt) {
 
 }
 
-Rectangle CameraManager::getCameraRect(const std::vector<Fighter*> &fighters)
+Rectangle CameraManager::getCameraRect_(const std::vector<Fighter*> &fighters)
 {
     // Find the bounding rect
     glm::vec2 min(HUGE_VAL, HUGE_VAL), max(-HUGE_VAL, -HUGE_VAL);
