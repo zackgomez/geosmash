@@ -31,6 +31,8 @@ public:
     // other work is done
     virtual void hitByAttack(const Attack *attack) = 0;
 
+    virtual Rectangle getRect() const;
+
     // This function is the value returned from fighter::canBeHit
     virtual bool canBeHit() const;
 
@@ -122,6 +124,23 @@ private:
     float invincTime_;
     float cooldown_;
 };
+
+class DuckingState : public FighterState
+{
+public:
+    DuckingState(Fighter *f);
+    virtual ~DuckingState() {}
+
+    virtual void processInput(Controller&, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Attack *attack);
+    virtual Rectangle getRect() const;
+
+private:
+    glm::vec2 size_;
+};
+
 
 class RespawnState : public FighterState
 {

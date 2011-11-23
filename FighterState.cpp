@@ -15,6 +15,12 @@ bool FighterState::canBeHit() const
     return true;
 }
 
+Rectangle FighterState::getRect() const
+{
+    return Rectangle(fighter_->pos_.x, fighter_->pos_.y,
+            fighter_->size_.x, fighter_->size_.y);
+}
+
 void FighterState::calculateHitResult(const Attack *attack)
 {
     // Cancel any current attack
@@ -360,6 +366,10 @@ void GroundState::processInput(Controller &controller, float dt)
                     fighter_->pos_.y - fighter_->size_.y * 0.45f,
                     0.3f);
         }
+
+        // Check for entry into the ducking state
+        if (controller.joyy < getParam("input.duckThresh"))
+            next_ = new DuckingState(fighter_);
     }
 
     // --- Check to see if they want to start a jump ---
@@ -370,7 +380,6 @@ void GroundState::processInput(Controller &controller, float dt)
         // Start the jump timer
         jumpTime_ = 0.0f;
     }
-
 }
 
 void GroundState::render(float dt)
@@ -647,6 +656,57 @@ void DodgeState::collisionWithGround(const Rectangle &ground, bool collision)
 bool DodgeState::canBeHit() const
 {
     return t_ > invincTime_;
+}
+
+//// ----------------------- DUCKING STATE --------------------------------
+DuckingState::DuckingState(Fighter *f) :
+    FighterState(f)
+{
+}
+
+void DuckingState::processInput(Controller &controller, float dt)
+{
+    // Can't move while ducking
+    fighter_->vel_ = glm::vec2(0.f);
+
+    if (fighter_->attack_) return;
+
+    // Check for removal from ducking state and attack
+    if (controller.pressa)
+    {
+        assert(!fighter_->attack_);
+        fighter_->attack_ = fighter_->downTiltAttack_->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+    }
+    else if (controller.joyy > getParam("input.duckThresh"))
+        next_ = new GroundState(fighter_);
+}
+
+void DuckingState::render(float dt)
+{
+    printf("DUCKING || ");
+    // Just render the fighter, but slightly lighter
+    fighter_->renderHelper(dt, "Ducking", fighter_->color_);
+}
+
+void DuckingState::hitByAttack(const Attack *attack)
+{
+    // Pop up a bit so that we're not overlapping the ground
+    fighter_->pos_.y += 4;
+    // Then do the normal stuff
+    FighterState::calculateHitResult(attack);
+}
+
+void DuckingState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+    //assert(collision);
+}
+
+Rectangle DuckingState::getRect() const
+{
+    return Rectangle(fighter_->pos_.x, fighter_->pos_.y,
+            size_.x, size_.y);
 }
 
 //// ----------------------- RESPAWN STATE --------------------------------

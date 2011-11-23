@@ -72,7 +72,9 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 }
 
 Fighter::~Fighter()
-{}
+{
+    /* TODO */
+}
 
 int Fighter::getLives() const
 {
@@ -92,6 +94,11 @@ float Fighter::getDirection() const
 int Fighter::getLastHitBy() const
 {
     return lastHitBy_;
+}
+
+Rectangle Fighter::getRect() const
+{
+    return state_->getRect();
 }
 
 void Fighter::processInput(Controller &controller, float dt)

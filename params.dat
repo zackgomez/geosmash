@@ -30,9 +30,8 @@ input.deadzone      0.2
 input.tiltThresh    0.4
 input.dodgeThresh   0.6
 input.fallThresh    0.95
-input.trigThresh     0.5
-
-stats.hitExpireTime 2.0
+input.trigThresh    0.5
+input.duckThresh    -0.5
 
 
 fighter.w        50

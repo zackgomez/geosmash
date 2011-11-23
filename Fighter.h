@@ -49,6 +49,7 @@ public:
     void processInput(Controller &, float dt);
     virtual void update(float dt);
     virtual void render(float dt);
+    virtual Rectangle getRect() const;
 
     int getLives() const;
     float getDamage() const;
@@ -135,6 +136,7 @@ private:
     friend class DodgeState;
     friend class DeadState;
     friend class RespawnState;
+    friend class DuckingState;
 
     friend class UpSpecialAttack;
     friend class DashAttack;
