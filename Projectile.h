@@ -29,6 +29,8 @@ public:
 private:
     std::string paramPrefix_;
     ProjectileHelperAttack *attack_;
+
+    float t_;
     bool hit_;
     std::string frameName_;
 };

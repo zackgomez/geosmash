@@ -9,6 +9,7 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
         int playerID) :
     GameEntity(),
     attack_(NULL),
+    t_(0),
     hit_(false),
     frameName_(frameName)
 {
@@ -60,8 +61,6 @@ bool Projectile::canBeHit() const
 
 void Projectile::attackCollision(const Attack *other)
 {
-    // TODO have some sort of life amount that this attack has...
-
     // For now, just make the attack go away
     hit_ = true;
 }
@@ -83,10 +82,13 @@ void Projectile::attackConnected(GameEntity *other)
 void Projectile::update(float dt)
 {
     GameEntity::update(dt);
+    t_ += dt;
 
-    printf("PROJECTILE | \n");
+    if (t_ > getParam(paramPrefix_ + "lifetime"))
+        hit_ = true;
 
-    // TODO have some max lifetime here
+    printf("PROJECTILE | t: %f  Pos: [%f %f]  Vel: [%f %f]\n",
+            t_, pos_.x, pos_.y, vel_.x, vel_.y);
 }
 
 void Projectile::render(float dt)

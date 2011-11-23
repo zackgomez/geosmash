@@ -310,3 +310,4 @@ neutralSpecialAttack.sizex        20.0
 neutralSpecialAttack.sizey        20.0
 neutralSpecialAttack.knockbackx   1
 neutralSpecialAttack.knockbacky   1
+neutralSpecialAttack.lifetime     2.0
