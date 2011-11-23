@@ -12,6 +12,10 @@
 // Attack class methods
 // ----------------------------------------------------------------------------
 
+Attack::Attack()
+{
+}
+
 Attack::Attack(const std::string &paramPrefix, const std::string &audioID,
             const std::string &frameName)
 {

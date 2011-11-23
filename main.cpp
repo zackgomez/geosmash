@@ -63,6 +63,8 @@ mesh levelMesh;
 void pause(int playerID);
 void unpause(int playerID);
 
+void addEntity(GameEntity *entity);
+
 // Returns the partner, or NULL if there is none
 Fighter *getPartner(int playerID);
 

@@ -47,8 +47,8 @@ public:
 
     // dt is time from last call to processInput
     void processInput(Controller &, float dt);
-    void update(float dt);
-    void render(float dt);
+    virtual void update(float dt);
+    virtual void render(float dt);
 
     int getLives() const;
     float getDamage() const;
@@ -59,6 +59,8 @@ public:
     int getLastHitBy() const;
     // True if this player has more than 0 lives
     bool isAlive() const;
+
+    virtual bool isDone() const { return false; }
 
     // collision is true if there is a collision with ground this frame, false otherwise
     void collisionWithGround(const Rectangle &ground, bool collision);

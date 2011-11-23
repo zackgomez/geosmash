@@ -38,8 +38,8 @@ class ProjectileAttack : public Attack
 {
 public:
     ProjectileAttack(const glm::vec2 &kb, float damage, float stun,
-            const glm::vec2 &pos, const glm::vec2 &size,
-            const std::string &frame);
+            const glm::vec2 &pos, const glm::vec2 &size, int playerID);
+    virtual ~ProjectileAttack();
 
     virtual Attack * clone() const;
 
@@ -53,5 +53,8 @@ public:
 
 private:
     int playerID_;
+    glm::vec2 pos_;
+    glm::vec2 size_;
+    glm::vec2 kb_;
 };
 

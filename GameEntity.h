@@ -16,6 +16,10 @@ public:
     // Returns the ID of the player that 'owns' this GameEntity or -1 if none
     virtual int getPlayerID() const { return playerID_; }
 
+    // Returns true if this GameEntity is no longer needed and should be
+    // cleaned up
+    virtual bool isDone() const = 0;
+
     // Accessor functions
     virtual const glm::vec2& getPosition() const { return pos_; }
     virtual const glm::vec2& getSize() const { return size_; }
