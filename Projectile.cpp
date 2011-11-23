@@ -3,15 +3,17 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "glutils.h"
 #include "Fighter.h"
+#include "FrameManager.h"
 
 Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
         const std::string &paramPrefix, const std::string &frameName,
-        int playerID) :
+        const std::string &audioID, int playerID) :
     GameEntity(),
     attack_(NULL),
     t_(0),
     hit_(false),
-    frameName_(frameName)
+    frameName_(frameName),
+    audioID_(audioID)
 {
     paramPrefix_ = paramPrefix + '.';
     playerID_ = playerID;
@@ -29,7 +31,8 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
                       getParam(paramPrefix_ + "knockbacky"))),
             getParam(paramPrefix_ + "damage"),
             getParam(paramPrefix_ + "stun"),
-            pos_, size_, playerID_);
+            pos_, size_, playerID_,
+            audioID_);
 }
 
 Projectile::~Projectile()
@@ -95,20 +98,22 @@ void Projectile::render(float dt)
 {
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
-            glm::vec3(size_, 1.f));
+            glm::vec3(1.f));
 
-    renderRectangle(transform, glm::vec4(glm::vec4(1, 1, 1, 1)));
+    FrameManager::get()->renderFrame(transform, glm::vec4(glm::vec4(1, 1, 1, 0.3)),
+            frameName_);
 }
 
 
 // ---- Projectile Attack Methods ----
 ProjectileHelperAttack::ProjectileHelperAttack(const glm::vec2 &kb, float damage, float stun,
-        const glm::vec2 &pos, const glm::vec2 &size, int playerID) :
+        const glm::vec2 &pos, const glm::vec2 &size, int playerID, const std::string &audioID) :
     Attack(),
     playerID_(playerID),
     pos_(pos),
     size_(size),
-    kb_(kb)
+    kb_(kb),
+    audioID_(audioID)
 {
     damage_ = damage;
     stun_ = stun;
@@ -143,6 +148,11 @@ void ProjectileHelperAttack::render(float dt)
 {
     // Should not be called
     assert(false);
+}
+
+std::string ProjectileHelperAttack::getAudioID() const
+{
+    return audioID_;
 }
 
 void ProjectileHelperAttack::setPosition(const glm::vec2 &position)

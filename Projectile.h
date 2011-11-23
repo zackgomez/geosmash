@@ -10,7 +10,7 @@ class Projectile : public GameEntity
 public:
     Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
             const std::string &paramPrefix, const std::string &frameName,
-            const int playerID);
+            const std::string &audioID, const int playerID);
     virtual ~Projectile();
 
     virtual bool isDone() const;
@@ -33,6 +33,7 @@ private:
     float t_;
     bool hit_;
     std::string frameName_;
+    std::string audioID_;
 };
 
 
@@ -40,7 +41,8 @@ class ProjectileHelperAttack : public Attack
 {
 public:
     ProjectileHelperAttack(const glm::vec2 &kb, float damage, float stun,
-            const glm::vec2 &pos, const glm::vec2 &size, int playerID);
+            const glm::vec2 &pos, const glm::vec2 &size, int playerID,
+            const std::string &audioID);
     virtual ~ProjectileHelperAttack();
 
     virtual Attack * clone() const;
@@ -51,6 +53,8 @@ public:
 
     virtual void render(float dt);
 
+    virtual std::string getAudioID() const;
+
     void setPosition(const glm::vec2 &position);
 
 private:
@@ -58,4 +62,6 @@ private:
     glm::vec2 pos_;
     glm::vec2 size_;
     glm::vec2 kb_;
+
+    std::string audioID_;
 };

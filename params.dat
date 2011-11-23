@@ -2,7 +2,7 @@ worldWidth   1500
 worldHeight  800
 
 level.x      0
-level.y      -185
+level.y      -100
 level.w      1024
 level.h      64
 level.d      80
@@ -302,10 +302,10 @@ upSmashAttack.hitboxx1     20
 upSmashAttack.hitboxy1     30
 
 neutralSpecialAttack.startup      0.30
-neutralSpecialAttack.cooldown     0.10
+neutralSpecialAttack.cooldown     0.15
 neutralSpecialAttack.damage       5
 neutralSpecialAttack.stun         0.06
-neutralSpecialAttack.speed        400.0
+neutralSpecialAttack.speed        550.0
 neutralSpecialAttack.sizex        20.0
 neutralSpecialAttack.sizey        20.0
 neutralSpecialAttack.knockbackx   1
@@ -314,8 +314,9 @@ neutralSpecialAttack.knockbackpow 20.0
 neutralSpecialAttack.lifetime     2.0
 
 camera.maxVx 100 
-camera.maxVy 100
-camera.maxVz 20
+camera.maxVy 200
+camera.maxVz 250
 camera.minZoom 500
-camera.maxZoom 350
+camera.maxZoom 300
 camera.maxSpread 800
+camera.yfactor 0.4
