@@ -445,6 +445,7 @@ void AirNormalState::processInput(Controller &controller, float dt)
         // Don't let the player increase the velocity past a certain speed
         if (fighter_->vel_.x * controller.joyx <= 0 || fabs(fighter_->vel_.x) < getParam("jumpAirSpeed"))
             fighter_->vel_.x += controller.joyx * getParam("airForce") * dt;
+        fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
     }
     // Fast falling
     if (fighter_->vel_.y < 0 && fighter_->vel_.y > getParam("fastFallMaxSpeed") && controller.joyy < -getParam("input.fallThresh"))

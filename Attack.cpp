@@ -354,6 +354,7 @@ NeutralSpecialAttack::NeutralSpecialAttack(const std::string &paramPrefix,
     startup_ = getParam(pp + "startup");
     // No duration
     cooldown_ = getParam(pp + "startup");
+    duration_ = 0.f;
 
     frameName_ = frameName;
 }

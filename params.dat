@@ -36,7 +36,7 @@ stats.hitExpireTime 2.0
 
 fighter.w        50
 fighter.h        60
-fighter.lives    2
+fighter.lives    4
 fighter.respawnTime 1.0
 
 walkSpeed        133.3
@@ -315,7 +315,7 @@ neutralSpecialAttack.lifetime     2.0
 
 camera.maxVx 100 
 camera.maxVy 200
-camera.maxVz 250
+camera.maxVz 80
 camera.minZoom 500
 camera.maxZoom 300
 camera.maxSpread 800
