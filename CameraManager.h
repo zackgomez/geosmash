@@ -28,5 +28,6 @@ private:
     // Moves the camera position
     void updateCurrent_(float dt);
 
+    static Rectangle getCameraRect(const std::vector<Fighter*> &fighters);
 };
 

@@ -11,7 +11,17 @@ CameraManager::CameraManager()
 
 void CameraManager::update(float dt, const std::vector<Fighter *> &fighters)
 {
+    const float fov = 90.f;
+    /*
     updateTarget_(fighters);
+    */
+    Rectangle rect = getCameraRect(fighters);
+
+    //std::cout << "Bounding rect - " << rect.x << ' ' << rect.y << ' ' << rect.w << ' ' << rect.h << '\n';
+    float z = rect.w / (2 * tanf(fov / 2));
+    target_ = glm::vec3(rect.x, rect.y, z);
+    std::cout << "Cam Target: " << target_.x << ' ' << target_.x << ' ' << target_.z << '\n';
+
     updateCurrent_(dt);
 }
 
@@ -92,6 +102,50 @@ void CameraManager::updateCurrent_(float dt) {
     current_ = current_ + dx;
     setCamera(current_);
 
+}
+
+Rectangle CameraManager::getCameraRect(const std::vector<Fighter*> &fighters)
+{
+    // Find the bounding rect
+    glm::vec2 min(HUGE_VAL, HUGE_VAL), max(-HUGE_VAL, -HUGE_VAL);
+    for (unsigned i = 0; i < fighters.size(); i++)
+    {
+        if (!fighters[i]->isAlive()) continue;
+        glm::vec2 pos = fighters[i]->getPosition();
+        if (pos.x < min.x) min.x = pos.x;
+        if (pos.y < min.y) min.y = pos.y;
+        if (pos.x > max.x) max.x = pos.x;
+        if (pos.y > max.y) max.y = pos.y;
+    }
+
+    const float margin = getParam("camera.margin");
+    min -= glm::vec2(margin, margin / 2);
+    max += glm::vec2(margin, 3 * margin / 4);
+
+    // Make sure rect never goes too low
+    const float minY = getParam("camera.minY");
+    const float maxY = getParam("camera.maxY");
+    const float maxXMag = getParam("camera.xrange");
+    if (min.y < minY)
+        min.y = minY;
+    if (max.y > maxY)
+        max.y = maxY;
+    if (min.x < -maxXMag)
+        min.x = -maxXMag;
+    if (max.x > maxXMag)
+        max.x = maxXMag;
+
+    std::cout << "MIN: " << min.x << ' ' << min.y << "  MAX: " << max.x << ' ' << max.y << '\n';
+
+    glm::vec2 pos = (max + min) / 2.f;
+    glm::vec2 size = max - min;
+    if (size.x > 16.f/9.f * size.y)
+        size.y = 9.f / 16.f * size.x;
+    else
+        size.x = 16.f/9.f * size.y;
+
+
+    return Rectangle(pos.x, pos.y, size.x, size.y);
 }
 
 CameraManager* CameraManager::get()
