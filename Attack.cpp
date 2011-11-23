@@ -258,6 +258,9 @@ void UpSpecialAttack::finish()
 
 void UpSpecialAttack::hit(GameEntity *victim)
 {
+    // Can't hit ourself
+    if (victim->getPlayerID() == getPlayerID()) return;
+
     Attack::hit(victim);
 
     victim->push(glm::vec2(0, 20));

@@ -24,12 +24,15 @@ void CameraManager::updateTarget_(const std::vector<Fighter *> &fighters) {
     glm::vec2 totalPos;
 
     for (unsigned i = 0; i < fighters.size(); i++) {
-        totalPos += fighters[i]->getPosition();
+        if (fighters[i]->isAlive())
+            totalPos += fighters[i]->getPosition();
     }
     totalPos /= fighters.size();
 
+    /*
     std::cout << "x " << totalPos.x
               << ", y " << totalPos.y << std::endl;
+              */
     if (totalPos.y < MINY) {
         totalPos.y = MINY;
     }

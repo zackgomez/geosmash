@@ -178,8 +178,10 @@ void mainloop()
 
         int endms = SDL_GetTicks();
         int delay = 16 - std::min(16, std::max(1, endms - startms));
+        /*
         std::cout << "Frame time (ms): " << endms - startms << 
             "   Delay time (ms): " << delay << '\n';
+            */
         SDL_Delay(delay);
     }
 }

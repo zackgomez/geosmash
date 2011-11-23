@@ -24,8 +24,9 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
             getParam(paramPrefix_ + "sizey"));
 
     attack_ = new ProjectileHelperAttack(
-            glm::vec2(getParam(paramPrefix_ + "knockbackx"),
-                      getParam(paramPrefix_ + "knockbacky")),
+            getParam(paramPrefix_ + "knockbackpow") *
+            glm::normalize(glm::vec2(getParam(paramPrefix_ + "knockbackx"),
+                      getParam(paramPrefix_ + "knockbacky"))),
             getParam(paramPrefix_ + "damage"),
             getParam(paramPrefix_ + "stun"),
             pos_, size_, playerID_);
@@ -38,7 +39,6 @@ Projectile::~Projectile()
 
 bool Projectile::isDone() const
 {
-    // TODO make this die if we're off the screen or going a long time
     return hit_;
 }
 
@@ -108,7 +108,7 @@ ProjectileHelperAttack::ProjectileHelperAttack(const glm::vec2 &kb, float damage
     playerID_(playerID),
     pos_(pos),
     size_(size),
-    kb_(glm::normalize(kb))
+    kb_(kb)
 {
     damage_ = damage;
     stun_ = stun;
@@ -129,7 +129,7 @@ Rectangle ProjectileHelperAttack::getHitbox() const
     return Rectangle(pos_.x, pos_.y, size_.x, size_.y);
 }
 
-glm::vec2 ProjectileHelperAttack::getKnockback(const Fighter *)
+glm::vec2 ProjectileHelperAttack::getKnockback(const GameEntity *) const
 {
     return kb_;
 }

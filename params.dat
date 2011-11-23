@@ -239,7 +239,7 @@ upSpecialAttack.priority     2.0
 
 upSpecialAttack.repeatInterval  0.04
 upSpecialAttack.xvel            160
-upSpecialAttack.yvel            600
+upSpecialAttack.yvel            800
 
 
 
@@ -303,11 +303,12 @@ upSmashAttack.hitboxy1     30
 
 neutralSpecialAttack.startup      0.30
 neutralSpecialAttack.cooldown     0.10
-neutralSpecialAttack.damage       10
+neutralSpecialAttack.damage       5
 neutralSpecialAttack.stun         0.06
 neutralSpecialAttack.speed        400.0
 neutralSpecialAttack.sizex        20.0
 neutralSpecialAttack.sizey        20.0
 neutralSpecialAttack.knockbackx   1
 neutralSpecialAttack.knockbacky   1
+neutralSpecialAttack.knockbackpow 20.0
 neutralSpecialAttack.lifetime     2.0

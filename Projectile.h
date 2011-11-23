@@ -46,7 +46,7 @@ public:
     virtual Attack * clone() const;
 
     virtual Rectangle getHitbox() const;
-    virtual glm::vec2 getKnockback(const Fighter *);
+    virtual glm::vec2 getKnockback(const GameEntity *) const;
     virtual int getPlayerID() const;
 
     virtual void render(float dt);
