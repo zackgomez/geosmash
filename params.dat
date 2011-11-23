@@ -19,6 +19,7 @@ hud.h       0.125
 
 
 soundtrack.volume 35
+sfx.volume 100
 
 
 input.dashThresh    0.9
