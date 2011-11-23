@@ -39,6 +39,7 @@ void renderMesh(const mesh &m, const glm::mat4 &trans, const glm::vec3 &color);
 // Matrix operations
 void setProjectionMatrix(const glm::mat4 &mat);
 void setViewMatrix(const glm::mat4 &mat);
+void setCamera(const glm::vec3 &pos);
 // The model matrix is passed in to the render call
 
 const glm::mat4& getProjectionMatrix();

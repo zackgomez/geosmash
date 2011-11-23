@@ -548,12 +548,6 @@ int initJoystick(unsigned numPlayers)
     return numPlayers;
 }
 
-void setCamera(const glm::vec3 &pos, float angle)
-{
-    setProjectionMatrix(glm::perspective(90.f, 16.f / 9.f, 0.1f, 1000.f));
-    setViewMatrix(glm::translate(glm::mat4(1.f), pos));
-}
-
 int initGraphics()
 {
     // Set the viewport
@@ -561,7 +555,7 @@ int initGraphics()
 
     initGLUtils(SCREEN_W, SCREEN_H);
 
-    setCamera(glm::vec3(0.f, 0.f, -425.0f), 0);
+    setCamera(glm::vec3(0.f, 0.f, 425.0f));
 
     backgroundTex = make_texture("back003.tga");
     // Load some animation frames

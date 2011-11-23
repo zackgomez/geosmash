@@ -635,6 +635,12 @@ void setViewMatrix(const glm::mat4 &mat)
     viewMatrix = mat;
 }
 
+void setCamera(const glm::vec3 &pos)
+{
+    setProjectionMatrix(glm::perspective(90.f, 16.f / 9.f, 0.1f, 1000.f));
+    setViewMatrix(glm::translate(glm::mat4(1.f), -pos));
+}
+
 const glm::mat4 & getProjectionMatrix()
 {
     return projectionMatrix;
