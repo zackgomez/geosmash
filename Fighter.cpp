@@ -166,9 +166,7 @@ void Fighter::hitByAttack(const Attack *attack)
     lastHitBy_ = attack->getPlayerID();
 
     // Play a sound
-    std::string fname = "lvl3";
-    fname += attack->getAudioID();
-    AudioManager::get()->playSound(fname, pos_, damage_);
+    AudioManager::get()->playSound(attack->getAudioID(), pos_, damage_);
 }
 
 void Fighter::attackConnected(GameEntity *victim)

@@ -31,7 +31,7 @@ public:
     // Intended use: playing small sounds like KO or attack noises.
     void playSound(const std::string &audioIdentifier,
             glm::vec2 loc, 
-            double damage); // between 0, ~300 usually
+            double damage = -1); // between 0, ~300 usually
 
     void playSound(const std::string &audioID);
 
