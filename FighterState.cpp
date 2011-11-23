@@ -249,8 +249,14 @@ void GroundState::processInput(Controller &controller, float dt)
     // Check for B moves
     else if (controller.pressb)
     {
-        // Any B press is up B
-        fighter_->attack_ = fighter_->upSpecialAttack_->clone();
+        glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
+        // Check for up B
+        if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+            fighter_->attack_ = fighter_->upSpecialAttack_->clone();
+        // Otherwise neutral B
+        else
+            fighter_->attack_ = fighter_->neutralSpecialAttack_->clone();
+
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return;

@@ -6,6 +6,11 @@
 #include "explosion.h"
 #include "FrameManager.h"
 #include "audio.h"
+#include "Projectile.h"
+
+
+// XXX remove this
+void addEntity(GameEntity *ent);
 
 
 // ----------------------------------------------------------------------------
@@ -330,3 +335,55 @@ Rectangle MovingAttack::getHitbox() const
 
     return ret;
 }
+
+// ----------------------------------------------------------------------------
+// NeutralSpecialAttack class methods
+// ----------------------------------------------------------------------------
+
+NeutralSpecialAttack::NeutralSpecialAttack(const std::string &paramPrefix,
+        const std::string &frameName) :
+    Attack(),
+    paramPrefix_(paramPrefix),
+    released_(false)
+{
+    std::string pp = paramPrefix + '.';
+    startup_ = getParam(pp + "startup");
+    // No duration
+    cooldown_ = getParam(pp + "startup");
+
+    frameName_ = frameName;
+}
+
+Attack * NeutralSpecialAttack::clone() const
+{
+    return new NeutralSpecialAttack(*this);
+}
+
+bool NeutralSpecialAttack::hasHitbox() const
+{
+    // Never has a hitbox - that's the projectile
+    return false;
+}
+
+void NeutralSpecialAttack::update(float dt)
+{
+    Attack::update(dt);
+    if (t_ > startup_ && !released_)
+    {
+        std::string pp = paramPrefix_ + '.';
+        Projectile *projectile =
+            new Projectile(owner_->getPosition(),
+                    glm::vec2(owner_->getDirection(), 0.f), paramPrefix_,
+                    "", owner_->getPlayerID());
+        addEntity(projectile);
+
+        released_ = true;
+    }
+}
+
+void NeutralSpecialAttack::start()
+{
+    released_ = false;
+    Attack::start();
+}
+

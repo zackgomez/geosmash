@@ -16,23 +16,29 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
     playerID_ = playerID;
 
     pos_ = pos;
-    vel_ = dir * getParam(paramPrefix + "speed");
+    vel_ = dir * getParam(paramPrefix_ + "speed");
     accel_ = glm::vec2(0.f);
 
-    size_ = glm::vec2(getParam(paramPrefix + "sizex"),
-            getParam(paramPrefix + "sizey"));
+    size_ = glm::vec2(getParam(paramPrefix_ + "sizex"),
+            getParam(paramPrefix_ + "sizey"));
 
-    attack_ = new ProjectileAttack(
-            glm::vec2(getParam(paramPrefix + "knockbackx"),
-                      getParam(paramPrefix + "knockbacky")),
-            getParam(paramPrefix + "damage"),
-            getParam(paramPrefix + "stun"),
+    attack_ = new ProjectileHelperAttack(
+            glm::vec2(getParam(paramPrefix_ + "knockbackx"),
+                      getParam(paramPrefix_ + "knockbacky")),
+            getParam(paramPrefix_ + "damage"),
+            getParam(paramPrefix_ + "stun"),
             pos_, size_, playerID_);
 }
 
 Projectile::~Projectile()
 {
     delete attack_;
+}
+
+bool Projectile::isDone() const
+{
+    // TODO make this die if we're off the screen or going a long time
+    return hit_;
 }
 
 bool Projectile::hasAttack() const
@@ -68,12 +74,17 @@ void Projectile::hitByAttack(const Attack *attack)
 
 void Projectile::attackConnected(GameEntity *other)
 {
+    // Can't hit ourself
+    if (other->getPlayerID() == playerID_) return;
+
     hit_ = true;
 }
 
 void Projectile::update(float dt)
 {
     GameEntity::update(dt);
+
+    printf("PROJECTILE | \n");
 
     // TODO have some max lifetime here
 }
@@ -89,50 +100,50 @@ void Projectile::render(float dt)
 
 
 // ---- Projectile Attack Methods ----
-ProjectileAttack::ProjectileAttack(const glm::vec2 &kb, float damage, float stun,
+ProjectileHelperAttack::ProjectileHelperAttack(const glm::vec2 &kb, float damage, float stun,
         const glm::vec2 &pos, const glm::vec2 &size, int playerID) :
     Attack(),
     playerID_(playerID),
     pos_(pos),
     size_(size),
-    kb_(kb)
+    kb_(glm::normalize(kb))
 {
     damage_ = damage;
     stun_ = stun;
 }
 
-ProjectileAttack::~ProjectileAttack()
+ProjectileHelperAttack::~ProjectileHelperAttack()
 {
     /* empty */
 }
 
-Attack * ProjectileAttack::clone() const
+Attack * ProjectileHelperAttack::clone() const
 {
-    return new ProjectileAttack(*this);
+    return new ProjectileHelperAttack(*this);
 }
 
-Rectangle ProjectileAttack::getHitbox() const
+Rectangle ProjectileHelperAttack::getHitbox() const
 {
     return Rectangle(pos_.x, pos_.y, size_.x, size_.y);
 }
 
-glm::vec2 ProjectileAttack::getKnockback(const Fighter *)
+glm::vec2 ProjectileHelperAttack::getKnockback(const Fighter *)
 {
     return kb_;
 }
 
-int ProjectileAttack::getPlayerID() const
+int ProjectileHelperAttack::getPlayerID() const
 {
     return playerID_;
 }
 
-void ProjectileAttack::render(float dt)
+void ProjectileHelperAttack::render(float dt)
 {
     // Should not be called
     assert(false);
 }
 
-void ProjectileAttack::setPosition(const glm::vec2 &position)
+void ProjectileHelperAttack::setPosition(const glm::vec2 &position)
 {
     pos_ = position;
 }

@@ -48,6 +48,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     airUpAttack_ = loadAttack<Attack>("airUpAttack", a, "AirUptilt");
 
     upSpecialAttack_ = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
+    neutralSpecialAttack_ = new NeutralSpecialAttack("neutralSpecialAttack", "NeutralSpecial");
 
     tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "TauntAttack");
 
@@ -160,6 +161,9 @@ void Fighter::hitByAttack(const Attack *attack)
 {
     assert(attack);
     assert(attack->canHit(this));
+
+    // Can't be hit by our own attacks
+    if (attack->getPlayerID() == playerID_) return;
 
     state_->hitByAttack(attack);
 

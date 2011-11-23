@@ -95,7 +95,6 @@ private:
 class UpSpecialAttack : public Attack
 {
 public:
-    UpSpecialAttack() : Attack() {};
     UpSpecialAttack(const std::string &paramPrefix, const std::string &audioID,
             const std::string &frameName);
 
@@ -109,6 +108,22 @@ public:
 private:
     float repeatTime_;
     bool started_;
+};
+
+class NeutralSpecialAttack : public Attack
+{
+public:
+    NeutralSpecialAttack(const std::string &paramPrefix,
+            const std::string &frameName);
+
+    virtual Attack *clone() const;
+    virtual bool hasHitbox() const;
+    virtual void update(float dt);
+    virtual void start();
+
+private:
+    std::string paramPrefix_;
+    bool released_;
 };
 
 class DashAttack : public Attack

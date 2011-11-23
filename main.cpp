@@ -238,6 +238,16 @@ void update()
     if (paused)
         return;
 
+    // First remove done GameEntities
+    std::vector<GameEntity *>::iterator it;
+    for (it = entities.begin(); it != entities.end();)
+    {
+        if ((*it)->isDone())
+            it = entities.erase(it);
+        else
+            it++;
+    }
+
     // TODO: something fancy (or not so fancy) to make this dt smaller,
     // if necessary (if a velocity is over some threshold)
     integrate(dt);
@@ -268,9 +278,9 @@ void update()
 
 void integrate(float dt)
 {
-    for (unsigned i = 0; i < numPlayers; i++)
+    for (unsigned i = 0; i < entities.size(); i++)
     {
-        fighters[i]->update(dt);
+        entities[i]->update(dt);
     }
 }
 
@@ -316,7 +326,7 @@ void collisionDetection()
         for (unsigned j = 0; j < entities.size(); j++)
         {
             // Don't check for hitting themself
-            if (i == j) continue;
+            //if (i == j) continue;
 
             GameEntity *victim = entities[j];
             // If the victim cannot be hit, just quit now
@@ -387,11 +397,13 @@ void render()
             glm::vec3(ground.w/2, ground.h/2, getParam("level.d")/2));
     renderMesh(levelMesh, transform, groundColor);
 
-    // Draw the fighters
+    for (unsigned i = 0; i < entities.size(); i++)
+        entities[i]->render(dt);
+
+    // Draw the fighter arrows
     for (unsigned i = 0; i < numPlayers; i++)
         if (fighters[i]->isAlive())
         {
-            fighters[i]->render(dt);
             renderArrow(fighters[i]);
         }
 
@@ -807,3 +819,10 @@ Fighter *getPartner(int playerID)
     else
         return fighters[playerID - 1];
 };
+
+void addEntity(GameEntity *ent)
+{
+    // TODO investigate placing these into a temporary buffer that's added
+    // at the beginning of each frame to avoid strange behavior.
+    entities.push_back(ent);
+}

@@ -3,7 +3,7 @@
 #include <string>
 #include "Attack.h"
 
-class ProjectileAttack;
+class ProjectileHelperAttack;
 
 class Projectile : public GameEntity
 {
@@ -12,6 +12,8 @@ public:
             const std::string &paramPrefix, const std::string &frameName,
             const int playerID);
     virtual ~Projectile();
+
+    virtual bool isDone() const;
 
     virtual bool hasAttack() const;
     virtual const Attack * getAttack() const;
@@ -26,20 +28,18 @@ public:
 
 private:
     std::string paramPrefix_;
-    ProjectileAttack *attack_;
+    ProjectileHelperAttack *attack_;
     bool hit_;
     std::string frameName_;
 };
 
 
-
-
-class ProjectileAttack : public Attack
+class ProjectileHelperAttack : public Attack
 {
 public:
-    ProjectileAttack(const glm::vec2 &kb, float damage, float stun,
+    ProjectileHelperAttack(const glm::vec2 &kb, float damage, float stun,
             const glm::vec2 &pos, const glm::vec2 &size, int playerID);
-    virtual ~ProjectileAttack();
+    virtual ~ProjectileHelperAttack();
 
     virtual Attack * clone() const;
 
@@ -57,4 +57,3 @@ private:
     glm::vec2 size_;
     glm::vec2 kb_;
 };
-

@@ -110,6 +110,7 @@ private:
     Attack *airUpAttack_;
 
     Attack *upSpecialAttack_;
+    Attack *neutralSpecialAttack_;
 
     Attack *neutralSmashAttack_;
     Attack *sideSmashAttack_;
