@@ -12,6 +12,7 @@
 #include "ParamReader.h"
 #include "FrameManager.h"
 #include "StatsManager.h"
+#include "CameraManager.h"
 #include "Attack.h"
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
@@ -19,8 +20,8 @@ static const float dt = 1.f / 60.f;
 
 static float WORLD_W = 1500.0f;
 static float WORLD_H = 750.0f;
-static int SCREEN_W = 2560;
-static int SCREEN_H = 1600;
+static int SCREEN_W = 1920;
+static int SCREEN_H = 1080;
 
 bool running;
 bool teams;
@@ -254,6 +255,7 @@ void update()
     collisionDetection();
 
     AudioManager::get()->update(dt);
+    CameraManager::get()->update(dt, fighters);
 
     int alivePlayers = 0;
     int totalLives = 0;
@@ -567,7 +569,9 @@ int initGraphics()
 
     initGLUtils(SCREEN_W, SCREEN_H);
 
-    setCamera(glm::vec3(0.f, 0.f, 425.0f));
+    glm::vec3 cameraLoc(0.f, 0.f, 425.0f);
+    setCamera(cameraLoc);
+    CameraManager::get()->setCurrent(cameraLoc);
 
     backgroundTex = make_texture("back003.tga");
     // Load some animation frames
