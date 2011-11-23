@@ -45,7 +45,6 @@ void AudioManager::playSound(const std::string &fname,
         // No damage was specified. Play the sound at max volume
         vol = 100;
     }
-    assert(damage >= 0);
     if (damage > 300) damage = 300;
     // check if the file has already been loaded in
     if (buffers_.count(fname) != 1)
