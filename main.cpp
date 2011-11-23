@@ -80,6 +80,7 @@ void update();
 void integrate(float dt);
 void collisionDetection();
 void render();
+void renderHUD();
 void renderArrow(const Fighter *fighter);
 
 void printstats();
@@ -414,46 +415,65 @@ void render()
     // Draw any explosions
     ExplosionManager::get()->render(dt * !paused);
 
+    renderHUD();
+
+
+    // Finish
+    postRender();
+    SDL_GL_SwapBuffers();
+}
+
+void renderHUD()
+{
     // Render the overlay interface (HUD)
     glDisable(GL_DEPTH_TEST);
+    glm::mat4 pmat = getProjectionMatrix();
+    glm::mat4 vmat = getViewMatrix();
+    setProjectionMatrix(glm::mat4(1.f));
+    setViewMatrix(glm::mat4(1.f));
 
     const glm::vec3 *colors = teams ? teamColors : playerColors;
+    const glm::vec2 hud_center(0, 1.5f/6 - 1);
+    const glm::vec2 lifesize = 0.03f * glm::vec2(1.f, 16.f/9.f);
     for (unsigned i = 0; i < numPlayers; i++)
     {
+        const glm::vec2 player_hud_center =
+            hud_center + 0.3f * glm::vec2(i - 1.5f, 0.f);
+
         int lives = fighters[i]->getLives();
-        glm::vec2 life_area(-225.0f - 15 + 150*i, -WORLD_H/2 + 150);
-        
         // Draw life counts first
+        glm::vec2 life_area = player_hud_center - 0.75f * glm::vec2(lifesize.x, -lifesize.y);
+        std::cout << "Life Area " << i << ": " << life_area.x << ' ' << life_area.y << '\n';
         for (int j = 0; j < lives; j++)
         {
             glm::mat4 transform = glm::scale(
                     glm::translate(
                         glm::mat4(1.0f),
-                        glm::vec3(life_area.x, life_area.y, 0.0f)),
-                    glm::vec3(20, 20, 1.0));
+                        glm::vec3(life_area, 0.f)),
+                    glm::vec3(lifesize, 1.0f));
             renderRectangle(transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
 
             glm::mat4 transform2 = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
             renderRectangle(transform2, glm::vec4(colors[i], 0.0f));
 
             if (j % 2 == 0)
-                life_area.x += 30;
+                life_area.x += lifesize.x * 1.5;
             else
             {
-                life_area.x -= 30;
-                life_area.y -= 30;
+                life_area.x -= lifesize.x * 1.5;
+                life_area.y -= lifesize.y * 1.5;
             }
 
         }
 
         // Draw damage bars
         // First, render a dark grey background rect
-        glm::vec2 damageBarMidpoint(-225.0f + 150*i, -WORLD_H/2 + 75);
+        glm::vec2 damageBarMidpoint = player_hud_center + glm::vec2(0.f, -0.8f/6.f);
         glm::mat4 transform = glm::scale(
                     glm::translate(
                         glm::mat4(1.0f),
                         glm::vec3(damageBarMidpoint.x, damageBarMidpoint.y, 0.0f)),
-                    glm::vec3(130, 30, 1.0));
+                    glm::vec3(0.15f, .25f * 0.15f * 16.f/9.f, 1.f));
         renderRectangle(transform, glm::vec4(0.25, 0.25, 0.25, 0.0f));
 
         float maxDamage = 100;
@@ -483,12 +503,9 @@ void render()
         renderRectangle(transform,
                 glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio+1)), 0.0f));
     }
-    glDisable(GL_DEPTH_TEST);
 
-
-    // Finish
-    postRender();
-    SDL_GL_SwapBuffers();
+    setProjectionMatrix(pmat);
+    setViewMatrix(vmat);
 }
 
 void renderArrow(const Fighter *f)

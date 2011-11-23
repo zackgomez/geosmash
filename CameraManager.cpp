@@ -20,7 +20,7 @@ void CameraManager::update(float dt, const std::vector<Fighter *> &fighters)
     //std::cout << "Bounding rect - " << rect.x << ' ' << rect.y << ' ' << rect.w << ' ' << rect.h << '\n';
     float z = rect.w / (2 * tanf(fov / 2));
     target_ = glm::vec3(rect.x, rect.y, z);
-    std::cout << "Cam Target: " << target_.x << ' ' << target_.x << ' ' << target_.z << '\n';
+    //std::cout << "Cam Target: " << target_.x << ' ' << target_.x << ' ' << target_.z << '\n';
 
     updateCurrent_(dt);
 }
@@ -81,7 +81,6 @@ void CameraManager::updateCurrent_(float dt) {
                    getParam("camera.maxVz"));
     // If we're trying to move faster than we're allowed,
     // clip our velocity in that direction.
-    printf("dx.y: %f\n", dx.y);
     if (fabs(dx.x) > maxV.x * dt) {
         dx.x = dx.x < 0 ? 
             -1 * maxV.x * dt : 
@@ -134,8 +133,6 @@ Rectangle CameraManager::getCameraRect(const std::vector<Fighter*> &fighters)
         min.x = -maxXMag;
     if (max.x > maxXMag)
         max.x = maxXMag;
-
-    std::cout << "MIN: " << min.x << ' ' << min.y << "  MAX: " << max.x << ' ' << max.y << '\n';
 
     glm::vec2 pos = (max + min) / 2.f;
     glm::vec2 size = max - min;
