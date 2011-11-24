@@ -20,8 +20,8 @@ static const float dt = 1.f / 60.f;
 
 static float WORLD_W = 1500.0f;
 static float WORLD_H = 750.0f;
-static int SCREEN_W = 2560;
-static int SCREEN_H = 1600;
+static int SCREEN_W = 1280;
+static int SCREEN_H = 960;
 
 bool running;
 bool teams;

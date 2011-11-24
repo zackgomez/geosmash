@@ -367,9 +367,11 @@ void GroundState::processInput(Controller &controller, float dt)
                     0.3f);
         }
 
-        // Check for entry into the ducking state
+        // XXX: Check for entry into the ducking state
+        /*
         if (controller.joyy < getParam("input.duckThresh"))
             next_ = new DuckingState(fighter_);
+            */
     }
 
     // --- Check to see if they want to start a jump ---
