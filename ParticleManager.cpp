@@ -9,28 +9,32 @@ void ParticleManager::render(float dt)
 {
     // first create new particles
     for (int i = 0; i < emitters.size(); i++) 
-    {
-        Emitter* e = emitters[i];
-        int numNewParts = emitters[i]->rate_ * dt;
-        for (int j = 0; j < numNewParts; j++)
-        {
-            Particle *p = new Particle();
-            p->loc = e->loc_;
-            p->t = e->lifetime_;
-            p->vel = e->vel_;
-            particles.push_back(p);
-        }
-
+	{
+        emitters[i]->emit(particles_);
     }
 
     // then update old particles
     for (unsigned i = 0; i < particles.size(); i++) 
     {
         
-        //Particle *p = particles[i];
+        Particle *p = particles[i];
+        p->loc_ = p->loc_ + p->vel_;
     }
  
     // finally draw existing particles
+}
+
+void Emitter::emit(std::list<Particle*> particles) 
+{
+    int numNewParts = rate_ * dt;
+    for (int j = 0; j < numNewParts; j++)     
+    {
+        Particle *p = new Particle();
+        p->loc = loc_;
+        p->t = lifetime_;
+        p->vel = vel_;
+        particles.push_back(p);
+    }
 }
 
 ParticleManager* ParticleManager::get()
@@ -57,4 +61,5 @@ Emitter* Emitter::setOutputRate(float r)
     rate_ = r;
     return this;
 }
+
 

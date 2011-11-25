@@ -1,6 +1,5 @@
 #pragma once
 
-#include "glutils.h"
 #include <vector>
 #include <glm/glm.hpp>
 #include <list>
@@ -20,6 +19,7 @@ private:
     glm::vec3 vel_;
     float rate_;
     friend class ParticleManager;
+    friend class Particle;
 };
 
 struct Particle
@@ -27,6 +27,9 @@ struct Particle
     glm::vec3 loc;
     glm::vec3 vel;
     float t; // how much longer will it remain alive? 
+    Emitter *emitter;
+
+    void update(float dt);
 };
 
 
