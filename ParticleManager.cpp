@@ -26,6 +26,10 @@ void ParticleManager::render(float dt)
  
     // finally draw existing particles
     // Make a call to drawRectangle()
+    for (int i = 0; i < particles.size(); i++)_ 
+    {
+        particles[i]->render();
+    }
 }
 
 void Particle::update(float dt) 
