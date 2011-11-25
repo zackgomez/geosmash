@@ -18,6 +18,7 @@ private:
     glm::vec3 loc_;
     glm::vec3 vel_;
     float rate_;
+    glm::vec3 size_;
     friend class ParticleManager;
     friend class Particle;
 };
@@ -30,6 +31,7 @@ struct Particle
     Emitter *emitter;
 
     void update(float dt);
+    void render();
 };
 
 

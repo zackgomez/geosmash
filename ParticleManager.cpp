@@ -35,6 +35,16 @@ void Particle::update(float dt)
     t += dt;
 }
     
+void Particle::render() 
+{
+    assert(emitter);
+    glm::mat4 transform = glm::scale(
+        glm::translate(
+            glm::mat4(1.0f),
+            glm::vec3(loc, 0.f)),
+        glm::vec3(emitter->size, 1.0f));
+    renderRectangle(transform, glm::vec4(1.0f, 0.0f, 0.0f, 0.0f));
+}
 
 void Emitter::emit(std::list<Particle*> particles) 
 {
