@@ -14,15 +14,27 @@ void ParticleManager::render(float dt)
     }
 
     // then update old particles
-    for (unsigned i = 0; i < particles.size(); i++) 
-    {
-        
-        Particle *p = particles[i];
-        p->loc_ = p->loc_ + p->vel_;
+    std::list<Particle*>::iterator pit;
+    for (pit = particles_.begin(); pit != particles_.end(); pit++)  
+    {    
+        (*pit)->update(dt);
+        if ((*pit)->t < 0) 
+        {
+            particles_.erase(pit);
+        }
     }
  
     // finally draw existing particles
+    // Make a call to drawRectangle()
 }
+
+void Particle::update(float dt) 
+{
+    assert(emitter);
+    loc = loc + vel * dt;
+    t += dt;
+}
+    
 
 void Emitter::emit(std::list<Particle*> particles) 
 {
@@ -33,6 +45,7 @@ void Emitter::emit(std::list<Particle*> particles)
         p->loc = loc_;
         p->t = lifetime_;
         p->vel = vel_;
+        p->emitter = this;
         particles.push_back(p);
     }
 }
