@@ -1,23 +1,32 @@
 #include <iostream>
 #include "ParticleManager.h"
 #include "ParamReader.h"
+#include <glm/gtc/matrix_transform.hpp>
+#include "glutils.h"
 
 ParticleManager::ParticleManager()
 {}
 
+// A combined update/render call...
+// Two types of operations occur here:
+//  - those that update emitters and particles
+//  - those that render particles
 void ParticleManager::render(float dt)
 {
-    // first create new particles
-    for (int i = 0; i < emitters.size(); i++) 
+    // First create new particles.
+    for (int i = 0; i < emitters_.size(); i++) 
 	{
-        emitters[i]->emit(particles_);
+        emitters_[i]->emit(particles_, dt);
     }
 
-    // then update old particles
+    // Then update old particles.
     std::list<Particle*>::iterator pit;
     for (pit = particles_.begin(); pit != particles_.end(); pit++)  
     {    
         (*pit)->update(dt);
+        // After updating, we have to delete any expired particles
+        // (The particle who just updated isn't really capable of
+        // cleaning up after itself.)
         if ((*pit)->t < 0) 
         {
             particles_.erase(pit);
@@ -25,10 +34,9 @@ void ParticleManager::render(float dt)
     }
  
     // finally draw existing particles
-    // Make a call to drawRectangle()
-    for (int i = 0; i < particles.size(); i++)_ 
+    for (pit = particles_.begin(); pit != particles_.end(); pit++)
     {
-        particles[i]->render();
+        (*pit)->render();
     }
 }
 
@@ -44,13 +52,11 @@ void Particle::render()
     assert(emitter);
     glm::mat4 transform = glm::scale(
         glm::translate(
-            glm::mat4(1.0f),
-            glm::vec3(loc, 0.f)),
-        glm::vec3(emitter->size, 1.0f));
+            glm::mat4(1.0f), loc), size);
     renderRectangle(transform, glm::vec4(1.0f, 0.0f, 0.0f, 0.0f));
 }
 
-void Emitter::emit(std::list<Particle*> particles) 
+void Emitter::emit(std::list<Particle*> particles, float dt) 
 {
     int numNewParts = rate_ * dt;
     for (int j = 0; j < numNewParts; j++)     
