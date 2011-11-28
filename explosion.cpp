@@ -40,8 +40,8 @@ void ExplosionManager::addExplosion(float x, float y, float t)
         ->setTimeRemaining(t)
         ->setParticleLifetime(0.03)
         ->setParticleColor(glm::vec4(0.9f, 0.1f, 0.0f, 0.9f))
-        //->setParticleColorVariance(glm::vec4(0.11f, 1.5f, 0.0f, 0.0f))
-        ->setOutputRate(1000);
+        ->setParticleColorVariance(glm::vec4(0.11f, 1.5f, 0.0f, 0.0f))
+        ->setOutputRate(2000);
     ParticleManager::get()->addEmitter(em);
 }
 
@@ -53,7 +53,7 @@ void ExplosionManager::addPuff(float x, float y, float t)
         ->setParticleLifetime(t)
         ->setParticleVelocity(20)
         ->setParticleColor(glm::vec4(0.8, 0.8, 0.8, 0.5))
-        ->setParticleColorBrightness(0.8f, 0.2f)
+        ->setParticleColorBrightness(0.8f, 0.3f)
         ->setOutputRate(1000);
     ParticleManager::get()->addEmitter(em);
 }
