@@ -59,6 +59,7 @@ public:
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Attack *attack);
+    virtual Rectangle getRect() const;
 
 private:
     // Jump startup timer.  Value >= 0 implies that the fighter is starting a jump
@@ -68,6 +69,7 @@ private:
     // Generic wait time, wait while value > 0
     float waitTime_;
     bool dashing_;
+    bool ducking_;
 };
 
 class AirNormalState : public FighterState
@@ -124,23 +126,6 @@ private:
     float invincTime_;
     float cooldown_;
 };
-
-class DuckingState : public FighterState
-{
-public:
-    DuckingState(Fighter *f);
-    virtual ~DuckingState() {}
-
-    virtual void processInput(Controller&, float dt);
-    virtual void render(float dt);
-    virtual void collisionWithGround(const Rectangle &ground, bool collision);
-    virtual void hitByAttack(const Attack *attack);
-    virtual Rectangle getRect() const;
-
-private:
-    glm::vec2 size_;
-};
-
 
 class RespawnState : public FighterState
 {

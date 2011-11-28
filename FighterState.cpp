@@ -147,7 +147,7 @@ void AirStunnedState::hitByAttack(const Attack *attack)
 //// ------------------------ GROUND STATE -------------------------
 GroundState::GroundState(Fighter *f, float delay) :
     FighterState(f), jumpTime_(-1), dashTime_(-1), waitTime_(delay),
-    dashing_(false)
+    dashing_(false), ducking_(false)
 {
     frameName_ = "GroundNormal";
     fighter_->lastHitBy_ = -1;
@@ -158,6 +158,9 @@ GroundState::~GroundState()
 
 void GroundState::processInput(Controller &controller, float dt)
 {
+    // 'unduck' every frame
+
+    ducking_ = false;
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
     if (dashTime_ >= 0) dashTime_ += dt;
@@ -367,11 +370,8 @@ void GroundState::processInput(Controller &controller, float dt)
                     0.3f);
         }
 
-        // XXX: Check for entry into the ducking state
-        /*
         if (controller.joyy < getParam("input.duckThresh"))
-            next_ = new DuckingState(fighter_);
-            */
+            ducking_ = true;
     }
 
     // --- Check to see if they want to start a jump ---
@@ -386,13 +386,13 @@ void GroundState::processInput(Controller &controller, float dt)
 
 void GroundState::render(float dt)
 {
-    printf("GROUND | JumpT: %.3f  DashT: %.3f  WaitT: %.3f || ",
-            jumpTime_, dashTime_, waitTime_);
+    printf("GROUND | JumpT: %.3f  DashT: %.3f  WaitT: %.3f Duck: %d || ",
+            jumpTime_, dashTime_, waitTime_, ducking_);
 
     std::string fname = frameName_;
     if (dashing_)
         fname = "GroundRunning";
-    if (waitTime_ > 0)
+    if (waitTime_ > 0 || ducking_)
         fname = "Ducking";
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
@@ -428,6 +428,17 @@ void GroundState::hitByAttack(const Attack *attack)
     fighter_->pos_.y += 4;
     // Then do the normal stuff
     FighterState::calculateHitResult(attack);
+}
+
+Rectangle GroundState::getRect() const
+{
+    Rectangle r = FighterState::getRect();
+    if (ducking_)
+    {
+        r.y -= r.h/2;
+        r.h /= 2;
+    }
+    return r;
 }
 
 //// -------------------- AIR NORMAL STATE -----------------------------
@@ -658,57 +669,6 @@ void DodgeState::collisionWithGround(const Rectangle &ground, bool collision)
 bool DodgeState::canBeHit() const
 {
     return t_ > invincTime_;
-}
-
-//// ----------------------- DUCKING STATE --------------------------------
-DuckingState::DuckingState(Fighter *f) :
-    FighterState(f)
-{
-}
-
-void DuckingState::processInput(Controller &controller, float dt)
-{
-    // Can't move while ducking
-    fighter_->vel_ = glm::vec2(0.f);
-
-    if (fighter_->attack_) return;
-
-    // Check for removal from ducking state and attack
-    if (controller.pressa)
-    {
-        assert(!fighter_->attack_);
-        fighter_->attack_ = fighter_->downTiltAttack_->clone();
-        fighter_->attack_->setFighter(fighter_);
-        fighter_->attack_->start();
-    }
-    else if (controller.joyy > getParam("input.duckThresh"))
-        next_ = new GroundState(fighter_);
-}
-
-void DuckingState::render(float dt)
-{
-    printf("DUCKING || ");
-    // Just render the fighter, but slightly lighter
-    fighter_->renderHelper(dt, "Ducking", fighter_->color_);
-}
-
-void DuckingState::hitByAttack(const Attack *attack)
-{
-    // Pop up a bit so that we're not overlapping the ground
-    fighter_->pos_.y += 4;
-    // Then do the normal stuff
-    FighterState::calculateHitResult(attack);
-}
-
-void DuckingState::collisionWithGround(const Rectangle &ground, bool collision)
-{
-    //assert(collision);
-}
-
-Rectangle DuckingState::getRect() const
-{
-    return Rectangle(fighter_->pos_.x, fighter_->pos_.y,
-            size_.x, size_.y);
 }
 
 //// ----------------------- RESPAWN STATE --------------------------------
