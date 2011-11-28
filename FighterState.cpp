@@ -135,7 +135,8 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
         return;
 
     // Check for ground bounce
-    if (fighter_->vel_.y < -getParam("fighter.gbThresh"))
+    if (fighter_->vel_.y < -getParam("fighter.gbThresh")
+            && fighter_->lastHitBy_ != -1)
     {
         // reflect and dampen yvel
         fighter_->vel_.y *= -getParam("fighter.gbDamping");
