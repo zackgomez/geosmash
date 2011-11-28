@@ -483,8 +483,7 @@ void BlockingState::processInput(Controller &controller, float dt)
     if (controller.rtrigger > -getParam("input.trigThresh")
      && controller.ltrigger > -getParam("input.trigThresh"))
     {
-        // TODO have a cooldown here
-        next_ = new GroundState(fighter_);
+        next_ = new GroundState(fighter_, getParam("shield.cooldown"));
         return;
     }
     // Check for dodge

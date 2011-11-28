@@ -49,6 +49,7 @@ shield.regen     8.0
 shield.degen     -16.0
 shield.size      35.0
 shield.startup   0.06
+shield.cooldown  0.18
 shield.dazeTime  3.0
 
 walkSpeed        133.3
