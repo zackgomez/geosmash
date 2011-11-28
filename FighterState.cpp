@@ -435,7 +435,7 @@ Rectangle GroundState::getRect() const
     Rectangle r = FighterState::getRect();
     if (ducking_)
     {
-        r.y -= r.h/2;
+        r.y -= r.h/4;
         r.h /= 2;
     }
     return r;

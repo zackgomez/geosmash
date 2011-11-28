@@ -257,6 +257,16 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
 
     FrameManager::get()->renderFrame(transform * postTrans, glm::vec4(color, 0.25f), frameName);
 
+    // Check for rendering hitbox
+    if (getParam("debug.drawHitbox") != 0.f)
+    {
+        Rectangle hb = getRect();
+        glm::mat4 hboxtrans = glm::scale(
+                glm::translate(glm::mat4(1.0f), glm::vec3(hb.x, hb.y, 0.0f)),
+                glm::vec3(dir_ * hb.w, hb.h, 1.f));
+        renderRectangle(hboxtrans, glm::vec4(color, 0.f));
+    }
+
     if (attack_)
         attack_->render(dt);
 }

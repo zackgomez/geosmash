@@ -34,6 +34,9 @@ input.trigThresh    0.5
 input.duckThresh    -0.85
 
 
+debug.drawHitbox    0
+
+
 fighter.w        50
 fighter.h        60
 fighter.lives    4
