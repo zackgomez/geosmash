@@ -17,7 +17,9 @@ Fighter *getPartner(int playerID);
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
     dir_(-1),
     state_(0),
-    damage_(0), lives_(getParam("fighter.lives")),
+    damage_(0),
+    shieldHealth_(getParam("shield.maxHealth")),
+    lives_(getParam("fighter.lives")),
     respawnx_(respawnx), respawny_(respawny),
     color_(color),
     attack_(NULL),
@@ -148,6 +150,9 @@ void Fighter::processInput(Controller &controller, float dt)
 
 void Fighter::update(float dt)
 {
+    // Regain some shield health
+    shieldHealth_ += getParam("shield.regen") * dt;
+    shieldHealth_ = std::min(shieldHealth_, getParam("shield.maxHealth"));
     GameEntity::update(dt);
 }
 
@@ -175,9 +180,6 @@ void Fighter::hitByAttack(const Attack *attack)
     state_->hitByAttack(attack);
 
     lastHitBy_ = attack->getPlayerID();
-
-    // Play a sound
-    AudioManager::get()->playSound(attack->getAudioID(), pos_, damage_);
 }
 
 void Fighter::attackConnected(GameEntity *victim)

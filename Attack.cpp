@@ -140,14 +140,15 @@ void Attack::render(float dt)
                 glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0));
 
         glm::vec4 color = glm::vec4(1,0,0,0.33);
-        if (hbframe_.empty() || getParam("debug.drawHitbox") != 0.f)
+        if (hbframe_.empty() || (getParam("debug.drawHitbox") != 0.f))
         {
             renderRectangle(glm::scale(attacktrans, glm::vec3(hitbox.w, hitbox.h, 1.f)), color);
         }
         if (!hbframe_.empty())
         {
+            color = glm::vec4(owner_->getColor(), 0.33f);
             FrameManager::get()->renderFrame(glm::scale(attacktrans, glm::vec3(owner_->getDirection(), 1.f, 1.f)),
-                    glm::vec4(owner_->getColor(), 0.33f), hbframe_);
+                    color, hbframe_);
         }
 
     }

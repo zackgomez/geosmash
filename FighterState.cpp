@@ -5,6 +5,8 @@
 #include "ParamReader.h"
 #include "explosion.h"
 #include "Projectile.h"
+#include "glutils.h"
+#include "audio.h"
 
 // ----------------------------------------------------------------------------
 // FighterState class methods
@@ -46,6 +48,9 @@ void FighterState::calculateHitResult(const Attack *attack)
     float exx = -hitdir.x * fighter_->size_.x / 2 + fighter_->pos_.x;
     float exy = -hitdir.y * fighter_->size_.y / 2 + fighter_->pos_.y;
     ExplosionManager::get()->addExplosion(exx, exy, 0.2);
+
+    // Play a sound
+    AudioManager::get()->playSound(attack->getAudioID(), fighter_->pos_, fighter_->damage_);
 
     // Go to the stunned state
     float stunDuration = attack->getStun(fighter_) * fighter_->damageFunc();
@@ -255,6 +260,16 @@ void GroundState::processInput(Controller &controller, float dt)
                 0.3f);
         return;
     }
+    // Check for block
+    else if ((controller.rtrigger < -getParam("input.trigThresh")
+           || controller.ltrigger < -getParam("input.trigThresh")))
+    {
+        fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+        fighter_->vel_ = glm::vec2(0.f);
+        fighter_->accel_ = glm::vec2(0.f);
+        next_ = new BlockingState(fighter_);
+        return;
+    }
     // Check for B moves
     else if (controller.pressb)
     {
@@ -446,6 +461,7 @@ BlockingState::BlockingState(Fighter *f) :
     FighterState(f), waitTime_(0.f)
 {
     frameName_ = "Blocking";
+    waitTime_ = getParam("shield.startup");
 }
 
 BlockingState::~BlockingState()
@@ -455,18 +471,86 @@ BlockingState::~BlockingState()
 
 void BlockingState::processInput(Controller &controller, float dt)
 {
+    // Update timers
+    waitTime_ -= dt;
+    dazeTime_ -= dt;
+
+    // Don't do anything while waiting or dazed
+    if (waitTime_ > 0.f) return;
+    if (dazeTime_ > 0.f) return;
+
+    // Check for drop out of blocking state
+    if (controller.rtrigger > -getParam("input.trigThresh")
+     && controller.ltrigger > -getParam("input.trigThresh"))
+    {
+        // TODO have a cooldown here
+        next_ = new GroundState(fighter_);
+        return;
+    }
+    // Check for dodge
+    else if (fabs(controller.joyx) > getParam("input.dodgeThresh")
+          && fabs(controller.joyxv) > getParam("input.velThresh"))
+    {
+        fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+        next_ = new DodgeState(fighter_);
+        ExplosionManager::get()->addPuff(
+                fighter_->pos_.x + fighter_->size_.x * fighter_->dir_ * 0.4f, 
+                fighter_->pos_.y - fighter_->size_.y * 0.45f,
+                0.3f);
+        return;
+    }
+
+    // Eat the degeneration
+    fighter_->shieldHealth_ += getParam("shield.degen") * dt;
+
+    // Check to see if they are out of shield
+    if (fighter_->shieldHealth_ < 0.f)
+    {
+        dazeTime_ = getParam("shield.dazeTime");
+    }
+
 }
 
 void BlockingState::render(float dt)
 {
+    printf("BLOCKING | waitT: %.3f dazeT: %.3f health: %.3f || ",
+            waitTime_, dazeTime_, fighter_->shieldHealth_);
+
+    std::string fname = dazeTime_ > 0.f ? "Dazed" : frameName_;
+    fighter_->renderHelper(dt, fname, fighter_->color_);
+
+    // Draw shield
+    if (!(waitTime_ > 0.f || dazeTime_ > 0.f))
+    {
+        float sizeFact = std::max(fighter_->shieldHealth_ / getParam("shield.maxHealth"), 0.f);
+        glm::mat4 transform = glm::scale(
+                glm::translate(glm::mat4(1.f), glm::vec3(fighter_->pos_, 0.1f)),
+                sizeFact * glm::vec3(getParam("shield.size"), getParam("shield.size"), 1.f));
+        renderRectangle(transform, glm::vec4(fighter_->color_ * 0.3f, 0.33f));
+    }
 }
 
 void BlockingState::collisionWithGround(const Rectangle &ground, bool collision)
 {
+    if (next_)
+        return;
+    assert(collision);
 }
 
 void BlockingState::hitByAttack(const Attack *attack)
 {
+    // Only block if we're actively blocking right now
+    if (waitTime_ > 0.f || dazeTime_ > 0.f)
+    {
+        // Get hit
+        fighter_->pos_.y += 4;
+        FighterState::calculateHitResult(attack);
+    }
+    else
+    {
+        // block it and take shield damage
+        fighter_->shieldHealth_ -= attack->getDamage(fighter_);
+    }
 }
 
 

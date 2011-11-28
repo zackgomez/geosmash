@@ -85,6 +85,7 @@ private:
     float dir_; // 1 or -1 look in xdir
     FighterState *state_;
     float damage_;
+    float shieldHealth_;
     int lives_;
 
     // Fighter ID members
@@ -136,7 +137,7 @@ private:
     friend class DodgeState;
     friend class DeadState;
     friend class RespawnState;
-    friend class DuckingState;
+    friend class BlockingState;
 
     friend class UpSpecialAttack;
     friend class DashAttack;
