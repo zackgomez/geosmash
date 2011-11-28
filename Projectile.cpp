@@ -27,8 +27,9 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
 
     attack_ = new ProjectileHelperAttack(
             getParam(paramPrefix_ + "knockbackpow") *
-            glm::normalize(glm::vec2(getParam(paramPrefix_ + "knockbackx"),
-                      getParam(paramPrefix_ + "knockbacky"))),
+            glm::normalize(glm::vec2(
+                    getParam(paramPrefix_ + "knockbackx") * vel_.x > 0 ? 1 : -1,
+                    getParam(paramPrefix_ + "knockbacky"))),
             getParam(paramPrefix_ + "damage"),
             getParam(paramPrefix_ + "stun"),
             pos_, size_, playerID_,

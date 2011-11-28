@@ -138,10 +138,11 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
         return;
 
     // Check for ground bounce
-    if (glm::length(fighter_->vel_) > getParam("fighter.gbThresh"))
+    if (fighter_->vel_.y < -getParam("fighter.gbThresh"))
     {
         // reflect and dampen yvel
         fighter_->vel_.y *= -getParam("fighter.gbDamping");
+        fighter_->vel_.x *= getParam("fighter.gbDamping");
     }
     else
     {
@@ -524,17 +525,28 @@ void BlockingState::render(float dt)
     printf("BLOCKING | waitT: %.3f dazeT: %.3f health: %.3f || ",
             waitTime_, dazeTime_, fighter_->shieldHealth_);
 
-    std::string fname = dazeTime_ > 0.f ? "Dazed" : frameName_;
-    fighter_->renderHelper(dt, fname, fighter_->color_);
+    glm::vec3 color = fighter_->color_;
+    std::string fname = frameName_;
+    if (dazeTime_ > 0.f)
+    {
+        fname = "Dazed";
+        float period_scale_factor = 20.0;
+        float opacity_amplitude = 3;
+        float opacity_factor = (1 + cos(period_scale_factor * dazeTime_)) * 0.5f; 
+        color *= (opacity_amplitude * opacity_factor + 1);
+    }
+    fighter_->renderHelper(dt, fname, color);
+
 
     // Draw shield
     if (!(waitTime_ > 0.f || dazeTime_ > 0.f))
     {
+        glm::vec4 color(0.4f, 0.0f, 0.33f, 0.4f);
         float sizeFact = std::max(fighter_->shieldHealth_ / getParam("shield.maxHealth"), 0.f);
         glm::mat4 transform = glm::scale(
                 glm::translate(glm::mat4(1.f), glm::vec3(fighter_->pos_, 0.1f)),
                 sizeFact * glm::vec3(getParam("shield.size"), getParam("shield.size"), 1.f));
-        renderRectangle(transform, glm::vec4(fighter_->color_ * 0.3f, 0.33f));
+        renderRectangle(transform, color);
     }
 }
 
@@ -559,6 +571,13 @@ void BlockingState::hitByAttack(const Attack *attack)
         // block it and take shield damage
         fighter_->shieldHealth_ -= attack->getDamage(fighter_);
     }
+
+    glm::vec2 hitdir = glm::vec2(fighter_->pos_.x, fighter_->pos_.y)
+        - glm::vec2(attack->getHitbox().x, attack->getHitbox().y);
+    hitdir = glm::normalize(hitdir);
+    float exx = -hitdir.x * fighter_->size_.x / 2 + fighter_->pos_.x;
+    float exy = -hitdir.y * fighter_->size_.y / 2 + fighter_->pos_.y;
+    ExplosionManager::get()->addExplosion(exx, exy, 0.2);
 }
 
 
