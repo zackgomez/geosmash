@@ -115,10 +115,7 @@ void AirStunnedState::render(float dt)
     printf("AIR STUNNED | StunTime: %.3f  StunDuration: %.3f || ",
             stunTime_, stunDuration_);
     // flash the player 
-    float period_scale_factor = 20.0;
-    float opacity_amplitude = 3;
-    float opacity_factor = (1 + cos(period_scale_factor * stunTime_)) * 0.5f; 
-    glm::vec3 color = fighter_->color_ * (opacity_amplitude * opacity_factor + 1);
+    glm::vec3 color = muxByTime(fighter_->color_, stunTime_);
 
     std::string fname = frameName_;
     if (fighter_->attack_)
@@ -468,7 +465,7 @@ Rectangle GroundState::getRect() const
 
 //// -------------------- AIR NORMAL STATE -----------------------------
 BlockingState::BlockingState(Fighter *f) :
-    FighterState(f), waitTime_(0.f)
+    FighterState(f), waitTime_(0.f), dazeTime_(0.f), hitStunTime_(0.f)
 {
     frameName_ = "Blocking";
     waitTime_ = getParam("shield.startup");
@@ -484,10 +481,12 @@ void BlockingState::processInput(Controller &controller, float dt)
     // Update timers
     waitTime_ -= dt;
     dazeTime_ -= dt;
+    hitStunTime_ -= dt;
 
-    // Don't do anything while waiting or dazed
+    // Don't do anything while waiting or dazed or stunned
     if (waitTime_ > 0.f) return;
     if (dazeTime_ > 0.f) return;
+    if (hitStunTime_ > 0.f) return;
 
     // Check for drop out of blocking state
     if (controller.rtrigger > -getParam("input.trigThresh")
@@ -516,6 +515,7 @@ void BlockingState::processInput(Controller &controller, float dt)
     if (fighter_->shieldHealth_ < 0.f)
     {
         dazeTime_ = getParam("shield.dazeTime");
+        fighter_->shieldHealth_ = 0.f;
     }
 
 }
@@ -530,10 +530,7 @@ void BlockingState::render(float dt)
     if (dazeTime_ > 0.f)
     {
         fname = "Dazed";
-        float period_scale_factor = 20.0;
-        float opacity_amplitude = 3;
-        float opacity_factor = (1 + cos(period_scale_factor * dazeTime_)) * 0.5f; 
-        color *= (opacity_amplitude * opacity_factor + 1);
+        color = muxByTime(color, dazeTime_);
     }
     fighter_->renderHelper(dt, fname, color);
 
@@ -546,9 +543,22 @@ void BlockingState::render(float dt)
         glm::mat4 transform = glm::scale(
                 glm::translate(glm::mat4(1.f), glm::vec3(fighter_->pos_, 0.1f)),
                 sizeFact * glm::vec3(getParam("shield.size"), getParam("shield.size"), 1.f));
+
+        if (hitStunTime_ > 0.f)
+            color = muxByTime(color, hitStunTime_);
         renderRectangle(transform, color);
     }
 }
+
+template<typename T>
+T FighterState::muxByTime(const T& color, float t)
+{
+    float period_scale_factor = 20.0;
+    float opacity_amplitude = 3;
+    float opacity_factor = (1 + cos(period_scale_factor * t)) * 0.5f; 
+    return color * (opacity_amplitude * opacity_factor + 1);
+}
+
 
 void BlockingState::collisionWithGround(const Rectangle &ground, bool collision)
 {
@@ -570,6 +580,9 @@ void BlockingState::hitByAttack(const Attack *attack)
     {
         // block it and take shield damage
         fighter_->shieldHealth_ -= attack->getDamage(fighter_);
+        // Experience some hit stun
+        hitStunTime_ = getParam("shield.stunFactor")
+            * glm::length(attack->getKnockback(fighter_));
     }
 
     glm::vec2 hitdir = glm::vec2(fighter_->pos_.x, fighter_->pos_.y)

@@ -44,7 +44,7 @@ fighter.h        60
 fighter.lives    4
 fighter.respawnTime 1.0
 fighter.gbThresh  700.6
-fighter.gbDamping 0.30
+fighter.gbDamping 0.40
 
 shield.maxHealth 50.0
 shield.regen     8.0
@@ -53,6 +53,7 @@ shield.size      35.0
 shield.startup   0.06
 shield.cooldown  0.18
 shield.dazeTime  3.0
+shield.stunFactor 0.002
 
 walkSpeed        133.3
 dashSpeed        400.0

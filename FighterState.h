@@ -43,6 +43,8 @@ protected:
 
     void calculateHitResult(const Attack *attack);
     void collisionHelper(const Rectangle &ground);
+    template<typename T> 
+    static T muxByTime(const T& color, float t);
 };
 
 
@@ -86,6 +88,7 @@ public:
 private:
     float waitTime_;
     float dazeTime_;
+    float hitStunTime_;
 };
 
 class AirNormalState : public FighterState
