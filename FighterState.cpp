@@ -132,16 +132,25 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
     if (!collision)
         return;
 
-    std::cout << "Air Stun collision\n";
     FighterState::collisionHelper(ground);
     // If we're not overlapping the ground anymore, no collision
     if (!ground.overlaps(fighter_->getRect()))
         return;
-    fighter_->vel_ = glm::vec2(0.f);
-    fighter_->accel_ = glm::vec2(0.f);
-    // Transition to the ground state
-    if (next_) delete next_;
-    next_ = new GroundState(fighter_);
+
+    // Check for ground bounce
+    if (glm::length(fighter_->vel_) > getParam("fighter.gbThresh"))
+    {
+        // reflect and dampen yvel
+        fighter_->vel_.y *= -getParam("fighter.gbDamping");
+    }
+    else
+    {
+        fighter_->vel_ = glm::vec2(0.f);
+        fighter_->accel_ = glm::vec2(0.f);
+        // Transition to the ground state
+        if (next_) delete next_;
+        next_ = new GroundState(fighter_);
+    }
 }
 
 void AirStunnedState::hitByAttack(const Attack *attack)

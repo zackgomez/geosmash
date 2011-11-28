@@ -43,6 +43,8 @@ fighter.w        50
 fighter.h        60
 fighter.lives    4
 fighter.respawnTime 1.0
+fighter.gbThresh  400.0
+fighter.gbDamping 0.45
 
 shield.maxHealth 50.0
 shield.regen     8.0
@@ -196,7 +198,7 @@ airDownAttack.startup      0.15
 airDownAttack.duration     0.15
 airDownAttack.cooldown     0.30
 airDownAttack.damage       11
-airDownAttack.stun         0.30
+airDownAttack.stun         0.22
 airDownAttack.knockbackx   0
 airDownAttack.knockbacky   -1
 airDownAttack.knockbackpow 200.0
@@ -324,6 +326,7 @@ neutralSpecialAttack.sizey        20.0
 neutralSpecialAttack.knockbackx   1
 neutralSpecialAttack.knockbacky   1
 neutralSpecialAttack.knockbackpow 20.0
+neutralSpecialAttack.lifetime     2.0
 
 stageHazardAttack.startup      0.30
 stageHazardAttack.cooldown     0.15
