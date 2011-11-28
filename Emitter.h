@@ -1,6 +1,11 @@
 #pragma once
 #include "Particle.h"
+#include <list>
+#include <glm/glm.hpp>
+
+// Forward declaration necessary for friending
 class ParticleManager;
+
 //
 // The emitter class is the main particle engine configuration point.
 // With its setter methods particle lifetime, location, and spew rate

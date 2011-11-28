@@ -6,12 +6,17 @@
 #include "Fighter.h"
 #include "Particle.h"
 #include "Emitter.h"
+
+// Utility functions
+
 glm::vec3 pointOnSphere(float r, glm::vec3 pos);  
 float normalRandom(float mu, float sigma);
-// Forward declarations necessary for friending.
 
-
-
+//
+// Particle system manager declaration.
+//
+// Singleton and Factory Pattern
+//
 class ParticleManager 
 {
 public:

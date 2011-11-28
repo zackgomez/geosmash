@@ -1,5 +1,10 @@
 #pragma once
 
+#include <glm/glm.hpp>
+//
+// Particle system's basic particle struct.
+// At some point, we may wish to add accessors/mutators
+//
 struct Particle
 {
     // Location of the particle, in world space
