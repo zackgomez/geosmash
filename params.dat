@@ -278,7 +278,7 @@ downSmashAttack.damage       15
 downSmashAttack.stun         0.13
 downSmashAttack.knockbackx   0
 downSmashAttack.knockbacky   0
-downSmashAttack.knockbackpow 200.0
+downSmashAttack.knockbackpow 180.0
 downSmashAttack.hitboxx      0
 downSmashAttack.hitboxy      -20
 downSmashAttack.hitboxw      130
@@ -314,7 +314,7 @@ neutralSpecialAttack.knockbackpow 20.0
 neutralSpecialAttack.lifetime     2.0
 
 camera.maxVx 200 
-camera.maxVy 200
+camera.maxVy 150
 camera.maxVz 150
 camera.minZoom 500
 camera.maxZoom 300

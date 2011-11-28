@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vector>
 #include <glm/glm.hpp>
 #include <list>
 #include "Fighter.h"
@@ -32,7 +31,7 @@ public:
     void quashEmitter(Emitter*);
 
 private:
-    std::vector<Emitter*> emitters_;
+    std::list<Emitter*> emitters_;
     std::list<Particle*> particles_;
 
 };

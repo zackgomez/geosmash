@@ -16,15 +16,23 @@ ParticleManager::ParticleManager()
 //  - those that render particles
 void ParticleManager::render(float dt)
 {
+    std::cout << "Rendering " << emitters_.size() << " emitters and "
+        << particles_.size() << " particles\n";
     // First create new particles.
-    for (int i = 0; i < emitters_.size(); i++) 
+    std::list<Emitter*>::iterator eit;
+    for (eit = emitters_.begin(); eit != emitters_.end(); eit++)
 	{
-        emitters_[i]->emit(particles_, dt);
+        (*eit)->emit(particles_, dt);
+        if ((*eit)->isDone()) 
+        {
+            delete *eit;
+            eit = emitters_.erase(eit);
+        }
     }
 
     // Then update old particles.
     std::list<Particle*>::iterator pit;
-    for (pit = particles_.begin(); pit != particles_.end(); pit++)  
+    for (pit = particles_.begin(); pit != particles_.end(); pit++)
     {    
         (*pit)->update(dt);
         // After updating, we have to delete any expired particles
@@ -32,7 +40,8 @@ void ParticleManager::render(float dt)
         // cleaning up after itself.)
         if ((*pit)->t < 0) 
         {
-            particles_.erase(pit);
+            delete *pit;
+            pit = particles_.erase(pit);
         }
     }
  
@@ -49,3 +58,12 @@ ParticleManager* ParticleManager::get()
     return &pm;
 }
 
+Emitter* ParticleManager::newEmitter()
+{
+    return new Emitter();
+}
+
+void ParticleManager::addEmitter(Emitter *em)
+{
+    emitters_.push_back(em);
+}

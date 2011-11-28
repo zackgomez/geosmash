@@ -14,14 +14,17 @@
 #include "StatsManager.h"
 #include "CameraManager.h"
 #include "Attack.h"
+#include "ParticleManager.h"
+
+void test_random();
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 static const float dt = 1.f / 60.f;
 
 static float WORLD_W = 1500.0f;
 static float WORLD_H = 750.0f;
-static int SCREEN_W = 1280;
-static int SCREEN_H = 960;
+static int SCREEN_W = 2560;
+static int SCREEN_H = 1600;
 
 bool running;
 bool teams;
@@ -102,6 +105,7 @@ int main(int argc, char **argv)
             teams = true;
     }
 
+
     // Init game state
     ParamReader::get()->loadFile("params.dat");
     
@@ -157,7 +161,6 @@ int main(int argc, char **argv)
 
     if (!muteMusic)
         AudioManager::get()->startSoundtrack();
-
 
     startTime = SDL_GetTicks();
     mainloop();
@@ -415,6 +418,7 @@ void render()
 
     // Draw any explosions
     ExplosionManager::get()->render(dt * !paused);
+    ParticleManager::get()->render(dt * !paused);
 
     renderHUD();
 
@@ -444,7 +448,6 @@ void renderHUD()
         int lives = fighters[i]->getLives();
         // Draw life counts first
         glm::vec2 life_area = player_hud_center - 0.75f * glm::vec2(lifesize.x, -lifesize.y);
-        std::cout << "Life Area " << i << ": " << life_area.x << ' ' << life_area.y << '\n';
         for (int j = 0; j < lives; j++)
         {
             glm::mat4 transform = glm::scale(

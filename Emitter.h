@@ -23,11 +23,14 @@ public:
     // Note, this isn't actual variance!
     Emitter* setParticleVelocityVariance(float r);
     Emitter* setRadius(float r);
+    // How much time is left before this emitter expires?
+    Emitter* setTimeRemaining(float);
+    bool isDone() const;
     // The update function. Spew some new particles, given that dt seconds
     // have elapsed.
-    void emit(std::list<Particle*>, float dt);
+    void emit(std::list<Particle*>&, float dt);
 private:
-    Emitter() { }
+    Emitter();
 
     float lifetime_;
 
@@ -43,6 +46,9 @@ private:
     float rate_;
     // Each particle will be about this size.
     glm::vec3 size_;
+
+    float timeRemaining_;
+
     friend class ParticleManager;
 };
 

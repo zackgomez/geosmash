@@ -3,6 +3,7 @@
 #include "explosion.h"
 #include "glutils.h"
 #include "FrameManager.h"
+#include "ParticleManager.h"
 
 void Explosion::render(float dt)
 {
@@ -51,7 +52,14 @@ ExplosionManager* ExplosionManager::get()
 
 void ExplosionManager::addExplosion(float x, float y, float t)
 {
-    explosions_.push_back(Explosion(x, y, t, glm::vec3(1.0f, 0.42f, 0.0f), 30.0f));
+    //explosions_.push_back(Explosion(x, y, t, glm::vec3(1.0f, 0.42f, 0.0f), 30.0f));
+    Emitter *em = ParticleManager::get()->newEmitter();
+    em->setLocation(glm::vec3(x, y, 0.f))
+        ->setTimeRemaining(t)
+        ->setParticleLifetime(0.03)
+        ->setOutputRate(1000);
+    //em->setEmitterLifetime(t);
+    ParticleManager::get()->addEmitter(em);
 }
 
 void ExplosionManager::addPuff(float x, float y, float t)
