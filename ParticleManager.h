@@ -5,6 +5,8 @@
 #include <list>
 #include "Fighter.h"
 
+glm::vec3 pointOnSphere(float r, glm::vec3 pos);  
+float normalRandom(float mu, float sigma);
 // Forward declarations necessary for friending.
 class ParticleManager;
 class Particle;
@@ -21,16 +23,29 @@ class Emitter
 public:
     Emitter* setParticleLifetime(float l);
     Emitter* setLocation(glm::vec3 l);
-    Emitter* setOutputRate(float r); // how many particles are output per second
-
+    Emitter* setOutputRate(float r);
+    // A measure of 'how random' particles coming off are.
+    // Note, this isn't actual variance!
+    Emitter* setParticleVelocityVariance(float r);
+    Emitter* setRadius(float r);
     // 
     void emit(std::list<Particle*>, float dt);
 private:
     Emitter() { }
+
     float lifetime_;
+
+    // A measure of how variable the particle velocities are
+    float var_;
+    // Since this is a sperical emitter, we need two pieces of information:
     glm::vec3 loc_;
-    glm::vec3 vel_;
+    // ... and ...
+    float radius_;
+    // Particles will spawn with this initial velocity
+    float vel_;
+    // And with a frequency determined by this (particles per second)
     float rate_;
+    // Each particle will be about this size.
     glm::vec3 size_;
     friend class ParticleManager;
     friend class Particle;
