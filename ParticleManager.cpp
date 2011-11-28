@@ -1,5 +1,7 @@
 #include <iostream>
 #include "ParticleManager.h"
+#include "Particle.h"
+#include "Emitter.h"
 #include "ParamReader.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "glutils.h"
