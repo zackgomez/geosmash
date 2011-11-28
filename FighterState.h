@@ -85,6 +85,7 @@ public:
 
 private:
     float waitTime_;
+    float dazeTime_;
 };
 
 class AirNormalState : public FighterState

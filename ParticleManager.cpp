@@ -16,8 +16,10 @@ ParticleManager::ParticleManager()
 //  - those that render particles
 void ParticleManager::render(float dt)
 {
+    /*
     std::cout << "Rendering " << emitters_.size() << " emitters and "
         << particles_.size() << " particles\n";
+        */
     // First create new particles.
     std::list<Emitter*>::iterator eit;
     for (eit = emitters_.begin(); eit != emitters_.end(); eit++)

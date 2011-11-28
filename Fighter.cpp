@@ -17,7 +17,9 @@ Fighter *getPartner(int playerID);
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
     dir_(-1),
     state_(0),
-    damage_(0), lives_(getParam("fighter.lives")),
+    damage_(0),
+    shieldHealth_(getParam("shield.maxHealth")),
+    lives_(getParam("fighter.lives")),
     respawnx_(respawnx), respawny_(respawny),
     color_(color),
     attack_(NULL),
@@ -32,6 +34,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     // Load ground attacks
     std::string g = "groundhit";
     std::string a = "airhit";
+    std::string smashAudioID = "smashhit";
 
     dashAttack_ = loadAttack<DashAttack>("dashAttack", g, "DashAttack");
 
@@ -52,16 +55,16 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "TauntAttack");
 
-    neutralSmashAttack_ = loadAttack<Attack>("neutralSmashAttack", g, "NeutralSmash");
+    neutralSmashAttack_ = loadAttack<Attack>("neutralSmashAttack", smashAudioID, "NeutralSmash");
     neutralSmashAttack_->setTwinkle(true);
     //neutralSmashAttack_->setHitboxFrame("NeutralSmashHitbox");
-    sideSmashAttack_ = loadAttack<Attack>("sideSmashAttack", g, "SideSmash");
+    sideSmashAttack_ = loadAttack<Attack>("sideSmashAttack", smashAudioID, "SideSmash");
     sideSmashAttack_->setTwinkle(true);
     sideSmashAttack_->setHitboxFrame("SideSmashHitbox");
-    downSmashAttack_ = loadAttack<Attack>("downSmashAttack", g, "DownSmash");
+    downSmashAttack_ = loadAttack<Attack>("downSmashAttack", smashAudioID, "DownSmash");
     downSmashAttack_->setTwinkle(true);
     downSmashAttack_->setHitboxFrame("DownSmashHitbox");
-    upSmashAttack_ = loadAttack<MovingAttack>("upSmashAttack", g, "UpSmash");
+    upSmashAttack_ = loadAttack<MovingAttack>("upSmashAttack", smashAudioID, "UpSmash");
     upSmashAttack_->setTwinkle(true);
     upSmashAttack_->setHitboxFrame("UpSmashHitbox");
 
@@ -148,6 +151,9 @@ void Fighter::processInput(Controller &controller, float dt)
 
 void Fighter::update(float dt)
 {
+    // Regain some shield health
+    shieldHealth_ += getParam("shield.regen") * dt;
+    shieldHealth_ = std::min(shieldHealth_, getParam("shield.maxHealth"));
     GameEntity::update(dt);
 }
 
@@ -175,9 +181,6 @@ void Fighter::hitByAttack(const Attack *attack)
     state_->hitByAttack(attack);
 
     lastHitBy_ = attack->getPlayerID();
-
-    // Play a sound
-    AudioManager::get()->playSound(attack->getAudioID(), pos_, damage_);
 }
 
 void Fighter::attackConnected(GameEntity *victim)

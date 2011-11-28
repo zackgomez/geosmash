@@ -1,5 +1,7 @@
 worldWidth   1500
 worldHeight  800
+resolution.x 1920
+resolution.y 1080
 
 level.x      0
 level.y      -100
@@ -41,6 +43,14 @@ fighter.w        50
 fighter.h        60
 fighter.lives    4
 fighter.respawnTime 1.0
+
+shield.maxHealth 50.0
+shield.regen     8.0
+shield.degen     -16.0
+shield.size      35.0
+shield.startup   0.06
+shield.cooldown  0.18
+shield.dazeTime  3.0
 
 walkSpeed        133.3
 dashSpeed        400.0

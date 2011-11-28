@@ -21,10 +21,8 @@ void test_random();
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 static const float dt = 1.f / 60.f;
 
-static float WORLD_W = 1500.0f;
-static float WORLD_H = 750.0f;
-static int SCREEN_W = 1920;
-static int SCREEN_H = 1080;
+static float WORLD_W;
+static float WORLD_H;
 
 bool running;
 bool teams;
@@ -588,9 +586,9 @@ int initJoystick(unsigned numPlayers)
 int initGraphics()
 {
     // Set the viewport
-    glViewport(0, 0, SCREEN_W, SCREEN_H);
+    glViewport(0, 0, getParam("resolution.x"), getParam("resolution.y"));
 
-    initGLUtils(SCREEN_W, SCREEN_H);
+    initGLUtils(getParam("resolution.x"), getParam("resolution.y"));
 
     glm::vec3 cameraLoc(0.f, 0.f, 425.0f);
     setCamera(cameraLoc);
@@ -790,7 +788,8 @@ int initLibs()
     }
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_Surface *screen = SDL_SetVideoMode(SCREEN_W, SCREEN_H, 32, SDL_OPENGL);
+    SDL_Surface *screen = SDL_SetVideoMode(getParam("resolution.x"),
+            getParam("resolution.y"), 32, SDL_OPENGL);
     if ( screen == NULL ) {
         fprintf(stderr, "Couldn't set video mode: %s\n",
                 SDL_GetError());
