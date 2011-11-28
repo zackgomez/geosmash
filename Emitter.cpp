@@ -51,13 +51,15 @@ Emitter::Emitter() :
     rate_(400.f),
     size_(1.f),
     lifetime_(0.3f),
-    timeRemaining_(0.5f)
+    timeRemaining_(0.5f),
+    color_(glm::vec4(1.0f, 0.0f, 0.0f, 0.9f))
 {
 }
 
 Emitter* Emitter::setTimeRemaining(float r)
 {
     timeRemaining_ = r;
+    return this;
 }
 
 bool Emitter::isDone() const 
@@ -82,6 +84,7 @@ void Emitter::emit(std::list<Particle*>& particles, float dt)
         // random nonsense
         p->vel = /*normalRandom(vel_, 1) */ vel_ * (p->loc - loc_) / radius_;
         p->size = glm::vec3(size_);
+        p->color = color_;
         particles.push_back(p);
 
         glm::vec3 dir = (p->loc - loc_) / radius_;
@@ -92,10 +95,21 @@ void Emitter::emit(std::list<Particle*>& particles, float dt)
     }
 }
 
+Emitter* Emitter::setParticleVelocity(float r) 
+{
+    vel_ = r;
+    return this;
+}
 
 Emitter* Emitter::setParticleLifetime(float l) 
 { 
     lifetime_ = l; 
+    return this;
+}
+
+Emitter* Emitter::setParticleColor(glm::vec4 c) 
+{ 
+    color_ = c;
     return this;
 }
 

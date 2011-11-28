@@ -22,9 +22,14 @@ public:
     // A measure of 'how random' particles coming off are.
     // Note, this isn't actual variance!
     Emitter* setParticleVelocityVariance(float r);
+    Emitter* setParticleVelocity(float r);
     Emitter* setRadius(float r);
     // How much time is left before this emitter expires?
     Emitter* setTimeRemaining(float);
+
+    // Set particle color. Fourth component is glow, not opacity.
+    Emitter* setParticleColor(glm::vec4);
+
     bool isDone() const;
     // The update function. Spew some new particles, given that dt seconds
     // have elapsed.
@@ -46,6 +51,8 @@ private:
     float rate_;
     // Each particle will be about this size.
     glm::vec3 size_;
+
+    glm::vec4 color_;
 
     float timeRemaining_;
 

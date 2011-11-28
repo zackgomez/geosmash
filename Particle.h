@@ -13,6 +13,8 @@ struct Particle
     glm::vec3 vel;
     // Size it should be rendered as. (currently, all particles are squares)
     glm::vec3 size;
+    // Note: color includes a glow component
+    glm::vec4 color;
     // How much longer will it remain alive? 
     float t; 
 
@@ -21,3 +23,4 @@ struct Particle
     // Just create a matrix and render this shit to the screen.
     void render();
 };
+
