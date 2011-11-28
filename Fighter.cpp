@@ -34,6 +34,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     // Load ground attacks
     std::string g = "groundhit";
     std::string a = "airhit";
+    std::string smashAudioID = "smashhit";
 
     dashAttack_ = loadAttack<DashAttack>("dashAttack", g, "DashAttack");
 
@@ -54,16 +55,16 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     tauntAttack_ = loadAttack<Attack>("tauntAttack", a, "TauntAttack");
 
-    neutralSmashAttack_ = loadAttack<Attack>("neutralSmashAttack", g, "NeutralSmash");
+    neutralSmashAttack_ = loadAttack<Attack>("neutralSmashAttack", smashAudioID, "NeutralSmash");
     neutralSmashAttack_->setTwinkle(true);
     //neutralSmashAttack_->setHitboxFrame("NeutralSmashHitbox");
-    sideSmashAttack_ = loadAttack<Attack>("sideSmashAttack", g, "SideSmash");
+    sideSmashAttack_ = loadAttack<Attack>("sideSmashAttack", smashAudioID, "SideSmash");
     sideSmashAttack_->setTwinkle(true);
     sideSmashAttack_->setHitboxFrame("SideSmashHitbox");
-    downSmashAttack_ = loadAttack<Attack>("downSmashAttack", g, "DownSmash");
+    downSmashAttack_ = loadAttack<Attack>("downSmashAttack", smashAudioID, "DownSmash");
     downSmashAttack_->setTwinkle(true);
     downSmashAttack_->setHitboxFrame("DownSmashHitbox");
-    upSmashAttack_ = loadAttack<MovingAttack>("upSmashAttack", g, "UpSmash");
+    upSmashAttack_ = loadAttack<MovingAttack>("upSmashAttack", smashAudioID, "UpSmash");
     upSmashAttack_->setTwinkle(true);
     upSmashAttack_->setHitboxFrame("UpSmashHitbox");
 
