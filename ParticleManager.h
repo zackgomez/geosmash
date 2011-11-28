@@ -28,7 +28,8 @@ public:
     // Note, this isn't actual variance!
     Emitter* setParticleVelocityVariance(float r);
     Emitter* setRadius(float r);
-    // 
+    // The update function. Spew some new particles, given that dt seconds
+    // have elapsed.
     void emit(std::list<Particle*>, float dt);
 private:
     Emitter() { }
@@ -61,8 +62,6 @@ struct Particle
     glm::vec3 size;
     // How much longer will it remain alive? 
     float t; 
-    // Parent of this particle. Maybe we can get rid of this pointer.
-    Emitter *emitter;
 
     // Physics calculations are performed here.
     void update(float dt);

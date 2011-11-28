@@ -31,6 +31,23 @@ float normalRandom(float mu, float sigma)
     return mu + (ans - 6) * sigma;
 }
 
+void test_random() {
+    float s1 = 1;
+    float mu = 7;
+    for (int i = 0; i < 10; i++)
+    {
+        printf("normalRandom(mu = %f, sigma = %f) = %f\n", mu, s1);
+    }
+
+    s1 = 10;
+    mu = -100;
+    for (int i = 0; i < 10; i++)
+    {
+        printf("normalRandom(mu = %f, sigma = %f) = %f\n", mu, s1);
+    }
+
+
+}
 
 ParticleManager::ParticleManager()
 {}
@@ -70,14 +87,12 @@ void ParticleManager::render(float dt)
 
 void Particle::update(float dt) 
 {
-    assert(emitter);
     loc = loc + vel * dt;
     t += dt;
 }
     
 void Particle::render() 
 {
-    assert(emitter);
     glm::mat4 transform = glm::scale(
         glm::translate(
             glm::mat4(1.0f), loc), size);
@@ -96,7 +111,6 @@ void Emitter::emit(std::list<Particle*> particles, float dt)
         // scaled by emitter's velocity value and given some
         // random nonsense
         p->vel = normalRandom(vel_, 1) * (p->loc - loc_) / radius_;
-        p->emitter = this;
         particles.push_back(p);
     }
 }
