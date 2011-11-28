@@ -160,6 +160,8 @@ int main(int argc, char **argv)
     if (!muteMusic)
         AudioManager::get()->startSoundtrack();
 
+    test_random();
+
     startTime = SDL_GetTicks();
     mainloop();
 

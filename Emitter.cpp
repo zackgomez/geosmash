@@ -8,7 +8,7 @@
 // (central limit theorom)
 float normalRandom(float mu, float sigma)
 {
-    float ans;
+    float ans = 0.f;
     for (int i = 0; i < 6; i++)
     {
         ans += static_cast<float>(rand()) / RAND_MAX;
@@ -19,10 +19,13 @@ float normalRandom(float mu, float sigma)
 void test_random() {
     float s1 = 1;
     float mu = 7;
-    for (int i = 0; i < 10; i++)
+    float sum = 0.f;
+    for (int i = 0; i < 100000; i++)
     {
-        printf("normalRandom(mu = %f, sigma = %f) = %f\n", mu, s1, normalRandom(mu, s1));
+        sum += normalRandom(s1, mu);
     }
+    sum /= 100000;
+    printf("Average is %f\n", sum);
 
     s1 = 10;
     mu = -100;
@@ -32,7 +35,7 @@ void test_random() {
     }
 }
 
-glm::vec3 pointOnSphere(float r, glm::vec3 pos)
+glm::vec3 pointOnSphere(float r, const glm::vec3 &pos)
 {
     float theta = M_PI * float(rand()) / RAND_MAX;
     float phi = 2 * M_PI * float(rand()) / RAND_MAX;
@@ -52,6 +55,8 @@ Emitter::Emitter() :
     rate_(400.f),
     size_(1.f),
     color_(glm::vec4(1.0f, 0.0f, 0.0f, 0.9f)),
+    colorvar_(0.f),
+    colorbright_(1.0f), colorbrightvar_(0.f),
     timeRemaining_(0.5f)
 {
 }
@@ -82,17 +87,20 @@ void Emitter::emit(std::list<Particle*>& particles, float dt)
         // Particle's velocity is the normal at that point
         // scaled by emitter's velocity value and given some
         // random nonsense
-        p->vel = /*normalRandom(vel_, 1) */ vel_ * (p->loc - loc_) / radius_;
+        p->vel = normalRandom(vel_, 1) * (p->loc - loc_) / radius_;
         p->size = glm::vec3(size_);
-        p->color = color_;
+        glm::vec4 colordelta = glm::vec4(
+                normalRandom(1.f, colorvar_.r),
+                normalRandom(1.f, colorvar_.g),
+                normalRandom(1.f, colorvar_.b),
+                1.f);
+        colordelta = glm::max(colordelta, 0.f);
+        printf("Color var: %f %f %f  --  Color delta: %f %f %f\n",
+                colorvar_.r, colorvar_.g, colorvar_.b,
+                colordelta.r, colordelta.g, colordelta.b);
+        p->color = glm::clamp(color_ * colordelta, 0.f, 1.f);
+        p->color *= normalRandom(colorbright_, colorbrightvar_);
         particles.push_back(p);
-
-
-        /*
-        std::cout << "Added particle with life " << p->t <<
-            " and location: " << p->vel[0] << ' ' << p->vel[1]
-            << ' ' << p->vel[2] << '\n';
-            */
     }
 }
 
@@ -108,9 +116,22 @@ Emitter* Emitter::setParticleLifetime(float l)
     return this;
 }
 
-Emitter* Emitter::setParticleColor(glm::vec4 c) 
+Emitter* Emitter::setParticleColor(const glm::vec4 &c) 
 { 
     color_ = c;
+    return this;
+}
+
+Emitter* Emitter::setParticleColorVariance(const glm::vec4 &c) 
+{ 
+    colorvar_ = c;
+    return this;
+}
+
+Emitter* Emitter::setParticleColorBrightness(float mu, float sigma)
+{
+    colorbright_ = mu;
+    colorbrightvar_ = sigma;
     return this;
 }
 
@@ -126,7 +147,7 @@ Emitter* Emitter::setRadius(float r)
     return this;
 }
 
-Emitter* Emitter::setLocation(glm::vec3 l) 
+Emitter* Emitter::setLocation(const glm::vec3 &l) 
 { 
     loc_ = l; 
     return this;

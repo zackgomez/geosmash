@@ -17,7 +17,7 @@ class Emitter
 {
 public:
     Emitter* setParticleLifetime(float l);
-    Emitter* setLocation(glm::vec3 l);
+    Emitter* setLocation(const glm::vec3 &l);
     Emitter* setOutputRate(float r);
     // A measure of 'how random' particles coming off are.
     // Note, this isn't actual variance!
@@ -28,7 +28,9 @@ public:
     Emitter* setTimeRemaining(float);
 
     // Set particle color. Fourth component is glow, not opacity.
-    Emitter* setParticleColor(glm::vec4);
+    Emitter* setParticleColor(const glm::vec4 &);
+    Emitter* setParticleColorVariance(const glm::vec4 &);
+    Emitter* setParticleColorBrightness(float mu, float sigma);
 
     bool isDone() const;
     // The update function. Spew some new particles, given that dt seconds
@@ -52,7 +54,8 @@ private:
     // Each particle will be about this size.
     glm::vec3 size_;
 
-    glm::vec4 color_;
+    glm::vec4 color_, colorvar_;
+    float colorbright_, colorbrightvar_;
 
     float timeRemaining_;
 
