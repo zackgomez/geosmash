@@ -98,28 +98,8 @@ private:
     // Game statistics members
     int lastHitBy_; // The id of the fighter that last hit us, or -1
 
-    // Available reference attacks
-    Attack *dashAttack_;
-    Attack *neutralTiltAttack_;
-    Attack *sideTiltAttack_;
-    Attack *downTiltAttack_;
-    Attack *upTiltAttack_;
-
-    Attack *airNeutralAttack_;
-    Attack *airFrontAttack_;
-    Attack *airBackAttack_;
-    Attack *airDownAttack_;
-    Attack *airUpAttack_;
-
-    Attack *upSpecialAttack_;
-    Attack *neutralSpecialAttack_;
-
-    Attack *neutralSmashAttack_;
-    Attack *sideSmashAttack_;
-    Attack *downSmashAttack_;
-    Attack *upSmashAttack_;
-
-    Attack *tauntAttack_;
+    // This fighters attacks
+    std::map<std::string, Attack *> attackMap_;
 
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage

@@ -221,7 +221,7 @@ void GroundState::processInput(Controller &controller, float dt)
         {
             dashing_ = false;
             fighter_->vel_.x = fighter_->dir_ * getParam("dashSpeed");
-            fighter_->attack_ = fighter_->dashAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["dash"]->clone();
         }
         // Not dashing- use a tilt
         else
@@ -234,20 +234,20 @@ void GroundState::processInput(Controller &controller, float dt)
             {
                 // Do the L/R tilt
                 fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-                fighter_->attack_ = fighter_->sideTiltAttack_->clone();
+                fighter_->attack_ = fighter_->attackMap_["sideTilt"]->clone();
             }
             else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
             {
-                fighter_->attack_ = fighter_->downTiltAttack_->clone();
+                fighter_->attack_ = fighter_->attackMap_["downTilt"]->clone();
             }
             else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
             {
-                fighter_->attack_ = fighter_->upTiltAttack_->clone();
+                fighter_->attack_ = fighter_->attackMap_["upTilt"]->clone();
             }
             else
             {
                 // Neutral tilt attack
-                fighter_->attack_ = fighter_->neutralTiltAttack_->clone();
+                fighter_->attack_ = fighter_->attackMap_["neutralTilt"]->clone();
             }
         }
         // Do per attack stuff
@@ -285,10 +285,10 @@ void GroundState::processInput(Controller &controller, float dt)
         glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
         // Check for up B
         if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-            fighter_->attack_ = fighter_->upSpecialAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
         // Otherwise neutral B
         else
-            fighter_->attack_ = fighter_->neutralSpecialAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["neutralSpecial"]->clone();
 
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
@@ -297,7 +297,7 @@ void GroundState::processInput(Controller &controller, float dt)
     // Check for taunt
     else if (controller.dpadu && !dashing_)
     {
-        fighter_->attack_ = fighter_->tauntAttack_->clone();
+        fighter_->attack_ = fighter_->attackMap_["taunt"]->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return;
@@ -312,14 +312,14 @@ void GroundState::processInput(Controller &controller, float dt)
         if (fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
         {
             fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-            fighter_->attack_ = fighter_->sideSmashAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["sideSmash"]->clone();
         }
         else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-            fighter_->attack_ = fighter_->downSmashAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["downSmash"]->clone();
         else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-            fighter_->attack_ = fighter_->upSmashAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["upSmash"]->clone();
         else
-            fighter_->attack_ = fighter_->neutralSmashAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["neutralSmash"]->clone();
 
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
@@ -643,25 +643,25 @@ void AirNormalState::processInput(Controller &controller, float dt)
         {
             // side aerial
             fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-            fighter_->attack_ = fighter_->airFrontAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["airFront"]->clone();
         }
         /*
         else if (tiltDir.x * fighter_->dir_ < 0 && fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
             // Do the back
-            fighter_->attack_ = fighter_->airBackAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["airBack"]->clone();
         */
         else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
         {
-            fighter_->attack_ = fighter_->airDownAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["airDown"]->clone();
         }
         else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
         {
-            fighter_->attack_ = fighter_->airUpAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["airUp"]->clone();
         }
         else
         {
             // Neutral tilt attack
-            fighter_->attack_ = fighter_->airNeutralAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["airNeutral"]->clone();
         }
         // Do stuff to all attacks
         fighter_->attack_->setFighter(fighter_);
@@ -672,10 +672,10 @@ void AirNormalState::processInput(Controller &controller, float dt)
         glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
         // Check for up B
         if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-            fighter_->attack_ = fighter_->upSpecialAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
         // Otherwise neutral B
         else
-            fighter_->attack_ = fighter_->neutralSpecialAttack_->clone();
+            fighter_->attack_ = fighter_->attackMap_["neutralSpecial"]->clone();
 
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();

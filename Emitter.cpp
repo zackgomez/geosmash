@@ -89,6 +89,7 @@ void Emitter::emit(std::list<Particle*>& particles, float dt)
         // random nonsense
         p->vel = normalRandom(vel_, 1) * (p->loc - loc_) / radius_;
         p->size = glm::vec3(size_);
+
         glm::vec4 colordelta = glm::vec4(
                 normalRandom(1.f, colorvar_.r),
                 normalRandom(1.f, colorvar_.g),
