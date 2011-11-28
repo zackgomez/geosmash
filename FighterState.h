@@ -72,6 +72,21 @@ private:
     bool ducking_;
 };
 
+class BlockingState : public FighterState
+{
+public:
+    BlockingState(Fighter *f);
+    virtual ~BlockingState();
+
+    virtual void processInput(Controller &, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Attack *attack);
+
+private:
+    float waitTime_;
+};
+
 class AirNormalState : public FighterState
 {
 public:

@@ -442,6 +442,35 @@ Rectangle GroundState::getRect() const
 }
 
 //// -------------------- AIR NORMAL STATE -----------------------------
+BlockingState::BlockingState(Fighter *f) :
+    FighterState(f), waitTime_(0.f)
+{
+    frameName_ = "Blocking";
+}
+
+BlockingState::~BlockingState()
+{
+    /* Empty */
+}
+
+void BlockingState::processInput(Controller &controller, float dt)
+{
+}
+
+void BlockingState::render(float dt)
+{
+}
+
+void BlockingState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+}
+
+void BlockingState::hitByAttack(const Attack *attack)
+{
+}
+
+
+//// -------------------- AIR NORMAL STATE -----------------------------
 AirNormalState::AirNormalState(Fighter *f) :
     FighterState(f), canSecondJump_(true), jumpTime_(-1)
 {

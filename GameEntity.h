@@ -45,6 +45,10 @@ public:
     // the other is non const
     virtual void attackConnected(GameEntity *other) = 0;
 
+    // Called every frame with the ground rect and a boolean on whether or 
+    // not this game entity hit the ground
+    virtual void collisionWithGround(const Rectangle &ground, bool collision) = 0;
+
     /*
      * This function performs some sort of integration to update this
      * GameEntity.  The position, etc are integrated with timestep dt.

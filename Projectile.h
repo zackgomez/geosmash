@@ -23,6 +23,8 @@ public:
     virtual void hitByAttack(const Attack *attack);
     virtual void attackConnected(GameEntity *other);
 
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+
     virtual void update(float dt);
     virtual void render(float dt);
 

@@ -1,24 +1,6 @@
 #pragma once
 #include <vector>
 
-class Explosion
-{
-public:
-    Explosion(float x, float y, float dur, const glm::vec3& col, float size) :
-        x_(x), y_(y), t_(0), duration_(dur), color_(col), size_(size)
-    {}
-
-    void render(float dt);
-    bool isDone() const;
-
-private:
-    float x_, y_;
-    float t_;
-    float duration_;
-    glm::vec3 color_;
-    float size_;
-};
-
 class Twinkle
 {
 public:
@@ -58,6 +40,5 @@ private:
     ExplosionManager();
     ExplosionManager(const ExplosionManager&);
 
-    std::vector<Explosion> explosions_;
     std::vector<Twinkle> twinkles_;
 };

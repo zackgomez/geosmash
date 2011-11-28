@@ -44,15 +44,15 @@ glm::vec3 pointOnSphere(float r, glm::vec3 pos)
 }
 
 Emitter::Emitter() :
+    lifetime_(0.3f),
     var_(0.f),
     loc_(glm::vec3(0.f)),
     radius_(2.f),
     vel_(50.f),
     rate_(400.f),
     size_(1.f),
-    lifetime_(0.3f),
-    timeRemaining_(0.5f),
-    color_(glm::vec4(1.0f, 0.0f, 0.0f, 0.9f))
+    color_(glm::vec4(1.0f, 0.0f, 0.0f, 0.9f)),
+    timeRemaining_(0.5f)
 {
 }
 
@@ -87,11 +87,12 @@ void Emitter::emit(std::list<Particle*>& particles, float dt)
         p->color = color_;
         particles.push_back(p);
 
-        glm::vec3 dir = (p->loc - loc_) / radius_;
 
+        /*
         std::cout << "Added particle with life " << p->t <<
             " and location: " << p->vel[0] << ' ' << p->vel[1]
             << ' ' << p->vel[2] << '\n';
+            */
     }
 }
 

@@ -82,6 +82,11 @@ void Projectile::attackConnected(GameEntity *other)
     hit_ = true;
 }
 
+void Projectile::collisionWithGround(const Rectangle &rect, bool collision)
+{
+    // XXX Ignore it for now..
+}
+
 void Projectile::update(float dt)
 {
     GameEntity::update(dt);
