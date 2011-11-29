@@ -621,7 +621,8 @@ mesh createMesh(std::string objfile)
 
 void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &color)
 {
-    const glm::vec4 lightPos(0, 0, -30, 1.f);
+    glm::vec4 lightPos = viewMatrix * glm::vec4(500.f, 400.f, 200.f, 1.f);
+    lightPos /= lightPos.w;
     // Uniform locations
     GLuint modelViewUniform = glGetUniformLocation(resources.meshprogram, "modelViewMatrix");
     GLuint projectionUniform = glGetUniformLocation(resources.meshprogram, "projectionMatrix");
@@ -634,7 +635,7 @@ void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &co
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
     glUniformMatrix4fv(normalUniform, 1, GL_FALSE, glm::value_ptr(glm::inverse(modelMatrix)));
     glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(color, 1.0f)));
-    glUniform4fv(lightPosUniform, 1, glm::value_ptr(viewMatrix * lightPos));
+    glUniform4fv(lightPosUniform, 1, glm::value_ptr(lightPos));
 
     // Bind data
     glBindBuffer(GL_ARRAY_BUFFER, m.data_buffer);
