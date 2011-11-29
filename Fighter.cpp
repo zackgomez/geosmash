@@ -12,7 +12,7 @@
 #include "Attack.h"
 
 void pause(int playerID);
-Fighter *getPartner(int playerID);
+Fighter *getPartnerLifeSteal(int playerID);
 
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
     dir_(-1),
@@ -131,9 +131,10 @@ void Fighter::processInput(Controller &controller, float dt)
         // Otherwise check for life steal from partner
         else
         {
-            Fighter *partner = getPartner(id_);
-            if (partner && partner->lives_ > 1)
+            Fighter *partner = getPartnerLifeSteal(playerID_);
+            if (partner)
             {
+                assert(partner->lives_ > 1);
                 partner->lives_--;
                 lives_++;
                 respawn(false);

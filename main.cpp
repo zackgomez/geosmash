@@ -70,6 +70,7 @@ void addEntity(GameEntity *entity);
 
 // Returns the partner, or NULL if there is none
 Fighter *getPartner(int playerID);
+int getTeamID(int playerID);
 
 int initJoystick(unsigned numPlayers);
 int initGraphics();
@@ -77,6 +78,7 @@ int initLibs();
 void cleanup();
 
 void mainloop();
+void checkState();
 void processInput();
 void update();
 void integrate(float dt);
@@ -93,11 +95,11 @@ void controllerEvent(Controller &controller, const SDL_Event &event);
 int main(int argc, char **argv)
 {
     muteMusic = false;
-    numPlayers = 1;
+    numPlayers = 2;
     for (int i = 1; i < argc; i++)
     {
         if (i == argc - 1)
-            numPlayers = std::min(4, std::max(1, atoi(argv[i])));
+            numPlayers = std::min(4, std::max(2, atoi(argv[i])));
         if (strcmp(argv[i], "--no-music") == 0)
             muteMusic = true;
         if (strcmp(argv[i], "--teams") == 0)
@@ -178,6 +180,8 @@ void mainloop()
     while (running)
     {
         int startms = SDL_GetTicks();
+
+        checkState();
         processInput();
         update();
         render();
@@ -190,6 +194,34 @@ void mainloop()
             */
         SDL_Delay(delay);
     }
+}
+
+void checkState()
+{
+    int alivePlayers = 0;
+    int totalLives = 0;
+    std::set<int> teamsAlive;
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        totalLives += fighters[i]->getLives();
+        if (fighters[i]->isAlive())
+        {
+            alivePlayers++;
+            teamsAlive.insert(getTeamID(fighters[i]->getPlayerID()));
+        }
+    }
+
+    // Check for switch to tense music
+    if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
+    {
+        criticalMusic = true;
+        AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
+        AudioManager::get()->startSoundtrack();
+    }
+
+    // End the game when zero or one team is left
+    if (teamsAlive.size() < 2)
+        running = false;
 }
 
 void processInput()
@@ -264,26 +296,6 @@ void update()
 
     AudioManager::get()->update(dt);
     CameraManager::get()->update(dt, fighters);
-
-    int alivePlayers = 0;
-    int totalLives = 0;
-    for (unsigned i = 0; i < numPlayers; i++)
-    {
-        totalLives += fighters[i]->getLives();
-        if (fighters[i]->isAlive()) alivePlayers++;
-    }
-
-    // Play the tense music when two players with one life each left
-    if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
-    {
-        criticalMusic = true;
-        AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
-        AudioManager::get()->startSoundtrack();
-    }
-
-    // End the game when no one is left
-    if (alivePlayers <= 0)
-        running = false;
 }
 
 void integrate(float dt)
@@ -784,6 +796,9 @@ int initLibs()
     return 1;
 }
 
+
+
+
 // XXX this should be moved
 float getParam(const std::string &param)
 {
@@ -811,17 +826,32 @@ void unpause(int playerID)
     }
 }
 
-Fighter *getPartner(int playerID)
+int getTeamID(int playerID)
+{
+    if (!teams)
+        return playerID;
+    if (playerID <= 1)
+        return 1;
+    else
+        return 2;
+}
+
+Fighter* getPartnerLifeSteal(int playerID)
 {
     if (!teams)
         return NULL;
-    // Even, 0, 2 -> 1, 3
-    if (playerID % 2 == 0)
-        return fighters[playerID + 1];
-    // Odd: 1,3 -> 0, 2
-    else
-        return fighters[playerID - 1];
-};
+    if (playerID == 0)
+        return fighters[1]->getLives() > 1 ? fighters[1] : NULL;
+    if (playerID == 1)
+        return fighters[0]->getLives() > 1 ? fighters[0] : NULL;
+    if (playerID == 2)
+        return fighters[3]->getLives() > 1 ? fighters[3] : NULL;
+    if (playerID == 3)
+        return fighters[2]->getLives() > 1 ? fighters[2] : NULL;
+
+    assert(false);
+    return NULL;
+}
 
 void addEntity(GameEntity *ent)
 {
