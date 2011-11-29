@@ -114,7 +114,7 @@ private:
 class AirStunnedState : public FighterState
 {
 public:
-    AirStunnedState(Fighter *f, float duration);
+    AirStunnedState(Fighter *f, float duration, bool groundBounce = false);
     virtual ~AirStunnedState() { }
 
     virtual void processInput(Controller&, float dt);
@@ -125,6 +125,7 @@ public:
 private:
     float stunDuration_;
     float stunTime_;
+    bool gb_;
 };
 
 class DodgeState : public FighterState

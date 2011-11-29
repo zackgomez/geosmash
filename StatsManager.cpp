@@ -1,5 +1,6 @@
 #include "StatsManager.h"
 #include <iostream>
+#include <sstream>
 
 StatsManager::StatsManager()
 { /* Empty */ }
@@ -47,4 +48,16 @@ void StatsManager::printStats() const
 void StatsManager::clear()
 {
     stats_.clear();
+}
+
+std::string StatsManager::getPlayerName(int playerID)
+{
+    std::stringstream ss;
+    ss << "Player" << playerID;
+    return ss.str();
+}
+
+std::string StatsManager::getStatPrefix(int playerID)
+{
+    return getPlayerName(playerID) + '.';
 }

@@ -41,9 +41,9 @@ debug.drawHitbox    0
 
 fighter.w        50
 fighter.h        60
-fighter.lives    4
+fighter.lives    2
 fighter.respawnTime 1.0
-fighter.gbThresh  500.0
+fighter.gbThresh  600.0
 fighter.gbDamping 0.45
 
 shield.maxHealth 50.0

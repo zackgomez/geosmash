@@ -7,6 +7,7 @@
 #include "Projectile.h"
 #include "glutils.h"
 #include "audio.h"
+#include "StatsManager.h"
 
 // ----------------------------------------------------------------------------
 // FighterState class methods
@@ -32,8 +33,13 @@ void FighterState::calculateHitResult(const Attack *attack)
         delete fighter_->attack_;
         fighter_->attack_ = 0;
     }
+
     // Take damage
-    fighter_->damage_ += attack->getDamage(fighter_);
+    float dd = attack->getDamage(fighter_);
+    fighter_->damage_ += dd;
+    // Record damage given/taken
+    StatsManager::get()->addStat(StatsManager::getStatPrefix(fighter_->playerID_) + "damageTaken", dd);
+    StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "damageGiven", dd);
 
     // Calculate direction of hit
     glm::vec2 knockback = attack->getKnockback(fighter_) * fighter_->damageFunc();
@@ -55,7 +61,7 @@ void FighterState::calculateHitResult(const Attack *attack)
     // Go to the stunned state
     float stunDuration = attack->getStun(fighter_) * fighter_->damageFunc();
     std::cout << "StunDuration: " << stunDuration << '\n';
-    next_ = new AirStunnedState(fighter_, stunDuration);
+    next_ = new AirStunnedState(fighter_, stunDuration, fighter_->vel_.y < 0);
 }
 
 void FighterState::collisionHelper(const Rectangle &ground)
@@ -86,8 +92,8 @@ void FighterState::collisionHelper(const Rectangle &ground)
 }
 
 //// ---------------------- AIR STUNNED STATE -----------------------
-AirStunnedState::AirStunnedState(Fighter *f, float duration) : 
-    FighterState(f), stunDuration_(duration), stunTime_(0)
+AirStunnedState::AirStunnedState(Fighter *f, float duration, bool gb) : 
+    FighterState(f), stunDuration_(duration), stunTime_(0), gb_(gb)
 {
     frameName_ = "AirStunned";
 }
@@ -136,11 +142,12 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
 
     // Check for ground bounce
     if (fighter_->vel_.y < -getParam("fighter.gbThresh")
-            && fighter_->lastHitBy_ != -1)
+            && gb_)
     {
-        // reflect and dampen yvel
+        // reflect and dampen yvel and stun
         fighter_->vel_.y *= -getParam("fighter.gbDamping");
         fighter_->vel_.x *= getParam("fighter.gbDamping");
+        stunTime_ *= getParam("fighter.gbDamping");
     }
     else
     {

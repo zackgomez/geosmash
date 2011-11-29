@@ -5,9 +5,9 @@ layout(location = 1) out vec4 glowColor;
 centroid in vec2 frag_texcoord;
 centroid in vec4 frag_normal;
 centroid in vec4 frag_pos;
-in vec4 lightpos;
 
 uniform vec4 color;
+uniform vec4 lightpos;
 
 
 void main()

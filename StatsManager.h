@@ -14,6 +14,9 @@ public:
 
     void printStats() const;
 
+    static std::string getStatPrefix(int playerID);
+    static std::string getPlayerName(int playerID);
+
     // Removes all stats
     void clear();
 

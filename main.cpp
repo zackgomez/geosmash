@@ -363,20 +363,16 @@ void collisionDetection()
         if (fighter->getRect().y < getParam("killbox.bottom") || fighter->getRect().y > getParam("killbox.top")
                 || fighter->getRect().x < getParam("killbox.left") || fighter->getRect().x > getParam("killbox.right"))
         {
-            std::stringstream ss;
-            ss << "Player" << fighter->getID();
-            std::string died = ss.str();
-            ss.str("");
+            std::string died = StatsManager::getPlayerName(fighter->getPlayerID());
             // Record the kill if it's not a self destruct
             if (fighter->getLastHitBy() != -1)
             {
-                ss << "Player" << fighter->getLastHitBy();
-                std::string killer = ss.str();
-                StatsManager::get()->addStat(killer + ".kills." + died, 1);
-                StatsManager::get()->addStat(killer + ".kills.total", 1);
+                std::string killer = StatsManager::getPlayerName(fighter->getLastHitBy());
+                StatsManager::get()->addStat(killer+ ".kills." + died, 1);
+                StatsManager::get()->addStat(killer+ ".kills.total", 1);
             }
             else
-                StatsManager::get()->addStat(died + ".suicides", 1);
+                StatsManager::get()->addStat(died+ ".suicides", 1);
             fighter->respawn(true);
             break;
         }

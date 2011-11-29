@@ -7,11 +7,11 @@ layout(location = 2) in vec2 texcoord;
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 normalMatrix;
+uniform vec4 lightPos;
 
 centroid out vec2 frag_texcoord;
 centroid out vec4 frag_normal;
 centroid out vec4 frag_pos;
-out vec4 lightpos;
 
 void main()
 {
@@ -19,7 +19,4 @@ void main()
     frag_texcoord = texcoord;
     frag_normal = normalMatrix * vec4(normal.xyz, 0.f);
     frag_pos = modelViewMatrix * position;
-
-    lightpos = vec4(400, 100, 0, 1);
-    lightpos /= lightpos.w;
 }
