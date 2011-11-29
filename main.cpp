@@ -15,6 +15,7 @@
 #include "CameraManager.h"
 #include "Attack.h"
 #include "ParticleManager.h"
+#include "FontManager.h"
 
 void test_random();
 
@@ -446,6 +447,7 @@ void renderHUD()
             hud_center + 0.3f * glm::vec2(i - 1.5f, 0.f);
 
         int lives = fighters[i]->getLives();
+        float damage = fighters[i]->getDamage();
         // Draw life counts first
         glm::vec2 life_area = player_hud_center - 0.75f * glm::vec2(lifesize.x, -lifesize.y);
         for (int j = 0; j < lives; j++)
@@ -474,38 +476,10 @@ void renderHUD()
         // First, render a dark grey background rect
         glm::vec2 damageBarMidpoint = player_hud_center + glm::vec2(0.f, -0.8f/6.f);
         glm::mat4 transform = glm::scale(
-                    glm::translate(
-                        glm::mat4(1.0f),
-                        glm::vec3(damageBarMidpoint.x, damageBarMidpoint.y, 0.0f)),
-                    glm::vec3(0.15f, .25f * 0.15f * 16.f/9.f, 1.f));
-        renderRectangle(transform, glm::vec4(0.25, 0.25, 0.25, 0.0f));
-
-        float maxDamage = 100;
-
-        float damageRatio = fighters[i]->getDamage() / maxDamage;
-        float xscalefact = 0.9f * std::min(1.0f, damageRatio - floorf(damageRatio));
-        float darkeningFactor = 0.60;
-        
-        if (!fighters[i]->isAlive())
-            continue;
-
-        // Draw the last color bar and then draw on top of it
-        glm::mat4 curtransform = glm::scale(
-                glm::translate(
-                    transform,
-                    glm::vec3(0.0f)),
-                glm::vec3( 0.9f, 0.9f, 0.0f));
-        renderRectangle(curtransform,
-                glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio)), 0.0f));
-       
-        // Now fill it in with a colored bar
-        transform = glm::scale(
-                glm::translate(
-                    transform,
-                    glm::vec3(-.5 * xscalefact + 0.5 * 0.9, 0.0f, 0.0f)),
-                glm::vec3( xscalefact, 0.9f, 0.0f));
-        renderRectangle(transform,
-                glm::vec4(colors[i] * powf(darkeningFactor, floorf(damageRatio+1)), 0.0f));
+            glm::translate(glm::mat4(1.0f), glm::vec3(damageBarMidpoint, 0.f)),
+            glm::vec3(0.085f, 0.085f, 1.0f));
+        glm::vec3 dmgColor = std::min(1.f, std::max(0.2f, 1.f - damage/200.f)) * colors[i];
+        FontManager::get()->renderNumber(transform, dmgColor, floorf(damage));
     }
 
     setProjectionMatrix(pmat);
@@ -596,7 +570,7 @@ int initGraphics()
     setCamera(cameraLoc);
     CameraManager::get()->setCurrent(cameraLoc);
 
-    backgroundTex = make_texture("back003.tga");
+    backgroundTex = make_texture("images/back003.png");
     // Load some animation frames
     FrameManager::get()->loadFile("frames/charlie.frames");
 

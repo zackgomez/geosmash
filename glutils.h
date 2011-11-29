@@ -25,6 +25,7 @@ bool initGLUtils(int screenw, int screenh);
 void cleanGLUtils();
 
 void renderRectangle(const glm::mat4 &transform, const glm::vec4 &color);
+void renderRectangleProgram(const glm::mat4 &transform, GLuint program);
 void renderTexturedRectangle(const glm::mat4 &transform, GLuint texture);
 void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec4 &color,
         const anim_frame *frame);
@@ -44,3 +45,4 @@ void setCamera(const glm::vec3 &pos);
 
 const glm::mat4& getProjectionMatrix();
 const glm::mat4& getViewMatrix();
+
