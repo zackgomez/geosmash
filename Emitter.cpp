@@ -96,9 +96,6 @@ void Emitter::emit(std::list<Particle*>& particles, float dt)
                 normalRandom(1.f, colorvar_.b),
                 1.f);
         colordelta = glm::max(colordelta, 0.f);
-        printf("Color var: %f %f %f  --  Color delta: %f %f %f\n",
-                colorvar_.r, colorvar_.g, colorvar_.b,
-                colordelta.r, colordelta.g, colordelta.b);
         p->color = glm::clamp(color_ * colordelta, 0.f, 1.f);
         p->color *= normalRandom(colorbright_, colorbrightvar_);
         particles.push_back(p);

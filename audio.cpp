@@ -4,6 +4,13 @@
 #include "ParamReader.h"
 #include "glutils.h"
 
+// XXX these should be in params
+#define D1 25.0f
+#define D2 300.0f
+#define V1 40.0f
+#define V2 100.0f
+
+
 AudioManager::AudioManager() 
 {
     // Load in all small sound files, like attack noise
@@ -15,10 +22,18 @@ AudioManager::AudioManager()
     s2->SetPosition(-1, 0, 0);
     s1->SetAttenuation(100);*/
 }
-#define D1 25.0f
-#define D2 300.0f
-#define V1 40.0f
-#define V2 100.0f
+
+AudioManager::~AudioManager()
+{
+    for (unsigned i = 0; i < currentSounds_.size(); i++)
+        delete currentSounds_[i];
+    currentSounds_.clear();
+
+    for (std::map<std::string, sf::SoundBuffer *>::iterator it = buffers_.begin();
+            it != buffers_.end(); it++)
+        delete it->second;
+    buffers_.clear();
+}
 
 void AudioManager::playSound(const std::string &fname)
 {

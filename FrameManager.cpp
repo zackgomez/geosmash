@@ -65,6 +65,11 @@ FrameManager::FrameManager()
     /* Empty */
 }
 
+FrameManager::~FrameManager()
+{
+    clear();
+}
+
 GLuint FrameManager::createMaskTexture(GLubyte *data, int w, int h)
 {
     GLuint tex;

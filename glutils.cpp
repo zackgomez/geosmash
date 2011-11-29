@@ -9,10 +9,11 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
-#include "util.h"
 #include "glutils.h"
+#include "util.h"
 #include "FrameManager.h"
 #include "ParamReader.h"
+#include "stb_image.c"
 
 static struct 
 {
@@ -141,12 +142,15 @@ GLuint make_program(GLuint vertex_shader, GLuint fragment_shader)
 
 GLuint make_texture(const char *filename)
 {
-    int width, height;
-    void *pixels = read_tga(filename, &width, &height);
+    int width, height, depth;
+    void *pixels = stbi_load(filename, &width, &height, &depth, 4);
     GLuint texture;
 
     if (!pixels)
+    {
+        std::cerr << "Unable to load texture from " << filename << "\n";
         return 0;
+    }
 
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -156,12 +160,12 @@ GLuint make_texture(const char *filename)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,     GL_CLAMP_TO_EDGE);
     glTexImage2D(
             GL_TEXTURE_2D, 0,           /* target, level */
-            GL_RGB8,                    /* internal format */
+            GL_RGBA8,                   /* internal format */
             width, height, 0,           /* width, height, border */
-            GL_BGR, GL_UNSIGNED_BYTE,   /* external format, type */
+            GL_RGBA, GL_UNSIGNED_BYTE,   /* external format, type */
             pixels                      /* pixels */
             );
-    free(pixels);
+    stbi_image_free(pixels);
     return texture;
 }
 

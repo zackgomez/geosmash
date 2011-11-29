@@ -49,6 +49,7 @@ public:
 
 private:
     AudioManager();
+    ~AudioManager();
 
     // List of all buffers representing small sounds, like attack noises
     std::map<std::string, sf::SoundBuffer *>buffers_;
@@ -62,5 +63,4 @@ private:
     // Helper functions
     float getPanningFactor(const glm::vec2 &worldPos);
 };
-
 

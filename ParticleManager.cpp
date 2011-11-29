@@ -10,6 +10,11 @@
 ParticleManager::ParticleManager()
 {}
 
+ParticleManager::~ParticleManager()
+{
+    reset();
+}
+
 // A combined update/render call...
 // Two types of operations occur here:
 //  - those that update emitters and particles
@@ -68,4 +73,17 @@ Emitter* ParticleManager::newEmitter()
 void ParticleManager::addEmitter(Emitter *em)
 {
     emitters_.push_back(em);
+}
+
+void ParticleManager::reset()
+{
+    std::list<Emitter*>::iterator eit;
+    for (eit = emitters_.begin(); eit != emitters_.end(); eit++)
+        delete *eit;
+    emitters_.clear();
+
+    std::list<Particle*>::iterator pit;
+    for (pit = particles_.begin(); pit != particles_.end(); pit++)
+        delete *pit;
+    particles_.clear();
 }

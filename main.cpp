@@ -397,7 +397,7 @@ void render()
     // Draw the background
     glm::mat4 backtrans = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -300)),
-                glm::vec3(1920.f, 1080.f, 1.f));
+                glm::vec3(1920.f, -1080.f, 1.f));
     renderTexturedRectangle(backtrans, backgroundTex);
 
     // Draw the land
@@ -609,6 +609,11 @@ int initGraphics()
 
 void cleanup()
 {
+    std::cout << "Cleaning up...\n";
+    for (unsigned i = 0; i < entities.size(); i++)
+        delete entities[i];
+
+
     std::cout << "Quiting nicely\n";
     SDL_JoystickClose(0);
     SDL_Quit();

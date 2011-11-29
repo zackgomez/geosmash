@@ -26,6 +26,7 @@ public:
 private:
     FrameManager();
     FrameManager(const FrameManager &);
+    ~FrameManager();
 
     std::map<std::string, const anim_frame*> frames_;
 

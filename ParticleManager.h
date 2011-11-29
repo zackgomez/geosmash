@@ -19,7 +19,6 @@ float normalRandom(float mu, float sigma);
 class ParticleManager 
 {
 public:
-    ParticleManager();
     // Get() access to the singleton instance
     static ParticleManager* get();
 
@@ -30,7 +29,13 @@ public:
     // Get rid of this emitter.
     void quashEmitter(Emitter*);
 
+    // Removes all emitters and particles
+    void reset();
+
 private:
+    ParticleManager();
+    ~ParticleManager();
+
     std::list<Emitter*> emitters_;
     std::list<Particle*> particles_;
 

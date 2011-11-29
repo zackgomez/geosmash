@@ -8,6 +8,7 @@ centroid in vec2 frag_texcoord;
 
 void main()
 {
-    outputColor = texture(tex, frag_texcoord);
+    vec2 tc = vec2(frag_texcoord.x, frag_texcoord.y);
+    outputColor = texture(tex, tc);
     glowColor = vec4(0.0f);
 }

@@ -10,5 +10,5 @@ centroid out vec2 frag_texcoord;
 void main()
 {
     gl_Position = projectionMatrix * modelViewMatrix * position;
-    frag_texcoord = position.xy + vec2(0.5f);
+    frag_texcoord = vec2(position.x, position.y) + vec2(0.5f);
 }
