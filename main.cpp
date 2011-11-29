@@ -25,12 +25,13 @@ static const float dt = 1.f / 60.f;
 static float WORLD_W;
 static float WORLD_H;
 
-bool running;
 bool teams;
 bool muteMusic;
 bool criticalMusic = false;
 SDL_Joystick *joystick;
 
+bool running;
+bool playing;
 bool paused;
 int pausedPlayer = -1;
 
@@ -86,6 +87,9 @@ void collisionDetection();
 void render();
 void renderHUD();
 void renderArrow(const Fighter *fighter);
+
+void inputEndScreen();
+void renderEndScreen();
 
 void printstats();
 
@@ -177,14 +181,23 @@ int main(int argc, char **argv)
 void mainloop()
 {
     running = true;
+    playing = true;
     while (running)
     {
         int startms = SDL_GetTicks();
 
-        checkState();
-        processInput();
-        update();
-        render();
+        if (playing)
+        {
+            checkState();
+            processInput();
+            update();
+            render();
+        }
+        else
+        {
+            inputEndScreen();
+            renderEndScreen();
+        }
 
         int endms = SDL_GetTicks();
         int delay = 16 - std::min(16, std::max(1, endms - startms));
@@ -221,18 +234,11 @@ void checkState()
 
     // End the game when zero or one team is left
     if (teamsAlive.size() < 2)
-        running = false;
+        playing = false;
 }
 
-void processInput()
+void processEvents()
 {
-    // First update controllers / frame
-    for (unsigned i = 0; i < numPlayers; i++)
-    {
-        updateController(controllers[i]);
-    }
-
-    // Now read new inputs
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
@@ -266,6 +272,18 @@ void processInput()
             break;
         }
     }
+}
+
+void processInput()
+{
+    // First update controllers / frame
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        updateController(controllers[i]);
+    }
+
+    // Then update based on new events
+    processEvents();
 
     // Now have the fighters process their input
     if (paused)
@@ -543,6 +561,32 @@ void renderArrow(const Fighter *f)
         setProjectionMatrix(pmat);
         setViewMatrix(vmat);
     }
+}
+
+void inputEndScreen()
+{
+    processEvents();
+}
+
+void renderEndScreen()
+{
+    std::cout << "Rendering end screen\n";
+
+    preRender();
+    // Start with a blank slate
+    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+    setProjectionMatrix(glm::mat4(1.f));
+    setViewMatrix(glm::mat4(1.f));
+
+    // Draw the background
+    glm::mat4 backtrans = glm::scale(glm::mat4(1.0f), glm::vec3(2, -2, 1.f));
+    renderTexturedRectangle(backtrans, backgroundTex);
+
+    // Finish
+    postRender();
+    SDL_GL_SwapBuffers();
 }
 
 int initJoystick(unsigned numPlayers)
