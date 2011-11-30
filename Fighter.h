@@ -38,7 +38,6 @@ public:
     float x, y, w, h;
 };
 
-
 class Fighter : public GameEntity
 {
 public:
@@ -118,6 +117,7 @@ private:
     friend class DeadState;
     friend class RespawnState;
     friend class BlockingState;
+    friend class LedgeGrabState;
 
     friend class UpSpecialAttack;
     friend class DashAttack;

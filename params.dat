@@ -41,7 +41,7 @@ debug.drawHitbox    0
 
 fighter.w        50
 fighter.h        60
-fighter.lives    2
+fighter.lives    4
 fighter.respawnTime 1.0
 fighter.gbThresh  600.0
 fighter.gbDamping 0.45
@@ -77,6 +77,11 @@ dodge.duration    0.42
 dodge.invincTime  0.32
 dodge.speed       450
 dodge.cooldown    0.15
+
+ledgeGrab.grabInvincTime 1.0
+ledgeGrab.hbwidth        40.0
+ledgeGrab.hbheight       60.0
+ledgeGrab.dist           80.0
 
 dashAttack.startup      0.05
 dashAttack.duration     0.55
@@ -199,7 +204,7 @@ airDownAttack.startup      0.15
 airDownAttack.duration     0.15
 airDownAttack.cooldown     0.30
 airDownAttack.damage       11
-airDownAttack.stun         0.22
+airDownAttack.stun         0.18
 airDownAttack.knockbackx   0
 airDownAttack.knockbacky   -1
 airDownAttack.knockbackpow 200.0

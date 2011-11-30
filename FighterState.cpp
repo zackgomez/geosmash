@@ -8,6 +8,7 @@
 #include "glutils.h"
 #include "audio.h"
 #include "StatsManager.h"
+#include "StageManager.h"
 
 // ----------------------------------------------------------------------------
 // FighterState class methods
@@ -70,9 +71,9 @@ void FighterState::collisionHelper(const Rectangle &ground)
     // just move them on top of it, minus 1 pixel
     if (ground.contains(fighter_->getRect()))
         fighter_->pos_.y = ground.y + ground.h/2 + fighter_->size_.y/2 - 1;
-    // If the character has some part above the ground wihen overlap, let
-    // them 'ledge grab'
-    else if (fighter_->pos_.y + fighter_->size_.y/2 > ground.y + ground.h/2)
+    // If the character's center is above the ground then move them on top
+    // minus one pixel to ensure they continue to be in the GroundState
+    else if (fighter_->pos_.y > ground.y + ground.h/2)
         fighter_->pos_.y = ground.y + ground.h/2 + fighter_->size_.y/2 - 1;
     // If the character is not above the ground, and not overlapping, then
     // if their center is within the ground, move them down so they are not
@@ -82,12 +83,36 @@ void FighterState::collisionHelper(const Rectangle &ground)
         fighter_->pos_.y = ground.y - ground.h/2 - fighter_->size_.y/2;
     // If the character is not above the ground, and their center is not
     // in the ground, move them so they don't overlap in x/y
-    else if (fighter_->pos_.y + fighter_->size_.y/2 < ground.y + ground.h/2
+    else if (fighter_->pos_.y < ground.y + ground.h/2
             && (fighter_->pos_.x > ground.x + ground.w/2 || fighter_->pos_.x < ground.x - ground.w/2))
     {
         float dist = ground.x - fighter_->pos_.x;
         float dir = dist / fabs(dist);
         fighter_->pos_.x += dir * (fabs(dist) - (ground.w/2 + fighter_->size_.x/2));
+    }
+}
+
+void FighterState::checkForLedgeGrab()
+{
+    if (next_)
+        return;
+    // You must be /*facing the ledge*/ and be completely below the ledge and
+    // be within ledge grabbing distance of the ledge and not attacking
+    const glm::vec2 &fpos = fighter_->pos_;
+    Ledge *ledge = StageManager::get()->getPossibleLedge(fpos);
+
+    if (ledge)
+        std::cout << "Distance to ledge: " << glm::length(fpos - ledge->pos) << '\n';
+    // We should either get no ledge or a ledge that's unoccupied
+    assert(!ledge || !ledge->occupied);
+    if (ledge
+        && !fighter_->attack_
+        && (ledge->pos.y > (fpos.y + fighter_->getRect().h / 2)) 
+        && glm::length(fpos - ledge->pos) <= getParam("ledgeGrab.dist"))
+    {
+        LedgeGrabState *lgs = new LedgeGrabState(fighter_);
+        lgs->grabLedge(ledge);
+        next_ = lgs;
     }
 }
 
@@ -114,6 +139,13 @@ void AirStunnedState::processInput(Controller &controller, float dt)
     // Check for completetion
     if ((stunTime_ += dt) > stunDuration_)
         next_ = new AirNormalState(fighter_);
+}
+
+void AirStunnedState::update(float dt)
+{
+    // Only check for ledge grab after up B
+    if (stunDuration_ == HUGE_VAL)
+        checkForLedgeGrab();
 }
 
 void AirStunnedState::render(float dt)
@@ -148,6 +180,8 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
         fighter_->vel_.y *= -getParam("fighter.gbDamping");
         fighter_->vel_.x *= getParam("fighter.gbDamping");
         stunTime_ *= getParam("fighter.gbDamping");
+        // Cannot be bounced again unless hit again
+        gb_ = false;
     }
     else
     {
@@ -718,6 +752,11 @@ void AirNormalState::processInput(Controller &controller, float dt)
     }
 }
 
+void AirNormalState::update(float dt)
+{
+    checkForLedgeGrab();
+}
+
 void AirNormalState::render(float dt)
 {
     printf("AIR NORMAL | JumpT: %.3f  Can2ndJump: %d || ",
@@ -791,10 +830,7 @@ void DodgeState::processInput(Controller &controller, float dt)
 
 void DodgeState::render(float dt)
 {
-    float period_scale_factor = 20.0;
-    float opacity_amplitude = 3;
-    float opacity_factor = (1 + cos(period_scale_factor * t_)) * 0.5f; 
-    glm::vec3 color = fighter_->color_ * (opacity_amplitude * opacity_factor + 1);
+    glm::vec3 color = muxByTime(fighter_->color_, t_);
 
     float angle = t_ < dodgeTime_ ? t_ / dodgeTime_ * 360 : 0.f;
 
@@ -831,6 +867,106 @@ bool DodgeState::canBeHit() const
 {
     return t_ > invincTime_;
 }
+
+
+//// ---------------------- LEDGE GRAB STATE ------------------------------
+LedgeGrabState::LedgeGrabState(Fighter *f) :
+    FighterState(f),
+    hbsize_(getParam("ledgeGrab.hbwidth"), getParam("ledgeGrab.hbheight")),
+    invincTime_(getParam("ledgeGrab.grabInvincTime")),
+    jumpTime_(HUGE_VAL),
+    ledge_(NULL)
+{
+}
+
+void LedgeGrabState::processInput(Controller &controller, float dt)
+{
+    // Check for jump input
+    if (controller.pressjump)
+        // Start startup time countdown
+        jumpTime_ = getParam("jumpStartupTime");
+
+    if (jumpTime_ <= 0.f)
+    {
+        assert(!next_);
+        fighter_->vel_ = glm::vec2(0.f,
+                controller.jumpbutton ? getParam("jumpSpeed") : getParam("hopSpeed"));
+        next_ = new AirNormalState(fighter_);
+        // Unoccupy
+        ledge_->occupied = false;
+
+        // Draw a little puff
+        ExplosionManager::get()->addPuff(
+                fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
+                fighter_->pos_.y - fighter_->size_.y * 0.45f,
+                0.3f);
+    }
+
+    // TODO
+}
+
+void LedgeGrabState::update(float dt)
+{
+    // Just update timers
+    invincTime_ -= dt;
+    jumpTime_ -= dt;
+}
+
+void LedgeGrabState::render(float dt)
+{
+    printf("LEDGE | jumpT: %.3f invincT: %.3f || ",
+            jumpTime_, invincTime_);
+    glm::vec3 color = fighter_->color_;
+
+    // flash when invincible
+    if (invincTime_ > 0)
+        color = muxByTime(color, invincTime_);
+
+    fighter_->renderHelper(dt, "LedgeGrab", color);
+}
+
+void LedgeGrabState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+    assert(!collision);
+}
+
+void LedgeGrabState::hitByAttack(const Attack *attack)
+{
+    FighterState::calculateHitResult(attack);
+}
+
+bool LedgeGrabState::canBeHit() const
+{
+    return invincTime_ <= 0.f;
+}
+
+Rectangle LedgeGrabState::getRect() const
+{
+    return Rectangle(fighter_->pos_.x, fighter_->pos_.y,
+            hbsize_.x, hbsize_.y);
+}
+
+void LedgeGrabState::grabLedge(Ledge *l)
+{
+    ledge_ = l;
+    ledge_->occupied = true;
+
+    float xdir = ledge_->pos.x > fighter_->pos_.x ? 1 : -1;
+    // Move our top corner to their top corner
+    fighter_->pos_.y = ledge_->pos.y - hbsize_.y / 2;
+    fighter_->pos_.x = ledge_->pos.x - xdir * hbsize_.x / 2;
+
+    fighter_->vel_ = glm::vec2(0.f);
+    fighter_->accel_ = glm::vec2(0.f);
+
+    fighter_->dir_ = xdir;
+
+    std::cout << "Pos: " << fighter_->pos_.x << ' ' << fighter_->pos_.y
+        << " Size: " << hbsize_.x << ' ' << hbsize_.y
+        << " LedgePos: " << l->pos.x << ' ' << l->pos.y << '\n';
+}
+
+
 
 //// ----------------------- RESPAWN STATE --------------------------------
 RespawnState::RespawnState(Fighter *f) :

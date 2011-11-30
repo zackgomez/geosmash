@@ -156,10 +156,15 @@ void Fighter::processInput(Controller &controller, float dt)
 
 void Fighter::update(float dt)
 {
+    // First integrate
+    GameEntity::update(dt);
+
     // Regain some shield health
     shieldHealth_ += getParam("shield.regen") * dt;
     shieldHealth_ = std::min(shieldHealth_, getParam("shield.maxHealth"));
-    GameEntity::update(dt);
+
+    // State update
+    state_->update(dt);
 }
 
 void Fighter::collisionWithGround(const Rectangle &ground, bool collision)

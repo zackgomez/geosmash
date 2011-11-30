@@ -1,25 +1,41 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <vector>
 #include "GameEntity.h"
 #include "Attack.h"
+
+struct Ledge
+{
+    glm::vec2 pos;
+    bool occupied;
+};
+
 class StageManager
 {
-
+public:
     // Return the singleton instance
-    StageManager* get();
+    static StageManager* get();
 
     // Called every frame.
     // For now, just put out a stage hazard (maybe)
     void update(float dt);
 
+    // Cleans up and restores this stage manager to default state
+    void clear();
 
+    // Returns the nearest non occupied ledge, or null
+    Ledge * getPossibleLedge(const glm::vec2 &pos);
 
+private:
+    StageManager();
+
+    std::vector<Ledge*> ledges_;
 };
 
 
 class HazardEntity : public GameEntity 
 {
-
+public:
     virtual bool isDone() const;
     virtual bool hasAttack() const { return true; }
     virtual const Attack * getAttack() const;
@@ -37,7 +53,5 @@ private:
     glm::vec2 pos_;
     glm::vec2 vel_;
     glm::vec2 size_;
-
-
 };
 
