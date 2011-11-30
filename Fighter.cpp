@@ -38,30 +38,30 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     attackMap_["dash"] = loadAttack<DashAttack>("dashAttack", g, "DashAttack");
 
-    attackMap_["neutralTilt"] = loadAttack<Attack>("neutralTiltAttack", g, "GroundNeutral");
-    attackMap_["sideTilt"] = loadAttack<Attack>("sideTiltAttack", g, "GroundSidetilt");
-    attackMap_["downTilt"] = loadAttack<Attack>("downTiltAttack", g, "GroundDowntilt");
-    attackMap_["upTilt"] = loadAttack<Attack>("upTiltAttack", g, "GroundUptilt");
+    attackMap_["neutralTilt"] = loadAttack<FighterAttack>("neutralTiltAttack", g, "GroundNeutral");
+    attackMap_["sideTilt"] = loadAttack<FighterAttack>("sideTiltAttack", g, "GroundSidetilt");
+    attackMap_["downTilt"] = loadAttack<FighterAttack>("downTiltAttack", g, "GroundDowntilt");
+    attackMap_["upTilt"] = loadAttack<FighterAttack>("upTiltAttack", g, "GroundUptilt");
 
     // Load air attack special as it uses a different class
-    attackMap_["airNeutral"] = loadAttack<Attack>("airNeutralAttack", a, "AirNeutral");
-    attackMap_["airFront"] = loadAttack<Attack>("airFrontAttack", a, "AirFronttilt");
-    attackMap_["airBack"] = loadAttack<Attack>("airBackAttack", a, "AirBacktilt");
-    attackMap_["airDown"] = loadAttack<Attack>("airDownAttack", a, "AirDowntilt");
-    attackMap_["airUp"] = loadAttack<Attack>("airUpAttack", a, "AirUptilt");
+    attackMap_["airNeutral"] = loadAttack<FighterAttack>("airNeutralAttack", a, "AirNeutral");
+    attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
+    attackMap_["airBack"] = loadAttack<FighterAttack>("airBackAttack", a, "AirBacktilt");
+    attackMap_["airDown"] = loadAttack<FighterAttack>("airDownAttack", a, "AirDowntilt");
+    attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
 
     attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
     attackMap_["neutralSpecial"] = new NeutralSpecialAttack("neutralSpecialAttack", "NeutralSpecial");
 
-    attackMap_["taunt"] = loadAttack<Attack>("tauntAttack", a, "TauntAttack");
+    attackMap_["taunt"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
 
-    attackMap_["neutralSmash"] = loadAttack<Attack>("neutralSmashAttack", s, "NeutralSmash");
+    attackMap_["neutralSmash"] = loadAttack<FighterAttack>("neutralSmashAttack", s, "NeutralSmash");
     attackMap_["neutralSmash"]->setTwinkle(true);
     //attackMap_["neutralSmash"]->setHitboxFrame("NeutralSmashHitbox");
-    attackMap_["sideSmash"] = loadAttack<Attack>("sideSmashAttack", s, "SideSmash");
+    attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
     attackMap_["sideSmash"]->setTwinkle(true);
     attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
-    attackMap_["downSmash"] = loadAttack<Attack>("downSmashAttack", s, "DownSmash");
+    attackMap_["downSmash"] = loadAttack<FighterAttack>("downSmashAttack", s, "DownSmash");
     attackMap_["downSmash"]->setTwinkle(true);
     attackMap_["downSmash"]->setHitboxFrame("DownSmashHitbox");
     attackMap_["upSmash"] = loadAttack<MovingAttack>("upSmashAttack", s, "UpSmash");
@@ -78,7 +78,7 @@ Fighter::~Fighter()
 {
     delete state_;
     // Clean up attacks
-    std::map<std::string, Attack *>::iterator it;
+    std::map<std::string, FighterAttack *>::iterator it;
     for (it = attackMap_.begin(); it != attackMap_.end(); it++)
         delete it->second;
 }

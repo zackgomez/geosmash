@@ -12,16 +12,77 @@
 // XXX remove this
 void addEntity(GameEntity *ent);
 
-
 // ----------------------------------------------------------------------------
-// Attack class methods
+// SimpleAttack class methods
 // ----------------------------------------------------------------------------
-
-Attack::Attack()
+SimpleAttack::SimpleAttack(const glm::vec2 &kb,
+        float damage, float stun, float priority,
+        const glm::vec2 &pos, const glm::vec2 &size,
+        int playerID, const std::string &audioID) :
+    Attack(),
+    playerID_(playerID),
+    damage_(damage), stun_(stun), priority_(priority),
+    pos_(pos),
+    size_(size),
+    kb_(kb),
+    audioID_(audioID)
 {
 }
 
-Attack::Attack(const std::string &paramPrefix, const std::string &audioID,
+SimpleAttack::~SimpleAttack()
+{
+    /* empty */
+}
+
+Rectangle SimpleAttack::getHitbox() const
+{
+    return Rectangle(pos_.x, pos_.y, size_.x, size_.y);
+}
+
+float SimpleAttack::getPriority() const { return priority_; }
+float SimpleAttack::getDamage(const GameEntity *) const { return damage_; }
+float SimpleAttack::getStun(const GameEntity *) const { return stun_; }
+
+glm::vec2 SimpleAttack::getKnockback(const GameEntity *) const
+{
+    return kb_;
+}
+
+int SimpleAttack::getPlayerID() const
+{
+    return playerID_;
+}
+
+std::string SimpleAttack::getAudioID() const
+{
+    return audioID_;
+}
+
+void SimpleAttack::setPosition(const glm::vec2 &position)
+{
+    pos_ = position;
+}
+
+bool SimpleAttack::canHit(const GameEntity *f) const
+{
+    return hasHit_.find(f->getID()) == hasHit_.end();
+}
+
+void SimpleAttack::attackCollision(const Attack *other)
+{
+    // Do nothing
+}
+
+
+// ----------------------------------------------------------------------------
+// FighterAttack class methods
+// ----------------------------------------------------------------------------
+
+FighterAttack::FighterAttack()
+{
+}
+
+FighterAttack::FighterAttack(const std::string &paramPrefix, const std::string &audioID,
             const std::string &frameName)
 {
     std::string pp = paramPrefix + '.';
@@ -45,34 +106,34 @@ Attack::Attack(const std::string &paramPrefix, const std::string &audioID,
     knockbackdir_ = knockbackdir_ == glm::vec2(0, 0) ? knockbackdir_ : glm::normalize(knockbackdir_);
 }
 
-Attack* Attack::clone() const
+FighterAttack* FighterAttack::clone() const
 {
-    return new Attack(*this);
+    return new FighterAttack(*this);
 }
 
-void Attack::setFighter(Fighter *fighter)
+void FighterAttack::setFighter(Fighter *fighter)
 {
     owner_ = fighter;
 }
 
-int Attack::getPlayerID() const
+int FighterAttack::getPlayerID() const
 {
     return owner_->getPlayerID();
 }
 
-void Attack::start()
+void FighterAttack::start()
 {
     assert(owner_);
     t_ = 0.0f;
     hasHit_.clear();
 }
 
-void Attack::finish()
+void FighterAttack::finish()
 {
     /* Empty */
 }
 
-glm::vec2 Attack::getKnockback(const GameEntity *victim) const
+glm::vec2 FighterAttack::getKnockback(const GameEntity *victim) const
 {
     if (knockbackdir_ == glm::vec2(0,0))
     {
@@ -86,7 +147,7 @@ glm::vec2 Attack::getKnockback(const GameEntity *victim) const
 
 }
 
-Rectangle Attack::getHitbox() const
+Rectangle FighterAttack::getHitbox() const
 {
     Rectangle ret;
     ret.x = hboffset_.x * owner_->getDirection() + owner_->getPosition().x;
@@ -97,40 +158,32 @@ Rectangle Attack::getHitbox() const
     return ret;
 }
 
-float Attack::getDamage(const GameEntity *) const { return damage_; }
-float Attack::getStun(const GameEntity *) const { return stun_; }
-std::string Attack::getAudioID() const { return audioID_; }
-std::string Attack::getFrameName() const { return frameName_; }
+std::string FighterAttack::getFrameName() const { return frameName_; }
 
-void Attack::setTwinkle(bool twinkle) { twinkle_ = twinkle; }
-void Attack::setHitboxFrame(const std::string &frame) { hbframe_ = frame; }
+void FighterAttack::setTwinkle(bool twinkle) { twinkle_ = twinkle; }
+void FighterAttack::setHitboxFrame(const std::string &frame) { hbframe_ = frame; }
 
-bool Attack::hasTwinkle() const
+bool FighterAttack::hasTwinkle() const
 {
     return (t_ < startup_) && twinkle_;
 }
 
-bool Attack::hasHitbox() const
+bool FighterAttack::hasHitbox() const
 {
     return (t_ > startup_) && (t_ < startup_ + duration_);
 }
 
-bool Attack::isDone() const
+bool FighterAttack::isDone() const
 {
     return (t_ > startup_ + duration_ + cooldown_);
 }
 
-bool Attack::canHit(const GameEntity *f) const
-{
-    return hasHit_.find(f->getID()) == hasHit_.end();
-}
-
-void Attack::update(float dt)
+void FighterAttack::update(float dt)
 {
     t_ += dt;
 }
 
-void Attack::render(float dt)
+void FighterAttack::render(float dt)
 {
     // Draw the hitbox if we should
     if (hasHitbox())
@@ -171,21 +224,21 @@ void Attack::render(float dt)
     }
 }
 
-void Attack::cancel()
+void FighterAttack::cancel()
 {
     t_ = std::max(t_, startup_ + duration_);
 }
 
-void Attack::hit(GameEntity *other)
+void FighterAttack::hit(GameEntity *other)
 {
     assert(hasHit_.find(other->getID()) == hasHit_.end());
     hasHit_.insert(other->getID());
 }
 
-void Attack::attackCollision(const Attack *other)
+void FighterAttack::attackCollision(const Attack *other)
 {
     // Only cancel if we lose or tie priority
-    if (priority_ <= other->priority_)
+    if (priority_ <= other->getPriority())
         cancel();
 }
 
@@ -195,19 +248,19 @@ void Attack::attackCollision(const Attack *other)
 
 UpSpecialAttack::UpSpecialAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
-    Attack(paramPrefix, audioID, frameName)
+    FighterAttack(paramPrefix, audioID, frameName)
 {
     /* Empty */
 }
 
-Attack* UpSpecialAttack::clone() const
+FighterAttack* UpSpecialAttack::clone() const
 {
     return new UpSpecialAttack(*this);
 }
 
 void UpSpecialAttack::update(float dt)
 {
-    Attack::update(dt);
+    FighterAttack::update(dt);
     // Update during duration
     if (t_ > startup_ && t_ < startup_ + duration_)
     {
@@ -246,14 +299,14 @@ void UpSpecialAttack::update(float dt)
 
 void UpSpecialAttack::start()
 {
-    Attack::start();
+    FighterAttack::start();
     started_ = false;
     repeatTime_ = 0.0f;
 }
 
 void UpSpecialAttack::finish()
 {
-    Attack::finish();
+    FighterAttack::finish();
 
     // When Up Special is over, dump them in air stunned forever
     delete owner_->state_;
@@ -266,7 +319,7 @@ void UpSpecialAttack::hit(GameEntity *victim)
     // Can't hit ourself
     if (victim->getPlayerID() == getPlayerID()) return;
 
-    Attack::hit(victim);
+    FighterAttack::hit(victim);
 
     // XXX this can create problems...
     victim->push(glm::vec2(0, 20));
@@ -278,35 +331,35 @@ void UpSpecialAttack::hit(GameEntity *victim)
 
 DashAttack::DashAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
-    Attack(paramPrefix, audioID, frameName)
+    FighterAttack(paramPrefix, audioID, frameName)
 {
     std::string pp = paramPrefix + '.';
     deceleration_ = getParam(pp + "deceleration");
     initialSpeed_ = getParam(pp + "initialSpeed");
 }
 
-Attack * DashAttack::clone() const
+FighterAttack * DashAttack::clone() const
 {
     return new DashAttack(*this);
 }
 
 void DashAttack::start()
 {
-    Attack::start();
+    FighterAttack::start();
 
     owner_->vel_.x = initialSpeed_ * owner_->dir_;
 }
 
 void DashAttack::finish()
 {
-    Attack::finish();
+    FighterAttack::finish();
     owner_->vel_.x = 0.f;
     owner_->accel_ = glm::vec2(0.f);
 }
 
 void DashAttack::update(float dt)
 {
-    Attack::update(dt);
+    FighterAttack::update(dt);
 
     // Deccelerate during duration
     if (t_ > startup_ && t_ < startup_ + duration_)
@@ -319,14 +372,14 @@ void DashAttack::update(float dt)
 
 MovingAttack::MovingAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
-    Attack(paramPrefix, audioID, frameName)
+    FighterAttack(paramPrefix, audioID, frameName)
 {
     std::string pp = paramPrefix + '.';
     hb0 = glm::vec2(getParam(pp + "hitboxx"), getParam(pp + "hitboxy"));
     hb1 = glm::vec2(getParam(pp + "hitboxx1"), getParam(pp + "hitboxy1"));
 }
 
-Attack *MovingAttack::clone() const
+FighterAttack *MovingAttack::clone() const
 {
     return new MovingAttack(*this);
 }
@@ -351,7 +404,7 @@ Rectangle MovingAttack::getHitbox() const
 
 NeutralSpecialAttack::NeutralSpecialAttack(const std::string &paramPrefix,
         const std::string &frameName) :
-    Attack(),
+    FighterAttack(),
     paramPrefix_(paramPrefix),
     released_(false)
 {
@@ -364,7 +417,7 @@ NeutralSpecialAttack::NeutralSpecialAttack(const std::string &paramPrefix,
     frameName_ = frameName;
 }
 
-Attack * NeutralSpecialAttack::clone() const
+FighterAttack * NeutralSpecialAttack::clone() const
 {
     return new NeutralSpecialAttack(*this);
 }
@@ -377,7 +430,7 @@ bool NeutralSpecialAttack::hasHitbox() const
 
 void NeutralSpecialAttack::update(float dt)
 {
-    Attack::update(dt);
+    FighterAttack::update(dt);
     if (t_ > startup_ && !released_)
     {
         std::string pp = paramPrefix_ + '.';
@@ -394,6 +447,6 @@ void NeutralSpecialAttack::update(float dt)
 void NeutralSpecialAttack::start()
 {
     released_ = false;
-    Attack::start();
+    FighterAttack::start();
 }
 

@@ -10,19 +10,76 @@ class GameEntity;
 class Attack
 {
 public:
-    Attack();
+    Attack() { }
+    virtual ~Attack() { }
 
-    Attack(const std::string &paramPrefix, const std::string &audioID,
+    virtual Rectangle getHitbox() const = 0;
+    virtual float getPriority() const = 0;
+    virtual float getDamage(const GameEntity *victim) const = 0;
+    virtual float getStun(const GameEntity *victim) const = 0;
+    virtual glm::vec2 getKnockback(const GameEntity *victim) const = 0;
+
+    virtual int getPlayerID() const = 0;
+    virtual std::string getAudioID() const = 0;
+
+    virtual bool canHit(const GameEntity *f) const = 0;
+    virtual void attackCollision(const Attack *other) = 0;
+
+};
+
+class SimpleAttack : public Attack
+{
+public:
+    SimpleAttack() { }
+    SimpleAttack(const glm::vec2 &kb, float damage, float stun, float priority,
+            const glm::vec2 &pos, const glm::vec2 &size, int playerID,
+            const std::string &audioID);
+    virtual ~SimpleAttack();
+
+    virtual Rectangle getHitbox() const;
+    virtual float getPriority() const;
+    virtual float getDamage(const GameEntity *) const;
+    virtual float getStun(const GameEntity *) const;
+    virtual glm::vec2 getKnockback(const GameEntity *) const;
+
+    virtual int getPlayerID() const;
+    virtual std::string getAudioID() const;
+
+    // True if this attack can hit the passed GameEntity now
+    virtual bool canHit(const GameEntity *) const;
+    virtual void attackCollision(const Attack *other);
+
+
+    // Non inherited functions...
+    void setPosition(const glm::vec2 &position);
+
+protected:
+    int playerID_;
+    
+    float damage_, stun_, priority_;
+
+    glm::vec2 pos_;
+    glm::vec2 size_;
+    glm::vec2 kb_;
+
+    std::string audioID_;
+
+    std::set<int> hasHit_;
+};
+
+class FighterAttack : public SimpleAttack
+{
+public:
+    FighterAttack();
+
+    FighterAttack(const std::string &paramPrefix, const std::string &audioID,
             const std::string &frameName);
 
-    virtual ~Attack() {}
+    virtual ~FighterAttack() {}
 
-    virtual Attack* clone() const;
+    virtual FighterAttack* clone() const;
 
-    virtual bool hasTwinkle() const;
     virtual Rectangle getHitbox() const;
-    virtual float getDamage(const GameEntity *fighter) const;
-    virtual float getStun(const GameEntity *fighter) const;
     virtual glm::vec2 getKnockback(const GameEntity *fighter) const;
 
     void setFighter(Fighter *fighter);
@@ -38,8 +95,6 @@ public:
     virtual bool hasHitbox() const;
     // If this attack is over
     virtual bool isDone() const;
-    // True if this attack can hit the fighter right now
-    bool canHit(const GameEntity *f) const;
 
     // Updates internal timer
     virtual void update(float dt);
@@ -52,8 +107,8 @@ public:
     // Called when two attacks collide
     virtual void attackCollision(const Attack *other);
 
-    virtual std::string getAudioID() const;
     virtual std::string getFrameName() const;
+    virtual bool hasTwinkle() const;
 
     void setTwinkle(bool twinkle);
     void setHitboxFrame(const std::string &frame);
@@ -63,14 +118,10 @@ protected:
     glm::vec2 hbsize_;
 
     float startup_, duration_, cooldown_;
-    float damage_, stun_;
-    float priority_;
     glm::vec2 knockbackdir_;
     float knockbackpow_;
-    std::set<int> hasHit_;
     float t_;
 
-    std::string audioID_;
     std::string frameName_;
     std::string hbframe_;
     bool twinkle_;
@@ -78,13 +129,13 @@ protected:
     Fighter *owner_;
 };
 
-class MovingAttack : public Attack
+class MovingAttack : public FighterAttack
 {
 public:
     MovingAttack(const std::string &paramPrefix, const std::string &audioID,
             const std::string &frameName);
 
-    virtual Attack *clone() const;
+    virtual FighterAttack *clone() const;
     virtual Rectangle getHitbox() const;
 
 private:
@@ -92,14 +143,14 @@ private:
 };
 
 
-class UpSpecialAttack : public Attack
+class UpSpecialAttack : public FighterAttack
 {
 public:
     UpSpecialAttack(const std::string &paramPrefix, const std::string &audioID,
             const std::string &frameName);
 
 
-    virtual Attack* clone() const;
+    virtual FighterAttack* clone() const;
     virtual void start();
     virtual void finish();
     virtual void update(float dt);
@@ -110,13 +161,13 @@ private:
     bool started_;
 };
 
-class NeutralSpecialAttack : public Attack
+class NeutralSpecialAttack : public FighterAttack
 {
 public:
     NeutralSpecialAttack(const std::string &paramPrefix,
             const std::string &frameName);
 
-    virtual Attack *clone() const;
+    virtual FighterAttack *clone() const;
     virtual bool hasHitbox() const;
     virtual void update(float dt);
     virtual void start();
@@ -126,13 +177,13 @@ private:
     bool released_;
 };
 
-class DashAttack : public Attack
+class DashAttack : public FighterAttack
 {
 public:
     DashAttack(const std::string &paramPrefix, const std::string &audioID,
             const std::string &frameName);
 
-    virtual Attack* clone() const;
+    virtual FighterAttack* clone() const;
     virtual void start();
     virtual void finish();
     virtual void update(float dt);

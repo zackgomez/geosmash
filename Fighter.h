@@ -6,6 +6,7 @@
 #include "GameEntity.h"
 
 class Attack;
+class FighterAttack;
 
 struct Controller
 {
@@ -92,13 +93,13 @@ private:
     glm::vec3 color_;
 
     // Current attack members
-    Attack* attack_;
+    FighterAttack* attack_;
 
     // Game statistics members
     int lastHitBy_; // The id of the fighter that last hit us, or -1
 
     // This fighters attacks
-    std::map<std::string, Attack *> attackMap_;
+    std::map<std::string, FighterAttack *> attackMap_;
 
     // ---- Helper functions ----
     float damageFunc() const; // Returns a scaling factor based on damage

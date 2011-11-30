@@ -4,6 +4,7 @@
 #include "glutils.h"
 #include "Fighter.h"
 #include "FrameManager.h"
+#include "Attack.h"
 
 Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
         const std::string &paramPrefix, const std::string &frameName,
@@ -25,13 +26,14 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
     size_ = glm::vec2(getParam(paramPrefix_ + "sizex"),
             getParam(paramPrefix_ + "sizey"));
 
-    attack_ = new ProjectileHelperAttack(
+    attack_ = new SimpleAttack(
             getParam(paramPrefix_ + "knockbackpow") *
             glm::normalize(glm::vec2(
                     getParam(paramPrefix_ + "knockbackx") * vel_.x > 0 ? 1 : -1,
                     getParam(paramPrefix_ + "knockbacky"))),
             getParam(paramPrefix_ + "damage"),
             getParam(paramPrefix_ + "stun"),
+            0.f, // 0 priority
             pos_, size_, playerID_,
             audioID_);
 }
@@ -110,58 +112,3 @@ void Projectile::render(float dt)
             frameName_);
 }
 
-
-// ---- Projectile Attack Methods ----
-ProjectileHelperAttack::ProjectileHelperAttack(const glm::vec2 &kb, float damage, float stun,
-        const glm::vec2 &pos, const glm::vec2 &size, int playerID, const std::string &audioID) :
-    Attack(),
-    playerID_(playerID),
-    pos_(pos),
-    size_(size),
-    kb_(kb),
-    audioID_(audioID)
-{
-    damage_ = damage;
-    stun_ = stun;
-}
-
-ProjectileHelperAttack::~ProjectileHelperAttack()
-{
-    /* empty */
-}
-
-Attack * ProjectileHelperAttack::clone() const
-{
-    return new ProjectileHelperAttack(*this);
-}
-
-Rectangle ProjectileHelperAttack::getHitbox() const
-{
-    return Rectangle(pos_.x, pos_.y, size_.x, size_.y);
-}
-
-glm::vec2 ProjectileHelperAttack::getKnockback(const GameEntity *) const
-{
-    return kb_;
-}
-
-int ProjectileHelperAttack::getPlayerID() const
-{
-    return playerID_;
-}
-
-void ProjectileHelperAttack::render(float dt)
-{
-    // Should not be called
-    assert(false);
-}
-
-std::string ProjectileHelperAttack::getAudioID() const
-{
-    return audioID_;
-}
-
-void ProjectileHelperAttack::setPosition(const glm::vec2 &position)
-{
-    pos_ = position;
-}

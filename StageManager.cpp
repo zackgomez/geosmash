@@ -50,8 +50,9 @@ HazardEntity::HazardEntity(const std::string &audioID)
 {
 
 
+    /*
     std::string pre = "stageHazard";
-    attack_ = new ProjectileHelperAttack(
+    attack_ = new Simp(
             getParam(pre + "knockbackpow") *
             glm::normalize(glm::vec2(getParam(pre + "knockbackx"),
                       getParam(pre + "knockbacky"))),
@@ -59,6 +60,7 @@ HazardEntity::HazardEntity(const std::string &audioID)
             getParam(pre + "stun"),
             pos_, size_, playerID_,
             audioID);
+            */
 
 }
 

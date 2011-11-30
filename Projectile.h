@@ -1,9 +1,8 @@
 #pragma once
 #include "GameEntity.h"
 #include <string>
-#include "Attack.h"
 
-class ProjectileHelperAttack;
+class SimpleAttack;
 
 class Projectile : public GameEntity
 {
@@ -30,7 +29,7 @@ public:
 
 private:
     std::string paramPrefix_;
-    ProjectileHelperAttack *attack_;
+    SimpleAttack *attack_;
 
     float t_;
     bool hit_;
@@ -38,32 +37,3 @@ private:
     std::string audioID_;
 };
 
-
-class ProjectileHelperAttack : public Attack
-{
-public:
-    ProjectileHelperAttack(const glm::vec2 &kb, float damage, float stun,
-            const glm::vec2 &pos, const glm::vec2 &size, int playerID,
-            const std::string &audioID);
-    virtual ~ProjectileHelperAttack();
-
-    virtual Attack * clone() const;
-
-    virtual Rectangle getHitbox() const;
-    virtual glm::vec2 getKnockback(const GameEntity *) const;
-    virtual int getPlayerID() const;
-
-    virtual void render(float dt);
-
-    virtual std::string getAudioID() const;
-
-    void setPosition(const glm::vec2 &position);
-
-private:
-    int playerID_;
-    glm::vec2 pos_;
-    glm::vec2 size_;
-    glm::vec2 kb_;
-
-    std::string audioID_;
-};
