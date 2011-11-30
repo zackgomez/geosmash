@@ -638,7 +638,7 @@ void BlockingState::hitByAttack(const Attack *attack)
 
 //// -------------------- AIR NORMAL STATE -----------------------------
 AirNormalState::AirNormalState(Fighter *f) :
-    FighterState(f), canSecondJump_(true), jumpTime_(-1)
+    FighterState(f), canSecondJump_(true), jumpTime_(-1), noGrabTime_(0)
 {
     frameName_ = "AirNormal";
 }
@@ -665,7 +665,7 @@ void AirNormalState::processInput(Controller &controller, float dt)
         fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
     }
     // Fast falling
-    if (fighter_->vel_.y < 0 && fighter_->vel_.y > getParam("fastFallMaxSpeed") && controller.joyy < -getParam("input.fallThresh"))
+    if (fighter_->vel_.y < 0 && fighter_->vel_.y > getParam("fastFallMaxSpeed") && controller.joyy < getParam("input.fallThresh"))
     {
         if (!fastFalling_ && fighter_->vel_.y > getParam("fastFallMaxInitialSpeed"))
             fighter_->vel_.y += getParam("fastFallInitialSpeed");
@@ -754,7 +754,9 @@ void AirNormalState::processInput(Controller &controller, float dt)
 
 void AirNormalState::update(float dt)
 {
-    checkForLedgeGrab();
+    noGrabTime_ -= dt;
+    if (noGrabTime_ <= 0.f)
+        checkForLedgeGrab();
 }
 
 void AirNormalState::render(float dt)
@@ -802,6 +804,12 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
 void AirNormalState::hitByAttack(const Attack *attack)
 {
     FighterState::calculateHitResult(attack);
+}
+
+AirNormalState * AirNormalState::setNoGrabTime(float t)
+{
+    noGrabTime_ = t;
+    return this;
 }
 
 //// ----------------------- DODGE STATE --------------------------------
@@ -881,14 +889,11 @@ LedgeGrabState::LedgeGrabState(Fighter *f) :
 
 void LedgeGrabState::processInput(Controller &controller, float dt)
 {
-    // Check for jump input
-    if (controller.pressjump)
-        // Start startup time countdown
-        jumpTime_ = getParam("jumpStartupTime");
+    if (jumpTime_ > 0 && jumpTime_ != HUGE_VAL) return;
 
+    // Check for jump transition
     if (jumpTime_ <= 0.f)
     {
-        assert(!next_);
         fighter_->vel_ = glm::vec2(0.f,
                 controller.jumpbutton ? getParam("jumpSpeed") : getParam("hopSpeed"));
         next_ = new AirNormalState(fighter_);
@@ -900,9 +905,54 @@ void LedgeGrabState::processInput(Controller &controller, float dt)
                 fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
                 fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
+        return;
     }
 
-    // TODO
+    // Check for jump input
+    if (controller.pressjump)
+    {
+        // Start startup time countdown
+        jumpTime_ = getParam("jumpStartupTime");
+    }
+    // Check for attack input
+    else if (controller.pressa)
+    {
+        // TODO add a real ledge grab attack
+        ledge_->occupied = false;
+        // move on top of ground
+        fighter_->push(glm::vec2(
+                    fighter_->getDirection() * hbsize_.x/2,
+                    fighter_->size_.y - 1));
+        // transition to groundnormal state with some invincibility
+        next_ = new GroundState(fighter_);
+        // start ledge attack XXX: just use down tilt for now
+        fighter_->attack_ = fighter_->attackMap_["downTilt"]->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+        return;
+    }
+    // Check for fall
+    else if (controller.joyy < getParam("input.dropThresh"))
+    {
+        ledge_->occupied = false;
+        // transition to air normal state with some no grab time
+        next_ = (new AirNormalState(fighter_))
+            ->setNoGrabTime(getParam("ledgeGrab.droptime"));
+        return;
+    }
+    // Check for dodge
+    else if (controller.rtrigger < -getParam("input.trigThresh") ||
+             controller.ltrigger < -getParam("input.trigThresh"))
+    {
+        ledge_->occupied = false;
+        // put in dodge state
+        next_ = new DodgeState(fighter_);
+        // move on top of ground
+        fighter_->push(glm::vec2(
+                    fighter_->getDirection() * hbsize_.x/2,
+                    fighter_->size_.y - 1));
+        return;
+    }
 }
 
 void LedgeGrabState::update(float dt)
@@ -927,11 +977,12 @@ void LedgeGrabState::render(float dt)
 
 void LedgeGrabState::collisionWithGround(const Rectangle &ground, bool collision)
 {
-    assert(!collision);
+    if (next_) return;
 }
 
 void LedgeGrabState::hitByAttack(const Attack *attack)
 {
+    assert(invincTime_ <= 0.f);
     FighterState::calculateHitResult(attack);
 }
 

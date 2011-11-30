@@ -19,10 +19,8 @@ hud.y       -0.70
 hud.w       1.4
 hud.h       0.125
 
-
 soundtrack.volume 35
 sfx.volume 100
-
 
 input.dashThresh    0.9
 input.dashMin       0.6
@@ -31,13 +29,12 @@ input.jumpThresh    0.9
 input.deadzone      0.2
 input.tiltThresh    0.4
 input.dodgeThresh   0.6
-input.fallThresh    0.95
+input.fallThresh    -0.95
+input.dropThresh    -0.6
 input.trigThresh    0.5
 input.duckThresh    -0.85
 
-
 debug.drawHitbox    0
-
 
 fighter.w        50
 fighter.h        60
@@ -81,7 +78,8 @@ dodge.cooldown    0.15
 ledgeGrab.grabInvincTime 1.0
 ledgeGrab.hbwidth        40.0
 ledgeGrab.hbheight       60.0
-ledgeGrab.dist           80.0
+ledgeGrab.dist           90.0
+ledgeGrab.droptime       0.30
 
 dashAttack.startup      0.05
 dashAttack.duration     0.55

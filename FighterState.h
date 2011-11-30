@@ -109,6 +109,8 @@ public:
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Attack *attack);
 
+    AirNormalState * setNoGrabTime(float t);
+
 private:
     // True if the player has a second jump available
     bool canSecondJump_;
@@ -116,6 +118,9 @@ private:
     float jumpTime_;
     // True if this player has begun fastfalling
     bool fastFalling_;
+
+    // when >0 cannot ledge grab
+    float noGrabTime_;
 };
 
 class AirStunnedState : public FighterState
