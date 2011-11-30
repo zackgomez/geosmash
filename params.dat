@@ -9,7 +9,7 @@ level.w      1024
 level.h      64
 level.d      80
 
-killbox.top     600
+killbox.top     800
 killbox.bottom  -600
 killbox.left    -1300
 killbox.right   1300

@@ -983,6 +983,7 @@ void LedgeGrabState::collisionWithGround(const Rectangle &ground, bool collision
 void LedgeGrabState::hitByAttack(const Attack *attack)
 {
     assert(invincTime_ <= 0.f);
+    ledge_->occupied = false;
     FighterState::calculateHitResult(attack);
 }
 
