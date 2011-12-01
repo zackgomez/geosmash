@@ -943,7 +943,7 @@ void LedgeGrabState::processInput(Controller &controller, float dt)
         ledge_->occupied = false;
         // transition to air normal state with some no grab time
         next_ = (new AirNormalState(fighter_))
-            ->setNoGrabTime(getParam("ledgeGrab.droptime"));
+            ->setNoGrabTime(getParam("ledgeGrab.dropTime"));
         return;
     }
     // Check for dodge
@@ -951,13 +951,27 @@ void LedgeGrabState::processInput(Controller &controller, float dt)
              controller.ltrigger < -getParam("input.trigThresh"))
     {
         ledge_->occupied = false;
-        // put in dodge state
+        // put in dodge state with some delay
         next_ = new DodgeState(fighter_);
         // move on top of ground
         fighter_->push(glm::vec2(
                     fighter_->getDirection() * hbsize_.x/2,
                     fighter_->size_.y - 1));
         return;
+    }
+    // CHeck for plain stand up (up or forward on the joystick)
+    else if ((controller.joyx * fighter_->getDirection() > getParam("input.tiltThresh") 
+                && controller.joyxv * fighter_->getDirection() > getParam("input.velThresh"))
+            || (controller.joyy > getParam("input.tiltThresh")
+                && controller.joyyv > getParam("input.velThresh")))
+    {
+        ledge_->occupied = false;
+        // put in GroundNormal state
+        next_ = new GroundState(fighter_, getParam("ledgeGrab.wakeupTime"));
+        // move on top of ground
+        fighter_->push(glm::vec2(
+                    fighter_->getDirection() * hbsize_.x/2,
+                    fighter_->size_.y - 1));
     }
 }
 

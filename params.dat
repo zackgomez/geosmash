@@ -81,7 +81,8 @@ ledgeGrab.grabInvincTime 1.0
 ledgeGrab.hbwidth        40.0
 ledgeGrab.hbheight       60.0
 ledgeGrab.dist           90.0
-ledgeGrab.droptime       0.30
+ledgeGrab.dropTime       0.30
+ledgeGrab.wakeupTime     0.15
 
 dashAttack.startup      0.05
 dashAttack.duration     0.55
