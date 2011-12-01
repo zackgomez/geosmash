@@ -36,12 +36,14 @@ input.duckThresh    -0.85
 
 debug.drawHitbox    0
 
-fighter.w        50
-fighter.h        60
-fighter.lives    4
-fighter.respawnTime 1.0
-fighter.gbThresh  600.0
-fighter.gbDamping 0.45
+fighter.w             50
+fighter.h             60
+fighter.lives         4
+fighter.respawnTime   1.0
+fighter.gbThresh      600.0
+fighter.gbVelDamping  0.6
+fighter.gbStunDamping 0.2
+fighter.minDashTime   0.25
 
 shield.maxHealth 50.0
 shield.regen     8.0
@@ -63,7 +65,7 @@ hopSpeed         275.0
 jumpAirSpeed     200.0
 secondJumpSpeed  500.0
 dashStartupTime  0.06
-dashChangeTime   0.25
+dashChangeTime   0.17
 landingCooldownTime 0.05
 fastFallAccel    -600.0
 fastFallInitialSpeed -250.0
@@ -274,7 +276,7 @@ neutralSmashAttack.hitboxx      0
 neutralSmashAttack.hitboxy      -20
 neutralSmashAttack.hitboxw      30
 neutralSmashAttack.hitboxh      50
-neutralSmashAttack.priority     1.0
+neutralSmashAttack.priority     1.5
 
 sideSmashAttack.startup      0.30
 sideSmashAttack.duration     0.25
@@ -288,7 +290,7 @@ sideSmashAttack.hitboxx      50
 sideSmashAttack.hitboxy      15
 sideSmashAttack.hitboxw      50
 sideSmashAttack.hitboxh      30
-sideSmashAttack.priority     1.0
+sideSmashAttack.priority     1.5
 
 downSmashAttack.startup      0.21
 downSmashAttack.duration     0.25
@@ -302,7 +304,7 @@ downSmashAttack.hitboxx      0
 downSmashAttack.hitboxy      -20
 downSmashAttack.hitboxw      130
 downSmashAttack.hitboxh      20
-downSmashAttack.priority     1.0
+downSmashAttack.priority     1.5
 
 upSmashAttack.startup      0.28
 upSmashAttack.duration     0.20
@@ -314,7 +316,7 @@ upSmashAttack.knockbacky   4
 upSmashAttack.knockbackpow 220.0
 upSmashAttack.hitboxw      48
 upSmashAttack.hitboxh      48
-upSmashAttack.priority     1.0
+upSmashAttack.priority     1.5
 upSmashAttack.hitboxx      -20
 upSmashAttack.hitboxy      30
 upSmashAttack.hitboxx1     35

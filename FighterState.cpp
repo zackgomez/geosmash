@@ -101,8 +101,6 @@ void FighterState::checkForLedgeGrab()
     const glm::vec2 &fpos = fighter_->pos_;
     Ledge *ledge = StageManager::get()->getPossibleLedge(fpos);
 
-    if (ledge)
-        std::cout << "Distance to ledge: " << glm::length(fpos - ledge->pos) << '\n';
     // We should either get no ledge or a ledge that's unoccupied
     assert(!ledge || !ledge->occupied);
     if (ledge
@@ -177,9 +175,9 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
             && gb_)
     {
         // reflect and dampen yvel and stun
-        fighter_->vel_.y *= -getParam("fighter.gbDamping");
-        fighter_->vel_.x *= getParam("fighter.gbDamping");
-        stunTime_ *= getParam("fighter.gbDamping");
+        fighter_->vel_.y *= -getParam("fighter.gbVelDamping");
+        fighter_->vel_.x *= getParam("fighter.gbVelDamping");
+        stunTime_ *= getParam("fighter.gbStunDamping");
         // Cannot be bounced again unless hit again
         gb_ = false;
     }
@@ -217,8 +215,9 @@ void GroundState::processInput(Controller &controller, float dt)
     ducking_ = false;
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
-    if (dashTime_ >= 0) dashTime_ += dt;
     if (waitTime_ >= 0) waitTime_ -= dt;
+    if (dashTime_ >= 0) dashTime_ += dt;
+    else dashTime_ -= dt;
     // If the fighter is currently attacking, do nothing else
     if (fighter_->attack_) return;
     // Do nothing during jump startup
@@ -382,10 +381,15 @@ void GroundState::processInput(Controller &controller, float dt)
                     fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.4f, 
                     fighter_->pos_.y - fighter_->size_.y * 0.45f,
                     0.3f);
+            // Reset min dash time
+            dashTime_ = -1 + std::min(getParam("dashChangeTime"), 0.99f);
         }
         // Check for drop out of dash
-        else if (fabs(controller.joyx) < getParam("input.dashMin") && fabs(controller.joyxv) < getParam("input.velThresh"))
+        else if (fabs(controller.joyx) < getParam("input.dashMin")
+                && fabs(controller.joyxv) < getParam("input.velThresh")
+                && dashTime_ < -1 - getParam("fighter.minDashTime"))
         {
+            
             dashing_ = false;
             waitTime_ = getParam("dashChangeTime");
             fighter_->vel_.x = 0;
@@ -456,7 +460,9 @@ void GroundState::render(float dt)
     std::string fname = frameName_;
     if (dashing_)
         fname = "GroundRunning";
-    if (waitTime_ > 0 || ducking_)
+    if (dashing_ && waitTime_ > 0.f)
+        fname = "DashChange";
+    if (ducking_)
         fname = "Ducking";
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
