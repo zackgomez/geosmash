@@ -114,6 +114,34 @@ void FighterState::checkForLedgeGrab()
     }
 }
 
+bool FighterState::performBMove(const Controller &controller)
+{
+    if (!controller.pressb)
+        return false;
+    glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
+    // Check for up B
+    if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+    {
+        fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
+    }
+    else if (fabs(controller.joyx) > getParam("input.tiltThresh") 
+                && fabs(tiltDir.x) > fabs(tiltDir.y))
+    {
+        fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+        fighter_->attack_ = fighter_->attackMap_["sideSpecial"]->clone();
+    }
+    // Otherwise neutral B
+    else
+    {
+        fighter_->attack_ = fighter_->attackMap_["neutralSpecial"]->clone();
+    }
+
+    fighter_->attack_->setFighter(fighter_);
+    fighter_->attack_->start();
+    return true;
+}
+
+
 //// ---------------------- AIR STUNNED STATE -----------------------
 AirStunnedState::AirStunnedState(Fighter *f, float duration, bool gb) : 
     FighterState(f), stunDuration_(duration), stunTime_(0), gb_(gb)
@@ -321,19 +349,12 @@ void GroundState::processInput(Controller &controller, float dt)
         return;
     }
     // Check for B moves
-    else if (controller.pressb)
+    else if (performBMove(controller))
     {
+        // In the ground state, make sure the player stops moving before
+        // ANY B move
         fighter_->vel_.x = 0.f;
-        glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
-        // Check for up B
-        if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-            fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
-        // Otherwise neutral B
-        else
-            fighter_->attack_ = fighter_->attackMap_["neutralSpecial"]->clone();
-
-        fighter_->attack_->setFighter(fighter_);
-        fighter_->attack_->start();
+        dashing_ = false;
         return;
     }
     // Check for taunt
@@ -717,18 +738,10 @@ void AirNormalState::processInput(Controller &controller, float dt)
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
     }
-    else if (controller.pressb)
+    else if (performBMove(controller))
     {
-        glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
-        // Check for up B
-        if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-            fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
-        // Otherwise neutral B
-        else
-            fighter_->attack_ = fighter_->attackMap_["neutralSpecial"]->clone();
-
-        fighter_->attack_->setFighter(fighter_);
-        fighter_->attack_->start();
+        // No additional processing is required here.
+        return;
     }
 
     // If we just added an attack, lets not jump too

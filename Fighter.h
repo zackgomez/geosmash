@@ -120,6 +120,7 @@ private:
     friend class BlockingState;
     friend class LedgeGrabState;
 
+    friend class MovingAttack;
     friend class UpSpecialAttack;
     friend class DashAttack;
 };

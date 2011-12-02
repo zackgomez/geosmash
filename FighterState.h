@@ -47,6 +47,10 @@ protected:
     void calculateHitResult(const Attack *attack);
     void collisionHelper(const Rectangle &ground);
     void checkForLedgeGrab();
+    // Helper for dealing with all B moves.
+    // Returns true if a B move was requested (in that case, the attack has 
+    // been created)
+    bool performBMove(const Controller &);
     template<typename T> 
     static T muxByTime(const T& color, float t);
 };

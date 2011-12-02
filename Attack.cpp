@@ -100,6 +100,7 @@ FighterAttack::FighterAttack(const std::string &paramPrefix, const std::string &
     priority_ = getParam(pp + "priority");
     audioID_ = audioID;
     frameName_ = frameName;
+    paramPrefix_ = pp;
 
     twinkle_ = false;
 
@@ -243,12 +244,82 @@ void FighterAttack::attackCollision(const Attack *other)
 }
 
 // ----------------------------------------------------------------------------
+// MovingAttack class methods
+// ----------------------------------------------------------------------------
+
+MovingAttack::MovingAttack(const std::string &paramPrefix, const std::string &audioID,
+        const std::string &frameName) :
+    FighterAttack(paramPrefix, audioID, frameName)
+{
+    /* Empty */
+}
+
+FighterAttack* MovingAttack::clone() const
+{
+    return new MovingAttack(*this);
+}
+
+void MovingAttack::update(float dt)
+{
+    FighterAttack::update(dt);
+    // Update during duration
+    if (t_ > startup_ && t_ < startup_ + duration_)
+    {
+        if (!started_)
+        {
+            owner_->vel_.x = owner_->dir_ * getParam(paramPrefix_ + "xvel");
+            owner_->vel_.y = getParam(paramPrefix_ + "yvel");
+            // Draw a little puff
+            ExplosionManager::get()->addPuff(
+                    owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.1f, 
+                    owner_->pos_.y - owner_->size_.y * 0.45f,
+                    0.3f);
+            ExplosionManager::get()->addPuff(
+                    owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.3f, 
+                    owner_->pos_.y - owner_->size_.y * 0.45f,
+                    0.3f);
+            // Play the sound stored in our attack. 
+            AudioManager::get()->playSound(audioID_, owner_->pos_);
+
+            started_ = true;
+        }
+
+    }
+    if (t_ > startup_ + duration_ && started_)
+    {
+        owner_->vel_ = glm::vec2(0,0); 
+        started_ = false;
+    }
+}
+
+void MovingAttack::start()
+{
+    FighterAttack::start();
+    started_ = false;
+    //repeatTime_ = 0.0f;
+}
+
+void MovingAttack::finish()
+{
+    FighterAttack::finish();
+}
+
+
+void MovingAttack::hit(GameEntity *victim)
+{
+    // Can't hit ourself
+    if (victim->getPlayerID() == getPlayerID()) return;
+
+    FighterAttack::hit(victim);
+}
+
+// ----------------------------------------------------------------------------
 // UpSpecialAttack class methods
 // ----------------------------------------------------------------------------
 
 UpSpecialAttack::UpSpecialAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
-    FighterAttack(paramPrefix, audioID, frameName)
+    MovingAttack(paramPrefix, audioID, frameName)
 {
     /* Empty */
 }
@@ -266,10 +337,8 @@ void UpSpecialAttack::update(float dt)
     {
         if (!started_)
         {
-            // Move slightly up to avoid the ground, if applicable
-            owner_->pos_.y += 2;
-            owner_->vel_.x = owner_->dir_ * getParam("upSpecialAttack.xvel");
-            owner_->vel_.y = getParam("upSpecialAttack.yvel");
+            owner_->vel_.x = owner_->dir_ * getParam(paramPrefix_ + "xvel");
+            owner_->vel_.y = getParam(paramPrefix_ + "yvel");
             // Draw a little puff
             ExplosionManager::get()->addPuff(
                     owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.1f, 
@@ -279,21 +348,22 @@ void UpSpecialAttack::update(float dt)
                     owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.3f, 
                     owner_->pos_.y - owner_->size_.y * 0.45f,
                     0.3f);
-            // Play the UP Special sound
-            AudioManager::get()->playSound("upspecial", owner_->pos_);
-
-            // Go to air normal state
+            // Play the sound stored in our attack. 
+            AudioManager::get()->playSound(audioID_, owner_->pos_);
+            // Pop them up a couple pixels, and be sure they're in the air state.
+            owner_->push(glm::vec2(0, 2));
             delete owner_->state_;
             owner_->state_ = new AirNormalState(owner_);
+
             started_ = true;
         }
 
-        repeatTime_ += dt;
+       repeatTime_ += dt;
     }
-    if (repeatTime_ > getParam("upSpecialAttack.repeatInterval"))
+    if (repeatTime_ > getParam(paramPrefix_ + "repeatInterval"))
     {
         hasHit_.clear();
-        repeatTime_ -= getParam("upSpecialAttack.repeatInterval");
+        repeatTime_ -= getParam(paramPrefix_ + "repeatInterval");
     }
 }
 
@@ -367,10 +437,10 @@ void DashAttack::update(float dt)
 }
 
 // ----------------------------------------------------------------------------
-// MovingAttack class methods
+// MovingHitboxAttack class methods
 // ----------------------------------------------------------------------------
 
-MovingAttack::MovingAttack(const std::string &paramPrefix, const std::string &audioID,
+MovingHitboxAttack::MovingHitboxAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
     FighterAttack(paramPrefix, audioID, frameName)
 {
@@ -379,12 +449,12 @@ MovingAttack::MovingAttack(const std::string &paramPrefix, const std::string &au
     hb1 = glm::vec2(getParam(pp + "hitboxx1"), getParam(pp + "hitboxy1"));
 }
 
-FighterAttack *MovingAttack::clone() const
+FighterAttack *MovingHitboxAttack::clone() const
 {
-    return new MovingAttack(*this);
+    return new MovingHitboxAttack(*this);
 }
 
-Rectangle MovingAttack::getHitbox() const
+Rectangle MovingHitboxAttack::getHitbox() const
 {
     float u = std::min(duration_, std::max(t_ - startup_, 0.f)) / duration_;
 

@@ -63,6 +63,7 @@ protected:
     glm::vec2 kb_;
 
     std::string audioID_;
+    std::string paramPrefix_;
 
     std::set<int> hasHit_;
 };
@@ -129,10 +130,11 @@ protected:
     Fighter *owner_;
 };
 
-class MovingAttack : public FighterAttack
+// An attack with a hitbox that moves, like the current Up Smash
+class MovingHitboxAttack : public FighterAttack
 {
 public:
-    MovingAttack(const std::string &paramPrefix, const std::string &audioID,
+    MovingHitboxAttack(const std::string &paramPrefix, const std::string &audioID,
             const std::string &frameName);
 
     virtual FighterAttack *clone() const;
@@ -143,12 +145,32 @@ private:
 };
 
 
-class UpSpecialAttack : public FighterAttack
+// An attack that is responsible for moving the character.
+// (Current Up - B and Side-B 0.6)
+class MovingAttack: public FighterAttack
+{
+public:
+    MovingAttack(const std::string &paramPrefix, const std::string &audioID,
+            const std::string &frameName);
+
+
+    virtual FighterAttack* clone() const;
+    virtual void start();
+    virtual void finish();
+    virtual void update(float dt);
+    virtual void hit(GameEntity *victim);
+
+protected:
+    void setVelocity(const glm::vec2 &);
+    bool started_;
+};
+
+// The Up-B attack class. 
+class UpSpecialAttack: public MovingAttack
 {
 public:
     UpSpecialAttack(const std::string &paramPrefix, const std::string &audioID,
             const std::string &frameName);
-
 
     virtual FighterAttack* clone() const;
     virtual void start();

@@ -258,12 +258,26 @@ upSpecialAttack.hitboxy      30
 upSpecialAttack.hitboxw      40
 upSpecialAttack.hitboxh      60
 upSpecialAttack.priority     2.0
-
 upSpecialAttack.repeatInterval  0.04
 upSpecialAttack.xvel            160
 upSpecialAttack.yvel            800
 
 
+sideSpecialAttack.startup      0.18
+sideSpecialAttack.duration     0.30
+sideSpecialAttack.cooldown     0.30
+sideSpecialAttack.damage       9
+sideSpecialAttack.stun         0.10
+sideSpecialAttack.knockbackx   2
+sideSpecialAttack.knockbacky   3 
+sideSpecialAttack.knockbackpow 100.0
+sideSpecialAttack.hitboxx      0
+sideSpecialAttack.hitboxy      0
+sideSpecialAttack.hitboxw      50
+sideSpecialAttack.hitboxh      60
+sideSpecialAttack.priority     1.0
+sideSpecialAttack.yvel            0
+sideSpecialAttack.xvel            800
 
 neutralSmashAttack.startup      0.40
 neutralSmashAttack.duration     0.05

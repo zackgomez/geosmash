@@ -52,6 +52,8 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
     attackMap_["neutralSpecial"] = new NeutralSpecialAttack("neutralSpecialAttack", "NeutralSpecial");
+    attackMap_["sideSpecial"] = loadAttack<MovingAttack>("sideSpecialAttack", a, "SideSpecial");
+    attackMap_["sideSpecial"]->setHitboxFrame("Null");
 
     attackMap_["taunt"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
 
@@ -64,7 +66,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     attackMap_["downSmash"] = loadAttack<FighterAttack>("downSmashAttack", s, "DownSmash");
     attackMap_["downSmash"]->setTwinkle(true);
     attackMap_["downSmash"]->setHitboxFrame("DownSmashHitbox");
-    attackMap_["upSmash"] = loadAttack<MovingAttack>("upSmashAttack", s, "UpSmash");
+    attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");
     attackMap_["upSmash"]->setTwinkle(true);
     attackMap_["upSmash"]->setHitboxFrame("UpSmashHitbox");
 
