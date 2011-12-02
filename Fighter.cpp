@@ -56,6 +56,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     attackMap_["airDown"] = loadAttack<FighterAttack>("airDownAttack", a, "AirDowntilt");
     attackMap_["airDown"]->setHitboxFrame("AirDowntiltHitbox");
     attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
+    attackMap_["airUp"]->setHitboxFrame("AirUptiltHitbox");
 
     attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
     attackMap_["neutralSpecial"] = new NeutralSpecialAttack("neutralSpecialAttack", "NeutralSpecial");
