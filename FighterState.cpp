@@ -315,6 +315,8 @@ void GroundState::processInput(Controller &controller, float dt)
         fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
         fighter_->vel_ = glm::vec2(0.f);
         fighter_->accel_ = glm::vec2(0.f);
+        // XXX the sound is too loud now
+        //AudioManager::get()->playSound("shieldon");
         next_ = new BlockingState(fighter_);
         return;
     }
@@ -631,6 +633,7 @@ void BlockingState::hitByAttack(const Attack *attack)
         // Experience some hit stun
         hitStunTime_ = getParam("shield.stunFactor")
             * glm::length(attack->getKnockback(fighter_));
+        AudioManager::get()->playSound("attackblocked");
     }
 
     glm::vec2 hitdir = glm::vec2(fighter_->pos_.x, fighter_->pos_.y)

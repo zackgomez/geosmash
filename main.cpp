@@ -234,7 +234,12 @@ void checkState()
 
     // End the game when zero or one team is left
     if (teamsAlive.size() < 2)
+    {
         playing = false;
+        // Turn on the "end of game music"
+        AudioManager::get()->setSoundtrack("sfx/PAUSE.wav");
+        AudioManager::get()->startSoundtrack();
+    }
 }
 
 void processEvents()
@@ -856,6 +861,7 @@ void pause(int playerID)
         paused = true;
         pausedPlayer = playerID;
         AudioManager::get()->pauseSoundtrack();
+        AudioManager::get()->playSound("pausein");
     }
 }
 
@@ -867,6 +873,7 @@ void unpause(int playerID)
         pausedPlayer = -1;
         if (!muteMusic)
             AudioManager::get()->startSoundtrack();
+        AudioManager::get()->playSound("pauseout");
     }
 }
 
