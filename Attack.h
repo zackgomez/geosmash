@@ -86,7 +86,6 @@ public:
     virtual glm::vec2 getKnockback(const GameEntity *fighter) const;
 
     void setFighter(Fighter *fighter);
-    void setFrameName(const std::string &fname);
     virtual int getPlayerID() const;
 
     // Called when the move is started
@@ -115,6 +114,8 @@ public:
 
     void setTwinkle(bool twinkle);
     void setHitboxFrame(const std::string &frame);
+    void setStartSound(const std::string &soundID_);
+    void setFrameName(const std::string &fname);
 
 protected:
     glm::vec2 hboffset_;
@@ -128,6 +129,8 @@ protected:
     std::string frameName_;
     std::string hbframe_;
     bool twinkle_;
+
+    std::string startSoundID_;
 
     Fighter *owner_;
 };

@@ -127,6 +127,8 @@ void FighterAttack::start()
     assert(owner_);
     t_ = 0.0f;
     hasHit_.clear();
+    if (!startSoundID_.empty())
+        AudioManager::get()->playSound(startSoundID_);
 }
 
 void FighterAttack::finish()
@@ -163,6 +165,7 @@ std::string FighterAttack::getFrameName() const { return frameName_; }
 
 void FighterAttack::setTwinkle(bool twinkle) { twinkle_ = twinkle; }
 void FighterAttack::setHitboxFrame(const std::string &frame) { hbframe_ = frame; }
+void FighterAttack::setStartSound(const std::string &soundID) { startSoundID_ = soundID; }
 
 bool FighterAttack::hasTwinkle() const
 {
@@ -249,7 +252,7 @@ void FighterAttack::attackCollision(const Attack *other)
 
 MovingAttack::MovingAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
-    FighterAttack(paramPrefix, audioID, frameName)
+    FighterAttack(paramPrefix, audioID, frameName), started_(false)
 {
     /* Empty */
 }
@@ -278,8 +281,6 @@ void MovingAttack::update(float dt)
                     owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.3f, 
                     owner_->pos_.y - owner_->size_.y * 0.45f,
                     0.3f);
-            // Play the sound stored in our attack. 
-            AudioManager::get()->playSound(audioID_, owner_->pos_);
 
             started_ = true;
         }
@@ -296,7 +297,6 @@ void MovingAttack::start()
 {
     FighterAttack::start();
     started_ = false;
-    //repeatTime_ = 0.0f;
 }
 
 void MovingAttack::finish()
@@ -348,8 +348,6 @@ void UpSpecialAttack::update(float dt)
                     owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.3f, 
                     owner_->pos_.y - owner_->size_.y * 0.45f,
                     0.3f);
-            // Play the sound stored in our attack. 
-            AudioManager::get()->playSound(audioID_, owner_->pos_);
             // Pop them up a couple pixels, and be sure they're in the air state.
             owner_->push(glm::vec2(0, 2));
             delete owner_->state_;

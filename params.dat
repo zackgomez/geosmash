@@ -1,7 +1,7 @@
 worldWidth   1500
 worldHeight  800
-resolution.x 1600
-resolution.y 900
+resolution.x 2560
+resolution.y 1600
 
 level.x      0
 level.y      -100
@@ -269,7 +269,7 @@ sideSpecialAttack.cooldown     0.30
 sideSpecialAttack.damage       9
 sideSpecialAttack.stun         0.10
 sideSpecialAttack.knockbackx   2
-sideSpecialAttack.knockbacky   3 
+sideSpecialAttack.knockbacky   4 
 sideSpecialAttack.knockbackpow 100.0
 sideSpecialAttack.hitboxx      0
 sideSpecialAttack.hitboxy      0

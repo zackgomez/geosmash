@@ -62,6 +62,8 @@ void FighterState::calculateHitResult(const Attack *attack)
     // Go to the stunned state
     float stunDuration = attack->getStun(fighter_) * fighter_->damageFunc();
     std::cout << "StunDuration: " << stunDuration << '\n';
+    if (next_)
+        delete next_;
     next_ = new AirStunnedState(fighter_, stunDuration, fighter_->vel_.y < 0);
 }
 
@@ -800,6 +802,9 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
     // If we're not overlapping the ground anymore, no collision
     if (!ground.overlaps(fighter_->getRect()))
         return;
+    // if we have a next state, ignore ground collision
+    if (next_) return;
+
     // Reset vel/accel
     fighter_->vel_ = glm::vec2(0.f, 0.f);
     fighter_->accel_ = glm::vec2(0.f);
@@ -808,7 +813,6 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
     if (fighter_->attack_)
         fighter_->attack_->cancel();
     // Transition to the ground state, with a small delay for landing
-    if (next_) delete next_;
     next_ = new GroundState(fighter_, getParam("landingCooldownTime"));
 
     // Draw some puffs for landing
