@@ -7,6 +7,8 @@ class Fighter;
 class Rectangle;
 class GameEntity;
 
+// Attack base class consisting entirely of pure virtual functions.
+// Just defines the essential duties of any attack.
 class Attack
 {
 public:

@@ -41,17 +41,29 @@ public:
     virtual const Attack * getAttack() const;
     virtual bool canBeHit() const { return false; }
 
-    //attackCollision can be nop
+    virtual void update(float dt);
 
-    
+    virtual void render(float dt);
+    // Someone hit us. Shake in our boots.
+    virtual void attackCollision(const Attack*);
+    // We hit someone! Fuck 'em up!
+    virtual void attackConnected(GameEntity*);
+    // XXX what happens here?
+    virtual void collisionWithGround(const Rectangle&, bool);
+    virtual void hitByAttack(const Attack*);
+
+    //attackCollision can be nop
     
     HazardEntity(const std::string &audioID);
 
 private:
     float lifetime_;
-    Attack *attack_;
+    SimpleAttack *attack_;
     glm::vec2 pos_;
     glm::vec2 vel_;
     glm::vec2 size_;
+    std::string frameName_;
+    int dir_;
+    float t_;
 };
 

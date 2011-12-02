@@ -1,7 +1,9 @@
 #include "StageManager.h"
 #include "Projectile.h"
 #include "ParamReader.h"
+#include <glm/gtc/matrix_transform.hpp>
 #include "Fighter.h"
+#include "FrameManager.h"
 
 StageManager::StageManager()
 {
@@ -43,29 +45,77 @@ Ledge * StageManager::getPossibleLedge(const glm::vec2 &pos)
 
 bool HazardEntity::isDone() const
 {
-    return lifetime_ > 0;
+    return false; 
+}
+
+void HazardEntity::update(float dt)
+{
+    GameEntity::update(dt);
+    // Each frame, we only need to do a couple things.
+    // First, move a bit randomly
+    // then, update our attack to reflect our location.
+
+    // change direction every now and then:
+    dir_ = rand() % 50 ? dir_ : -dir_;  
+    pos_.x += dir_ * 1;
+    attack_->setPosition(pos_);
+}
+
+void HazardEntity::render(float dt)
+{
+    printf("Rendering some shit.\n");
+    glm::mat4 transform = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
+            glm::vec3(1.f));
+#define HAZARD_COLOR 0.5, 0.5, 1
+    FrameManager::get()->renderFrame(transform, glm::vec4(glm::vec4(HAZARD_COLOR, 0.3)),
+            frameName_);
 }
 
 HazardEntity::HazardEntity(const std::string &audioID)
 {
 
 
-    /*
-    std::string pre = "stageHazard";
-    attack_ = new Simp(
+    std::string pre = "stageHazardAttack.";
+    attack_ = new SimpleAttack(
             getParam(pre + "knockbackpow") *
             glm::normalize(glm::vec2(getParam(pre + "knockbackx"),
                       getParam(pre + "knockbacky"))),
             getParam(pre + "damage"),
             getParam(pre + "stun"),
+            getParam(pre + "priority"),
             pos_, size_, playerID_,
             audioID);
-            */
 
+    frameName_ = "Hazard";
+    pos_.x = 0;
+    pos_.y = getParam("level.y") + 50;
+    lifetime_ = 1e7;
+    dir_ = 1; // initially, we'll go right.
 }
 
+void HazardEntity::attackCollision(const Attack*)
+{
+    // Someone hit us. Oh, I'm so scared! o wait, NOP.
+}
 const Attack *HazardEntity::getAttack() const
 {
     return attack_;
+}
+
+void HazardEntity::hitByAttack(const Attack*) 
+{
+    // NOP!
+}
+
+void HazardEntity::attackConnected(GameEntity *)
+{
+    // Do I care? 
+    // NOP!
+}
+
+void HazardEntity::collisionWithGround(const Rectangle &, bool)
+{
+    // NOP!
 }
 

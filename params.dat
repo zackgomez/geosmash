@@ -351,14 +351,16 @@ neutralSpecialAttack.lifetime     2.0
 
 stageHazardAttack.startup      0.30
 stageHazardAttack.cooldown     0.15
-stageHazardAttack.damage       1e6
+stageHazardAttack.damage       12
 stageHazardAttack.stun         1.00
 stageHazardAttack.speed        550.0
-stageHazardAttack.sizex        20.0
+stageHazardAttack.sizex        60.0
 stageHazardAttack.sizey        20.0
 stageHazardAttack.knockbackx   0
 stageHazardAttack.knockbacky   1
-stageHazardAttack.knockbackpow 2e5
+stageHazardAttack.knockbackpow 250
+stageHazardAttack.sizey        20.0
+stageHazardAttack.priority   20
 
 camera.maxVx 200 
 camera.maxVy 150

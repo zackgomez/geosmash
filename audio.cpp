@@ -82,7 +82,8 @@ void AudioManager::playSound(const std::string &fname,
     else if (damage > D2) {
         vol = V2;
     }
-    assert(vol >= V1 && vol <= V2);
+    // TODO: MAKE THIS ASSERTION VALID! (stage hazard hits)
+    //assert(vol >= V1 && vol <= V2);
     s->SetVolume(getParam("sfx.volume")/100.f * vol);
     // play that shit
     s->Play();

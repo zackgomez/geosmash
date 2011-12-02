@@ -16,6 +16,7 @@
 #include "Attack.h"
 #include "ParticleManager.h"
 #include "FontManager.h"
+#include "StageManager.h"
 
 void test_random();
 
@@ -34,6 +35,7 @@ bool running;
 bool playing;
 bool paused;
 int pausedPlayer = -1;
+bool makeHazard;
 
 unsigned numPlayers = 1;
 
@@ -99,6 +101,7 @@ void controllerEvent(Controller &controller, const SDL_Event &event);
 int main(int argc, char **argv)
 {
     muteMusic = false;
+    makeHazard = false;
     numPlayers = 2;
     for (int i = 1; i < argc; i++)
     {
@@ -108,6 +111,8 @@ int main(int argc, char **argv)
             muteMusic = true;
         if (strcmp(argv[i], "--teams") == 0)
             teams = true;
+        if (strcmp(argv[i], "--hazard") == 0)
+            makeHazard = true;
     }
 
 
@@ -155,6 +160,11 @@ int main(int argc, char **argv)
 
     paused = false;
 
+    if (makeHazard)
+    {
+        HazardEntity *h = new HazardEntity("groundhit");
+        entities.push_back(h);
+    }
 
     srand(time(NULL));
     std::vector<std::string> songs;
