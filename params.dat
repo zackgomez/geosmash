@@ -1,7 +1,7 @@
 worldWidth   1500
 worldHeight  800
-resolution.x 2560
-resolution.y 1600
+resolution.x 1600
+resolution.y 900
 
 level.x      0
 level.y      -100
@@ -42,7 +42,7 @@ fighter.lives         4
 fighter.respawnTime   1.0
 fighter.gbThresh      600.0
 fighter.gbVelDamping  0.6
-fighter.gbStunDamping 0.2
+fighter.gbStunDamping 0.15
 fighter.minDashTime   0.25
 
 shield.maxHealth 50.0

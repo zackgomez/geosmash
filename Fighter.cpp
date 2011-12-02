@@ -37,6 +37,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     std::string s = "smashhit";
 
     attackMap_["dash"] = loadAttack<DashAttack>("dashAttack", g, "DashAttack");
+    attackMap_["dash"]->setHitboxFrame("DashAttackHitbox");
 
     attackMap_["neutralTilt"] = loadAttack<FighterAttack>("neutralTiltAttack", g, "GroundNeutral");
     attackMap_["neutralTilt"]->setHitboxFrame("NeutralTiltHitbox");
@@ -59,6 +60,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     attackMap_["airUp"]->setHitboxFrame("AirUptiltHitbox");
 
     attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
+    attackMap_["upSpecial"]->setHitboxFrame("UpSpecialHitbox");
     attackMap_["neutralSpecial"] = new NeutralSpecialAttack("neutralSpecialAttack", "NeutralSpecial");
     attackMap_["sideSpecial"] = loadAttack<MovingAttack>("sideSpecialAttack", a, "SideSpecial");
     attackMap_["sideSpecial"]->setHitboxFrame("Null");
@@ -67,7 +69,7 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
 
     attackMap_["neutralSmash"] = loadAttack<FighterAttack>("neutralSmashAttack", s, "NeutralSmash");
     attackMap_["neutralSmash"]->setTwinkle(true);
-    //attackMap_["neutralSmash"]->setHitboxFrame("NeutralSmashHitbox");
+    attackMap_["neutralSmash"]->setHitboxFrame("Null");
     attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
     attackMap_["sideSmash"]->setTwinkle(true);
     attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
