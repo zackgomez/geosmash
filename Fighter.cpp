@@ -39,9 +39,13 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     attackMap_["dash"] = loadAttack<DashAttack>("dashAttack", g, "DashAttack");
 
     attackMap_["neutralTilt"] = loadAttack<FighterAttack>("neutralTiltAttack", g, "GroundNeutral");
+    attackMap_["neutralTilt"]->setHitboxFrame("NeutralTiltHitbox");
     attackMap_["sideTilt"] = loadAttack<FighterAttack>("sideTiltAttack", g, "GroundSidetilt");
+    attackMap_["sideTilt"]->setHitboxFrame("SideTiltHitbox");
     attackMap_["downTilt"] = loadAttack<FighterAttack>("downTiltAttack", g, "GroundDowntilt");
+    attackMap_["downTilt"]->setHitboxFrame("DownTiltHitbox");
     attackMap_["upTilt"] = loadAttack<FighterAttack>("upTiltAttack", g, "GroundUptilt");
+    attackMap_["upTilt"]->setHitboxFrame("UpTiltHitbox");
 
     // Load air attack special as it uses a different class
     attackMap_["airNeutral"] = loadAttack<FighterAttack>("airNeutralAttack", a, "AirNeutral");
