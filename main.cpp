@@ -397,8 +397,16 @@ void collisionDetection()
         }
     }
 
+    // Now check for ground hits
+    for (unsigned i = 0; i < entities.size(); i++)
+    {
+        GameEntity *entity = entities[i];
+        entity->collisionWithGround(ground,
+                entity->getRect().overlaps(ground));
+    }
+
     // Figher specific checks here
-    // Check for fighter death and ground hit
+    // Check for fighter death
     for (unsigned i = 0; i < numPlayers; i++)
     {
         Fighter *fighter = fighters[i];
@@ -421,10 +429,6 @@ void collisionDetection()
             fighter->respawn(true);
             break;
         }
-
-        // Ground check
-        fighter->collisionWithGround(ground,
-                fighter->getRect().overlaps(ground));
     }
 }
 
@@ -585,8 +589,6 @@ void inputEndScreen()
 
 void renderEndScreen()
 {
-    std::cout << "Rendering end screen\n";
-
     preRender();
     // Start with a blank slate
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );

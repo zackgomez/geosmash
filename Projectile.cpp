@@ -29,13 +29,14 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
     attack_ = new SimpleAttack(
             getParam(paramPrefix_ + "knockbackpow") *
             glm::normalize(glm::vec2(
-                    getParam(paramPrefix_ + "knockbackx") * vel_.x > 0 ? 1 : -1,
+                    getParam(paramPrefix_ + "knockbackx"),
                     getParam(paramPrefix_ + "knockbacky"))),
             getParam(paramPrefix_ + "damage"),
             getParam(paramPrefix_ + "stun"),
             0.f, // 0 priority
             pos_, size_, playerID_,
             audioID_);
+    attack_->setKBDirection(vel_.x > 0 ? 1 : -1);
 }
 
 Projectile::~Projectile()

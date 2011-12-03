@@ -16,13 +16,18 @@
 
 bool FighterState::canBeHit() const
 {
-    return true;
+    return invincTime_ <= 0.f;
 }
 
 Rectangle FighterState::getRect() const
 {
     return Rectangle(fighter_->pos_.x, fighter_->pos_.y,
             fighter_->size_.x, fighter_->size_.y);
+}
+
+void FighterState::update(float dt)
+{
+    invincTime_ -= dt;
 }
 
 void FighterState::calculateHitResult(const Attack *attack)
@@ -110,6 +115,7 @@ void FighterState::checkForLedgeGrab()
         && (ledge->pos.y > (fpos.y + fighter_->getRect().h / 2)) 
         && glm::length(fpos - ledge->pos) <= getParam("ledgeGrab.dist"))
     {
+        AudioManager::get()->playSound("crowdcheer");
         LedgeGrabState *lgs = new LedgeGrabState(fighter_);
         lgs->grabLedge(ledge);
         next_ = lgs;
@@ -171,6 +177,7 @@ void AirStunnedState::processInput(Controller &controller, float dt)
 
 void AirStunnedState::update(float dt)
 {
+    FighterState::update(dt);
     // Only check for ledge grab after up B
     if (stunDuration_ == HUGE_VAL)
         checkForLedgeGrab();
@@ -227,12 +234,13 @@ void AirStunnedState::hitByAttack(const Attack *attack)
 }
 
 //// ------------------------ GROUND STATE -------------------------
-GroundState::GroundState(Fighter *f, float delay) :
+GroundState::GroundState(Fighter *f, float delay, float invincTime) :
     FighterState(f), jumpTime_(-1), dashTime_(-1), waitTime_(delay),
     dashing_(false), ducking_(false)
 {
     frameName_ = "GroundNormal";
     fighter_->lastHitBy_ = -1;
+    invincTime_ = invincTime;
 }
 
 GroundState::~GroundState()
@@ -345,8 +353,8 @@ void GroundState::processInput(Controller &controller, float dt)
         fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
         fighter_->vel_ = glm::vec2(0.f);
         fighter_->accel_ = glm::vec2(0.f);
-        // XXX the sound is too loud now
-        //AudioManager::get()->playSound("shieldon");
+
+        AudioManager::get()->playSound("shieldon");
         next_ = new BlockingState(fighter_);
         return;
     }
@@ -491,7 +499,10 @@ void GroundState::render(float dt)
         fname = "Ducking";
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
-    fighter_->renderHelper(dt, fname, fighter_->color_);
+    glm::vec3 color = fighter_->color_;
+    if (invincTime_ > 0.f)
+        color = muxByTime(color, invincTime_);
+    fighter_->renderHelper(dt, fname, color);
 }
 
 void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
@@ -589,6 +600,7 @@ void BlockingState::processInput(Controller &controller, float dt)
     {
         dazeTime_ = getParam("shield.dazeTime");
         fighter_->shieldHealth_ = 0.f;
+        AudioManager::get()->playSound("shieldshatter");
     }
 
 }
@@ -778,6 +790,7 @@ void AirNormalState::processInput(Controller &controller, float dt)
 
 void AirNormalState::update(float dt)
 {
+    FighterState::update(dt);
     noGrabTime_ -= dt;
     if (noGrabTime_ <= 0.f)
         checkForLedgeGrab();
@@ -841,8 +854,9 @@ AirNormalState * AirNormalState::setNoGrabTime(float t)
 //// ----------------------- DODGE STATE --------------------------------
 DodgeState::DodgeState(Fighter *f) :
     FighterState(f), t_(0.f), dodgeTime_(getParam("dodge.duration")),
-    invincTime_(getParam("dodge.invincTime")), cooldown_(getParam("dodge.cooldown"))
+    cooldown_(getParam("dodge.cooldown"))
 {
+    invincTime_ = getParam("dodge.invincTime");
     frameName_ = "GroundRoll";
 }
 
@@ -864,12 +878,12 @@ void DodgeState::processInput(Controller &controller, float dt)
 
 void DodgeState::render(float dt)
 {
-    glm::vec3 color = muxByTime(fighter_->color_, t_);
+    glm::vec3 color = fighter_->color_;
 
     float angle = t_ < dodgeTime_ ? t_ / dodgeTime_ * 360 : 0.f;
 
-    if (t_ > invincTime_)
-        color = fighter_->color_;
+    if (invincTime_ > 0.f)
+        color = muxByTime(fighter_->color_, t_);
 
     printf("DODGE | t: %.3f  invincT: %.3f  dodgeT: %.3f || ",
             t_, invincTime_, dodgeTime_);
@@ -897,20 +911,15 @@ void DodgeState::collisionWithGround(const Rectangle &ground, bool collision)
     }
 }
 
-bool DodgeState::canBeHit() const
-{
-    return t_ > invincTime_;
-}
-
-
 //// ---------------------- LEDGE GRAB STATE ------------------------------
 LedgeGrabState::LedgeGrabState(Fighter *f) :
     FighterState(f),
     hbsize_(getParam("ledgeGrab.hbwidth"), getParam("ledgeGrab.hbheight")),
-    invincTime_(getParam("ledgeGrab.grabInvincTime")),
+    
     jumpTime_(HUGE_VAL),
     ledge_(NULL)
 {
+    invincTime_ = getParam("ledgeGrab.grabInvincTime");
 }
 
 void LedgeGrabState::processInput(Controller &controller, float dt)
@@ -950,7 +959,7 @@ void LedgeGrabState::processInput(Controller &controller, float dt)
                     fighter_->getDirection() * hbsize_.x/2,
                     fighter_->size_.y - 1));
         // transition to groundnormal state with some invincibility
-        next_ = new GroundState(fighter_);
+        next_ = new GroundState(fighter_, -1.f, getParam("ledgeGrab.attackInvinc"));
         // start ledge attack XXX: just use down tilt for now
         fighter_->attack_ = fighter_->attackMap_["downTilt"]->clone();
         fighter_->attack_->setFighter(fighter_);
@@ -979,7 +988,7 @@ void LedgeGrabState::processInput(Controller &controller, float dt)
                     fighter_->size_.y - 1));
         return;
     }
-    // CHeck for plain stand up (up or forward on the joystick)
+    // Check for plain stand up (up or forward on the joystick)
     else if ((controller.joyx * fighter_->getDirection() > getParam("input.tiltThresh") 
                 && controller.joyxv * fighter_->getDirection() > getParam("input.velThresh"))
             || (controller.joyy > getParam("input.tiltThresh")
@@ -987,7 +996,8 @@ void LedgeGrabState::processInput(Controller &controller, float dt)
     {
         ledge_->occupied = false;
         // put in GroundNormal state
-        next_ = new GroundState(fighter_, getParam("ledgeGrab.wakeupTime"));
+        next_ = new GroundState(fighter_, getParam("ledgeGrab.wakeupTime"),
+                getParam("ledgeGrab.wakeUpInvinc"));
         // move on top of ground
         fighter_->push(glm::vec2(
                     fighter_->getDirection() * hbsize_.x/2,
@@ -997,8 +1007,8 @@ void LedgeGrabState::processInput(Controller &controller, float dt)
 
 void LedgeGrabState::update(float dt)
 {
+    FighterState::update(dt);
     // Just update timers
-    invincTime_ -= dt;
     jumpTime_ -= dt;
 }
 
@@ -1105,7 +1115,6 @@ DeadState::DeadState(Fighter *f) :
 
 void DeadState::collisionWithGround(const Rectangle &, bool)
 {
-    assert(false);
 }
 
 void DeadState::hitByAttack(const Attack *)

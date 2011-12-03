@@ -26,6 +26,7 @@ public:
 
     virtual bool canHit(const GameEntity *f) const = 0;
     virtual void attackCollision(const Attack *other) = 0;
+    virtual void hit(GameEntity *other) = 0;
 
 };
 
@@ -50,10 +51,14 @@ public:
     // True if this attack can hit the passed GameEntity now
     virtual bool canHit(const GameEntity *) const;
     virtual void attackCollision(const Attack *other);
+    virtual void hit(GameEntity *other);
 
+    // Allows all Entities to be hit by this attack
+    virtual void clearHit();
 
     // Non inherited functions...
     void setPosition(const glm::vec2 &position);
+    void setKBDirection(float dir);
 
 protected:
     int playerID_;
@@ -63,6 +68,8 @@ protected:
     glm::vec2 pos_;
     glm::vec2 size_;
     glm::vec2 kb_;
+    
+    float dir_;
 
     std::string audioID_;
     std::string paramPrefix_;
@@ -104,8 +111,6 @@ public:
     virtual void render(float dt);
     // Sends to cooldown time
     virtual void cancel();
-    // Called when the attack 'connects'
-    virtual void hit(GameEntity *other);
     // Called when two attacks collide
     virtual void attackCollision(const Attack *other);
 

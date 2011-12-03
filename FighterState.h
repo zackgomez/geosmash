@@ -11,7 +11,7 @@ class FighterState
 {
 public:
     FighterState(Fighter *f) :
-        fighter_(f), next_(NULL), frameName_("GroundNeutral")
+        fighter_(f), next_(NULL), frameName_("GroundNeutral"), invincTime_(0.f)
     {}
     virtual ~FighterState() {}
 
@@ -25,7 +25,7 @@ public:
     // This function is called once every call to Fighter::processInput
     virtual void processInput(Controller&, float dt) = 0;
     // Called once per call to Fighter::update AFTER integration
-    virtual void update(float dt) = 0;
+    virtual void update(float dt);
     // TODO description
     virtual void render(float dt) = 0;
     // This function is called once every call to Fighter::collisionWithGround
@@ -43,6 +43,7 @@ protected:
     Fighter *fighter_;
     FighterState *next_;
     std::string frameName_;
+    float invincTime_;
 
     void calculateHitResult(const Attack *attack);
     void collisionHelper(const Rectangle &ground);
@@ -53,6 +54,8 @@ protected:
     bool performBMove(const Controller &);
     template<typename T> 
     static T muxByTime(const T& color, float t);
+
+    void setInvincTime(float t);
 };
 
 
@@ -62,11 +65,10 @@ protected:
 class GroundState : public FighterState
 {
 public:
-    GroundState(Fighter *f, float delay = -1.0f);
+    GroundState(Fighter *f, float delay = -1.0f, float invincTime = 0.f);
     virtual ~GroundState();
 
     virtual void processInput(Controller&, float dt);
-    virtual void update(float dt) { }
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Attack *attack);
@@ -156,12 +158,10 @@ public:
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Attack *attack);
-    virtual bool canBeHit() const;
 
 private:
     float t_;
     float dodgeTime_;
-    float invincTime_;
     float cooldown_;
 };
 
@@ -183,7 +183,7 @@ public:
 
 private:
     glm::vec2 hbsize_;
-    float invincTime_, jumpTime_;
+    float jumpTime_;
     Ledge *ledge_;
 };
 

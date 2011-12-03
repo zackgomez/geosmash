@@ -59,10 +59,8 @@ public:
 private:
     float lifetime_;
     SimpleAttack *attack_;
-    glm::vec2 pos_;
-    glm::vec2 vel_;
-    glm::vec2 size_;
     std::string frameName_;
+    std::string pre_;
     int dir_;
     float t_;
 };

@@ -25,6 +25,7 @@ SimpleAttack::SimpleAttack(const glm::vec2 &kb,
     pos_(pos),
     size_(size),
     kb_(kb),
+    dir_(1.f),
     audioID_(audioID)
 {
 }
@@ -45,7 +46,7 @@ float SimpleAttack::getStun(const GameEntity *) const { return stun_; }
 
 glm::vec2 SimpleAttack::getKnockback(const GameEntity *) const
 {
-    return kb_;
+    return glm::vec2(dir_, 1.f) * kb_;
 }
 
 int SimpleAttack::getPlayerID() const
@@ -63,6 +64,11 @@ void SimpleAttack::setPosition(const glm::vec2 &position)
     pos_ = position;
 }
 
+void SimpleAttack::setKBDirection(float dir)
+{
+    dir_ = dir;
+}
+
 bool SimpleAttack::canHit(const GameEntity *f) const
 {
     return hasHit_.find(f->getID()) == hasHit_.end();
@@ -73,6 +79,16 @@ void SimpleAttack::attackCollision(const Attack *other)
     // Do nothing
 }
 
+void SimpleAttack::hit(GameEntity *other)
+{
+    assert(hasHit_.find(other->getID()) == hasHit_.end());
+    hasHit_.insert(other->getID());
+}
+
+void SimpleAttack::clearHit()
+{
+    hasHit_.clear();
+}
 
 // ----------------------------------------------------------------------------
 // FighterAttack class methods
@@ -231,12 +247,6 @@ void FighterAttack::render(float dt)
 void FighterAttack::cancel()
 {
     t_ = std::max(t_, startup_ + duration_);
-}
-
-void FighterAttack::hit(GameEntity *other)
-{
-    assert(hasHit_.find(other->getID()) == hasHit_.end());
-    hasHit_.insert(other->getID());
 }
 
 void FighterAttack::attackCollision(const Attack *other)

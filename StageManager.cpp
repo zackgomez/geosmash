@@ -50,20 +50,28 @@ bool HazardEntity::isDone() const
 
 void HazardEntity::update(float dt)
 {
-    GameEntity::update(dt);
     // Each frame, we only need to do a couple things.
     // First, move a bit randomly
     // then, update our attack to reflect our location.
 
     // change direction every now and then:
-    dir_ = rand() % 50 ? dir_ : -dir_;  
-    pos_.x += dir_ * 1;
+    dir_ = rand() % static_cast<int>(getParam(pre_ + "switchRate")) ? dir_ : -dir_;
+    vel_.x = getParam(pre_ + "speed") * dir_;
+
+
+    t_ += dt;
+    if (t_ > getParam(pre_ + "cooldown")) 
+    {
+        attack_->clearHit();
+        t_ = 0;
+    }
+
+    GameEntity::update(dt);
     attack_->setPosition(pos_);
 }
 
 void HazardEntity::render(float dt)
 {
-    printf("Rendering some shit.\n");
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
             glm::vec3(1.f));
@@ -72,50 +80,49 @@ void HazardEntity::render(float dt)
             frameName_);
 }
 
-HazardEntity::HazardEntity(const std::string &audioID)
+HazardEntity::HazardEntity(const std::string &audioID) 
 {
-
-
-    std::string pre = "stageHazardAttack.";
-    attack_ = new SimpleAttack(
-            getParam(pre + "knockbackpow") *
-            glm::normalize(glm::vec2(getParam(pre + "knockbackx"),
-                      getParam(pre + "knockbacky"))),
-            getParam(pre + "damage"),
-            getParam(pre + "stun"),
-            getParam(pre + "priority"),
-            pos_, size_, playerID_,
-            audioID);
+    pre_ = "stageHazardAttack.";
 
     frameName_ = "Hazard";
-    pos_.x = 0;
-    pos_.y = getParam("level.y") + 50;
-    lifetime_ = 1e7;
+    pos_ = glm::vec2(0, getParam("level.y") + getParam("level.h") / 2 + getParam(pre_ + "sizey") / 2 - 1);
+    size_ = glm::vec2(getParam(pre_ + "sizex"), getParam(pre_ + "sizey"));
+    lifetime_ = getParam(pre_ + "lifetime");
     dir_ = 1; // initially, we'll go right.
+
+    attack_ = new SimpleAttack(
+            getParam(pre_ + "knockbackpow") *
+            glm::normalize(glm::vec2(getParam(pre_ + "knockbackx"),
+                      getParam(pre_ + "knockbacky"))),
+            getParam(pre_ + "damage"),
+            getParam(pre_ + "stun"),
+            getParam(pre_ + "priority"),
+            pos_, size_, playerID_,
+            audioID);
 }
 
 void HazardEntity::attackCollision(const Attack*)
 {
-    // Someone hit us. Oh, I'm so scared! o wait, NOP.
 }
+
 const Attack *HazardEntity::getAttack() const
 {
+    attack_->setKBDirection(dir_);
     return attack_;
 }
 
 void HazardEntity::hitByAttack(const Attack*) 
 {
-    // NOP!
 }
 
-void HazardEntity::attackConnected(GameEntity *)
+void HazardEntity::attackConnected(GameEntity *victim)
 {
-    // Do I care? 
-    // NOP!
+    attack_->hit(victim);
 }
 
-void HazardEntity::collisionWithGround(const Rectangle &, bool)
+void HazardEntity::collisionWithGround(const Rectangle &ground, bool collision)
 {
-    // NOP!
+    if (!collision)
+        dir_ = -dir_;
 }
 
