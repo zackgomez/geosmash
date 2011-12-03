@@ -51,16 +51,12 @@ protected:
     // Helper for dealing with all B moves.
     // Returns true if a B move was requested (in that case, the attack has 
     // been created)
-    bool performBMove(const Controller &);
+    bool performBMove(const Controller &, bool ground = true);
     template<typename T> 
     static T muxByTime(const T& color, float t);
 
     void setInvincTime(float t);
 };
-
-
-
-
 
 class GroundState : public FighterState
 {
@@ -147,6 +143,24 @@ private:
     bool gb_;
 };
 
+class CounterState : public FighterState
+{
+public:
+    CounterState(Fighter *f, bool ground);
+    virtual ~CounterState() {}
+
+    virtual void processInput(Controller&, float dt);
+    virtual void render(float dt);
+    virtual void collisionWithGround(const Rectangle &ground, bool collision);
+    virtual void hitByAttack(const Attack *attack);
+
+private:
+    // How long have we been in this state?
+    float t_;
+    bool ground_;
+    std::string pre_;
+};
+
 class DodgeState : public FighterState
 {
 public:
@@ -154,7 +168,6 @@ public:
     virtual ~DodgeState() {}
 
     virtual void processInput(Controller&, float dt);
-    virtual void update(float dt) { }
     virtual void render(float dt);
     virtual void collisionWithGround(const Rectangle &ground, bool collision);
     virtual void hitByAttack(const Attack *attack);

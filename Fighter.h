@@ -119,6 +119,7 @@ private:
     friend class RespawnState;
     friend class BlockingState;
     friend class LedgeGrabState;
+    friend class CounterState;
 
     friend class MovingAttack;
     friend class UpSpecialAttack;

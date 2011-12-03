@@ -122,7 +122,7 @@ void FighterState::checkForLedgeGrab()
     }
 }
 
-bool FighterState::performBMove(const Controller &controller)
+bool FighterState::performBMove(const Controller &controller, bool ground)
 {
     if (!controller.pressb)
         return false;
@@ -131,6 +131,12 @@ bool FighterState::performBMove(const Controller &controller)
     if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
     {
         fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
+    }
+    // Check for down B
+    else if (controller.joyy < getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+    {
+        next_ = new CounterState(fighter_, ground);
+        return true;
     }
     else if (fabs(controller.joyx) > getParam("input.tiltThresh") 
                 && fabs(tiltDir.x) > fabs(tiltDir.y))
@@ -849,6 +855,85 @@ AirNormalState * AirNormalState::setNoGrabTime(float t)
 {
     noGrabTime_ = t;
     return this;
+}
+
+
+//// ----------------------- COUNTER STATE --------------------------------
+
+CounterState::CounterState(Fighter *f, bool ground) :
+    FighterState(f), t_(0), ground_(ground), pre_("counterSpecial.") 
+{
+    frameName_ = "Counter";
+}
+
+void CounterState::processInput(Controller & controller, float dt)
+{
+    t_ += dt;
+    float totalT = getParam(pre_ + "startup") +
+                   getParam(pre_ + "duration") + 
+                   getParam(pre_ + "cooldown");
+
+    if (!fighter_->attack_ && t_ > totalT)
+    {
+        // Move to the next state
+        if (ground_)
+            next_ = new GroundState(fighter_);
+        else 
+            next_ = new AirNormalState(fighter_);
+        return;
+    }
+}
+
+void CounterState::hitByAttack(const Attack* attack)
+{
+    // Invincibility during the counter!
+    if (fighter_->attack_)
+        return;
+
+    // If counter isn't ready yet (or it's too late), eat the attack
+    if (t_ < getParam(pre_ + "startup") || 
+            t_ > getParam(pre_ + "startup") + getParam(pre_ + "duration"))
+    {
+        calculateHitResult(attack);
+        return;
+    }
+
+    // Now the other player gets screwed over for attacking us at the wrong time.
+    // Otherwise create a new Fighter attack helper.
+    fighter_->attack_ = new FighterAttack("counterAttack", "groundhit", "CounterAttack");
+    fighter_->attack_->setFighter(fighter_);
+    fighter_->attack_->start();
+}
+
+void CounterState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+    if (collision)
+    {
+        collisionHelper(ground);
+        fighter_->vel_ =  glm::vec2(0.f);
+        fighter_->accel_ = glm::vec2(0.f);
+        ground_ = true;
+    }
+    else
+    {
+        // No collision, fall
+        ground_ = false;
+        fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
+        // Fall straight down
+        fighter_->vel_.x = 0.f;
+    }
+}
+
+void CounterState::render(float dt)
+{
+    printf("COUNTER | t: %.3f  ground: %d || ",
+            t_, ground_);
+
+    std::string fname = frameName_;
+    if (fighter_->attack_)
+        fname = fighter_->attack_->getFrameName();
+
+    fighter_->renderHelper(dt, fname, fighter_->color_);
 }
 
 //// ----------------------- DODGE STATE --------------------------------

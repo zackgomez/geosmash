@@ -43,7 +43,7 @@ debug.drawHitbox    0
 
 fighter.w             50
 fighter.h             60
-fighter.lives         1
+fighter.lives         2
 fighter.respawnTime   1.0
 fighter.gbThresh      600.0
 fighter.gbVelDamping  0.6
@@ -149,6 +149,24 @@ downTiltAttack.hitboxy      -30
 downTiltAttack.hitboxw      65
 downTiltAttack.hitboxh      15
 downTiltAttack.priority     1.0
+
+counterAttack.startup      0.15
+counterAttack.duration     0.22
+counterAttack.cooldown     0.25
+counterAttack.damage       8
+counterAttack.stun         0.16
+counterAttack.knockbackx   1
+counterAttack.knockbacky   5
+counterAttack.knockbackpow 140.0
+counterAttack.hitboxx      60
+counterAttack.hitboxy      -30
+counterAttack.hitboxw      65
+counterAttack.hitboxh      15
+counterAttack.priority     1.0
+
+counterSpecial.startup     0.22
+counterSpecial.cooldown     0.22
+counterSpecial.duration     0.22
 
 upTiltAttack.startup      0.1
 upTiltAttack.duration     0.22
