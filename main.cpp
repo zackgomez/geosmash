@@ -566,7 +566,7 @@ void renderArrow(const Fighter *f)
         float scale = 0.002 * ((dist / len - 1.f) * 5.f + 0.5f);
         float rot = theta * 180.f / M_PI;
 
-        std::cout << "Arrow pos: " << arrowPos.x << ' ' << arrowPos.y << '\n';
+        //std::cout << "Arrow pos: " << arrowPos.x << ' ' << arrowPos.y << '\n';
         glm::mat4 transform =
             glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f),
                             glm::vec3(arrowPos, 0.0f)), 
@@ -597,19 +597,41 @@ void renderEndScreen()
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    setProjectionMatrix(glm::ortho(0.f, 1920.f, 1080.f, 0.f, -1.f, 1.f));
+    setProjectionMatrix(glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f));
     setViewMatrix(glm::mat4(1.f));
 
     // Draw the background
     glm::mat4 backtrans = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(1920.f/2, 1080.f/2, 0.f)),
-            glm::vec3(1920, 1080, 1.f));
+            glm::vec3(1920.f, -1080.f, 1.f));
     renderTexturedRectangle(backtrans, backgroundTex);
 
-    // Draw the winning team number and players
-    glm::mat4 transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1000.f, 50.f, 0.f)), glm::vec3(40.f, 40.f, 0.f));
-    FrameManager::get()->renderFrame(transform, glm::vec4(1.f), "GroundNormal");
-    //FontManager::get()->renderNumber(transform, glm::vec3(1.f), winningTeam);
+    // Draw the players, highlight the winner
+    glm::mat4 transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10 + 1920.f/5, 1080.f - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        float glow = 0.5f;
+        if (getTeamID(fighters[i]->getPlayerID()) != winningTeam)
+            glow = 0.0f;
+        FrameManager::get()->renderFrame(glm::scale(transform, glm::vec3(3.f, 3.f, 0.f)), glm::vec4(fighters[i]->getColor(), glow), "GroundNormal");
+        transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
+    }
+    // Kills
+    transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10 + 1920.f/5, 1080.f - 1080.f/3 - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        float kills = StatsManager::get()->getStat(StatsManager::getStatPrefix(fighters[i]->getPlayerID()) + "kills.total");
+        FontManager::get()->renderNumber(glm::scale(transform, glm::vec3(100.f, 100.f, 1.f)), fighters[i]->getColor(), kills);
+        transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
+    }
+    // Damage
+    transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10 + 1920.f/5, 1080.f - 2*1080.f/3 - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
+    for (unsigned i = 0; i < numPlayers; i++)
+    {
+        float damage = StatsManager::get()->getStat(StatsManager::getStatPrefix(fighters[i]->getPlayerID()) + "damageGiven");
+        FontManager::get()->renderNumber(glm::scale(transform, glm::vec3(100.f, 100.f, 1.f)), fighters[i]->getColor(), damage);
+        transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
+    }
 
     // Finish
     postRender();
