@@ -32,6 +32,10 @@ void FighterState::update(float dt)
 
 void FighterState::calculateHitResult(const Attack *attack)
 {
+    // Cancel any transition first
+    if (next_)
+        delete next_;
+
     // Cancel any current attack
     if (fighter_->attack_)
     {
@@ -67,8 +71,6 @@ void FighterState::calculateHitResult(const Attack *attack)
     // Go to the stunned state
     float stunDuration = attack->getStun(fighter_) * fighter_->damageFunc();
     std::cout << "StunDuration: " << stunDuration << '\n';
-    if (next_)
-        delete next_;
     next_ = new AirStunnedState(fighter_, stunDuration, fighter_->vel_.y < 0);
 }
 
@@ -136,6 +138,7 @@ bool FighterState::performBMove(const Controller &controller, bool ground)
     else if (controller.joyy < getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
     {
         next_ = new CounterState(fighter_, ground);
+        AudioManager::get()->playSound("counterhit");
         return true;
     }
     else if (fabs(controller.joyx) > getParam("input.tiltThresh") 
@@ -894,6 +897,7 @@ void CounterState::hitByAttack(const Attack* attack)
     if (t_ < getParam(pre_ + "startup") || 
             t_ > getParam(pre_ + "startup") + getParam(pre_ + "duration"))
     {
+        std::cout << "GOT HITTTT\n";
         calculateHitResult(attack);
         return;
     }
@@ -901,12 +905,16 @@ void CounterState::hitByAttack(const Attack* attack)
     // Now the other player gets screwed over for attacking us at the wrong time.
     // Otherwise create a new Fighter attack helper.
     fighter_->attack_ = new FighterAttack("counterAttack", "groundhit", "CounterAttack");
+    fighter_->attack_->setHitboxFrame("CounterAttackHitbox");
     fighter_->attack_->setFighter(fighter_);
     fighter_->attack_->start();
+    fighter_->dir_ = attack->getHitbox().x - fighter_->pos_.x > 0 ? 1 : -1;
 }
 
 void CounterState::collisionWithGround(const Rectangle &ground, bool collision)
 {
+    if (next_)
+        return;
     if (collision)
     {
         collisionHelper(ground);
@@ -919,8 +927,6 @@ void CounterState::collisionWithGround(const Rectangle &ground, bool collision)
         // No collision, fall
         ground_ = false;
         fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
-        // Fall straight down
-        fighter_->vel_.x = 0.f;
     }
 }
 

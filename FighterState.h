@@ -230,3 +230,4 @@ public:
     virtual void hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
 };
+

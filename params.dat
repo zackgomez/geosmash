@@ -150,23 +150,23 @@ downTiltAttack.hitboxw      65
 downTiltAttack.hitboxh      15
 downTiltAttack.priority     1.0
 
-counterAttack.startup      0.15
-counterAttack.duration     0.22
+counterAttack.startup      0.0
+counterAttack.duration     0.30
 counterAttack.cooldown     0.25
 counterAttack.damage       8
-counterAttack.stun         0.16
-counterAttack.knockbackx   1
-counterAttack.knockbacky   5
-counterAttack.knockbackpow 140.0
-counterAttack.hitboxx      60
-counterAttack.hitboxy      -30
-counterAttack.hitboxw      65
-counterAttack.hitboxh      15
-counterAttack.priority     1.0
+counterAttack.stun         0.10
+counterAttack.knockbackx   5
+counterAttack.knockbacky   2
+counterAttack.knockbackpow 120.0
+counterAttack.hitboxx      40
+counterAttack.hitboxy      0
+counterAttack.hitboxw      50
+counterAttack.hitboxh      60
+counterAttack.priority     2.5
 
-counterSpecial.startup     0.22
-counterSpecial.cooldown     0.22
-counterSpecial.duration     0.22
+counterSpecial.startup      0.15
+counterSpecial.duration     0.25
+counterSpecial.cooldown     0.33
 
 upTiltAttack.startup      0.1
 upTiltAttack.duration     0.22
