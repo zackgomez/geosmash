@@ -19,8 +19,13 @@ hud.y       -0.70
 hud.w       1.4
 hud.h       0.125
 
-soundtrack.volume 50
-sfx.volume 100
+soundtrack.volume 80
+sfx.volume 80
+sfx.smashhit.volume 1.0
+sfx.projectile.volume 0.5
+sfx.shieldon.volume 0.5
+sfx.shieldhit.volume 0.6
+
 
 input.dashThresh    0.9
 input.dashMin       0.6
@@ -38,7 +43,7 @@ debug.drawHitbox    0
 
 fighter.w             50
 fighter.h             60
-fighter.lives         4
+fighter.lives         2
 fighter.respawnTime   1.0
 fighter.gbThresh      600.0
 fighter.gbVelDamping  0.6

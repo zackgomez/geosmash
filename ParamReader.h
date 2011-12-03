@@ -48,6 +48,11 @@ public:
             return it->second;
     }
 
+    bool hasParam(const std::string &key) const
+    {
+        return params_.find(key) != params_.end();
+    }
+
     void printParams() const
     {
         std::cout << "Params:\n";

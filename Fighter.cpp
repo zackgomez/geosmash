@@ -63,9 +63,10 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     attackMap_["upSpecial"]->setHitboxFrame("UpSpecialHitbox");
     attackMap_["upSpecial"]->setStartSound("upspecial");
     attackMap_["neutralSpecial"] = new NeutralSpecialAttack("neutralSpecialAttack", "NeutralSpecial");
+    attackMap_["neutralSpecial"]->setStartSound("projectile");
     attackMap_["sideSpecial"] = loadAttack<MovingAttack>("sideSpecialAttack", "sidespecialhit", "SideSpecial");
     attackMap_["sideSpecial"]->setHitboxFrame("Null");
-    attackMap_["sideSpecial"]->setStartSound("sidespecialstart");
+    attackMap_["sideSpecial"]->setStartSound("sidespecialhit");
 
     attackMap_["taunt"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
 

@@ -115,7 +115,7 @@ void FighterState::checkForLedgeGrab()
         && (ledge->pos.y > (fpos.y + fighter_->getRect().h / 2)) 
         && glm::length(fpos - ledge->pos) <= getParam("ledgeGrab.dist"))
     {
-        AudioManager::get()->playSound("crowdcheer");
+        AudioManager::get()->playSound("ledgegrab");
         LedgeGrabState *lgs = new LedgeGrabState(fighter_);
         lgs->grabLedge(ledge);
         next_ = lgs;
@@ -668,7 +668,7 @@ void BlockingState::hitByAttack(const Attack *attack)
         // Experience some hit stun
         hitStunTime_ = getParam("shield.stunFactor")
             * glm::length(attack->getKnockback(fighter_));
-        AudioManager::get()->playSound("attackblocked");
+        AudioManager::get()->playSound("shieldhit");
     }
 
     glm::vec2 hitdir = glm::vec2(fighter_->pos_.x, fighter_->pos_.y)

@@ -38,6 +38,7 @@ int pausedPlayer = -1;
 bool makeHazard;
 
 unsigned numPlayers = 1;
+int winningTeam = -1;
 
 size_t startTime;
 
@@ -249,6 +250,8 @@ void checkState()
         // Turn on the "end of game music"
         AudioManager::get()->setSoundtrack("sfx/PAUSE.wav");
         AudioManager::get()->startSoundtrack();
+        if (!teamsAlive.empty())
+            winningTeam = *teamsAlive.begin();
     }
 }
 
@@ -594,12 +597,19 @@ void renderEndScreen()
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    setProjectionMatrix(glm::mat4(1.f));
+    setProjectionMatrix(glm::ortho(0.f, 1920.f, 1080.f, 0.f, -1.f, 1.f));
     setViewMatrix(glm::mat4(1.f));
 
     // Draw the background
-    glm::mat4 backtrans = glm::scale(glm::mat4(1.0f), glm::vec3(2, -2, 1.f));
+    glm::mat4 backtrans = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(1920.f/2, 1080.f/2, 0.f)),
+            glm::vec3(1920, 1080, 1.f));
     renderTexturedRectangle(backtrans, backgroundTex);
+
+    // Draw the winning team number and players
+    glm::mat4 transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1000.f, 50.f, 0.f)), glm::vec3(40.f, 40.f, 0.f));
+    FrameManager::get()->renderFrame(transform, glm::vec4(1.f), "GroundNormal");
+    //FontManager::get()->renderNumber(transform, glm::vec3(1.f), winningTeam);
 
     // Finish
     postRender();

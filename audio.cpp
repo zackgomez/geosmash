@@ -46,7 +46,11 @@ void AudioManager::playSound(const std::string &fname)
     }
     sf::Sound *s = new sf::Sound();
     s->SetBuffer(*buffers_[fname]);
-    s->SetVolume(getParam("sfx.volume"));
+    float volume = getParam("sfx.volume");
+    std::cout << "Looking for param: " << "sfx." + fname + ".volume\n";
+    if (ParamReader::get()->hasParam("sfx." + fname + ".volume"))
+        volume *= getParam("sfx." + fname + ".volume");
+    s->SetVolume(volume);
     s->Play();
     currentSounds_.push_back(s);
 
@@ -84,7 +88,11 @@ void AudioManager::playSound(const std::string &fname,
     }
     // TODO: MAKE THIS ASSERTION VALID! (stage hazard hits)
     //assert(vol >= V1 && vol <= V2);
-    s->SetVolume(getParam("sfx.volume")/100.f * vol);
+    float volume = getParam("sfx.volume");
+    std::cout << "Looking for param: " << "sfx." + fname + ".volume\n";
+    if (ParamReader::get()->hasParam("sfx." + fname + ".volume"))
+        volume *= getParam("sfx." + fname + ".volume");
+    s->SetVolume(volume * vol/100.f);
     // play that shit
     s->Play();
     currentSounds_.push_back(s);
