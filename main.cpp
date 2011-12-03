@@ -617,7 +617,10 @@ void renderEndScreen()
         transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     }
     // Kills
-    transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10 + 1920.f/5, 1080.f - 1080.f/3 - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
+    transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10, 1080.f - 1080.f/3 - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
+    // Draw banner
+    FrameManager::get()->renderFrame(glm::scale(transform, glm::vec3(3.f, 3.f, 0.f)), glm::vec4(1.f, 1.f, 1.f, 0.f), "KO");
+    transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     for (unsigned i = 0; i < numPlayers; i++)
     {
         float kills = StatsManager::get()->getStat(StatsManager::getStatPrefix(fighters[i]->getPlayerID()) + "kills.total");
@@ -625,7 +628,10 @@ void renderEndScreen()
         transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     }
     // Damage
-    transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10 + 1920.f/5, 1080.f - 2*1080.f/3 - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
+    transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10, 1080.f - 2*1080.f/3 - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
+    // Draw banner
+    FrameManager::get()->renderFrame(glm::scale(transform, glm::vec3(3.f, 3.f, 0.f)), glm::vec4(1.f, 1.f, 1.f, 0.f), "DMG");
+    transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     for (unsigned i = 0; i < numPlayers; i++)
     {
         float damage = StatsManager::get()->getStat(StatsManager::getStatPrefix(fighters[i]->getPlayerID()) + "damageGiven");
