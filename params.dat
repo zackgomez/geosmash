@@ -25,6 +25,7 @@ sfx.smashhit.volume 1.0
 sfx.projectile.volume 0.5
 sfx.shieldon.volume 0.5
 sfx.shieldhit.volume 0.6
+sfx.counterhit.volume 0.5
 
 
 input.dashThresh    0.9
@@ -43,7 +44,7 @@ debug.drawHitbox    0
 
 fighter.w             50
 fighter.h             60
-fighter.lives         2
+fighter.lives         4
 fighter.respawnTime   1.0
 fighter.gbThresh      600.0
 fighter.gbVelDamping  0.6

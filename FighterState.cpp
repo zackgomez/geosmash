@@ -10,6 +10,8 @@
 #include "StatsManager.h"
 #include "StageManager.h"
 
+int getTeamID(int);
+
 // ----------------------------------------------------------------------------
 // FighterState class methods
 // ----------------------------------------------------------------------------
@@ -49,7 +51,11 @@ void FighterState::calculateHitResult(const Attack *attack)
     fighter_->damage_ += dd;
     // Record damage given/taken
     StatsManager::get()->addStat(StatsManager::getStatPrefix(fighter_->playerID_) + "damageTaken", dd);
-    StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "damageGiven", dd);
+    if (getTeamID(attack->getPlayerID()) == getTeamID(fighter_->playerID_))
+        StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "teamDamageGiven", dd);
+    else
+        StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "damageGiven", dd);
+
 
     // Calculate direction of hit
     glm::vec2 knockback = attack->getKnockback(fighter_) * fighter_->damageFunc();
@@ -135,7 +141,7 @@ bool FighterState::performBMove(const Controller &controller, bool ground)
         fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
     }
     // Check for down B
-    else if (controller.joyy < getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+    else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
     {
         next_ = new CounterState(fighter_, ground);
         AudioManager::get()->playSound("counterhit");
@@ -658,7 +664,6 @@ void BlockingState::collisionWithGround(const Rectangle &ground, bool collision)
 {
     if (next_)
         return;
-    assert(collision);
 }
 
 void BlockingState::hitByAttack(const Attack *attack)
