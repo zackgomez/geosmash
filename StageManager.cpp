@@ -53,16 +53,33 @@ BackgroundSphere::BackgroundSphere()
     radius_ = getParam(pre_ + "radius");
     lineCount_ = getParam(pre_ + "lineCount");
     pulseCount_ = getParam(pre_ + "pulseCount");
+    divisionCount_ = getParam(pre_ + "divisionCount");
 }
 
 void BackgroundSphere::render(float dt)
 {
-    // Sweep over each long. and lat. line, drawing segments between successive points
-    // We know how to turn theta, phi --> x,y,z
+    updateLitSegments();
+    renderLatitude();
+    renderLongitude();
+}
+
+void BackgroundSphere::updateLitSegments(void)
+{
+    // TODO: Move the lit parts around the sphere somehow.
+    // NOTE: we may need to add a class for the pulses.
+}
+
+void BackgroundSphere::renderLongitude(void)
+{
+    // TODO: Loop over each longitudinal line, similar to renderLatitude().
+}
+
+void BackgroundSphere::renderLatitude(void)
+{
+    // Sweep over each lat. line, drawing segments between points 
     float r = radius_;
     float theta = 0; // elevation
     float phi = 0;   // azimuth
-
 
     // First draw latitude lines
     // For each of these, elevation (theta) is constant
@@ -92,13 +109,14 @@ void BackgroundSphere::render(float dt)
             
             glm::mat4 transform = glm::scale(
                     glm::translate(
-                        glm::mat4(1.0f), segStart), glm::vec3(2.0f)); // glm::length(segStart - segEnd));
+                        glm::mat4(1.0f), segStart), glm::vec3(2.0f));
+            // glm::length(segStart - segEnd))// Use this instead of 2.0f;
             renderRectangle(transform, glm::vec4(0.5, 0.5, 0.5, 0.5));
+
+            // now, check to see if we're close to a lit segments.
         }
     }
 }
-
-
 
 //////////////////////////////////////////////
 // Hazard  

@@ -45,9 +45,18 @@ private:
     float radius_;
     // The number of latitude and longitude lines displayed.
     float lineCount_;
-    // Number of line segments used  in those lines, or a measure of sphere quality
+    // Number of line segments used  in those lines, or a measure of 
+    // sphere quality
     float divisionCount_;
     float pulseCount_; 
+
+    // pulses are identified by just a single point, but probably rendered
+    // as line segments.
+    std::vector<glm::vec3> pulses_;
+
+    void renderLatitude(void);
+    void renderLongitude(void);
+    void updateLitSegments(void);
 };
 
 class HazardEntity : public GameEntity 

@@ -407,4 +407,5 @@ camera.fov 90
 
 backgroundSphere.radius         1000
 backgroundSphere.pulseCount     1000
+backgroundSphere.divisionCount     1000
 backgroundSphere.lineCount      10
