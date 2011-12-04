@@ -4,23 +4,9 @@
 #include "ParamReader.h"
 #include "glutils.h"
 
-// XXX these should be in params
-#define D1 25.0f
-#define D2 300.0f
-#define V1 40.0f
-#define V2 100.0f
-
-
 AudioManager::AudioManager() 
 {
-    // Load in all small sound files, like attack noise
-    // Sample code for loading and playing a sound file
-    // played through the left speaker follows 
-    /*std::string fname = "sfx/ko-01.wav";
-    sf::SoundBuffer *sb = new sf::SoundBuffer();
-    sb->LoadFromFile(fname);
-    s2->SetPosition(-1, 0, 0);
-    s1->SetAttenuation(100);*/
+    // TODO: possibly preload small sound files.
 }
 
 AudioManager::~AudioManager()
@@ -37,15 +23,10 @@ AudioManager::~AudioManager()
 
 void AudioManager::playSound(const std::string &fname)
 {
-    // check if the file has already been loaded in
-    if (buffers_.count(fname) != 1) {
-        sf::SoundBuffer *sb = new sf::SoundBuffer();
-        assert(sb);
-        sb->LoadFromFile("sfx/" + fname + ".aif");
-        buffers_[fname] = sb;
-    }
+    // Now that the data is loaded into a buffer, add the data to a Sound obj
+    // object that has a location in 3D space, volume, etc.
     sf::Sound *s = new sf::Sound();
-    s->SetBuffer(*buffers_[fname]);
+    s->SetBuffer(*getBuffer(fname));
     float volume = getParam("sfx.volume");
     std::cout << "Looking for param: " << "sfx." + fname + ".volume\n";
     if (ParamReader::get()->hasParam("sfx." + fname + ".volume"))
@@ -60,30 +41,32 @@ void AudioManager::playSound(const std::string &fname,
         double damage)
 {
     double vol;
+    double D1 = getParam("sfx.damagefloor");
+    double D2 = getParam("sfx.damageceiling");
+    double V1 = getParam("sfx.minvolume");
+    double V2 = getParam("sfx.maxvolume");
     double panningFactor = getPanningFactor(pos);
+    sf::Sound *s = new sf::Sound();
+    s->SetBuffer(*getBuffer(fname));
+    s->SetPosition(panningFactor, 0, 0);
+
     if (damage == -1) {
         // No damage was specified. Play the sound at max volume
         vol = 100;
     }
-    if (damage > 300) damage = 300;
-    // check if the file has already been loaded in
-    if (buffers_.count(fname) != 1)
-    {
-        sf::SoundBuffer *sb = new sf::SoundBuffer();
-        assert(sb);
-        sb->LoadFromFile("sfx/" + fname + ".aif");
-        buffers_[fname] = sb;
-    }
-    sf::Sound *s = new sf::Sound();
-    s->SetBuffer(*buffers_[fname]);
-    s->SetPosition(panningFactor, 0, 0);
+    if (damage > D2) damage = D2;
+    // The damage --> volume function is stepwise
     if (damage > 0 && damage < D1) {
+        // At low damage, we clamp volume to "minvolume"
         vol = V1;
     }
     else if (damage > 0 && damage < D2) {
+        // In the middle range, we increase linearly between V1 and V2
+        // According to how far along [D1, D2] the receiver is.
         vol = V1 + ((V2 - V1) / (D2 - D1)) * (damage - D1);
     }
     else if (damage > D2) {
+        // Clamp volume on the high end to sfx.maxvolume
         vol = V2;
     }
     // TODO: MAKE THIS ASSERTION VALID! (stage hazard hits)
@@ -93,9 +76,25 @@ void AudioManager::playSound(const std::string &fname,
     if (ParamReader::get()->hasParam("sfx." + fname + ".volume"))
         volume *= getParam("sfx." + fname + ".volume");
     s->SetVolume(volume * vol/100.f);
-    // play that shit
     s->Play();
     currentSounds_.push_back(s);
+}
+
+sf::SoundBuffer* AudioManager::getBuffer(const std::string &fname)
+{
+    sf::SoundBuffer* result = NULL;
+    // check if the file has already been loaded in
+    if (buffers_.count(fname) != 1)
+    {
+        sf::SoundBuffer *sb = new sf::SoundBuffer();
+        assert(sb);
+        sb->LoadFromFile("sfx/" + fname + ".aif");
+        buffers_[fname] = sb;
+    }
+    result = buffers_[fname];
+    // We should really panic if we haven't retrieved this value by now.
+    assert(result);
+    return result;
 }
 
 float AudioManager::getPanningFactor(const glm::vec2 &worldPos)

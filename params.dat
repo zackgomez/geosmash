@@ -26,6 +26,10 @@ sfx.projectile.volume 0.5
 sfx.shieldon.volume 0.5
 sfx.shieldhit.volume 0.6
 sfx.counterhit.volume 0.5
+sfx.damagefloor 25
+sfx.damageceiling 300
+sfx.minvolume 40
+sfx.maxvolume 100
 
 
 input.dashThresh    0.9
