@@ -21,6 +21,7 @@ hud.h       0.125
 
 soundtrack.volume 80
 sfx.volume 80
+# these alter the volume of individual sfx
 sfx.smashhit.volume 1.0
 sfx.projectile.volume 0.5
 sfx.shieldon.volume 0.5
@@ -405,7 +406,8 @@ camera.maxY 500
 camera.xrange 1000
 camera.fov 90
 
-backgroundSphere.radius         1000
+backgroundSphere.radius         2000
 backgroundSphere.pulseCount     1000
-backgroundSphere.divisionCount     1000
+backgroundSphere.divisionCount  1000
 backgroundSphere.lineCount      10
+backgroundSphere.meshRes        512

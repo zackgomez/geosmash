@@ -38,7 +38,6 @@ int pausedPlayer = -1;
 bool makeHazard;
 
 unsigned numPlayers = 1;
-int winningTeam = -1;
 
 size_t startTime;
 
@@ -60,12 +59,15 @@ const glm::vec3 teamColors[] =
     glm::vec3(0.8, 0.35, 0.1)
 };
 
-GLuint backgroundTex = 0;
-
 Rectangle ground;
 const glm::vec3 groundColor(0.2f, 0.2f, 0.2f);
 mesh cubeMesh;
 mesh levelMesh;
+
+
+// End of game screen members
+GLuint backgroundTex;
+int winningTeam = -1;
 
 void pause(int playerID);
 void unpause(int playerID);
@@ -444,10 +446,7 @@ void render()
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     // Draw the background
-    glm::mat4 backtrans = glm::scale(
-            glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -300)),
-                glm::vec3(1920.f, -1080.f, 1.f));
-    renderTexturedRectangle(backtrans, backgroundTex);
+    StageManager::get()->renderSphereBackground(dt * !paused);
 
     // Draw the land
     glm::mat4 transform = glm::scale(
@@ -602,8 +601,8 @@ void renderEndScreen()
 
     // Draw the background
     glm::mat4 backtrans = glm::scale(
-            glm::translate(glm::mat4(1.f), glm::vec3(1920.f/2, 1080.f/2, 0.f)),
-            glm::vec3(1920.f, -1080.f, 1.f));
+            glm::translate(glm::mat4(1.f), glm::vec3(1920.f/2, 1080.f/2, 0)),
+                glm::vec3(1920.f, -1080.f, 1.f));
     renderTexturedRectangle(backtrans, backgroundTex);
 
     // Draw the players, highlight the winner
@@ -677,9 +676,11 @@ int initGraphics()
     setCamera(cameraLoc);
     CameraManager::get()->setCurrent(cameraLoc);
 
-    backgroundTex = make_texture("images/back003.png");
     // Load some animation frames
     FrameManager::get()->loadFile("frames/charlie.frames");
+
+    // Load END OF GAME SCREEN background
+    backgroundTex = make_texture("images/back003.png");
 
     // Load the ground mesh
     cubeMesh = createMesh("models/cube.obj");

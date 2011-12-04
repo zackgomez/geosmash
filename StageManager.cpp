@@ -2,6 +2,7 @@
 #include "Projectile.h"
 #include "ParamReader.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include "Fighter.h"
 #include "FrameManager.h"
 
@@ -17,6 +18,50 @@ StageManager::StageManager()
     l.pos = glm::vec2(groundpos.x + groundsize.x / 2, groundpos.y + groundsize.y/2);
     l.occupied = false;
     ledges_.push_back(new Ledge(l));
+
+    // Create a mesh [-5, 5] with some number of vertices
+    meshRes_ = getParam("backgroundSphere.meshRes");
+    float *mesh = new float[2 * meshRes_ * meshRes_];
+    for (int y = 0; y < meshRes_; y++)
+    {
+        for (int x = 0; x < meshRes_; x++)
+        {
+            int ind = 2*(y*meshRes_ + x);
+            mesh[ind]     = (x - meshRes_/2.f) / meshRes_ * 10.f;
+            mesh[ind + 1] = (y - meshRes_/2.f) / meshRes_ * 10.f;
+        }
+    }
+    meshBuf_ = make_buffer(GL_ARRAY_BUFFER, mesh, sizeof(float) * meshRes_ * meshRes_ * 2);
+    delete[] mesh;
+
+    // Create the element indices for the mesh
+    indicies_ = new GLuint*[meshRes_ - 1];
+    for (int i = 0; i < meshRes_ - 1; i++)
+    {
+        indicies_[i] = new GLuint[meshRes_*2];
+        GLuint *array = indicies_[i];
+        for (int j = 0; j < meshRes_; j++)
+        {
+            array[2*j + 0] = i * meshRes_ + j;
+            array[2*j + 1] = (i + 1) * meshRes_ + j;
+        }
+        /*
+        if (i == 0)
+            for (int k = 0; k < meshRes_*2; k++)
+                std::cout << "Index: " << k << " value: " << array[k] << '\n';
+        */
+    }
+
+    // make the shaders
+    GLuint vert = make_shader(GL_VERTEX_SHADER, "shaders/sphere.v.glsl");
+    GLuint frag = make_shader(GL_FRAGMENT_SHADER, "shaders/sphere.f.glsl");
+    if (!vert || !frag)
+    {
+        std::cerr << "Unable to read background sphere shaders\n";
+        exit(1);
+    }
+    sphereProgram_ = make_program(vert, frag);
+    assert(sphereProgram_);
 }
 
 StageManager *StageManager::get()
@@ -42,6 +87,34 @@ Ledge * StageManager::getPossibleLedge(const glm::vec2 &pos)
 
     return ret;
 }
+
+void StageManager::renderSphereBackground(float dt)
+{
+    glEnable(GL_CULL_FACE);
+    float r = getParam("backgroundSphere.radius");
+    glm::mat4 transform = glm::scale(glm::mat4(1.f), glm::vec3(r, r, r));
+    
+    GLuint projectionUniform = glGetUniformLocation(sphereProgram_, "projectionMatrix");
+    GLuint modelViewUniform = glGetUniformLocation(sphereProgram_, "modelViewMatrix");
+
+    glUseProgram(sphereProgram_);
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrix()));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(getViewMatrix() * transform));
+
+    glBindBuffer(GL_ARRAY_BUFFER, meshBuf_);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, (void*)0);
+
+    for (int i = 0; i < meshRes_ - 1; i++)
+    {
+        glDrawElements(GL_TRIANGLE_STRIP, meshRes_*2, GL_UNSIGNED_INT, indicies_[i]);
+    }
+
+    glDisableVertexAttribArray(0);
+    glUseProgram(0);
+    glDisable(GL_CULL_FACE);
+}
+
 
 //////////////////////////////////////////////
 // Background Sphere

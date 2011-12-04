@@ -30,6 +30,9 @@ public:
         {
             std::stringstream ss(line);
             ss >> key >> val;
+            // Ignore comments that start with #
+            if (!key.empty() && key[0] == '#')
+                continue;
             if (ss.fail())
                 continue;
             params_[key] = val;

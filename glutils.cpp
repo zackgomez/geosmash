@@ -375,6 +375,7 @@ void renderRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color)
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
     glDisableVertexAttribArray(0);
@@ -397,6 +398,7 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix, GLuint program)
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
     glDisableVertexAttribArray(0);
@@ -425,6 +427,7 @@ void renderTexturedRectangle(const glm::mat4 &modelMatrix, GLuint texture)
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
     glDisableVertexAttribArray(0);
@@ -458,6 +461,7 @@ void renderMaskedRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color,
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
     glDisableVertexAttribArray(0);
@@ -668,7 +672,7 @@ void setViewMatrix(const glm::mat4 &mat)
 
 void setCamera(const glm::vec3 &pos)
 {
-    setProjectionMatrix(glm::perspective(getParam("camera.fov"), 16.f / 9.f, 0.1f, 1000.f));
+    setProjectionMatrix(glm::perspective(getParam("camera.fov"), 16.f / 9.f, 0.1f, 6000.f));
     setViewMatrix(glm::translate(glm::mat4(1.f), -pos));
 }
 

@@ -1,6 +1,6 @@
-#pragma once
 #include <glm/glm.hpp>
 #include <vector>
+#include <GL/glew.h>
 #include "GameEntity.h"
 #include "Attack.h"
 
@@ -20,6 +20,8 @@ public:
     // For now, just put out a stage hazard (maybe)
     void update(float dt);
 
+    void renderSphereBackground(float dt);
+
     // Cleans up and restores this stage manager to default state
     void clear();
 
@@ -30,6 +32,11 @@ private:
     StageManager();
 
     std::vector<Ledge*> ledges_;
+
+    int meshRes_;
+    GLuint meshBuf_;
+    GLuint sphereProgram_;
+    GLuint **indicies_;
 };
 
 // Renders a shiny sphere.
