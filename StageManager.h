@@ -32,6 +32,23 @@ private:
     std::vector<Ledge*> ledges_;
 };
 
+// Renders a shiny sphere.
+class BackgroundSphere
+{
+public:
+    // Just trace out some lines along latitude and longitude
+    void render(float dt);
+
+    BackgroundSphere();
+private:
+    // How large is the sphere, in game units?
+    float radius_;
+    // The number of latitude and longitude lines displayed.
+    float lineCount_;
+    // Number of line segments used  in those lines, or a measure of sphere quality
+    float divisionCount_;
+    float pulseCount_; 
+};
 
 class HazardEntity : public GameEntity 
 {

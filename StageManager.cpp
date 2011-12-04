@@ -43,11 +43,71 @@ Ledge * StageManager::getPossibleLedge(const glm::vec2 &pos)
     return ret;
 }
 
+//////////////////////////////////////////////
+// Background Sphere
+//////////////////////////////////////////////
+
+BackgroundSphere::BackgroundSphere()
+{
+    std::string pre_ = "backgroundSphere.radius";
+    radius_ = getParam(pre_ + "radius");
+    lineCount_ = getParam(pre_ + "lineCount");
+    pulseCount_ = getParam(pre_ + "pulseCount");
+}
+
+void BackgroundSphere::render(float dt)
+{
+    // Sweep over each long. and lat. line, drawing segments between successive points
+    // We know how to turn theta, phi --> x,y,z
+    float r = radius_;
+    float theta = 0; // elevation
+    float phi = 0;   // azimuth
+
+
+    // First draw latitude lines
+    // For each of these, elevation (theta) is constant
+    for (int i = 0; i < lineCount_; i++)
+    {
+        // Set current elevation angle
+        theta = M_PI * lineCount_ - (M_PI / 2);
+        phi = 0;
+
+        // Now, go in a circle adding line segments (phi goes from 0 --> 2pi)
+        for (int segi = 0; segi < divisionCount_; segi++)
+        {
+            // TODO: fix these constructors. Can we use glm like 
+            // "glm::vec3 a(0,1,2);"? Didn't work for me. Unary operand error.
+            glm::vec3 segStart, segEnd;
+            segStart.x = r * sin(theta) * cos(phi);
+            segStart.y = r * sin(theta) * sin(phi);
+            segStart.z = r * cos(theta);
+            phi += (2 * M_PI) / divisionCount_; 
+            segEnd.x = r * sin(theta) * cos(phi);
+            segEnd.y = r * sin(theta) * sin(phi);
+            segEnd.z = r * cos(theta);
+            // Now, render a rectangle connecting these two points
+
+            // We can fudge by taking the midpoint.
+            // We can fudge further by just drawing one at the beginning point.
+            
+            glm::mat4 transform = glm::scale(
+                    glm::translate(
+                        glm::mat4(1.0f), segStart), glm::vec3(2.0f)); // glm::length(segStart - segEnd));
+            renderRectangle(transform, glm::vec4(0.5, 0.5, 0.5, 0.5));
+        }
+    }
+}
+
+
+
+//////////////////////////////////////////////
+// Hazard  
+//////////////////////////////////////////////
+
 bool HazardEntity::isDone() const
 {
     return false; 
 }
-
 void HazardEntity::update(float dt)
 {
     // Each frame, we only need to do a couple things.
