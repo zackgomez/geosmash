@@ -944,7 +944,17 @@ void CounterState::render(float dt)
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
 
-    fighter_->renderHelper(dt, fname, fighter_->color_);
+    glm::vec3 color = fighter_->color_;
+    if (t_ > getParam(pre_ + "startup")
+            && t_ < getParam(pre_ + "startup")
+                + getParam(pre_ + "duration"))
+                
+    {
+        color = muxByTime(color, t_);
+        color = glm::vec3(0.8f, 0.8f, 0.8f);
+    }
+
+    fighter_->renderHelper(dt, fname, color);
 }
 
 //// ----------------------- DODGE STATE --------------------------------

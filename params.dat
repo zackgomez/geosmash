@@ -172,7 +172,7 @@ counterAttack.priority     2.5
 
 counterSpecial.startup      0.15
 counterSpecial.duration     0.25
-counterSpecial.cooldown     0.33
+counterSpecial.cooldown     0.30
 
 upTiltAttack.startup      0.1
 upTiltAttack.duration     0.22
@@ -253,7 +253,7 @@ airUpAttack.damage       9
 airUpAttack.stun         0.20
 airUpAttack.knockbackx   0
 airUpAttack.knockbacky   1
-airUpAttack.knockbackpow 200.0
+airUpAttack.knockbackpow 180.0
 airUpAttack.hitboxx      0
 airUpAttack.hitboxy      40
 airUpAttack.hitboxw      45
