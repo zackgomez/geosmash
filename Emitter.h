@@ -17,6 +17,7 @@ class Emitter
 {
 public:
     Emitter* setParticleLifetime(float l);
+    Emitter* setParticleLifetimeVariance(float);
     Emitter* setLocation(const glm::vec3 &l);
     Emitter* setOutputRate(float r);
     // A measure of 'how random' particles coming off are.
@@ -43,6 +44,7 @@ private:
 
     // A measure of how variable the particle velocities are
     float var_;
+    float lifetimeVar_;
     // Since this is a sperical emitter, we need two pieces of information:
     glm::vec3 loc_;
     // ... and ...

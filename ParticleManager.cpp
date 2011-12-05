@@ -75,6 +75,13 @@ void ParticleManager::addEmitter(Emitter *em)
     emitters_.push_back(em);
 }
 
+void ParticleManager::quashEmitter(Emitter *e)
+{
+    assert(e);
+    delete e;
+    emitters_.remove(e);
+}
+
 void ParticleManager::reset()
 {
     std::list<Emitter*>::iterator eit;

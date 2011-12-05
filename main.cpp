@@ -322,7 +322,10 @@ void update()
     for (it = entities.begin(); it != entities.end();)
     {
         if ((*it)->isDone())
+        {
+            delete *it;
             it = entities.erase(it);
+        }
         else
             it++;
     }

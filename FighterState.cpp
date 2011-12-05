@@ -144,7 +144,6 @@ bool FighterState::performBMove(const Controller &controller, bool ground)
     else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
     {
         next_ = new CounterState(fighter_, ground);
-        AudioManager::get()->playSound("counterhit");
         return true;
     }
     else if (fabs(controller.joyx) > getParam("input.tiltThresh") 
@@ -869,7 +868,8 @@ AirNormalState * AirNormalState::setNoGrabTime(float t)
 //// ----------------------- COUNTER STATE --------------------------------
 
 CounterState::CounterState(Fighter *f, bool ground) :
-    FighterState(f), t_(0), ground_(ground), pre_("counterSpecial.") 
+    FighterState(f), t_(0), ground_(ground), pre_("counterSpecial."),
+    playedSound_(false)
 {
     frameName_ = "Counter";
 }
@@ -890,6 +890,12 @@ void CounterState::processInput(Controller & controller, float dt)
             next_ = new AirNormalState(fighter_);
         return;
     }
+     if (t_ > getParam(pre_ + "startup") + getParam(pre_ + "duration")
+             && !playedSound_)
+     {
+         playedSound_ = true;
+         AudioManager::get()->playSound("counterhit");
+     }
 }
 
 void CounterState::hitByAttack(const Attack* attack)
@@ -902,7 +908,6 @@ void CounterState::hitByAttack(const Attack* attack)
     if (t_ < getParam(pre_ + "startup") || 
             t_ > getParam(pre_ + "startup") + getParam(pre_ + "duration"))
     {
-        std::cout << "GOT HITTTT\n";
         calculateHitResult(attack);
         return;
     }

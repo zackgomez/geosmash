@@ -159,6 +159,7 @@ private:
     float t_;
     bool ground_;
     std::string pre_;
+    bool playedSound_;
 };
 
 class DodgeState : public FighterState

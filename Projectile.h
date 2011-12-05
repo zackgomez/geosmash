@@ -2,6 +2,7 @@
 #include "GameEntity.h"
 #include <string>
 
+class Emitter;
 class SimpleAttack;
 
 class Projectile : public GameEntity
@@ -35,5 +36,6 @@ private:
     bool hit_;
     std::string frameName_;
     std::string audioID_;
+    Emitter *emitter_;
 };
 

@@ -27,8 +27,8 @@ StageManager::StageManager()
         for (int x = 0; x < meshRes_; x++)
         {
             int ind = 2*(y*meshRes_ + x);
-            mesh[ind]     = (x - meshRes_/2.f) / meshRes_ * 10.f;
-            mesh[ind + 1] = (y - meshRes_/2.f) / meshRes_ * 10.f;
+            mesh[ind]     = (x - meshRes_/2.f) / (meshRes_-1) * 10.f;
+            mesh[ind + 1] = (y - meshRes_/2.f) / (meshRes_-1) * 10.f;
         }
     }
     meshBuf_ = make_buffer(GL_ARRAY_BUFFER, mesh, sizeof(float) * meshRes_ * meshRes_ * 2);

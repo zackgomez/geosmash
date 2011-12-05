@@ -49,6 +49,7 @@ glm::vec3 pointOnSphere(float r, const glm::vec3 &pos)
 Emitter::Emitter() :
     lifetime_(0.3f),
     var_(0.f),
+    lifetimeVar_(0.0),
     loc_(glm::vec3(0.f)),
     radius_(2.f),
     vel_(50.f),
@@ -57,7 +58,7 @@ Emitter::Emitter() :
     color_(glm::vec4(1.0f, 0.0f, 0.0f, 0.9f)),
     colorvar_(0.f),
     colorbright_(1.0f), colorbrightvar_(0.f),
-    timeRemaining_(0.5f)
+    timeRemaining_(HUGE_VAL)
 {
 }
 
@@ -83,7 +84,7 @@ void Emitter::emit(std::list<Particle*>& particles, float dt)
     {
         Particle *p = new Particle();
         p->loc = pointOnSphere(radius_, loc_);
-        p->t = normalRandom(lifetime_, 0.3);
+        p->t = normalRandom(lifetime_, lifetimeVar_); 
         // Particle's velocity is the normal at that point
         // scaled by emitter's velocity value and given some
         // random nonsense
@@ -111,6 +112,12 @@ Emitter* Emitter::setParticleVelocity(float r)
 Emitter* Emitter::setParticleLifetime(float l) 
 { 
     lifetime_ = l; 
+    return this;
+}
+
+Emitter* Emitter::setParticleLifetimeVariance(float l) 
+{ 
+    lifetimeVar_ = l; 
     return this;
 }
 

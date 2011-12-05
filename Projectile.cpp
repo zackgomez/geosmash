@@ -5,7 +5,7 @@
 #include "Fighter.h"
 #include "FrameManager.h"
 #include "Attack.h"
-
+#include "ParticleManager.h"
 Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
         const std::string &paramPrefix, const std::string &frameName,
         const std::string &audioID, int playerID) :
@@ -37,10 +37,24 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
             pos_, size_, playerID_,
             audioID_);
     attack_->setKBDirection(vel_.x > 0 ? 1 : -1);
+
+    emitter_ = ParticleManager::get()->newEmitter();
+    emitter_->setLocation(glm::vec3(pos_, 0.0f))
+        ->setParticleLifetime(0.05f)
+        ->setParticleLifetimeVariance(0.3)
+        ->setParticleVelocity(20)
+        ->setParticleColor(glm::vec4(0.4, 0.4, 0.8, 0.5))
+        ->setParticleColorVariance(glm::vec4(0.2, 0.2, 0.2, 0.5))
+        ->setParticleColorBrightness(0.8f, 0.3f)
+        ->setOutputRate(2000);
+    ParticleManager::get()->addEmitter(emitter_);
+
 }
 
 Projectile::~Projectile()
 {
+    
+    ParticleManager::get()->quashEmitter(emitter_);
     delete attack_;
 }
 
@@ -109,7 +123,10 @@ void Projectile::render(float dt)
             glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
             glm::vec3(1.f));
 
+    emitter_->setLocation(glm::vec3(pos_, 0.0f));
+    /*
     FrameManager::get()->renderFrame(transform, glm::vec4(glm::vec4(1, 1, 1, 0.3)),
             frameName_);
+            */
 }
 
