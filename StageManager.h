@@ -37,6 +37,7 @@ private:
     GLuint meshBuf_;
     GLuint sphereProgram_;
     GLuint **indicies_;
+    float t_;
 };
 
 // Renders a shiny sphere.

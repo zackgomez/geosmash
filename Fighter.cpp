@@ -301,7 +301,7 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
 
 float Fighter::damageFunc() const
 {
-    return 1.5*(damage_) / 33 + 1.5;
+    return 1.2*(damage_) / 33 + 1.5;
 }
 
 template<class AttackClass>
