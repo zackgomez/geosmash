@@ -235,7 +235,7 @@ airBackAttack.priority     1.0
 airDownAttack.startup      0.15
 airDownAttack.duration     0.15
 airDownAttack.cooldown     0.30
-airDownAttack.damage       11
+airDownAttack.damage       8
 airDownAttack.stun         0.18
 airDownAttack.knockbackx   0
 airDownAttack.knockbacky   -1
@@ -355,7 +355,7 @@ downSmashAttack.priority     1.5
 upSmashAttack.startup      0.28
 upSmashAttack.duration     0.20
 upSmashAttack.cooldown     0.30
-upSmashAttack.damage       18
+upSmashAttack.damage       14
 upSmashAttack.stun         0.13
 upSmashAttack.knockbackx   1
 upSmashAttack.knockbacky   4
