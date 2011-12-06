@@ -12,12 +12,16 @@ StageManager::StageManager() :
     glm::vec2 groundpos(getParam("level.x"), getParam("level.y"));
     glm::vec2 groundsize(getParam("level.w"), getParam("level.h"));
     Ledge l;
+    // Left side ledge
     l.pos = glm::vec2(groundpos.x - groundsize.x / 2, groundpos.y + groundsize.y/2);
     l.occupied = false;
+    l.dir = -1;
     ledges_.push_back(new Ledge(l));
 
+    // Right side ledge
     l.pos = glm::vec2(groundpos.x + groundsize.x / 2, groundpos.y + groundsize.y/2);
     l.occupied = false;
+    l.dir = 1;
     ledges_.push_back(new Ledge(l));
 
     // Create a mesh [-5, 5] with some number of vertices

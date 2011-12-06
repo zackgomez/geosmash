@@ -8,6 +8,8 @@ struct Ledge
 {
     glm::vec2 pos;
     bool occupied;
+    // Either -1 left, or +1 right the direction that the ledge can be grabbed
+    float dir;
 };
 
 class StageManager
