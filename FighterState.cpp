@@ -134,33 +134,37 @@ FighterState* FighterState::checkForLedgeGrab()
 FighterState* FighterState::performBMove(const Controller &controller, bool ground)
 {
     assert(controller.pressb);
+    assert(!fighter_->attack_);
     FighterState *next = NULL;
 
     glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
     // Check for up B
     if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
     {
-        fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
+        next = new UpSpecialState(fighter_);
     }
     // Check for down B
     else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
     {
         next = new CounterState(fighter_, ground);
     }
+    // Check for side B
     else if (fabs(controller.joyx) > getParam("input.tiltThresh") 
                 && fabs(tiltDir.x) > fabs(tiltDir.y))
     {
         fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
         fighter_->attack_ = fighter_->attackMap_["sideSpecial"]->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
     }
     // Otherwise neutral B
     else
     {
         fighter_->attack_ = fighter_->attackMap_["neutralSpecial"]->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
     }
 
-    fighter_->attack_->setFighter(fighter_);
-    fighter_->attack_->start();
     return next;
 }
 
@@ -964,6 +968,50 @@ void CounterState::render(float dt)
     }
 
     fighter_->renderHelper(dt, fname, color);
+}
+
+//// -------------------- UP SPECIAL STATE ------------------------------
+UpSpecialState::UpSpecialState(Fighter *f) :
+    FighterState(f)
+{
+    pre_ = "upSpecialAttack.";
+    fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
+    fighter_->attack_->setFighter(f);
+    fighter_->attack_->start();
+
+    fighter_->push(glm::vec2(0, 2));
+}
+
+FighterState * UpSpecialState::processInput(Controller &, float dt)
+{
+    if (!fighter_->attack_)
+        return new AirStunnedState(fighter_, HUGE_VAL);
+
+    if (fighter_->attack_->hasHitbox())
+    {
+        fighter_->vel_.x = fighter_->dir_ * getParam(pre_ + "xvel");
+        fighter_->vel_.y = getParam(pre_ + "yvel");
+    }
+
+    return NULL;
+}
+
+void UpSpecialState::render(float dt)
+{
+    printf("UP SPECIAL | || ");
+    assert(fighter_->attack_);
+    fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
+}
+
+FighterState* UpSpecialState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+    // XXX not sure if this is right
+    return NULL;
+}
+
+FighterState* UpSpecialState::hitByAttack(const Attack *attack)
+{
+    return FighterState::calculateHitResult(attack);
 }
 
 //// ----------------------- DODGE STATE --------------------------------

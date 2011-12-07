@@ -151,6 +151,21 @@ private:
     bool playedSound_;
 };
 
+class UpSpecialState : public FighterState
+{
+public:
+    UpSpecialState(Fighter *f);
+    virtual ~UpSpecialState() {}
+
+    virtual FighterState* processInput(Controller&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* hitByAttack(const Attack *attack);
+
+private:
+    std::string pre_;
+};
+
 class DodgeState : public FighterState
 {
 public:

@@ -36,6 +36,7 @@ bool playing;
 bool paused;
 int pausedPlayer = -1;
 bool makeHazard;
+std::ofstream logfile;
 
 unsigned numPlayers = 1;
 
@@ -100,6 +101,7 @@ void printstats();
 
 void updateController(Controller &controller);
 void controllerEvent(Controller &controller, const SDL_Event &event);
+void logControllerState(std::ostream &out);
 
 int main(int argc, char **argv)
 {
@@ -157,6 +159,7 @@ int main(int argc, char **argv)
             getParam("level.y"),
             getParam("level.w"),
             getParam("level.h"));
+    logfile.open("lastreplay.replay");
 
     // Remove initial joystick events
     processInput();
@@ -252,6 +255,9 @@ void checkState()
         AudioManager::get()->startSoundtrack();
         if (!teamsAlive.empty())
             winningTeam = *teamsAlive.begin();
+
+        // Save the replay
+        logfile.close();
     }
 }
 
@@ -477,6 +483,25 @@ void render()
     // Finish
     postRender();
     SDL_GL_SwapBuffers();
+
+    // Save the state of the controllers
+    logControllerState(logfile);
+}
+
+void logControllerState(std::ostream &out)
+{
+    for (int i = 0; i < numPlayers; i++)
+    {
+        const Controller &c = controllers[i];
+
+        out << c.joyx << ' ' << c.joyy << ' ' << c.joyxv << ' ' << c.joyyv
+            << c.rtrigger << ' ' << c.ltrigger << ' ' << c.buttona << ' ' << c.buttonb << ' '
+            << c.buttonc << ' ' << c.jumpbutton << ' ' << c.buttonstart << ' '
+            << c.lbumper << ' ' << c.rbumper << ' '
+            << c.pressa << ' ' << c.pressb << ' ' << c.pressc << ' ' << c.pressjump << ' '
+            << c.pressstart << ' ' << c.presslb << ' ' << c.pressrb << ' '
+            << c.dpadl << ' ' << c.dpadr << ' ' << c.dpadu << ' ' << c.dpadd << '\n';
+    }
 }
 
 void renderHUD()

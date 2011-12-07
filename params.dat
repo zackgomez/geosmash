@@ -278,7 +278,7 @@ tauntAttack.priority     0
 
 upSpecialAttack.startup      0.07
 upSpecialAttack.duration     0.20
-upSpecialAttack.cooldown     0.05
+upSpecialAttack.cooldown     0.00
 upSpecialAttack.damage       2
 upSpecialAttack.stun         0.15
 upSpecialAttack.knockbackx   1
@@ -291,7 +291,7 @@ upSpecialAttack.hitboxh      60
 upSpecialAttack.priority     2.0
 upSpecialAttack.repeatInterval  0.04
 upSpecialAttack.xvel            160
-upSpecialAttack.yvel            800
+upSpecialAttack.yvel            600
 
 
 sideSpecialAttack.startup      0.18
