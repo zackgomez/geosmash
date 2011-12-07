@@ -10,8 +10,8 @@
 #include "FrameManager.h"
 #include "audio.h"
 #include "Attack.h"
+#include "Controller.h"
 
-void pause(int playerID);
 Fighter *getPartnerLifeSteal(int playerID);
 
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
@@ -140,21 +140,15 @@ void Fighter::processInput(controller_state &controller, float dt)
     // Check for pause/life steal
     if (controller.pressstart)
     {
-        // Pause when character is alive
-        if (isAlive())
-            pause(id_);
-        // Otherwise check for life steal from partner
-        else
-        {
-            Fighter *partner = getPartnerLifeSteal(playerID_);
-            if (partner)
-            {
-                assert(partner->lives_ > 1);
-                partner->lives_--;
-                lives_++;
-                respawn(false);
-            }
-        }
+        // check for life steal from partner
+		Fighter *partner = getPartnerLifeSteal(playerID_);
+		if (partner)
+		{
+			assert(partner->lives_ > 1);
+			partner->lives_--;
+			lives_++;
+			respawn(false);
+		}
     }
 
     // Update state

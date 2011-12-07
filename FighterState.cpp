@@ -9,6 +9,7 @@
 #include "audio.h"
 #include "StatsManager.h"
 #include "StageManager.h"
+#include "Controller.h"
 
 int getTeamID(int);
 

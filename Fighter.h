@@ -7,25 +7,7 @@
 
 class Attack;
 class FighterAttack;
-
-struct controller_state
-{
-    // The positions [-1, 1] of the main analog stick
-    float joyx, joyy;
-    // The velocities of the main analog stick over some time period
-    float joyxv, joyyv;
-    // nonzero if the button is pressed
-    int buttona, buttonb, buttonc, jumpbutton, buttonstart;
-    // nonzero if the button was pressed this frame
-    int pressa, pressb, pressc, pressjump, pressstart;
-
-    float rtrigger, ltrigger;
-    int lbumper, rbumper;
-    int presslb, pressrb;
-
-    // Dpad directions, true if they're press currently
-    int dpadl, dpadr, dpadu, dpadd;
-};
+struct controller_state;
 
 class Rectangle
 {

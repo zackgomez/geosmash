@@ -17,10 +17,10 @@
 #include "ParticleManager.h"
 #include "FontManager.h"
 #include "StageManager.h"
+#include "Controller.h"
 
 void test_random();
 
-static const float MAX_JOYSTICK_VALUE = 32767.0f;
 static const float dt = 1.f / 60.f;
 
 static float WORLD_W;
@@ -40,7 +40,7 @@ std::ofstream logfile;
 
 size_t startTime;
 
-std::vector<controller_state> controllers;
+std::vector<Controller*> controllers;
 std::vector<Fighter*> fighters;
 std::vector<GameEntity *> entities;
 const glm::vec3 playerColors[] =
@@ -68,8 +68,8 @@ mesh levelMesh;
 GLuint backgroundTex;
 int winningTeam = -1;
 
-void pause(int playerID);
-void unpause(int playerID);
+bool pause(int playerID);
+bool unpause(int playerID);
 
 void addEntity(GameEntity *entity);
 
@@ -151,8 +151,7 @@ int main(int argc, char **argv)
         fighter->respawn(false);
         fighters.push_back(fighter);
         entities.push_back(fighter);
-        // TODO change to Controller
-        controllers.push_back(controller_state());
+        controllers.push_back(new Controller(fighter, i));
     }
     ground = Rectangle(
             getParam("level.x"),
@@ -266,16 +265,16 @@ void processEvents()
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        int idx = -1;
         switch (event.type)
         {
         case SDL_JOYAXISMOTION:
-            idx = idx == -1 ? event.jaxis.which : idx;
         case SDL_JOYBUTTONDOWN:
-            idx = idx == -1 ? event.jbutton.which : idx;
         case SDL_JOYBUTTONUP:
-            idx = idx == -1 ? event.jbutton.which : idx;
-            controllerEvent(controllers[idx], event);
+            for (unsigned i = 0; i < controllers.size(); i++)
+            {
+                controllers[i]->processEvent(event);
+            }
+            break;
 
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
@@ -748,154 +747,6 @@ void updateController(controller_state &controller)
     controller.joyxv = 0;
     controller.joyyv = 0;
 }
-
-void controllerEvent(controller_state &controller, const SDL_Event &event)
-{
-    switch (event.type)
-    {
-    case SDL_JOYAXISMOTION:
-        // left joy stick X axis
-        if (event.jaxis.axis == 0)
-        {
-            float newPos = event.jaxis.value / MAX_JOYSTICK_VALUE;
-            controller.joyxv += (newPos - controller.joyx);
-            controller.joyx = newPos;
-        }
-        // left joy stick Y axis
-        else if (event.jaxis.axis == 1)
-        {
-            float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
-            controller.joyyv += (newPos - controller.joyy);
-            controller.joyy = newPos;
-        }
-        // Left trigger
-        else if (event.jaxis.axis == 5)
-        {
-            float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
-            controller.ltrigger = newPos;
-        }
-        // Right trigger
-        else if (event.jaxis.axis == 4)
-        {
-            float newPos = -event.jaxis.value / MAX_JOYSTICK_VALUE;
-            controller.rtrigger = newPos;
-        }
-        // DPAD L/R
-        else if (event.jaxis.axis == 6)
-        {
-            if (event.jaxis.value > 0)
-                controller.dpadr = true;
-            else if (event.jaxis.value < 0)
-                controller.dpadl = true;
-            else
-                controller.dpadl = controller.dpadr = false;
-        }
-        // DPAD U/D
-        else if (event.jaxis.axis == 7)
-        {
-            if (event.jaxis.value > 0)
-                controller.dpadd = true;
-            else if (event.jaxis.value < 0)
-                controller.dpadu = true;
-            else
-                controller.dpadd = controller.dpadu = false;
-        }
-        else
-        {
-            std::cout << "Axis event: " << (int) event.jaxis.axis << '\n';
-        }
-        break;
-
-    case SDL_JOYBUTTONDOWN:
-        if (event.jbutton.button == 0)
-        {
-            controller.pressa = true;
-            controller.buttona = true;
-        }
-        else if (event.jbutton.button == 1)
-        {
-            controller.pressb = true;
-            controller.buttonb = true;
-        }
-        else if (event.jbutton.button == 3)
-        {
-            controller.pressjump = true;
-            controller.jumpbutton = true;
-        }
-        else if (event.jbutton.button == 2)
-        {
-            controller.pressc = true;
-            controller.buttonc = true;
-        }
-        else if (event.jbutton.button == 4)
-        {
-            controller.presslb = true;
-            controller.lbumper = true;
-        }
-        else if (event.jbutton.button == 5)
-        {
-            controller.pressrb = true;
-            controller.rbumper = true;
-        }
-        else if (event.jbutton.button == 7)
-        {
-            if (paused)
-                unpause(event.jbutton.which);
-            else
-            {
-                controller.pressstart = true;
-                controller.buttonstart = true;
-            }
-        }
-        break;
-
-    case SDL_JOYBUTTONUP:
-        if (event.jbutton.button == 0)
-        {
-            controller.buttona = false;
-            controller.pressa = false;
-        }
-        else if (event.jbutton.button == 1)
-        {
-            controller.buttonb = false;
-            controller.pressb = false;
-        }
-        else if (event.jbutton.button == 3)
-        {
-            controller.jumpbutton = false;
-            controller.pressjump = false;
-        }
-        else if (event.jbutton.button == 2)
-        {
-            controller.buttonc = false;
-            controller.pressc = false;
-        }
-        else if (event.jbutton.button == 7)
-        {
-            controller.buttonstart = false;
-            controller.pressstart = false;
-        }
-        else if (event.jbutton.button == 4)
-        {
-            controller.presslb = false;
-            controller.lbumper = false;
-        }
-        else if (event.jbutton.button == 5)
-        {
-            controller.pressrb = false;
-            controller.rbumper = false;
-        }
-        else
-        {
-            std::cout << "Got button number : " << (int) event.jbutton.button << '\n';
-        }
-        break;
-
-    default:
-        std::cout << "WARNING: Unknown event in updateController.\n";
-    }
-}
-
 int initLibs()
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
@@ -933,7 +784,7 @@ float getParam(const std::string &param)
     return ParamReader::get()->get(param);
 }
 
-void pause(int playerID)
+bool pause(int playerID)
 {
     if (!paused)
     {
@@ -941,10 +792,12 @@ void pause(int playerID)
         pausedPlayer = playerID;
         AudioManager::get()->pauseSoundtrack();
         AudioManager::get()->playSound("pausein");
+        return true;
     }
+    return false;
 }
 
-void unpause(int playerID)
+bool unpause(int playerID)
 {
     if (paused && pausedPlayer == playerID)
     {
@@ -953,7 +806,9 @@ void unpause(int playerID)
         if (!muteMusic)
             AudioManager::get()->startSoundtrack();
         AudioManager::get()->playSound("pauseout");
+        return true;
     }
+    return false;
 }
 
 int getTeamID(int playerID)
