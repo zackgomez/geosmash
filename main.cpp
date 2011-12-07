@@ -42,7 +42,7 @@ unsigned numPlayers = 1;
 
 size_t startTime;
 
-Controller controllers[4];
+controller_state controllers[4];
 std::vector<Fighter*> fighters;
 std::vector<GameEntity *> entities;
 const glm::vec3 playerColors[] =
@@ -99,8 +99,8 @@ void renderEndScreen();
 
 void printstats();
 
-void updateController(Controller &controller);
-void controllerEvent(Controller &controller, const SDL_Event &event);
+void updateController(controller_state &controller);
+void controllerEvent(controller_state &controller, const SDL_Event &event);
 void logControllerState(std::ostream &out);
 
 int main(int argc, char **argv)
@@ -492,7 +492,7 @@ void logControllerState(std::ostream &out)
 {
     for (int i = 0; i < numPlayers; i++)
     {
-        const Controller &c = controllers[i];
+        const controller_state &c = controllers[i];
 
         out << c.joyx << ' ' << c.joyy << ' ' << c.joyxv << ' ' << c.joyyv
             << c.rtrigger << ' ' << c.ltrigger << ' ' << c.buttona << ' ' << c.buttonb << ' '
@@ -736,7 +736,7 @@ void printstats()
     StatsManager::get()->printStats();
 }
 
-void updateController(Controller &controller)
+void updateController(controller_state &controller)
 {
     controller.pressa = false;
     controller.pressb = false;
@@ -749,7 +749,7 @@ void updateController(Controller &controller)
     controller.joyyv = 0;
 }
 
-void controllerEvent(Controller &controller, const SDL_Event &event)
+void controllerEvent(controller_state &controller, const SDL_Event &event)
 {
     switch (event.type)
     {

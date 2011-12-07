@@ -123,7 +123,7 @@ Rectangle Fighter::getRect() const
     return state_->getRect();
 }
 
-void Fighter::processInput(Controller &controller, float dt)
+void Fighter::processInput(controller_state &controller, float dt)
 {
     // Update the attack
     if (attack_)

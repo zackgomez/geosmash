@@ -8,7 +8,7 @@
 class Attack;
 class FighterAttack;
 
-struct Controller
+struct controller_state
 {
     // The positions [-1, 1] of the main analog stick
     float joyx, joyy;
@@ -46,7 +46,7 @@ public:
     ~Fighter();
 
     // dt is time from last call to processInput
-    void processInput(Controller &, float dt);
+    void processInput(controller_state &, float dt);
     virtual void update(float dt);
     virtual void render(float dt);
     virtual Rectangle getRect() const;

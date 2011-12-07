@@ -131,7 +131,7 @@ FighterState* FighterState::checkForLedgeGrab()
     return NULL;
 }
 
-FighterState* FighterState::performBMove(const Controller &controller, bool ground)
+FighterState* FighterState::performBMove(const controller_state &controller, bool ground)
 {
     assert(controller.pressb);
     assert(!fighter_->attack_);
@@ -176,7 +176,7 @@ AirStunnedState::AirStunnedState(Fighter *f, float duration, bool gb) :
     frameName_ = "AirStunned";
 }
 
-FighterState* AirStunnedState::processInput(Controller &controller, float dt)
+FighterState* AirStunnedState::processInput(controller_state &controller, float dt)
 {
     // Gravity
     fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
@@ -264,7 +264,7 @@ GroundState::GroundState(Fighter *f, float delay, float invincTime) :
 GroundState::~GroundState()
 { /* Empty */ }
 
-FighterState* GroundState::processInput(Controller &controller, float dt)
+FighterState* GroundState::processInput(controller_state &controller, float dt)
 {
     // 'unduck' every frame
 
@@ -575,7 +575,7 @@ BlockingState::~BlockingState()
     /* Empty */
 }
 
-FighterState* BlockingState::processInput(Controller &controller, float dt)
+FighterState* BlockingState::processInput(controller_state &controller, float dt)
 {
     // Update timers
     waitTime_ -= dt;
@@ -705,7 +705,7 @@ AirNormalState::AirNormalState(Fighter *f) :
 AirNormalState::~AirNormalState()
 { /* Empty */ }
 
-FighterState* AirNormalState::processInput(Controller &controller, float dt)
+FighterState* AirNormalState::processInput(controller_state &controller, float dt)
 {
     // Gravity
     fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
@@ -880,7 +880,7 @@ CounterState::CounterState(Fighter *f, bool ground) :
     frameName_ = "Counter";
 }
 
-FighterState* CounterState::processInput(Controller & controller, float dt)
+FighterState* CounterState::processInput(controller_state & controller, float dt)
 {
     t_ += dt;
     float totalT = getParam(pre_ + "startup") +
@@ -982,7 +982,7 @@ UpSpecialState::UpSpecialState(Fighter *f) :
     fighter_->push(glm::vec2(0, 2));
 }
 
-FighterState * UpSpecialState::processInput(Controller &, float dt)
+FighterState * UpSpecialState::processInput(controller_state &, float dt)
 {
     if (!fighter_->attack_)
         return new AirStunnedState(fighter_, HUGE_VAL);
@@ -1023,7 +1023,7 @@ DodgeState::DodgeState(Fighter *f) :
     frameName_ = "GroundRoll";
 }
 
-FighterState* DodgeState::processInput(Controller &controller, float dt)
+FighterState* DodgeState::processInput(controller_state &controller, float dt)
 {
     t_ += dt;
     fighter_->vel_.x = fighter_->dir_ * getParam("dodge.speed");
@@ -1086,7 +1086,7 @@ LedgeGrabState::LedgeGrabState(Fighter *f) :
     invincTime_ = getParam("ledgeGrab.grabInvincTime");
 }
 
-FighterState* LedgeGrabState::processInput(Controller &controller, float dt)
+FighterState* LedgeGrabState::processInput(controller_state &controller, float dt)
 {
     if (jumpTime_ > 0 && jumpTime_ != HUGE_VAL) return NULL;
 
@@ -1241,7 +1241,7 @@ RespawnState::RespawnState(Fighter *f) :
 {
 }
 
-FighterState* RespawnState::processInput(Controller &controller, float dt)
+FighterState* RespawnState::processInput(controller_state &controller, float dt)
 {
     t_ += dt;
     if (t_ > getParam("fighter.respawnTime"))
@@ -1297,7 +1297,7 @@ bool DeadState::canBeHit() const
     return false;
 }
 
-FighterState* DeadState::processInput(Controller &controller, float dt)
+FighterState* DeadState::processInput(controller_state &controller, float dt)
 {
     // NOTHING
     return NULL;
