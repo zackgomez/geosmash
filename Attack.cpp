@@ -347,21 +347,15 @@ void UpSpecialAttack::update(float dt)
     {
         if (!started_)
         {
-            owner_->vel_.x = owner_->dir_ * getParam(paramPrefix_ + "xvel");
-            owner_->vel_.y = getParam(paramPrefix_ + "yvel");
             // Draw a little puff
             ExplosionManager::get()->addPuff(
-                    owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.1f, 
-                    owner_->pos_.y - owner_->size_.y * 0.45f,
+                    owner_->getRect().x - owner_->getRect().w * owner_->getDirection() * 0.1f, 
+                    owner_->getRect().y - owner_->getRect().h * 0.45f,
                     0.3f);
             ExplosionManager::get()->addPuff(
-                    owner_->pos_.x - owner_->size_.x * owner_->dir_ * 0.3f, 
-                    owner_->pos_.y - owner_->size_.y * 0.45f,
+                    owner_->getRect().x - owner_->getRect().w * owner_->getDirection() * 0.3f, 
+                    owner_->getRect().y - owner_->getRect().h * 0.45f,
                     0.3f);
-            // Pop them up a couple pixels, and be sure they're in the air state.
-            owner_->push(glm::vec2(0, 2));
-            delete owner_->state_;
-            owner_->state_ = new AirNormalState(owner_);
 
             started_ = true;
         }
@@ -385,10 +379,6 @@ void UpSpecialAttack::start()
 void UpSpecialAttack::finish()
 {
     FighterAttack::finish();
-
-    // When Up Special is over, dump them in air stunned forever
-    delete owner_->state_;
-    owner_->state_ = new AirStunnedState(owner_, HUGE_VAL);
 }
 
 

@@ -6,17 +6,22 @@
 #include "Fighter.h"
 #include "FrameManager.h"
 
-StageManager::StageManager()
+StageManager::StageManager() :
+    t_(0)
 {
     glm::vec2 groundpos(getParam("level.x"), getParam("level.y"));
     glm::vec2 groundsize(getParam("level.w"), getParam("level.h"));
     Ledge l;
+    // Left side ledge
     l.pos = glm::vec2(groundpos.x - groundsize.x / 2, groundpos.y + groundsize.y/2);
     l.occupied = false;
+    l.dir = -1;
     ledges_.push_back(new Ledge(l));
 
+    // Right side ledge
     l.pos = glm::vec2(groundpos.x + groundsize.x / 2, groundpos.y + groundsize.y/2);
     l.occupied = false;
+    l.dir = 1;
     ledges_.push_back(new Ledge(l));
 
     // Create a mesh [-5, 5] with some number of vertices
@@ -90,9 +95,12 @@ Ledge * StageManager::getPossibleLedge(const glm::vec2 &pos)
 
 void StageManager::renderSphereBackground(float dt)
 {
+    t_ += 3*dt;
     glEnable(GL_CULL_FACE);
     float r = getParam("backgroundSphere.radius");
-    glm::mat4 transform = glm::scale(glm::mat4(1.f), glm::vec3(r, r, r));
+    glm::mat4 transform = glm::rotate(glm::scale(glm::mat4(1.f), glm::vec3(r, r, r)),
+            //5*sinf(t_), glm::normalize(glm::vec3(0, cosf(t_/25), sinf(t_/25))));
+            t_, glm::normalize(glm::vec3(0, 1, 0)));
     
     GLuint projectionUniform = glGetUniformLocation(sphereProgram_, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(sphereProgram_, "modelViewMatrix");

@@ -157,7 +157,7 @@ private:
 
 // An attack that is responsible for moving the character.
 // (Current Up - B and Side-B 0.6)
-class MovingAttack: public FighterAttack
+class MovingAttack : public FighterAttack
 {
 public:
     MovingAttack(const std::string &paramPrefix, const std::string &audioID,
@@ -176,7 +176,7 @@ protected:
 };
 
 // The Up-B attack class. 
-class UpSpecialAttack: public MovingAttack
+class UpSpecialAttack : public MovingAttack
 {
 public:
     UpSpecialAttack(const std::string &paramPrefix, const std::string &audioID,

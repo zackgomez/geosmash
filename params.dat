@@ -49,7 +49,7 @@ debug.drawHitbox    0
 
 fighter.w             50
 fighter.h             60
-fighter.lives         4
+fighter.lives         1
 fighter.respawnTime   1.0
 fighter.gbThresh      600.0
 fighter.gbVelDamping  0.6
@@ -235,7 +235,7 @@ airBackAttack.priority     1.0
 airDownAttack.startup      0.15
 airDownAttack.duration     0.15
 airDownAttack.cooldown     0.30
-airDownAttack.damage       11
+airDownAttack.damage       8
 airDownAttack.stun         0.18
 airDownAttack.knockbackx   0
 airDownAttack.knockbacky   -1
@@ -278,7 +278,7 @@ tauntAttack.priority     0
 
 upSpecialAttack.startup      0.07
 upSpecialAttack.duration     0.20
-upSpecialAttack.cooldown     0.05
+upSpecialAttack.cooldown     0.00
 upSpecialAttack.damage       2
 upSpecialAttack.stun         0.15
 upSpecialAttack.knockbackx   1
@@ -291,7 +291,7 @@ upSpecialAttack.hitboxh      60
 upSpecialAttack.priority     2.0
 upSpecialAttack.repeatInterval  0.04
 upSpecialAttack.xvel            160
-upSpecialAttack.yvel            800
+upSpecialAttack.yvel            600
 
 
 sideSpecialAttack.startup      0.18
@@ -355,7 +355,7 @@ downSmashAttack.priority     1.5
 upSmashAttack.startup      0.28
 upSmashAttack.duration     0.20
 upSmashAttack.cooldown     0.30
-upSmashAttack.damage       18
+upSmashAttack.damage       14
 upSmashAttack.stun         0.13
 upSmashAttack.knockbackx   1
 upSmashAttack.knockbacky   4

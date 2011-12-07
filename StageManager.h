@@ -8,6 +8,8 @@ struct Ledge
 {
     glm::vec2 pos;
     bool occupied;
+    // Either -1 left, or +1 right the direction that the ledge can be grabbed
+    float dir;
 };
 
 class StageManager
@@ -37,6 +39,7 @@ private:
     GLuint meshBuf_;
     GLuint sphereProgram_;
     GLuint **indicies_;
+    float t_;
 };
 
 // Renders a shiny sphere.

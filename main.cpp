@@ -36,12 +36,13 @@ bool playing;
 bool paused;
 int pausedPlayer = -1;
 bool makeHazard;
+std::ofstream logfile;
 
 unsigned numPlayers = 1;
 
 size_t startTime;
 
-Controller controllers[4];
+controller_state controllers[4];
 std::vector<Fighter*> fighters;
 std::vector<GameEntity *> entities;
 const glm::vec3 playerColors[] =
@@ -98,8 +99,9 @@ void renderEndScreen();
 
 void printstats();
 
-void updateController(Controller &controller);
-void controllerEvent(Controller &controller, const SDL_Event &event);
+void updateController(controller_state &controller);
+void controllerEvent(controller_state &controller, const SDL_Event &event);
+void logControllerState(std::ostream &out);
 
 int main(int argc, char **argv)
 {
@@ -157,6 +159,7 @@ int main(int argc, char **argv)
             getParam("level.y"),
             getParam("level.w"),
             getParam("level.h"));
+    logfile.open("lastreplay.replay");
 
     // Remove initial joystick events
     processInput();
@@ -214,10 +217,8 @@ void mainloop()
 
         int endms = SDL_GetTicks();
         int delay = 16 - std::min(16, std::max(1, endms - startms));
-        /*
         std::cout << "Frame time (ms): " << endms - startms << 
             "   Delay time (ms): " << delay << '\n';
-            */
         SDL_Delay(delay);
     }
 }
@@ -254,6 +255,9 @@ void checkState()
         AudioManager::get()->startSoundtrack();
         if (!teamsAlive.empty())
             winningTeam = *teamsAlive.begin();
+
+        // Save the replay
+        logfile.close();
     }
 }
 
@@ -304,6 +308,8 @@ void processInput()
 
     // Then update based on new events
     processEvents();
+
+    // TODO update ai controllers here
 
     // Now have the fighters process their input
     if (paused)
@@ -477,6 +483,25 @@ void render()
     // Finish
     postRender();
     SDL_GL_SwapBuffers();
+
+    // Save the state of the controllers
+    logControllerState(logfile);
+}
+
+void logControllerState(std::ostream &out)
+{
+    for (int i = 0; i < numPlayers; i++)
+    {
+        const controller_state &c = controllers[i];
+
+        out << c.joyx << ' ' << c.joyy << ' ' << c.joyxv << ' ' << c.joyyv
+            << c.rtrigger << ' ' << c.ltrigger << ' ' << c.buttona << ' ' << c.buttonb << ' '
+            << c.buttonc << ' ' << c.jumpbutton << ' ' << c.buttonstart << ' '
+            << c.lbumper << ' ' << c.rbumper << ' '
+            << c.pressa << ' ' << c.pressb << ' ' << c.pressc << ' ' << c.pressjump << ' '
+            << c.pressstart << ' ' << c.presslb << ' ' << c.pressrb << ' '
+            << c.dpadl << ' ' << c.dpadr << ' ' << c.dpadu << ' ' << c.dpadd << '\n';
+    }
 }
 
 void renderHUD()
@@ -711,7 +736,7 @@ void printstats()
     StatsManager::get()->printStats();
 }
 
-void updateController(Controller &controller)
+void updateController(controller_state &controller)
 {
     controller.pressa = false;
     controller.pressb = false;
@@ -724,7 +749,7 @@ void updateController(Controller &controller)
     controller.joyyv = 0;
 }
 
-void controllerEvent(Controller &controller, const SDL_Event &event)
+void controllerEvent(controller_state &controller, const SDL_Event &event)
 {
     switch (event.type)
     {

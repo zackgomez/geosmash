@@ -32,12 +32,8 @@ void FighterState::update(float dt)
     invincTime_ -= dt;
 }
 
-void FighterState::calculateHitResult(const Attack *attack)
+FighterState* FighterState::calculateHitResult(const Attack *attack)
 {
-    // Cancel any transition first
-    if (next_)
-        delete next_;
-
     // Cancel any current attack
     if (fighter_->attack_)
     {
@@ -74,10 +70,13 @@ void FighterState::calculateHitResult(const Attack *attack)
     // Play a sound
     AudioManager::get()->playSound(attack->getAudioID(), fighter_->pos_, fighter_->damage_);
 
+    // Pop up a bit so that we're not overlapping the ground
+    fighter_->pos_.y += 4;
+
     // Go to the stunned state
     float stunDuration = attack->getStun(fighter_) * fighter_->damageFunc();
     std::cout << "StunDuration: " << stunDuration << '\n';
-    next_ = new AirStunnedState(fighter_, stunDuration, fighter_->vel_.y < 0);
+    return new AirStunnedState(fighter_, stunDuration, fighter_->vel_.y < 0);
 }
 
 void FighterState::collisionHelper(const Rectangle &ground)
@@ -107,10 +106,8 @@ void FighterState::collisionHelper(const Rectangle &ground)
     }
 }
 
-void FighterState::checkForLedgeGrab()
+FighterState* FighterState::checkForLedgeGrab()
 {
-    if (next_)
-        return;
     // You must be /*facing the ledge*/ and be completely below the ledge and
     // be within ledge grabbing distance of the ledge and not attacking
     const glm::vec2 &fpos = fighter_->pos_;
@@ -121,46 +118,54 @@ void FighterState::checkForLedgeGrab()
     if (ledge
         && !fighter_->attack_
         && (ledge->pos.y > (fpos.y + fighter_->getRect().h / 2)) 
-        && glm::length(fpos - ledge->pos) <= getParam("ledgeGrab.dist"))
+        && glm::length(fpos - ledge->pos) <= getParam("ledgeGrab.dist")
+        && ledge->dir * (fpos.x - ledge->pos.x) >= 1)
     {
         AudioManager::get()->playSound("ledgegrab");
         LedgeGrabState *lgs = new LedgeGrabState(fighter_);
         lgs->grabLedge(ledge);
-        next_ = lgs;
+        return lgs;
     }
+
+    // No ledge grab
+    return NULL;
 }
 
-bool FighterState::performBMove(const Controller &controller, bool ground)
+FighterState* FighterState::performBMove(const controller_state &controller, bool ground)
 {
-    if (!controller.pressb)
-        return false;
+    assert(controller.pressb);
+    assert(!fighter_->attack_);
+    FighterState *next = NULL;
+
     glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
     // Check for up B
     if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
     {
-        fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
+        next = new UpSpecialState(fighter_);
     }
     // Check for down B
     else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
     {
-        next_ = new CounterState(fighter_, ground);
-        return true;
+        next = new CounterState(fighter_, ground);
     }
+    // Check for side B
     else if (fabs(controller.joyx) > getParam("input.tiltThresh") 
                 && fabs(tiltDir.x) > fabs(tiltDir.y))
     {
         fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
         fighter_->attack_ = fighter_->attackMap_["sideSpecial"]->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
     }
     // Otherwise neutral B
     else
     {
         fighter_->attack_ = fighter_->attackMap_["neutralSpecial"]->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
     }
 
-    fighter_->attack_->setFighter(fighter_);
-    fighter_->attack_->start();
-    return true;
+    return next;
 }
 
 
@@ -171,7 +176,7 @@ AirStunnedState::AirStunnedState(Fighter *f, float duration, bool gb) :
     frameName_ = "AirStunned";
 }
 
-void AirStunnedState::processInput(Controller &controller, float dt)
+FighterState* AirStunnedState::processInput(controller_state &controller, float dt)
 {
     // Gravity
     fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
@@ -186,15 +191,13 @@ void AirStunnedState::processInput(Controller &controller, float dt)
 
     // Check for completetion
     if ((stunTime_ += dt) > stunDuration_)
-        next_ = new AirNormalState(fighter_);
-}
-
-void AirStunnedState::update(float dt)
-{
-    FighterState::update(dt);
+        return new AirNormalState(fighter_);
     // Only check for ledge grab after up B
     if (stunDuration_ == HUGE_VAL)
-        checkForLedgeGrab();
+        return checkForLedgeGrab();
+
+    // No state change
+    return NULL;
 }
 
 void AirStunnedState::render(float dt)
@@ -210,16 +213,16 @@ void AirStunnedState::render(float dt)
     fighter_->renderHelper(dt, fname, color);
 }
 
-void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* AirStunnedState::collisionWithGround(const Rectangle &ground, bool collision)
 {
     // If no collision, we don't care
     if (!collision)
-        return;
+        return NULL;
 
     FighterState::collisionHelper(ground);
     // If we're not overlapping the ground anymore, no collision
     if (!ground.overlaps(fighter_->getRect()))
-        return;
+        return NULL;
 
     // Check for ground bounce
     if (fighter_->vel_.y < -getParam("fighter.gbThresh")
@@ -237,14 +240,15 @@ void AirStunnedState::collisionWithGround(const Rectangle &ground, bool collisio
         fighter_->vel_ = glm::vec2(0.f);
         fighter_->accel_ = glm::vec2(0.f);
         // Transition to the ground state
-        if (next_) delete next_;
-        next_ = new GroundState(fighter_);
+        return new GroundState(fighter_);
     }
+    // No state change
+    return NULL;
 }
 
-void AirStunnedState::hitByAttack(const Attack *attack)
+FighterState* AirStunnedState::hitByAttack(const Attack *attack)
 {
-    FighterState::calculateHitResult(attack);
+    return FighterState::calculateHitResult(attack);
 }
 
 //// ------------------------ GROUND STATE -------------------------
@@ -260,7 +264,7 @@ GroundState::GroundState(Fighter *f, float delay, float invincTime) :
 GroundState::~GroundState()
 { /* Empty */ }
 
-void GroundState::processInput(Controller &controller, float dt)
+FighterState* GroundState::processInput(controller_state &controller, float dt)
 {
     // 'unduck' every frame
 
@@ -271,21 +275,19 @@ void GroundState::processInput(Controller &controller, float dt)
     if (dashTime_ >= 0) dashTime_ += dt;
     else dashTime_ -= dt;
     // If the fighter is currently attacking, do nothing else
-    if (fighter_->attack_) return;
+    if (fighter_->attack_) return NULL;
     // Do nothing during jump startup
     if (jumpTime_ > 0 && jumpTime_ < getParam("jumpStartupTime"))
-        return;
+        return NULL;
     // Do nothing during dash startup
     if (dashTime_ > 0 && dashTime_ < getParam("dashStartupTime"))
-        return;
+        return NULL;
     if (waitTime_ > 0)
-        return;
+        return NULL;
 
     // --- Deal with jump transition ---
     if (jumpTime_ > getParam("jumpStartupTime"))
     {
-        // Jump; transition to Air Normal
-        next_ = new AirNormalState(fighter_);
         // Set the xvelocity of the jump
         fighter_->vel_.x = fabs(controller.joyx) > getParam("input.deadzone") ?
             controller.joyx * 0.5 * getParam("dashSpeed") :
@@ -301,7 +303,8 @@ void GroundState::processInput(Controller &controller, float dt)
                 fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
                 fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
-        return;
+        // Jump; transition to Air Normal
+        return new AirNormalState(fighter_);
     }
 
 
@@ -345,7 +348,7 @@ void GroundState::processInput(Controller &controller, float dt)
         // Do per attack stuff
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
-        return;
+        return NULL;
     }
     // Check for dodge
     else if ((controller.rbumper || controller.rtrigger < -getParam("input.trigThresh") || controller.ltrigger < -getParam("input.trigThresh"))
@@ -353,12 +356,11 @@ void GroundState::processInput(Controller &controller, float dt)
             && fabs(controller.joyxv) > getParam("input.velThresh"))
     {
         fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-        next_ = new DodgeState(fighter_);
         ExplosionManager::get()->addPuff(
                 fighter_->pos_.x + fighter_->size_.x * fighter_->dir_ * 0.4f, 
                 fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
-        return;
+        return new DodgeState(fighter_);
     }
     // Check for block
     else if ((controller.rtrigger < -getParam("input.trigThresh")
@@ -369,17 +371,17 @@ void GroundState::processInput(Controller &controller, float dt)
         fighter_->accel_ = glm::vec2(0.f);
 
         AudioManager::get()->playSound("shieldon");
-        next_ = new BlockingState(fighter_);
-        return;
+        return new BlockingState(fighter_);
     }
     // Check for B moves
-    else if (performBMove(controller))
+    else if (controller.pressb)
     {
+        FighterState *next = performBMove(controller);
         // In the ground state, make sure the player stops moving before
         // ANY B move
         fighter_->vel_.x = 0.f;
         dashing_ = false;
-        return;
+        return next;
     }
     // Check for taunt
     else if (controller.dpadu && !dashing_)
@@ -387,7 +389,7 @@ void GroundState::processInput(Controller &controller, float dt)
         fighter_->attack_ = fighter_->attackMap_["taunt"]->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
-        return;
+        return NULL;
     }
     // Check for smash attacks
     else if (controller.pressc && !dashing_)
@@ -410,7 +412,7 @@ void GroundState::processInput(Controller &controller, float dt)
 
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
-        return;
+        return NULL;
     }
 
     // --- Deal with dashing movement ---
@@ -497,6 +499,8 @@ void GroundState::processInput(Controller &controller, float dt)
         // Start the jump timer
         jumpTime_ = 0.0f;
     }
+    // No state change
+    return NULL;
 }
 
 void GroundState::render(float dt)
@@ -519,10 +523,8 @@ void GroundState::render(float dt)
     fighter_->renderHelper(dt, fname, color);
 }
 
-void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* GroundState::collisionWithGround(const Rectangle &ground, bool collision)
 {
-    if (next_)
-        return;
     if (!collision)
     {
         if (fighter_->attack_)
@@ -534,20 +536,19 @@ void GroundState::collisionWithGround(const Rectangle &ground, bool collision)
         }
         else
         {
-            next_ = new AirNormalState(fighter_);
+            return new AirNormalState(fighter_);
         }
     }
 
     // If there is a collision, we don't need to do anything, because we're
     // already in the GroundState
+    return NULL;
 }
 
-void GroundState::hitByAttack(const Attack *attack)
+FighterState* GroundState::hitByAttack(const Attack *attack)
 {
-    // Pop up a bit so that we're not overlapping the ground
-    fighter_->pos_.y += 4;
     // Then do the normal stuff
-    FighterState::calculateHitResult(attack);
+    return FighterState::calculateHitResult(attack);
 }
 
 Rectangle GroundState::getRect() const
@@ -574,7 +575,7 @@ BlockingState::~BlockingState()
     /* Empty */
 }
 
-void BlockingState::processInput(Controller &controller, float dt)
+FighterState* BlockingState::processInput(controller_state &controller, float dt)
 {
     // Update timers
     waitTime_ -= dt;
@@ -582,28 +583,26 @@ void BlockingState::processInput(Controller &controller, float dt)
     hitStunTime_ -= dt;
 
     // Don't do anything while waiting or dazed or stunned
-    if (waitTime_ > 0.f) return;
-    if (dazeTime_ > 0.f) return;
-    if (hitStunTime_ > 0.f) return;
+    if (waitTime_ > 0.f) return NULL;
+    if (dazeTime_ > 0.f) return NULL;
+    if (hitStunTime_ > 0.f) return NULL;
 
     // Check for drop out of blocking state
     if (controller.rtrigger > -getParam("input.trigThresh")
      && controller.ltrigger > -getParam("input.trigThresh"))
     {
-        next_ = new GroundState(fighter_, getParam("shield.cooldown"));
-        return;
+        return new GroundState(fighter_, getParam("shield.cooldown"));
     }
     // Check for dodge
     else if (fabs(controller.joyx) > getParam("input.dodgeThresh")
           && fabs(controller.joyxv) > getParam("input.velThresh"))
     {
         fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-        next_ = new DodgeState(fighter_);
         ExplosionManager::get()->addPuff(
                 fighter_->pos_.x + fighter_->size_.x * fighter_->dir_ * 0.4f, 
                 fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
-        return;
+        return new DodgeState(fighter_);
     }
 
     // Eat the degeneration
@@ -617,6 +616,7 @@ void BlockingState::processInput(Controller &controller, float dt)
         AudioManager::get()->playSound("shieldshatter");
     }
 
+    return NULL;
 }
 
 void BlockingState::render(float dt)
@@ -659,20 +659,27 @@ T FighterState::muxByTime(const T& color, float t)
 }
 
 
-void BlockingState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* BlockingState::collisionWithGround(const Rectangle &ground, bool collision)
 {
-    if (next_)
-        return;
+    return NULL;
 }
 
-void BlockingState::hitByAttack(const Attack *attack)
+FighterState* BlockingState::hitByAttack(const Attack *attack)
 {
+    // Draw an explosion no matter what
+    glm::vec2 hitdir = glm::vec2(fighter_->pos_.x, fighter_->pos_.y)
+        - glm::vec2(attack->getHitbox().x, attack->getHitbox().y);
+    hitdir = glm::normalize(hitdir);
+    float exx = -hitdir.x * fighter_->size_.x / 2 + fighter_->pos_.x;
+    float exy = -hitdir.y * fighter_->size_.y / 2 + fighter_->pos_.y;
+    ExplosionManager::get()->addExplosion(exx, exy, 0.2);
+
     // Only block if we're actively blocking right now
     if (waitTime_ > 0.f || dazeTime_ > 0.f)
     {
         // Get hit
         fighter_->pos_.y += 4;
-        FighterState::calculateHitResult(attack);
+        return FighterState::calculateHitResult(attack);
     }
     else
     {
@@ -684,12 +691,7 @@ void BlockingState::hitByAttack(const Attack *attack)
         AudioManager::get()->playSound("shieldhit");
     }
 
-    glm::vec2 hitdir = glm::vec2(fighter_->pos_.x, fighter_->pos_.y)
-        - glm::vec2(attack->getHitbox().x, attack->getHitbox().y);
-    hitdir = glm::normalize(hitdir);
-    float exx = -hitdir.x * fighter_->size_.x / 2 + fighter_->pos_.x;
-    float exy = -hitdir.y * fighter_->size_.y / 2 + fighter_->pos_.y;
-    ExplosionManager::get()->addExplosion(exx, exy, 0.2);
+    return NULL;
 }
 
 
@@ -703,15 +705,16 @@ AirNormalState::AirNormalState(Fighter *f) :
 AirNormalState::~AirNormalState()
 { /* Empty */ }
 
-void AirNormalState::processInput(Controller &controller, float dt)
+FighterState* AirNormalState::processInput(controller_state &controller, float dt)
 {
     // Gravity
     fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
 
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
+    noGrabTime_ -= dt;
     // If the fighter is currently attacking, do nothing else
-    if (fighter_->attack_) return;
+    if (fighter_->attack_) return NULL;
 
     // Let them control the character slightly
     if (fabs(controller.joyx) > getParam("input.deadzone"))
@@ -765,17 +768,17 @@ void AirNormalState::processInput(Controller &controller, float dt)
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
     }
-    else if (performBMove(controller))
+    else if (controller.pressb)
     {
         // No additional processing is required here.
-        return;
+        return performBMove(controller, true);
     }
 
     // If we just added an attack, lets not jump too
     if (fighter_->attack_)
     {
         jumpTime_ = -1;
-        return;
+        return NULL;
     }
 
     // --- Check for jump ---
@@ -799,14 +802,19 @@ void AirNormalState::processInput(Controller &controller, float dt)
                 fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
     }
+    // --- Check for ledge grab ---
+    if (noGrabTime_ <= 0.f)
+    {
+        FighterState* next = checkForLedgeGrab();
+        if (next) return next;
+    }
+
+    return NULL;
 }
 
 void AirNormalState::update(float dt)
 {
     FighterState::update(dt);
-    noGrabTime_ -= dt;
-    if (noGrabTime_ <= 0.f)
-        checkForLedgeGrab();
 }
 
 void AirNormalState::render(float dt)
@@ -819,17 +827,15 @@ void AirNormalState::render(float dt)
     fighter_->renderHelper(dt, fname, fighter_->color_);
 }
 
-void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* AirNormalState::collisionWithGround(const Rectangle &ground, bool collision)
 {
     // If no collision, we don't care
     if (!collision)
-        return;
+        return NULL;
     FighterState::collisionHelper(ground);
     // If we're not overlapping the ground anymore, no collision
     if (!ground.overlaps(fighter_->getRect()))
-        return;
-    // if we have a next state, ignore ground collision
-    if (next_) return;
+        return NULL;
 
     // Reset vel/accel
     fighter_->vel_ = glm::vec2(0.f, 0.f);
@@ -838,8 +844,6 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
     // Cancel any attack if it exists
     if (fighter_->attack_)
         fighter_->attack_->cancel();
-    // Transition to the ground state, with a small delay for landing
-    next_ = new GroundState(fighter_, getParam("landingCooldownTime"));
 
     // Draw some puffs for landing
     ExplosionManager::get()->addPuff(
@@ -851,11 +855,13 @@ void AirNormalState::collisionWithGround(const Rectangle &ground, bool collision
             fighter_->pos_.y - fighter_->size_.y * 0.45f,
             0.3f);
 
+    // Transition to the ground state, with a small delay for landing
+    return new GroundState(fighter_, getParam("landingCooldownTime"));
 }
 
-void AirNormalState::hitByAttack(const Attack *attack)
+FighterState* AirNormalState::hitByAttack(const Attack *attack)
 {
-    FighterState::calculateHitResult(attack);
+    return FighterState::calculateHitResult(attack);
 }
 
 AirNormalState * AirNormalState::setNoGrabTime(float t)
@@ -874,42 +880,42 @@ CounterState::CounterState(Fighter *f, bool ground) :
     frameName_ = "Counter";
 }
 
-void CounterState::processInput(Controller & controller, float dt)
+FighterState* CounterState::processInput(controller_state & controller, float dt)
 {
     t_ += dt;
     float totalT = getParam(pre_ + "startup") +
-                   getParam(pre_ + "duration") + 
-                   getParam(pre_ + "cooldown");
+        getParam(pre_ + "duration") + 
+        getParam(pre_ + "cooldown");
 
     if (!fighter_->attack_ && t_ > totalT)
     {
         // Move to the next state
         if (ground_)
-            next_ = new GroundState(fighter_);
+            return new GroundState(fighter_);
         else 
-            next_ = new AirNormalState(fighter_);
-        return;
+            return new AirNormalState(fighter_);
     }
-     if (t_ > getParam(pre_ + "startup") + getParam(pre_ + "duration")
-             && !playedSound_)
-     {
-         playedSound_ = true;
-         AudioManager::get()->playSound("counterhit");
-     }
+    if (t_ > getParam(pre_ + "startup") + getParam(pre_ + "duration")
+            && !playedSound_)
+    {
+        playedSound_ = true;
+        AudioManager::get()->playSound("counterhit");
+    }
+
+    return NULL;
 }
 
-void CounterState::hitByAttack(const Attack* attack)
+FighterState* CounterState::hitByAttack(const Attack* attack)
 {
     // Invincibility during the counter!
     if (fighter_->attack_)
-        return;
+        return NULL;
 
     // If counter isn't ready yet (or it's too late), eat the attack
     if (t_ < getParam(pre_ + "startup") || 
             t_ > getParam(pre_ + "startup") + getParam(pre_ + "duration"))
     {
-        calculateHitResult(attack);
-        return;
+        return calculateHitResult(attack);
     }
 
     // Now the other player gets screwed over for attacking us at the wrong time.
@@ -919,12 +925,12 @@ void CounterState::hitByAttack(const Attack* attack)
     fighter_->attack_->setFighter(fighter_);
     fighter_->attack_->start();
     fighter_->dir_ = attack->getHitbox().x - fighter_->pos_.x > 0 ? 1 : -1;
+
+    return NULL;
 }
 
-void CounterState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* CounterState::collisionWithGround(const Rectangle &ground, bool collision)
 {
-    if (next_)
-        return;
     if (collision)
     {
         collisionHelper(ground);
@@ -938,6 +944,8 @@ void CounterState::collisionWithGround(const Rectangle &ground, bool collision)
         ground_ = false;
         fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
     }
+    // No state change
+    return NULL;
 }
 
 void CounterState::render(float dt)
@@ -962,6 +970,50 @@ void CounterState::render(float dt)
     fighter_->renderHelper(dt, fname, color);
 }
 
+//// -------------------- UP SPECIAL STATE ------------------------------
+UpSpecialState::UpSpecialState(Fighter *f) :
+    FighterState(f)
+{
+    pre_ = "upSpecialAttack.";
+    fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
+    fighter_->attack_->setFighter(f);
+    fighter_->attack_->start();
+
+    fighter_->push(glm::vec2(0, 2));
+}
+
+FighterState * UpSpecialState::processInput(controller_state &, float dt)
+{
+    if (!fighter_->attack_)
+        return new AirStunnedState(fighter_, HUGE_VAL);
+
+    if (fighter_->attack_->hasHitbox())
+    {
+        fighter_->vel_.x = fighter_->dir_ * getParam(pre_ + "xvel");
+        fighter_->vel_.y = getParam(pre_ + "yvel");
+    }
+
+    return NULL;
+}
+
+void UpSpecialState::render(float dt)
+{
+    printf("UP SPECIAL | || ");
+    assert(fighter_->attack_);
+    fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
+}
+
+FighterState* UpSpecialState::collisionWithGround(const Rectangle &ground, bool collision)
+{
+    // XXX not sure if this is right
+    return NULL;
+}
+
+FighterState* UpSpecialState::hitByAttack(const Attack *attack)
+{
+    return FighterState::calculateHitResult(attack);
+}
+
 //// ----------------------- DODGE STATE --------------------------------
 DodgeState::DodgeState(Fighter *f) :
     FighterState(f), t_(0.f), dodgeTime_(getParam("dodge.duration")),
@@ -971,7 +1023,7 @@ DodgeState::DodgeState(Fighter *f) :
     frameName_ = "GroundRoll";
 }
 
-void DodgeState::processInput(Controller &controller, float dt)
+FighterState* DodgeState::processInput(controller_state &controller, float dt)
 {
     t_ += dt;
     fighter_->vel_.x = fighter_->dir_ * getParam("dodge.speed");
@@ -983,8 +1035,9 @@ void DodgeState::processInput(Controller &controller, float dt)
         fighter_->dir_ = -fighter_->dir_;
 
     if (t_ > dodgeTime_ + cooldown_)
-        next_ = new GroundState(fighter_);
-
+        return new GroundState(fighter_);
+    // No state change
+    return NULL;
 }
 
 void DodgeState::render(float dt)
@@ -1003,23 +1056,23 @@ void DodgeState::render(float dt)
             glm::rotate(glm::mat4(1.f), -angle, glm::vec3(0,0,1)));
 }
 
-void DodgeState::hitByAttack(const Attack *attack)
+FighterState* DodgeState::hitByAttack(const Attack *attack)
 {
-    // Pop up a bit so that we're not overlapping the ground
-    fighter_->pos_.y += 2;
     // Then do the normal stuff
-    FighterState::calculateHitResult(attack);
+    return FighterState::calculateHitResult(attack);
 }
 
-void DodgeState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* DodgeState::collisionWithGround(const Rectangle &ground, bool collision)
 {
-    if (!collision && !next_)
+    if (!collision)
     {
         float dir = (ground.x - fighter_->pos_.x) > 0 ? 1 : -1;
         fighter_->pos_.x += dir * (fabs(ground.x - fighter_->pos_.x) - ground.w/2 - fighter_->size_.x/2 + 2);
         fighter_->vel_.x = 0.0f;
         t_ = std::max(t_, invincTime_);
     }
+
+    return NULL;
 }
 
 //// ---------------------- LEDGE GRAB STATE ------------------------------
@@ -1033,16 +1086,15 @@ LedgeGrabState::LedgeGrabState(Fighter *f) :
     invincTime_ = getParam("ledgeGrab.grabInvincTime");
 }
 
-void LedgeGrabState::processInput(Controller &controller, float dt)
+FighterState* LedgeGrabState::processInput(controller_state &controller, float dt)
 {
-    if (jumpTime_ > 0 && jumpTime_ != HUGE_VAL) return;
+    if (jumpTime_ > 0 && jumpTime_ != HUGE_VAL) return NULL;
 
     // Check for jump transition
     if (jumpTime_ <= 0.f)
     {
         fighter_->vel_ = glm::vec2(0.f,
                 controller.jumpbutton ? getParam("jumpSpeed") : getParam("hopSpeed"));
-        next_ = new AirNormalState(fighter_);
         // Unoccupy
         ledge_->occupied = false;
 
@@ -1051,7 +1103,8 @@ void LedgeGrabState::processInput(Controller &controller, float dt)
                 fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
                 fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
-        return;
+        // Transition
+        return new AirNormalState(fighter_);
     }
 
     // Check for jump input
@@ -1069,35 +1122,32 @@ void LedgeGrabState::processInput(Controller &controller, float dt)
         fighter_->push(glm::vec2(
                     fighter_->getDirection() * hbsize_.x/2,
                     fighter_->size_.y - 1));
-        // transition to groundnormal state with some invincibility
-        next_ = new GroundState(fighter_, -1.f, getParam("ledgeGrab.attackInvinc"));
         // start ledge attack XXX: just use down tilt for now
         fighter_->attack_ = fighter_->attackMap_["downTilt"]->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
-        return;
+        // transition to groundnormal state with some invincibility
+        return new GroundState(fighter_, -1.f, getParam("ledgeGrab.attackInvinc"));
     }
     // Check for fall
     else if (controller.joyy < getParam("input.dropThresh"))
     {
         ledge_->occupied = false;
         // transition to air normal state with some no grab time
-        next_ = (new AirNormalState(fighter_))
+        return (new AirNormalState(fighter_))
             ->setNoGrabTime(getParam("ledgeGrab.dropTime"));
-        return;
     }
     // Check for dodge
     else if (controller.rtrigger < -getParam("input.trigThresh") ||
              controller.ltrigger < -getParam("input.trigThresh"))
     {
         ledge_->occupied = false;
-        // put in dodge state with some delay
-        next_ = new DodgeState(fighter_);
         // move on top of ground
         fighter_->push(glm::vec2(
                     fighter_->getDirection() * hbsize_.x/2,
                     fighter_->size_.y - 1));
-        return;
+        // put in dodge state with some delay
+        return new DodgeState(fighter_);
     }
     // Check for plain stand up (up or forward on the joystick)
     else if ((controller.joyx * fighter_->getDirection() > getParam("input.tiltThresh") 
@@ -1106,14 +1156,17 @@ void LedgeGrabState::processInput(Controller &controller, float dt)
                 && controller.joyyv > getParam("input.velThresh")))
     {
         ledge_->occupied = false;
-        // put in GroundNormal state
-        next_ = new GroundState(fighter_, getParam("ledgeGrab.wakeupTime"),
-                getParam("ledgeGrab.wakeUpInvinc"));
         // move on top of ground
         fighter_->push(glm::vec2(
                     fighter_->getDirection() * hbsize_.x/2,
                     fighter_->size_.y - 1));
+        // put in GroundNormal state
+        return new GroundState(fighter_, getParam("ledgeGrab.wakeupTime"),
+                getParam("ledgeGrab.wakeUpInvinc"));
     }
+
+    // No state change
+    return NULL;
 }
 
 void LedgeGrabState::update(float dt)
@@ -1136,16 +1189,17 @@ void LedgeGrabState::render(float dt)
     fighter_->renderHelper(dt, "LedgeGrab", color);
 }
 
-void LedgeGrabState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* LedgeGrabState::collisionWithGround(const Rectangle &ground, bool collision)
 {
-    if (next_) return;
+    // Empty
+    return NULL;
 }
 
-void LedgeGrabState::hitByAttack(const Attack *attack)
+FighterState* LedgeGrabState::hitByAttack(const Attack *attack)
 {
     assert(invincTime_ <= 0.f);
     ledge_->occupied = false;
-    FighterState::calculateHitResult(attack);
+    return FighterState::calculateHitResult(attack);
 }
 
 bool LedgeGrabState::canBeHit() const
@@ -1187,11 +1241,12 @@ RespawnState::RespawnState(Fighter *f) :
 {
 }
 
-void RespawnState::processInput(Controller &controller, float dt)
+FighterState* RespawnState::processInput(controller_state &controller, float dt)
 {
     t_ += dt;
     if (t_ > getParam("fighter.respawnTime"))
-        next_ = new AirNormalState(fighter_);
+        return new AirNormalState(fighter_);
+    return NULL;
 }
 
 void RespawnState::render(float dt)
@@ -1201,9 +1256,10 @@ void RespawnState::render(float dt)
     fighter_->renderHelper(dt, frameName_, 1.6f * fighter_->color_);
 }
 
-void RespawnState::hitByAttack(const Attack *)
+FighterState* RespawnState::hitByAttack(const Attack *)
 {
     // Do nothing, we're invincible bitch!
+    return NULL;
 }
 
 bool RespawnState::canBeHit() const
@@ -1211,9 +1267,10 @@ bool RespawnState::canBeHit() const
     return false;
 }
 
-void RespawnState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* RespawnState::collisionWithGround(const Rectangle &ground, bool collision)
 {
     assert(!collision);
+    return NULL;
 }
 
 //// ------------------------- DEAD STATE ----------------------------------
@@ -1224,13 +1281,15 @@ DeadState::DeadState(Fighter *f) :
     f->pos_.y = HUGE_VAL;
 }
 
-void DeadState::collisionWithGround(const Rectangle &, bool)
+FighterState* DeadState::collisionWithGround(const Rectangle &, bool)
 {
+    return NULL;
 }
 
-void DeadState::hitByAttack(const Attack *)
+FighterState* DeadState::hitByAttack(const Attack *)
 {
     assert(false);
+    return NULL;
 }
 
 bool DeadState::canBeHit() const
@@ -1238,7 +1297,9 @@ bool DeadState::canBeHit() const
     return false;
 }
 
-void DeadState::processInput(Controller &controller, float dt)
+FighterState* DeadState::processInput(controller_state &controller, float dt)
 {
     // NOTHING
+    return NULL;
 }
+

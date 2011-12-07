@@ -123,7 +123,7 @@ Rectangle Fighter::getRect() const
     return state_->getRect();
 }
 
-void Fighter::processInput(Controller &controller, float dt)
+void Fighter::processInput(controller_state &controller, float dt)
 {
     // Update the attack
     if (attack_)
@@ -157,16 +157,15 @@ void Fighter::processInput(Controller &controller, float dt)
         }
     }
 
-    // Check for state transition
-    if (state_->hasTransition())
-    {
-        FighterState *next = state_->nextState();
-        delete state_;
-        state_ = next;
-    }
-
     // Update state
-    state_->processInput(controller, dt);
+    stateWrapper(state_->processInput(controller, dt));
+}
+
+void Fighter::stateWrapper(FighterState *next)
+{
+    if (!next) return;
+    delete state_;
+    state_ = next;
 }
 
 void Fighter::update(float dt)
@@ -184,7 +183,7 @@ void Fighter::update(float dt)
 
 void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
 {
-    state_->collisionWithGround(ground, collision);
+    stateWrapper(state_->collisionWithGround(ground, collision));
 }
 
 void Fighter::attackCollision(const Attack *inAttack)
@@ -203,7 +202,7 @@ void Fighter::hitByAttack(const Attack *attack)
     // Can't be hit by our own attacks
     if (attack->getPlayerID() == playerID_) return;
 
-    state_->hitByAttack(attack);
+    stateWrapper(state_->hitByAttack(attack));
 
     lastHitBy_ = attack->getPlayerID();
 }
@@ -301,7 +300,7 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
 
 float Fighter::damageFunc() const
 {
-    return 1.5*(damage_) / 33 + 1.5;
+    return 1.2*(damage_) / 33 + 1.5;
 }
 
 template<class AttackClass>
