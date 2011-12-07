@@ -3,8 +3,42 @@
 #include <list>
 #include <glm/glm.hpp>
 
+float normalRandom(float mu, float sigma);
+
 // Forward declaration necessary for friending
 class ParticleManager;
+
+////////////////////////////////////////////////////
+// Functors
+/////////////////////////////////////////////////////
+
+// The generic, simple lifetime function
+struct lifetimeF
+{
+    float operator () (float f) { return f; }
+};
+
+struct lifetimeVarianceF : lifetimeF
+{
+    lifetimeVarianceF(float variance);
+    float operator () (float f);
+private:
+    float var_;
+};
+
+// Simpleton velocity function
+struct velocityF
+{
+    float operator() (float v) { return v; }
+};
+
+struct velocityVarianceF : velocityF
+{
+    velocityVarianceF(float f);
+    float operator() (float v);
+private:
+    float var_;
+};
 
 //
 // The emitter class is the main particle engine configuration point.
@@ -16,14 +50,14 @@ class ParticleManager;
 class Emitter 
 {
 public:
-    Emitter* setParticleLifetime(float l);
-    Emitter* setParticleLifetimeVariance(float);
+    Emitter* setParticleLifetime(float);
+    Emitter* setParticleLifetimeF(lifetimeF *);
+
+    Emitter* setParticleVelocity(float r);
+    Emitter* setParticleVelocityF(velocityF *);
+
     Emitter* setLocation(const glm::vec3 &l);
     Emitter* setOutputRate(float r);
-    // A measure of 'how random' particles coming off are.
-    // Note, this isn't actual variance!
-    Emitter* setParticleVelocityVariance(float r);
-    Emitter* setParticleVelocity(float r);
     Emitter* setRadius(float r);
     // How much time is left before this emitter expires?
     Emitter* setTimeRemaining(float);
@@ -40,17 +74,19 @@ public:
 private:
     Emitter();
 
+    // Lifetime, and a functor that determines particle lifetime
     float lifetime_;
+    lifetimeF *lifetime_func;
 
-    // A measure of how variable the particle velocities are
-    float var_;
-    float lifetimeVar_;
+    // particle velocity, and its associated functor
+    float vel_;
+    velocityF *velocity_func;
+
     // Since this is a sperical emitter, we need two pieces of information:
     glm::vec3 loc_;
     // ... and ...
     float radius_;
     // Particles will spawn with this initial velocity
-    float vel_;
     // And with a frequency determined by this (particles per second)
     float rate_;
     // Each particle will be about this size.

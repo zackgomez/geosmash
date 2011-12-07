@@ -2,6 +2,24 @@
 #include <cstdio>
 #include <iostream>
 
+
+lifetimeVarianceF::lifetimeVarianceF(float variance) 
+    : var_(variance)
+{ }
+
+float lifetimeVarianceF::operator () (float f)
+{
+    return normalRandom(f, var_); 
+}
+
+velocityVarianceF::velocityVarianceF(float variance) 
+    : var_(variance)
+{ }
+
+float velocityVarianceF::operator () (float f)
+{
+    return normalRandom(f, var_); 
+}
 // Approximate a normal variable.
 // http://en.wikipedia.org/wiki/Normal_distribution#Generating_values_from_normal_distribution
 // A sum of several uniform variables is like a normal distr.
@@ -48,11 +66,11 @@ glm::vec3 pointOnSphere(float r, const glm::vec3 &pos)
 
 Emitter::Emitter() :
     lifetime_(0.3f),
-    var_(0.f),
-    lifetimeVar_(0.0),
+    lifetime_func(NULL),
+    vel_(50.f),
+    velocity_func(NULL),
     loc_(glm::vec3(0.f)),
     radius_(2.f),
-    vel_(50.f),
     rate_(400.f),
     size_(1.f),
     color_(glm::vec4(1.0f, 0.0f, 0.0f, 0.9f)),
@@ -60,6 +78,8 @@ Emitter::Emitter() :
     colorbright_(1.0f), colorbrightvar_(0.f),
     timeRemaining_(HUGE_VAL)
 {
+    setParticleLifetimeF(new lifetimeF());
+    setParticleVelocityF(new velocityF());
 }
 
 Emitter* Emitter::setTimeRemaining(float r)
@@ -84,7 +104,7 @@ void Emitter::emit(std::list<Particle*>& particles, float dt)
     {
         Particle *p = new Particle();
         p->loc = pointOnSphere(radius_, loc_);
-        p->t = normalRandom(lifetime_, lifetimeVar_); 
+        p->t = (*lifetime_func)(lifetime_);
         // Particle's velocity is the normal at that point
         // scaled by emitter's velocity value and given some
         // random nonsense
@@ -115,9 +135,23 @@ Emitter* Emitter::setParticleLifetime(float l)
     return this;
 }
 
-Emitter* Emitter::setParticleLifetimeVariance(float l) 
-{ 
-    lifetimeVar_ = l; 
+Emitter* Emitter::setParticleLifetimeF(lifetimeF *lf)
+{
+    if (lifetime_func)
+    {
+        delete lifetime_func;
+    }
+    lifetime_func = lf;
+    return this;
+}
+
+Emitter* Emitter::setParticleVelocityF(velocityF *vf)
+{
+    if (velocity_func)
+    {
+        delete velocity_func;
+    }
+    velocity_func = vf;
     return this;
 }
 
@@ -137,12 +171,6 @@ Emitter* Emitter::setParticleColorBrightness(float mu, float sigma)
 {
     colorbright_ = mu;
     colorbrightvar_ = sigma;
-    return this;
-}
-
-Emitter* Emitter::setParticleVelocityVariance(float r) 
-{ 
-    var_ = r;
     return this;
 }
 

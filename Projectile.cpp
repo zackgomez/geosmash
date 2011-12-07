@@ -41,7 +41,7 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
     emitter_ = ParticleManager::get()->newEmitter();
     emitter_->setLocation(glm::vec3(pos_, 0.0f))
         ->setParticleLifetime(0.05f)
-        ->setParticleLifetimeVariance(0.3)
+        ->setParticleLifetimeF(new lifetimeVarianceF(0.3))
         ->setParticleVelocity(20)
         ->setParticleColor(glm::vec4(0.4, 0.4, 0.8, 0.5))
         ->setParticleColorVariance(glm::vec4(0.2, 0.2, 0.2, 0.5))
