@@ -302,10 +302,9 @@ void processInput()
     // First update controllers / frame
     for (unsigned i = 0; i < controllers.size(); i++)
     {
-        updateController(controllers[i]);
+        controllers[i]->update(dt);
     }
 
-    // TODO Update controller_state objects from Controller objects
     // Then update based on new events
     processEvents();
 
@@ -314,7 +313,10 @@ void processInput()
     if (paused)
         return;
     for (unsigned i = 0; i < fighters.size(); i++)
-        fighters[i]->processInput(controllers[i], dt);
+    {
+        controller_state cs = controllers[i]->nextState();
+        fighters[i]->processInput(cs, dt);
+    }
 }
 
 void update()
@@ -489,9 +491,9 @@ void render()
 
 void logControllerState(std::ostream &out)
 {
-    for (int i = 0; i < controllers.size(); i++)
+    for (unsigned i = 0; i < controllers.size(); i++)
     {
-        const controller_state &c = controllers[i];
+        const controller_state c = controllers[i]->lastState();
 
         out << c.joyx << ' ' << c.joyy << ' ' << c.joyxv << ' ' << c.joyyv
             << c.rtrigger << ' ' << c.ltrigger << ' ' << c.buttona << ' ' << c.buttonb << ' '
@@ -735,18 +737,6 @@ void printstats()
     StatsManager::get()->printStats();
 }
 
-void updateController(controller_state &controller)
-{
-    controller.pressa = false;
-    controller.pressb = false;
-    controller.pressc = false;
-    controller.pressjump = false;
-    controller.pressstart = false;
-    controller.pressrb = false;
-    controller.presslb = false;
-    controller.joyxv = 0;
-    controller.joyyv = 0;
-}
 int initLibs()
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
@@ -809,6 +799,12 @@ bool unpause(int playerID)
         return true;
     }
     return false;
+}
+
+bool togglepause(int playerID)
+{
+    if (paused) return unpause(playerID);
+    else return pause(playerID);
 }
 
 int getTeamID(int playerID)
