@@ -38,11 +38,9 @@ int pausedPlayer = -1;
 bool makeHazard;
 std::ofstream logfile;
 
-unsigned numPlayers = 1;
-
 size_t startTime;
 
-controller_state controllers[4];
+std::vector<controller_state> controllers;
 std::vector<Fighter*> fighters;
 std::vector<GameEntity *> entities;
 const glm::vec3 playerColors[] =
@@ -107,7 +105,7 @@ int main(int argc, char **argv)
 {
     muteMusic = false;
     makeHazard = false;
-    numPlayers = 2;
+    unsigned numPlayers = 2;
     for (int i = 1; i < argc; i++)
     {
         if (i == argc - 1)
@@ -153,6 +151,8 @@ int main(int argc, char **argv)
         fighter->respawn(false);
         fighters.push_back(fighter);
         entities.push_back(fighter);
+        // TODO change to Controller
+        controllers.push_back(controller_state());
     }
     ground = Rectangle(
             getParam("level.x"),
@@ -228,7 +228,7 @@ void checkState()
     int alivePlayers = 0;
     int totalLives = 0;
     std::set<int> teamsAlive;
-    for (unsigned i = 0; i < numPlayers; i++)
+    for (unsigned i = 0; i < fighters.size(); i++)
     {
         totalLives += fighters[i]->getLives();
         if (fighters[i]->isAlive())
@@ -301,20 +301,20 @@ void processEvents()
 void processInput()
 {
     // First update controllers / frame
-    for (unsigned i = 0; i < numPlayers; i++)
+    for (unsigned i = 0; i < controllers.size(); i++)
     {
         updateController(controllers[i]);
     }
 
+    // TODO Update controller_state objects from Controller objects
     // Then update based on new events
     processEvents();
 
-    // TODO update ai controllers here
 
     // Now have the fighters process their input
     if (paused)
         return;
-    for (unsigned i = 0; i < numPlayers; i++)
+    for (unsigned i = 0; i < fighters.size(); i++)
         fighters[i]->processInput(controllers[i], dt);
 }
 
@@ -421,7 +421,7 @@ void collisionDetection()
 
     // Figher specific checks here
     // Check for fighter death
-    for (unsigned i = 0; i < numPlayers; i++)
+    for (unsigned i = 0; i < fighters.size(); i++)
     {
         Fighter *fighter = fighters[i];
         if (!fighter->isAlive()) continue;
@@ -467,7 +467,7 @@ void render()
         entities[i]->render(dt);
 
     // Draw the fighter arrows
-    for (unsigned i = 0; i < numPlayers; i++)
+    for (unsigned i = 0; i < fighters.size(); i++)
         if (fighters[i]->isAlive())
         {
             renderArrow(fighters[i]);
@@ -490,7 +490,7 @@ void render()
 
 void logControllerState(std::ostream &out)
 {
-    for (int i = 0; i < numPlayers; i++)
+    for (int i = 0; i < controllers.size(); i++)
     {
         const controller_state &c = controllers[i];
 
@@ -516,7 +516,7 @@ void renderHUD()
     const glm::vec3 *colors = teams ? teamColors : playerColors;
     const glm::vec2 hud_center(0, 1.5f/6 - 1);
     const glm::vec2 lifesize = 0.03f * glm::vec2(1.f, 16.f/9.f);
-    for (unsigned i = 0; i < numPlayers; i++)
+    for (unsigned i = 0; i < fighters.size(); i++)
     {
         const glm::vec2 player_hud_center =
             hud_center + 0.3f * glm::vec2(i - 1.5f, 0.f);
@@ -635,7 +635,7 @@ void renderEndScreen()
 
     // Draw the players, highlight the winner
     glm::mat4 transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10 + 1920.f/5, 1080.f - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
-    for (unsigned i = 0; i < numPlayers; i++)
+    for (unsigned i = 0; i < fighters.size(); i++)
     {
         float glow = 0.5f;
         if (getTeamID(fighters[i]->getPlayerID()) != winningTeam)
@@ -648,7 +648,7 @@ void renderEndScreen()
     // Draw banner
     FrameManager::get()->renderFrame(glm::scale(transform, glm::vec3(3.f, 3.f, 0.f)), glm::vec4(1.f, 1.f, 1.f, 0.f), "KO");
     transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-    for (unsigned i = 0; i < numPlayers; i++)
+    for (unsigned i = 0; i < fighters.size(); i++)
     {
         float kills = StatsManager::get()->getStat(StatsManager::getStatPrefix(fighters[i]->getPlayerID()) + "kills.total");
         FontManager::get()->renderNumber(glm::scale(transform, glm::vec3(100.f, 100.f, 1.f)), fighters[i]->getColor(), kills);
@@ -659,7 +659,7 @@ void renderEndScreen()
     // Draw banner
     FrameManager::get()->renderFrame(glm::scale(transform, glm::vec3(3.f, 3.f, 0.f)), glm::vec4(1.f, 1.f, 1.f, 0.f), "DMG");
     transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-    for (unsigned i = 0; i < numPlayers; i++)
+    for (unsigned i = 0; i < fighters.size(); i++)
     {
         float damage = StatsManager::get()->getStat(StatsManager::getStatPrefix(fighters[i]->getPlayerID()) + "damageGiven");
         FontManager::get()->renderNumber(glm::scale(transform, glm::vec3(100.f, 100.f, 1.f)), fighters[i]->getColor(), damage);

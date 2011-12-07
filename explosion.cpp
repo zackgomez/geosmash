@@ -38,7 +38,7 @@ void ExplosionManager::addExplosion(float x, float y, float t)
     Emitter *em = ParticleManager::get()->newEmitter();
     em->setLocation(glm::vec3(x, y, 0.f))
         ->setTimeRemaining(t)
-        ->setParticleLifetime(0.3)
+        ->setParticleLifetime(0.2)
         ->setParticleLifetimeF(new lifetimeVarianceF(0.3))
         ->setParticleColor(glm::vec4(0.9f, 0.1f, 0.0f, 0.9f))
         ->setParticleColorVariance(glm::vec4(0.11f, 1.5f, 0.0f, 0.0f))
