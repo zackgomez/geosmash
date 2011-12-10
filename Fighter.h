@@ -9,14 +9,14 @@ class Attack;
 class FighterAttack;
 struct controller_state;
 
-class Rectangle
+class rectangle
 {
 public:
-    Rectangle();
-    Rectangle(float x, float y, float w, float h);
+    rectangle();
+    rectangle(float x, float y, float w, float h);
 
-    bool overlaps(const Rectangle &rhs) const;
-    bool contains(const Rectangle &rhs) const;
+    bool overlaps(const rectangle &rhs) const;
+    bool contains(const rectangle &rhs) const;
 
     float x, y, w, h;
 };
@@ -31,7 +31,7 @@ public:
     void processInput(controller_state &, float dt);
     virtual void update(float dt);
     virtual void render(float dt);
-    virtual Rectangle getRect() const;
+    virtual rectangle getRect() const;
 
     int getLives() const;
     float getDamage() const;
@@ -46,7 +46,7 @@ public:
     virtual bool isDone() const { return false; }
 
     // collision is true if there is a collision with ground this frame, false otherwise
-    void collisionWithGround(const Rectangle &ground, bool collision);
+    void collisionWithGround(const rectangle &ground, bool collision);
     virtual void attackCollision(const Attack *other);
     virtual void hitByAttack(const Attack* attack);
     virtual void attackConnected(GameEntity *victim);

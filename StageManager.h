@@ -85,7 +85,7 @@ public:
     // We hit someone! Fuck 'em up!
     virtual void attackConnected(GameEntity*);
     // XXX what happens here?
-    virtual void collisionWithGround(const Rectangle&, bool);
+    virtual void collisionWithGround(const rectangle&, bool);
     virtual void hitByAttack(const Attack*);
 
     //attackCollision can be nop

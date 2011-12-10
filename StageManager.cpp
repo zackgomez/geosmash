@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include "StageManager.h"
 #include "Projectile.h"
 #include "ParamReader.h"
@@ -125,81 +126,6 @@ void StageManager::renderSphereBackground(float dt)
 
 
 //////////////////////////////////////////////
-// Background Sphere
-//////////////////////////////////////////////
-
-BackgroundSphere::BackgroundSphere()
-{
-    std::string pre_ = "backgroundSphere.radius";
-    radius_ = getParam(pre_ + "radius");
-    lineCount_ = getParam(pre_ + "lineCount");
-    pulseCount_ = getParam(pre_ + "pulseCount");
-    divisionCount_ = getParam(pre_ + "divisionCount");
-}
-
-void BackgroundSphere::render(float dt)
-{
-    updateLitSegments();
-    renderLatitude();
-    renderLongitude();
-}
-
-void BackgroundSphere::updateLitSegments(void)
-{
-    // TODO: Move the lit parts around the sphere somehow.
-    // NOTE: we may need to add a class for the pulses.
-}
-
-void BackgroundSphere::renderLongitude(void)
-{
-    // TODO: Loop over each longitudinal line, similar to renderLatitude().
-}
-
-void BackgroundSphere::renderLatitude(void)
-{
-    // Sweep over each lat. line, drawing segments between points 
-    float r = radius_;
-    float theta = 0; // elevation
-    float phi = 0;   // azimuth
-
-    // First draw latitude lines
-    // For each of these, elevation (theta) is constant
-    for (int i = 0; i < lineCount_; i++)
-    {
-        // Set current elevation angle
-        theta = M_PI * lineCount_ - (M_PI / 2);
-        phi = 0;
-
-        // Now, go in a circle adding line segments (phi goes from 0 --> 2pi)
-        for (int segi = 0; segi < divisionCount_; segi++)
-        {
-            // TODO: fix these constructors. Can we use glm like 
-            // "glm::vec3 a(0,1,2);"? Didn't work for me. Unary operand error.
-            glm::vec3 segStart, segEnd;
-            segStart.x = r * sin(theta) * cos(phi);
-            segStart.y = r * sin(theta) * sin(phi);
-            segStart.z = r * cos(theta);
-            phi += (2 * M_PI) / divisionCount_; 
-            segEnd.x = r * sin(theta) * cos(phi);
-            segEnd.y = r * sin(theta) * sin(phi);
-            segEnd.z = r * cos(theta);
-            // Now, render a rectangle connecting these two points
-
-            // We can fudge by taking the midpoint.
-            // We can fudge further by just drawing one at the beginning point.
-            
-            glm::mat4 transform = glm::scale(
-                    glm::translate(
-                        glm::mat4(1.0f), segStart), glm::vec3(2.0f));
-            // glm::length(segStart - segEnd))// Use this instead of 2.0f;
-            renderRectangle(transform, glm::vec4(0.5, 0.5, 0.5, 0.5));
-
-            // now, check to see if we're close to a lit segments.
-        }
-    }
-}
-
-//////////////////////////////////////////////
 // Hazard  
 //////////////////////////////////////////////
 
@@ -279,7 +205,7 @@ void HazardEntity::attackConnected(GameEntity *victim)
     attack_->hit(victim);
 }
 
-void HazardEntity::collisionWithGround(const Rectangle &ground, bool collision)
+void HazardEntity::collisionWithGround(const rectangle &ground, bool collision)
 {
     if (!collision)
         dir_ = -dir_;

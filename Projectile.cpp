@@ -100,7 +100,7 @@ void Projectile::attackConnected(GameEntity *other)
     hit_ = true;
 }
 
-void Projectile::collisionWithGround(const Rectangle &rect, bool collision)
+void Projectile::collisionWithGround(const rectangle &rect, bool collision)
 {
     // XXX Ignore it for now..
 }

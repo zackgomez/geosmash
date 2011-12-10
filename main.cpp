@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include <GL/glew.h>
 #include <SDL/SDL.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -58,7 +59,7 @@ const glm::vec3 teamColors[] =
     glm::vec3(0.8, 0.35, 0.1)
 };
 
-Rectangle ground;
+rectangle ground;
 const glm::vec3 groundColor(0.2f, 0.2f, 0.2f);
 mesh cubeMesh;
 mesh levelMesh;
@@ -101,7 +102,7 @@ void updateController(controller_state &controller);
 void controllerEvent(controller_state &controller, const SDL_Event &event);
 void logControllerState(std::ostream &out);
 
-int main(int argc, char **argv)
+int main(int argc, char *argv[])
 {
     muteMusic = false;
     makeHazard = false;
@@ -153,7 +154,7 @@ int main(int argc, char **argv)
         entities.push_back(fighter);
         controllers.push_back(new Controller(fighter, i));
     }
-    ground = Rectangle(
+    ground = rectangle(
             getParam("level.x"),
             getParam("level.y"),
             getParam("level.w"),
@@ -376,8 +377,8 @@ void collisionDetection()
                 entityi->attackCollision(attackj);
                 entityj->attackCollision(attacki);
                 // Generate a small explosion to show cancelling
-                Rectangle hitboxi = attacki->getHitbox();
-                Rectangle hitboxj = attackj->getHitbox();
+                rectangle hitboxi = attacki->getHitbox();
+                rectangle hitboxj = attackj->getHitbox();
                 float x = (hitboxi.x + hitboxj.x) / 2;
                 float y = (hitboxi.y + hitboxj.y) / 2;
                 ExplosionManager::get()->addExplosion(x, y, 0.1f);

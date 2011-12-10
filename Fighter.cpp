@@ -118,7 +118,7 @@ int Fighter::getLastHitBy() const
     return lastHitBy_;
 }
 
-Rectangle Fighter::getRect() const
+rectangle Fighter::getRect() const
 {
     return state_->getRect();
 }
@@ -175,7 +175,7 @@ void Fighter::update(float dt)
     state_->update(dt);
 }
 
-void Fighter::collisionWithGround(const Rectangle &ground, bool collision)
+void Fighter::collisionWithGround(const rectangle &ground, bool collision)
 {
     stateWrapper(state_->collisionWithGround(ground, collision));
 }
@@ -281,7 +281,7 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
     // Check for rendering hitbox
     if (getParam("debug.drawHitbox") != 0.f)
     {
-        Rectangle hb = getRect();
+        rectangle hb = getRect();
         glm::mat4 hboxtrans = glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(hb.x, hb.y, 0.0f)),
                 glm::vec3(dir_ * hb.w, hb.h, 1.f));
@@ -313,21 +313,21 @@ AttackClass* Fighter::loadAttack(std::string attackName, const std::string &audi
 // Rectangle class methods
 // ----------------------------------------------------------------------------
 
-Rectangle::Rectangle() :
+rectangle::rectangle() :
     x(0), y(0), w(0), h(0)
 {}
 
-Rectangle::Rectangle(float xin, float yin, float win, float hin) :
+rectangle::rectangle(float xin, float yin, float win, float hin) :
     x(xin), y(yin), w(win), h(hin)
 {}
 
-bool Rectangle::overlaps(const Rectangle &rhs) const
+bool rectangle::overlaps(const rectangle &rhs) const
 {
     return (rhs.x + rhs.w/2) > (x - w/2) && (rhs.x - rhs.w/2) < (x + w/2) &&
         (rhs.y + rhs.h/2) > (y - h/2) && (rhs.y - rhs.h/2) < (y + h/2);
 }
 
-bool Rectangle::contains(const Rectangle &rhs) const
+bool rectangle::contains(const rectangle &rhs) const
 {
     return (rhs.x - rhs.w/2) > (x - w/2) && (rhs.x + rhs.w/2) < (x + w/2) &&
         (rhs.y - rhs.h/2) > (y - h/2) && (rhs.y + rhs.h/2) < (y + h/2);

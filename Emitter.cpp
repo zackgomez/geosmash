@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include "Emitter.h"
 #include <cstdio>
 #include <iostream>

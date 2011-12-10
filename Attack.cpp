@@ -35,9 +35,9 @@ SimpleAttack::~SimpleAttack()
     /* empty */
 }
 
-Rectangle SimpleAttack::getHitbox() const
+rectangle SimpleAttack::getHitbox() const
 {
-    return Rectangle(pos_.x, pos_.y, size_.x, size_.y);
+    return rectangle(pos_.x, pos_.y, size_.x, size_.y);
 }
 
 float SimpleAttack::getPriority() const { return priority_; }
@@ -166,9 +166,9 @@ glm::vec2 FighterAttack::getKnockback(const GameEntity *victim) const
 
 }
 
-Rectangle FighterAttack::getHitbox() const
+rectangle FighterAttack::getHitbox() const
 {
-    Rectangle ret;
+    rectangle ret;
     ret.x = hboffset_.x * owner_->getDirection() + owner_->getPosition().x;
     ret.y = hboffset_.y + owner_->getPosition().y;
     ret.w = hbsize_.x;
@@ -208,7 +208,7 @@ void FighterAttack::render(float dt)
     // Draw the hitbox if we should
     if (hasHitbox())
     {
-        Rectangle hitbox = getHitbox();
+        rectangle hitbox = getHitbox();
         glm::mat4 attacktrans =
                 glm::translate(glm::mat4(1.0f), glm::vec3(hitbox.x, hitbox.y, 0));
 
@@ -228,7 +228,7 @@ void FighterAttack::render(float dt)
     // Draw twinkle if applicable
     if (twinkle_ && t_ < startup_)
     {
-        Rectangle rect = owner_->getRect();
+        rectangle rect = owner_->getRect();
         float fact = 0.5 + (t_ / startup_) * 1.5;
         glm::mat4 transform =
             glm::scale(
@@ -452,13 +452,13 @@ FighterAttack *MovingHitboxAttack::clone() const
     return new MovingHitboxAttack(*this);
 }
 
-Rectangle MovingHitboxAttack::getHitbox() const
+rectangle MovingHitboxAttack::getHitbox() const
 {
     float u = std::min(duration_, std::max(t_ - startup_, 0.f)) / duration_;
 
     glm::vec2 pos = (1 - u) * hb0 + u * hb1;
 
-    Rectangle ret;
+    rectangle ret;
     ret.x = pos.x * owner_->getDirection() + owner_->getRect().x;
     ret.y = pos.y + owner_->getRect().y;
     ret.w = hbsize_.x; ret.h = hbsize_.y;

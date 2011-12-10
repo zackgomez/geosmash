@@ -2,7 +2,7 @@
 #include <string>
 
 class Fighter;
-class Rectangle;
+class rectangle;
 class controller_state;
 class Attack;
 class Ledge;
@@ -23,12 +23,12 @@ public:
     // TODO description
     virtual void render(float dt) = 0;
     // This function is called once every call to Fighter::collisionWithGround
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision) = 0;
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision) = 0;
     // This function is called when Fighter::hitByAttack is called, before any
     // other work is done
     virtual FighterState* hitByAttack(const Attack *attack) = 0;
 
-    virtual Rectangle getRect() const;
+    virtual rectangle getRect() const;
 
     // This function is the value returned from fighter::canBeHit
     virtual bool canBeHit() const;
@@ -39,7 +39,7 @@ protected:
     float invincTime_;
 
     FighterState* calculateHitResult(const Attack *attack);
-    void collisionHelper(const Rectangle &ground);
+    void collisionHelper(const rectangle &ground);
     FighterState* checkForLedgeGrab();
     // Helper for dealing with all B moves.
     FighterState* performBMove(const controller_state &, bool ground = true);
@@ -57,9 +57,9 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
-    virtual Rectangle getRect() const;
+    virtual rectangle getRect() const;
 
 private:
     // Jump startup timer.  Value >= 0 implies that the fighter is starting a jump
@@ -80,7 +80,7 @@ public:
 
     virtual FighterState* processInput(controller_state &, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
 
 private:
@@ -98,7 +98,7 @@ public:
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void update(float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
 
     AirNormalState * setNoGrabTime(float t);
@@ -123,7 +123,7 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
 
 private:
@@ -140,7 +140,7 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
 
 private:
@@ -159,7 +159,7 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
 
 private:
@@ -174,7 +174,7 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
 
 private:
@@ -192,10 +192,10 @@ public:
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void update(float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
-    virtual Rectangle getRect() const;
+    virtual rectangle getRect() const;
 
     void grabLedge(Ledge *ledge);
 
@@ -213,7 +213,7 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
 
@@ -229,7 +229,7 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt) { };
-    virtual FighterState* collisionWithGround(const Rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
 };

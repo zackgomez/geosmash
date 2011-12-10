@@ -4,7 +4,7 @@
 #include <set>
 
 class Fighter;
-class Rectangle;
+class rectangle;
 class GameEntity;
 
 // Attack base class consisting entirely of pure virtual functions.
@@ -15,7 +15,7 @@ public:
     Attack() { }
     virtual ~Attack() { }
 
-    virtual Rectangle getHitbox() const = 0;
+    virtual rectangle getHitbox() const = 0;
     virtual float getPriority() const = 0;
     virtual float getDamage(const GameEntity *victim) const = 0;
     virtual float getStun(const GameEntity *victim) const = 0;
@@ -39,7 +39,7 @@ public:
             const std::string &audioID);
     virtual ~SimpleAttack();
 
-    virtual Rectangle getHitbox() const;
+    virtual rectangle getHitbox() const;
     virtual float getPriority() const;
     virtual float getDamage(const GameEntity *) const;
     virtual float getStun(const GameEntity *) const;
@@ -89,7 +89,7 @@ public:
 
     virtual FighterAttack* clone() const;
 
-    virtual Rectangle getHitbox() const;
+    virtual rectangle getHitbox() const;
     virtual glm::vec2 getKnockback(const GameEntity *fighter) const;
 
     void setFighter(Fighter *fighter);
@@ -148,7 +148,7 @@ public:
             const std::string &frameName);
 
     virtual FighterAttack *clone() const;
-    virtual Rectangle getHitbox() const;
+    virtual rectangle getHitbox() const;
 
 private:
     glm::vec2 hb0, hb1;

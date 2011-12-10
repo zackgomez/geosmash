@@ -14,9 +14,9 @@ GameEntity::~GameEntity()
     /* Empty */
 }
 
-Rectangle GameEntity::getRect() const
+rectangle GameEntity::getRect() const
 {
-    return Rectangle(pos_.x, pos_.y, size_.x, size_.y);
+    return rectangle(pos_.x, pos_.y, size_.x, size_.y);
 }
 
 void GameEntity::update(float dt)

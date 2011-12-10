@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 
-class Rectangle;
+class rectangle;
 class Attack;
 
 class GameEntity
@@ -27,7 +27,7 @@ public:
     virtual const glm::vec2& getAccel() const { return accel_; }
 
     // Returns the bounding box of this GameEntity
-    virtual Rectangle getRect() const;
+    virtual rectangle getRect() const;
 
     // Returns true if this GameEntity has a damaging attack
     virtual bool hasAttack() const = 0;
@@ -47,7 +47,7 @@ public:
 
     // Called every frame with the ground rect and a boolean on whether or 
     // not this game entity hit the ground
-    virtual void collisionWithGround(const Rectangle &ground, bool collision) = 0;
+    virtual void collisionWithGround(const rectangle &ground, bool collision) = 0;
 
     /*
      * This function performs some sort of integration to update this

@@ -22,9 +22,9 @@ bool FighterState::canBeHit() const
     return invincTime_ <= 0.f;
 }
 
-Rectangle FighterState::getRect() const
+rectangle FighterState::getRect() const
 {
-    return Rectangle(fighter_->pos_.x, fighter_->pos_.y,
+    return rectangle(fighter_->pos_.x, fighter_->pos_.y,
             fighter_->size_.x, fighter_->size_.y);
 }
 
@@ -80,7 +80,7 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     return new AirStunnedState(fighter_, stunDuration, fighter_->vel_.y < 0);
 }
 
-void FighterState::collisionHelper(const Rectangle &ground)
+void FighterState::collisionHelper(const rectangle &ground)
 {
     // If the player is entirely inside of the rectangle
     // just move them on top of it, minus 1 pixel
@@ -214,7 +214,7 @@ void AirStunnedState::render(float dt)
     fighter_->renderHelper(dt, fname, color);
 }
 
-FighterState* AirStunnedState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* AirStunnedState::collisionWithGround(const rectangle &ground, bool collision)
 {
     // If no collision, we don't care
     if (!collision)
@@ -524,7 +524,7 @@ void GroundState::render(float dt)
     fighter_->renderHelper(dt, fname, color);
 }
 
-FighterState* GroundState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* GroundState::collisionWithGround(const rectangle &ground, bool collision)
 {
     if (!collision)
     {
@@ -552,9 +552,9 @@ FighterState* GroundState::hitByAttack(const Attack *attack)
     return FighterState::calculateHitResult(attack);
 }
 
-Rectangle GroundState::getRect() const
+rectangle GroundState::getRect() const
 {
-    Rectangle r = FighterState::getRect();
+    rectangle r = FighterState::getRect();
     if (ducking_)
     {
         r.y -= r.h/4;
@@ -660,7 +660,7 @@ T FighterState::muxByTime(const T& color, float t)
 }
 
 
-FighterState* BlockingState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* BlockingState::collisionWithGround(const rectangle &ground, bool collision)
 {
     return NULL;
 }
@@ -828,7 +828,7 @@ void AirNormalState::render(float dt)
     fighter_->renderHelper(dt, fname, fighter_->color_);
 }
 
-FighterState* AirNormalState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* AirNormalState::collisionWithGround(const rectangle &ground, bool collision)
 {
     // If no collision, we don't care
     if (!collision)
@@ -930,7 +930,7 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
     return NULL;
 }
 
-FighterState* CounterState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* CounterState::collisionWithGround(const rectangle &ground, bool collision)
 {
     if (collision)
     {
@@ -1004,7 +1004,7 @@ void UpSpecialState::render(float dt)
     fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
 }
 
-FighterState* UpSpecialState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* UpSpecialState::collisionWithGround(const rectangle &ground, bool collision)
 {
     // XXX not sure if this is right
     return NULL;
@@ -1063,7 +1063,7 @@ FighterState* DodgeState::hitByAttack(const Attack *attack)
     return FighterState::calculateHitResult(attack);
 }
 
-FighterState* DodgeState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* DodgeState::collisionWithGround(const rectangle &ground, bool collision)
 {
     if (!collision)
     {
@@ -1190,7 +1190,7 @@ void LedgeGrabState::render(float dt)
     fighter_->renderHelper(dt, "LedgeGrab", color);
 }
 
-FighterState* LedgeGrabState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* LedgeGrabState::collisionWithGround(const rectangle &ground, bool collision)
 {
     // Empty
     return NULL;
@@ -1208,9 +1208,9 @@ bool LedgeGrabState::canBeHit() const
     return invincTime_ <= 0.f;
 }
 
-Rectangle LedgeGrabState::getRect() const
+rectangle LedgeGrabState::getRect() const
 {
-    return Rectangle(fighter_->pos_.x, fighter_->pos_.y,
+    return rectangle(fighter_->pos_.x, fighter_->pos_.y,
             hbsize_.x, hbsize_.y);
 }
 
@@ -1268,7 +1268,7 @@ bool RespawnState::canBeHit() const
     return false;
 }
 
-FighterState* RespawnState::collisionWithGround(const Rectangle &ground, bool collision)
+FighterState* RespawnState::collisionWithGround(const rectangle &ground, bool collision)
 {
     assert(!collision);
     return NULL;
@@ -1282,7 +1282,7 @@ DeadState::DeadState(Fighter *f) :
     f->pos_.y = HUGE_VAL;
 }
 
-FighterState* DeadState::collisionWithGround(const Rectangle &, bool)
+FighterState* DeadState::collisionWithGround(const rectangle &, bool)
 {
     return NULL;
 }
