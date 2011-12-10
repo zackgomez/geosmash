@@ -138,7 +138,7 @@ void Fighter::processInput(controller_state &controller, float dt)
     }
 
     // Check for pause/life steal
-    if (controller.pressstart)
+    if (controller.pressstart && lives_ == 0)
     {
         // check for life steal from partner
 		Fighter *partner = getPartnerLifeSteal(playerID_);

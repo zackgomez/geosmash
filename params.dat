@@ -49,7 +49,7 @@ debug.drawHitbox    0
 
 fighter.w             50
 fighter.h             60
-fighter.lives         1
+fighter.lives         4
 fighter.respawnTime   1.0
 fighter.gbThresh      600.0
 fighter.gbVelDamping  0.6
@@ -87,6 +87,9 @@ dodge.duration    0.42
 dodge.invincTime  0.32
 dodge.speed       450
 dodge.cooldown    0.15
+
+stepdodge.invincTime  0.22
+stepdodge.cooldown    0.10
 
 ledgeGrab.grabInvincTime 1.0
 ledgeGrab.hbwidth        40.0
