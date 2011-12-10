@@ -38,14 +38,21 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
             audioID_);
     attack_->setKBDirection(vel_.x > 0 ? 1 : -1);
 
+    glm::vec4 pcolors_raw[] =
+    {
+        glm::vec4(0.1, 0.2, 0.8, 0.4),
+        glm::vec4(0.1, 0.2, 0.8, 0.8),
+        glm::vec4(0.7, 0.7, 0.7, 0.4),
+        glm::vec4(0.1, 0.4, 0.8, 0.4),
+    };
+    std::vector<glm::vec4> pcolors;
+    pcolors.assign(pcolors_raw, pcolors_raw + sizeof(pcolors_raw) / sizeof(glm::vec4));
     emitter_ = ParticleManager::get()->newEmitter();
     emitter_->setLocation(glm::vec3(pos_, 0.0f))
-        ->setParticleLifetime(0.05f)
-        ->setParticleLifetimeF(new lifetimeVarianceF(0.3))
-        ->setParticleVelocity(20)
-        ->setParticleColor(glm::vec4(0.4, 0.4, 0.8, 0.5))
-        ->setParticleColorVariance(glm::vec4(0.2, 0.2, 0.2, 0.5))
-        ->setParticleColorBrightness(0.8f, 0.3f)
+        ->setParticleLifetimeF(new lifetimeNormalF(0.06, 0.04))
+        ->setParticleVelocityF(new velocityF(20.f, 20.f, 5.f))
+        ->setParticleLocationF(new locationF(4.f))
+        ->setParticleColorF(new discreteColorF(pcolors))
         ->setOutputRate(2000);
     ParticleManager::get()->addEmitter(emitter_);
 
@@ -119,12 +126,12 @@ void Projectile::update(float dt)
 
 void Projectile::render(float dt)
 {
+    emitter_->setLocation(glm::vec3(pos_, 0.0f));
+    /*
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
             glm::vec3(1.f));
 
-    emitter_->setLocation(glm::vec3(pos_, 0.0f));
-    /*
     FrameManager::get()->renderFrame(transform, glm::vec4(glm::vec4(1, 1, 1, 0.3)),
             frameName_);
             */

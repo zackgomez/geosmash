@@ -1076,6 +1076,34 @@ FighterState* DodgeState::collisionWithGround(const rectangle &ground, bool coll
     return NULL;
 }
 
+//// ---------------------- STEP DODGE STATE ------------------------------
+StepDodgeState::StepDodgeState(Fighter *f) :
+    FighterState(f), t_(0.f),
+    invincTime_(getParam("stepdodge.invincTime")),
+    cooldown_(getParam("stepdodge.cooldown"))
+{
+}
+
+FighterState* StepDodgeState::processInput(controller_state&, float dt)
+{
+    return NULL;
+}
+
+void StepDodgeState::render(float dt)
+{
+}
+
+FighterState* StepDodgeState::collisionWithGround(const rectangle &ground, bool collision)
+{
+    return NULL;
+}
+
+FighterState* StepDodgeState::hitByAttack(const Attack *attack)
+{
+    return NULL;
+}
+
+
 //// ---------------------- LEDGE GRAB STATE ------------------------------
 LedgeGrabState::LedgeGrabState(Fighter *f) :
     FighterState(f),

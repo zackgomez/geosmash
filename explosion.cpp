@@ -35,13 +35,26 @@ ExplosionManager* ExplosionManager::get()
 
 void ExplosionManager::addExplosion(float x, float y, float t)
 {
+    glm::vec4 pcolors_raw[] =
+    {
+        glm::vec4(0.9, 0.1, 0.0, 0.9),
+        glm::vec4(0.9, 0.1, 0.0, 0.9),
+        glm::vec4(0.9, 0.1, 0.0, 0.9),
+        glm::vec4(0.9, 0.1, 0.0, 0.9),
+        glm::vec4(0.9, 0.1, 0.0, 0.9),
+        glm::vec4(0.9, 0.25, 0.0, 0.9),
+        glm::vec4(0.9, 0.6, 0.0, 0.9),
+    };
+    std::vector<glm::vec4> pcolors;
+    pcolors.assign(pcolors_raw, pcolors_raw + sizeof(pcolors_raw) / sizeof(glm::vec4));
+
     Emitter *em = ParticleManager::get()->newEmitter();
     em->setLocation(glm::vec3(x, y, 0.f))
         ->setTimeRemaining(t)
-        ->setParticleLifetime(0.2)
-        ->setParticleLifetimeF(new lifetimeVarianceF(0.3))
-        ->setParticleColor(glm::vec4(0.9f, 0.1f, 0.0f, 0.9f))
-        ->setParticleColorVariance(glm::vec4(0.11f, 1.5f, 0.0f, 0.0f))
+        ->setParticleLifetimeF(new lifetimeNormalF(0.03, 0.3))
+        ->setParticleVelocityF(new velocityF(30.f, 30.f, 10.f))
+        ->setParticleLocationF(new locationF(7.f))
+        ->setParticleColorF(new discreteColorF(pcolors))
         ->setOutputRate(2000);
     ParticleManager::get()->addEmitter(em);
 }
@@ -51,11 +64,10 @@ void ExplosionManager::addPuff(float x, float y, float t)
     Emitter *em = ParticleManager::get()->newEmitter();
     em->setLocation(glm::vec3(x, y, 0.f))
         ->setTimeRemaining(t/2)
-        ->setParticleLifetime(t)
-        ->setParticleLifetimeF(new lifetimeVarianceF(0.3))
-        ->setParticleVelocity(20)
-        ->setParticleColor(glm::vec4(0.8, 0.8, 0.8, 0.5))
-        ->setParticleColorBrightness(0.8f, 0.3f)
+        ->setParticleLifetimeF(new lifetimeNormalF(0.3, 0.3))
+        ->setParticleVelocityF(new velocityF(20.f, 20.f, 5.f))
+        ->setParticleLocationF(new locationF(5.f))
+        ->setParticleColorF(new colorF(glm::vec4(0.8, 0.8, 0.8, 0.5), 0.8, 0.2))
         ->setOutputRate(1000);
     ParticleManager::get()->addEmitter(em);
 }
@@ -67,7 +79,6 @@ void ExplosionManager::addTwinkle(float x, float y)
 
 void ExplosionManager::render(float dt)
 {
-
     std::vector<Twinkle>::iterator tit = twinkles_.begin();
     for (; tit != twinkles_.end(); )
     {
