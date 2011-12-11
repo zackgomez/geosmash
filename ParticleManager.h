@@ -14,21 +14,30 @@ float normalRandom(float mu, float sigma);
 //
 // Particle system manager declaration.
 //
+// Singleton and Factory Pattern
+//
 class ParticleManager 
 {
 public:
     // Get() access to the singleton instance
     static ParticleManager* get();
 
-    void addGroup(PGroup *);
-
     void render(float dt);
+    Emitter* newEmitter();
+    // 
+    void addEmitter(Emitter*);
+    // Get rid of this emitter.
+    void quashEmitter(Emitter*);
+
+    // Removes all emitters and particles
+    void reset();
 
 private:
     ParticleManager();
     ~ParticleManager();
 
-    std::list<PGroup*> groups_; 
+    std::list<Emitter*> emitters_;
+    std::list<Particle*> particles_;
 
 };
 
