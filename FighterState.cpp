@@ -565,7 +565,7 @@ rectangle GroundState::getRect() const
 
 //// -------------------- AIR NORMAL STATE -----------------------------
 BlockingState::BlockingState(Fighter *f) :
-    FighterState(f), waitTime_(0.f), dazeTime_(0.f), hitStunTime_(0.f)
+    FighterState(f), waitTime_(0.f), dazeTime_(0.f), hitStunTime_(0.f), stepTime_(0.f)
 {
     frameName_ = "Blocking";
     waitTime_ = getParam("shield.startup");
@@ -582,11 +582,13 @@ FighterState* BlockingState::processInput(controller_state &controller, float dt
     waitTime_ -= dt;
     dazeTime_ -= dt;
     hitStunTime_ -= dt;
+    stepTime_ -= dt;
 
-    // Don't do anything while waiting or dazed or stunned
+    // Don't do anything while waiting or dazed or stunned or step dodging
     if (waitTime_ > 0.f) return NULL;
     if (dazeTime_ > 0.f) return NULL;
     if (hitStunTime_ > 0.f) return NULL;
+    if (stepTime_ > 0.f) return NULL;
 
     // Check for drop out of blocking state
     if (controller.rtrigger > -getParam("input.trigThresh")
@@ -604,6 +606,13 @@ FighterState* BlockingState::processInput(controller_state &controller, float dt
                 fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
         return new DodgeState(fighter_);
+    }
+    // check for step dodge
+    else if (controller.joyy < -getParam("input.dodgeThresh")
+            && controller.joyyv < -getParam("input.velThresh"))
+    {
+        invincTime_ = getParam("stepdodge.invincTime") ;
+        stepTime_ = invincTime_ + getParam("stepdodge.cooldown");
     }
 
     // Eat the degeneration
@@ -625,6 +634,7 @@ void BlockingState::render(float dt)
     printf("BLOCKING | waitT: %.3f dazeT: %.3f health: %.3f || ",
             waitTime_, dazeTime_, fighter_->shieldHealth_);
 
+    glm::mat4 trans(1.f);
     glm::vec3 color = fighter_->color_;
     std::string fname = frameName_;
     if (dazeTime_ > 0.f)
@@ -632,11 +642,17 @@ void BlockingState::render(float dt)
         fname = "Dazed";
         color = muxByTime(color, dazeTime_);
     }
-    fighter_->renderHelper(dt, fname, color);
+    if (stepTime_ > getParam("stepdodge.cooldown"))
+    {
+        fname = "StepDodge";
+        color = muxByTime(color, stepTime_);
+        trans = glm::translate(trans, glm::vec3(0, 0, getParam("stepdodge.zoffset")));
+    }
+    fighter_->renderHelper(dt, fname, color, trans);
 
 
     // Draw shield
-    if (!(waitTime_ > 0.f || dazeTime_ > 0.f))
+    if (!(waitTime_ > 0.f || dazeTime_ > 0.f || stepTime_ > 0.f))
     {
         glm::vec4 color(0.4f, 0.0f, 0.33f, 0.4f);
         float sizeFact = std::max(fighter_->shieldHealth_ / getParam("shield.maxHealth"), 0.f);
@@ -1073,33 +1089,6 @@ FighterState* DodgeState::collisionWithGround(const rectangle &ground, bool coll
         t_ = std::max(t_, invincTime_);
     }
 
-    return NULL;
-}
-
-//// ---------------------- STEP DODGE STATE ------------------------------
-StepDodgeState::StepDodgeState(Fighter *f) :
-    FighterState(f), t_(0.f),
-    invincTime_(getParam("stepdodge.invincTime")),
-    cooldown_(getParam("stepdodge.cooldown"))
-{
-}
-
-FighterState* StepDodgeState::processInput(controller_state&, float dt)
-{
-    return NULL;
-}
-
-void StepDodgeState::render(float dt)
-{
-}
-
-FighterState* StepDodgeState::collisionWithGround(const rectangle &ground, bool collision)
-{
-    return NULL;
-}
-
-FighterState* StepDodgeState::hitByAttack(const Attack *attack)
-{
     return NULL;
 }
 

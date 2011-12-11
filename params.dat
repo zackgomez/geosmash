@@ -88,8 +88,10 @@ dodge.invincTime  0.32
 dodge.speed       450
 dodge.cooldown    0.15
 
-stepdodge.invincTime  0.22
-stepdodge.cooldown    0.10
+stepdodge.invincTime  0.18
+stepdodge.cooldown    0.20
+# aesthetic only
+stepdodge.zoffset     -15
 
 ledgeGrab.grabInvincTime 1.0
 ledgeGrab.hbwidth        40.0

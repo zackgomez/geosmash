@@ -87,6 +87,8 @@ private:
     float waitTime_;
     float dazeTime_;
     float hitStunTime_;
+    // time left in step dodge
+    float stepTime_;
 };
 
 class AirNormalState : public FighterState
@@ -180,23 +182,6 @@ public:
 private:
     float t_;
     float dodgeTime_;
-    float cooldown_;
-};
-
-class StepDodgeState : public FighterState
-{
-public:
-    StepDodgeState(Fighter *f);
-    virtual ~StepDodgeState() {}
-
-    virtual FighterState* processInput(controller_state&, float dt);
-    virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
-    virtual FighterState* hitByAttack(const Attack *attack);
-
-private:
-    float t_;
-    float invincTime_;
     float cooldown_;
 };
 

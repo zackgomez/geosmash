@@ -12,11 +12,13 @@ void main()
 {
     float mask = texture(tex, frag_texcoord).r;
     vec2 bixeldist = abs(fract(frag_texcoord * texsize) - 0.5);
+
+    vec2 fact = smoothstep(0.35, 0.40, bixeldist);
     if (mask == 0.0)
         discard;
-    if (bixeldist.x < 0.34 && bixeldist.y < 0.34)
+    if (fact.x == 0 && fact.y == 0)
         discard;
 
-    outputColor = vec4(color.rgb, 1.0f);
+    outputColor = vec4(color.rgb, length(fact) * 1.0f);
     glowColor = vec4(color.rgb * color.a, 1.0f);
 }
