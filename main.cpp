@@ -526,31 +526,53 @@ void renderHUD()
         int lives = fighters[i]->getLives();
         float damage = fighters[i]->getDamage();
         // Draw life counts first
-        glm::vec2 life_area = player_hud_center - 0.75f * glm::vec2(lifesize.x, -lifesize.y);
-        for (int j = 0; j < lives; j++)
+        if (lives < 5)
         {
+            // If 4 or less lives then draw each live as a box individually
+            glm::vec2 life_area = player_hud_center - 0.75f * glm::vec2(lifesize.x, -lifesize.y);
+            for (int j = 0; j < lives; j++)
+            {
+                glm::mat4 transform = glm::scale(
+                        glm::translate(
+                            glm::mat4(1.0f),
+                            glm::vec3(life_area, 0.f)),
+                        glm::vec3(lifesize, 1.0f));
+                renderRectangle(transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
+
+                glm::mat4 transform2 = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
+                renderRectangle(transform2, glm::vec4(colors[i], 0.0f));
+
+                if (j % 2 == 0)
+                    life_area.x += lifesize.x * 1.5;
+                else
+                {
+                    life_area.x -= lifesize.x * 1.5;
+                    life_area.y -= lifesize.y * 1.5;
+                }
+            }
+        }
+        else
+        {
+            // If 5 or more lives, draw a single life box and a number
+            glm::vec2 life_area = player_hud_center - 0.75f * glm::vec2(lifesize.x, 0);
             glm::mat4 transform = glm::scale(
                     glm::translate(
                         glm::mat4(1.0f),
                         glm::vec3(life_area, 0.f)),
                     glm::vec3(lifesize, 1.0f));
             renderRectangle(transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
+            transform = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
+            renderRectangle(transform, glm::vec4(colors[i], 0.0f));
 
-            glm::mat4 transform2 = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
-            renderRectangle(transform2, glm::vec4(colors[i], 0.0f));
-
-            if (j % 2 == 0)
-                life_area.x += lifesize.x * 1.5;
-            else
-            {
-                life_area.x -= lifesize.x * 1.5;
-                life_area.y -= lifesize.y * 1.5;
-            }
-
+            // Now draw the numbers
+            life_area.x += lifesize.x * 1.5;
+            transform = glm::scale( glm::translate( glm::mat4(1.0f), glm::vec3(life_area, 0.f)),
+                    glm::vec3(1.5f*lifesize, 1.0f));
+            FontManager::get()->renderNumber(transform, colors[i], lives);
         }
 
-        // Draw damage bars
-        // First, render a dark grey background rect
+        // Draw the damage amount with color scaled towards black as the
+        // player has more damage
         glm::vec2 damageBarMidpoint = player_hud_center + glm::vec2(0.f, -0.8f/6.f);
         glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(damageBarMidpoint, 0.f)),
