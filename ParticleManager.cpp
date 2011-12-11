@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 //#include "glutils.h"
 #include <cstdlib>
+#include "PGroup.h"
 
 ParticleManager::ParticleManager()
 {}
@@ -20,7 +21,6 @@ ParticleManager::~ParticleManager()
 //  - those that render particles
 void ParticleManager::render(float dt)
 {
-
     std::list<Group*>::iterator git;
     for (git = groups_.begin(); git != groups_.end(); ++git)
     {

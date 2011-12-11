@@ -78,8 +78,7 @@ protected:
 };
 
 //
-// The emitter class is the main particle engine configuration point.
-// With its setter methods particle lifetime, location, and spew rate
+// With emitter setter methods particle lifetime, location, and spew rate
 // can be defined.
 // Emitters will spew particles (and take up clock cycles) until a call to
 // ParticleManager::quashEmitter()

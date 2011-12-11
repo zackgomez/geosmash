@@ -6,6 +6,8 @@
 #include "Particle.h"
 #include "Emitter.h"
 
+class PGroup;
+
 // Utility functions
 
 glm::vec3 pointOnSphere(float r, glm::vec3 pos);  
