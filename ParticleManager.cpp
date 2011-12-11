@@ -15,27 +15,18 @@ ParticleManager::~ParticleManager()
     reset();
 }
 
-// A combined update/render call...
 // Two types of operations occur here:
 //  - those that update emitters and particles
 //  - those that render particles
 void ParticleManager::render(float dt)
 {
-    /*
-    std::cout << "Rendering " << emitters_.size() << " emitters and "
-        << particles_.size() << " particles\n";
-        */
-    // First create new particles.
-    std::list<Emitter*>::iterator eit;
-    for (eit = emitters_.begin(); eit != emitters_.end(); eit++)
-	{
-        (*eit)->emit(particles_, dt);
-        if ((*eit)->isDone()) 
-        {
-            delete *eit;
-            eit = emitters_.erase(eit);
-        }
+
+    std::list<Group*>::iterator git;
+    for (git = groups_.begin(); git != groups_.end(); ++git)
+    {
+        (*git)->render();
     }
+
 
     // Then update old particles.
     std::list<Particle*>::iterator pit;
