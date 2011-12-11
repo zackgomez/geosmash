@@ -724,6 +724,8 @@ void cleanup()
     std::cout << "Cleaning up...\n";
     for (unsigned i = 0; i < entities.size(); i++)
         delete entities[i];
+    for (unsigned i = 0; i < controllers.size(); i++)
+        delete controllers[i];
 
 
     std::cout << "Quiting nicely\n";
@@ -765,8 +767,6 @@ int initLibs()
 
     return 1;
 }
-
-
 
 
 // XXX this should be moved

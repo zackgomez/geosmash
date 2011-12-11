@@ -2,6 +2,7 @@
 #include "Particle.h"
 #include <list>
 #include <glm/glm.hpp>
+#include <vector>
 
 float normalRandom(float mu, float sigma);
 
@@ -15,13 +16,17 @@ class ParticleManager;
 // The generic, simple lifetime function
 struct lifetimeF
 {
-    float operator () (float f) { return f; }
+    lifetimeF(float mu) : mu_(mu) { }
+    virtual float operator () () { return mu_; }
+
+protected:
+    float mu_;
 };
 
-struct lifetimeVarianceF : lifetimeF
+struct lifetimeNormalF : lifetimeF
 {
-    lifetimeVarianceF(float variance);
-    float operator () (float f);
+    lifetimeNormalF(float mu, float variance);
+    virtual float operator () ();
 private:
     float var_;
 };
@@ -29,15 +34,47 @@ private:
 // Simpleton velocity function
 struct velocityF
 {
-    float operator() (float v) { return v; }
+    velocityF(float radius, float mu, float sigma) : mu_(mu), sigma_(sigma), r_(radius) { }
+    virtual glm::vec3 operator() (const glm::vec3 &epos, const glm::vec3 &ppos);
+
+protected:
+    float mu_, sigma_;
+    float r_;
 };
 
-struct velocityVarianceF : velocityF
+struct locationF
 {
-    velocityVarianceF(float f);
-    float operator() (float v);
-private:
-    float var_;
+    locationF(float radius) : r_(radius) { }
+
+    virtual glm::vec3 operator()(const glm::vec3 &epos);
+protected:
+    float r_;
+};
+
+struct colorF
+{
+    colorF() { }
+    colorF(const glm::vec4 &color, float bright, float brightvar) :
+        mu_(color), bright_(bright), brightvar_(brightvar)
+    {
+    }
+    virtual ~colorF() {}
+
+    virtual glm::vec4 operator() ();
+
+protected:
+    glm::vec4 mu_;
+    float bright_, brightvar_;
+};
+
+struct discreteColorF : public colorF
+{
+    discreteColorF(const std::vector<glm::vec4> &colors) : colors_(colors)
+    { }
+
+    virtual glm::vec4 operator() ();
+protected:
+    std::vector<glm::vec4> colors_;
 };
 
 //
@@ -50,22 +87,16 @@ private:
 class Emitter 
 {
 public:
-    Emitter* setParticleLifetime(float);
+    Emitter* setParticleLocationF(locationF *);
     Emitter* setParticleLifetimeF(lifetimeF *);
-
-    Emitter* setParticleVelocity(float r);
     Emitter* setParticleVelocityF(velocityF *);
+    Emitter* setParticleColorF(colorF *);
 
     Emitter* setLocation(const glm::vec3 &l);
     Emitter* setOutputRate(float r);
     Emitter* setRadius(float r);
     // How much time is left before this emitter expires?
     Emitter* setTimeRemaining(float);
-
-    // Set particle color. Fourth component is glow, not opacity.
-    Emitter* setParticleColor(const glm::vec4 &);
-    Emitter* setParticleColorVariance(const glm::vec4 &);
-    Emitter* setParticleColorBrightness(float mu, float sigma);
 
     bool isDone() const;
     // The update function. Spew some new particles, given that dt seconds
@@ -75,25 +106,19 @@ private:
     Emitter();
 
     // Lifetime, and a functor that determines particle lifetime
-    float lifetime_;
     lifetimeF *lifetime_func;
-
     // particle velocity, and its associated functor
-    float vel_;
     velocityF *velocity_func;
+    locationF *location_func;
+    colorF *color_func;
 
     // Since this is a sperical emitter, we need two pieces of information:
     glm::vec3 loc_;
-    // ... and ...
-    float radius_;
     // Particles will spawn with this initial velocity
     // And with a frequency determined by this (particles per second)
     float rate_;
     // Each particle will be about this size.
     glm::vec3 size_;
-
-    glm::vec4 color_, colorvar_;
-    float colorbright_, colorbrightvar_;
 
     float timeRemaining_;
 
