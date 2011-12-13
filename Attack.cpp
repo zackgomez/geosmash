@@ -18,10 +18,12 @@ void addEntity(GameEntity *ent);
 SimpleAttack::SimpleAttack(const glm::vec2 &kb,
         float damage, float stun, float priority,
         const glm::vec2 &pos, const glm::vec2 &size,
+        float odir,
         int playerID, const std::string &audioID) :
     Attack(),
     playerID_(playerID),
     damage_(damage), stun_(stun), priority_(priority),
+    odir_(odir),
     pos_(pos),
     size_(size),
     kb_(kb),
@@ -43,6 +45,7 @@ rectangle SimpleAttack::getHitbox() const
 float SimpleAttack::getPriority() const { return priority_; }
 float SimpleAttack::getDamage(const GameEntity *) const { return damage_; }
 float SimpleAttack::getStun(const GameEntity *) const { return stun_; }
+float SimpleAttack::getOriginDirection(const GameEntity *) const { return odir_; }
 
 glm::vec2 SimpleAttack::getKnockback(const GameEntity *) const
 {
@@ -67,6 +70,11 @@ void SimpleAttack::setPosition(const glm::vec2 &position)
 void SimpleAttack::setKBDirection(float dir)
 {
     dir_ = dir;
+}
+
+void SimpleAttack::setOriginDirection(float odir)
+{
+    odir_ = odir;
 }
 
 bool SimpleAttack::canHit(const GameEntity *f) const
@@ -164,6 +172,12 @@ glm::vec2 FighterAttack::getKnockback(const GameEntity *victim) const
     else
         return knockbackdir_ * knockbackpow_ * glm::vec2(owner_->getDirection(), 1.f);
 
+}
+
+float FighterAttack::getOriginDirection(const GameEntity *victim) const
+{
+    // Direction is based on their direction from the owner
+    return victim->getPosition().x - owner_->getPosition().x > 0 ? -1 : 1;
 }
 
 rectangle FighterAttack::getHitbox() const

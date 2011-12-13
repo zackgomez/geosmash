@@ -182,7 +182,7 @@ HazardEntity::HazardEntity(const std::string &audioID)
             getParam(pre_ + "damage"),
             getParam(pre_ + "stun"),
             getParam(pre_ + "priority"),
-            pos_, size_, playerID_,
+            pos_, size_, -dir_, playerID_,
             audioID);
 }
 
@@ -193,6 +193,7 @@ void HazardEntity::attackCollision(const Attack*)
 const Attack *HazardEntity::getAttack() const
 {
     attack_->setKBDirection(dir_);
+    attack_->setOriginDirection(-dir_);
     return attack_;
 }
 

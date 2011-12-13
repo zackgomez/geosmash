@@ -941,7 +941,7 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
     fighter_->attack_->setHitboxFrame("CounterAttackHitbox");
     fighter_->attack_->setFighter(fighter_);
     fighter_->attack_->start();
-    fighter_->dir_ = attack->getHitbox().x - fighter_->pos_.x > 0 ? 1 : -1;
+    fighter_->dir_ = attack->getOriginDirection(fighter_);
 
     return NULL;
 }

@@ -19,6 +19,7 @@ public:
     virtual float getPriority() const = 0;
     virtual float getDamage(const GameEntity *victim) const = 0;
     virtual float getStun(const GameEntity *victim) const = 0;
+    virtual float getOriginDirection(const GameEntity *victim) const = 0;
     virtual glm::vec2 getKnockback(const GameEntity *victim) const = 0;
 
     virtual int getPlayerID() const = 0;
@@ -35,7 +36,7 @@ class SimpleAttack : public Attack
 public:
     SimpleAttack() { }
     SimpleAttack(const glm::vec2 &kb, float damage, float stun, float priority,
-            const glm::vec2 &pos, const glm::vec2 &size, int playerID,
+            const glm::vec2 &pos, const glm::vec2 &size, float odir, int playerID,
             const std::string &audioID);
     virtual ~SimpleAttack();
 
@@ -43,6 +44,7 @@ public:
     virtual float getPriority() const;
     virtual float getDamage(const GameEntity *) const;
     virtual float getStun(const GameEntity *) const;
+    virtual float getOriginDirection(const GameEntity *) const;
     virtual glm::vec2 getKnockback(const GameEntity *) const;
 
     virtual int getPlayerID() const;
@@ -59,11 +61,13 @@ public:
     // Non inherited functions...
     void setPosition(const glm::vec2 &position);
     void setKBDirection(float dir);
+    void setOriginDirection(float odir);
 
 protected:
     int playerID_;
     
     float damage_, stun_, priority_;
+    float odir_;
 
     glm::vec2 pos_;
     glm::vec2 size_;
@@ -91,6 +95,7 @@ public:
 
     virtual rectangle getHitbox() const;
     virtual glm::vec2 getKnockback(const GameEntity *fighter) const;
+    virtual float getOriginDirection(const GameEntity *victim) const;
 
     void setFighter(Fighter *fighter);
     virtual int getPlayerID() const;

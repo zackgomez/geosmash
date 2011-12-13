@@ -34,7 +34,7 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
             getParam(paramPrefix_ + "damage"),
             getParam(paramPrefix_ + "stun"),
             0.f, // 0 priority
-            pos_, size_, playerID_,
+            pos_, size_, -dir.x, playerID_,
             audioID_);
     attack_->setKBDirection(vel_.x > 0 ? 1 : -1);
 
