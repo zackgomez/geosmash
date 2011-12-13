@@ -935,12 +935,16 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
         return calculateHitResult(attack);
     }
 
+    float incdamage = attack->getDamage(fighter_);
+    float calcedpow = incdamage * getParam("counterAttack.kbscaling");
+
     // Now the other player gets screwed over for attacking us at the wrong time.
     // Otherwise create a new Fighter attack helper.
     fighter_->attack_ = new FighterAttack("counterAttack", "groundhit", "CounterAttack");
     fighter_->attack_->setHitboxFrame("CounterAttackHitbox");
     fighter_->attack_->setFighter(fighter_);
     fighter_->attack_->start();
+    fighter_->attack_->setKnockbackPow(calcedpow);
     fighter_->dir_ = attack->getOriginDirection(fighter_);
 
     return NULL;

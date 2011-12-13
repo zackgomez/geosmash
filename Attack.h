@@ -127,6 +127,8 @@ public:
     void setStartSound(const std::string &soundID_);
     void setFrameName(const std::string &fname);
 
+    void setKnockbackPow(float pow);
+
 protected:
     glm::vec2 hboffset_;
     glm::vec2 hbsize_;

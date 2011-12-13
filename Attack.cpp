@@ -196,6 +196,7 @@ std::string FighterAttack::getFrameName() const { return frameName_; }
 void FighterAttack::setTwinkle(bool twinkle) { twinkle_ = twinkle; }
 void FighterAttack::setHitboxFrame(const std::string &frame) { hbframe_ = frame; }
 void FighterAttack::setStartSound(const std::string &soundID) { startSoundID_ = soundID; }
+void FighterAttack::setKnockbackPow(float pow) { knockbackpow_ = pow; }
 
 bool FighterAttack::hasTwinkle() const
 {
