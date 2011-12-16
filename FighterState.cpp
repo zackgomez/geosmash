@@ -1138,14 +1138,13 @@ FighterState* LedgeGrabState::processInput(controller_state &controller, float d
     // Check for attack input
     else if (controller.pressa)
     {
-        // TODO add a real ledge grab attack
         ledge_->occupied = false;
         // move on top of ground
         fighter_->push(glm::vec2(
                     fighter_->getDirection() * hbsize_.x/2,
                     fighter_->size_.y - 1));
-        // start ledge attack XXX: just use down tilt for now
-        fighter_->attack_ = fighter_->attackMap_["downTilt"]->clone();
+        // start ledge attack
+        fighter_->attack_ = fighter_->attackMap_["ledge"]->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         // transition to groundnormal state with some invincibility

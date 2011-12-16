@@ -118,6 +118,20 @@ dashAttack.priority     1.0
 dashAttack.initialSpeed 550.0
 dashAttack.deceleration -800.0
 
+ledgeAttack.startup      0.15
+ledgeAttack.duration     0.22
+ledgeAttack.cooldown     0.20
+ledgeAttack.damage       6
+ledgeAttack.stun         0.10
+ledgeAttack.knockbackx   3
+ledgeAttack.knockbacky   5
+ledgeAttack.knockbackpow 120.0
+ledgeAttack.hitboxx      45
+ledgeAttack.hitboxy      -15
+ledgeAttack.hitboxw      30
+ledgeAttack.hitboxh      25
+ledgeAttack.priority     2.0
+
 
 neutralTiltAttack.startup      0.03
 neutralTiltAttack.duration     0.15
