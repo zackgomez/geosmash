@@ -1045,6 +1045,13 @@ FighterState* UpSpecialState::hitByAttack(const Attack *attack)
     return FighterState::calculateHitResult(attack);
 }
 
+FighterState* UpSpecialState::attackConnected(GameEntity *victim)
+{
+    // XXX this can create problems...
+    victim->push(glm::vec2(0, 20));
+    return FighterState::attackConnected(victim);
+}
+
 //// ----------------------- DODGE STATE --------------------------------
 DodgeState::DodgeState(Fighter *f) :
     FighterState(f), t_(0.f), dodgeTime_(getParam("dodge.duration")),
@@ -1289,7 +1296,7 @@ FighterState* LimpState::processInput(controller_state&, float dt)
 void LimpState::render(float dt)
 {
     printf("LIMP | Next: %d || ",
-            next_);
+            next_ != NULL);
     // Just render the frame
     fighter_->renderHelper(dt, frameName_, fighter_->getColor());
 }

@@ -403,9 +403,6 @@ void UpSpecialAttack::hit(GameEntity *victim)
     if (victim->getPlayerID() == getPlayerID()) return;
 
     FighterAttack::hit(victim);
-
-    // XXX this can create problems...
-    victim->push(glm::vec2(0, 20));
 }
 
 // ----------------------------------------------------------------------------

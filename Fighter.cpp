@@ -212,9 +212,11 @@ void Fighter::attackConnected(GameEntity *victim)
     assert(attack_);
     assert(attack_->canHit(victim));
 
+    // Cant hit ourself
+    if (victim->getPlayerID() == playerID_) return;
+
+    // Defer to the state
     stateWrapper(state_->attackConnected(victim));
-    // XXX move this to FighterState::attackConnected
-    //attack_->hit(victim);
 }
 
 bool Fighter::hasAttack() const

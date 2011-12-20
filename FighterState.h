@@ -30,7 +30,7 @@ public:
     virtual FighterState* hitByAttack(const Attack *attack) = 0;
 
     // Called when Fighter::attackConnected is called
-    virtual FighterState* attackConnected(GameEntity *ent);
+    virtual FighterState* attackConnected(GameEntity *victim);
 
     virtual rectangle getRect() const;
 
@@ -167,6 +167,7 @@ public:
     virtual void render(float dt);
     virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
+    virtual FighterState* attackConnected(GameEntity *victim);
 
 private:
     std::string pre_;
