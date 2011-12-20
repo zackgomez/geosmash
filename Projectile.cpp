@@ -95,7 +95,7 @@ void Projectile::attackCollision(const Attack *other)
 
 void Projectile::hitByAttack(const Attack *attack)
 {
-    // Should never be hit
+    // Should never be hit, attack collision takes care of it
     assert(false);
 }
 
@@ -104,6 +104,9 @@ void Projectile::attackConnected(GameEntity *other)
     // Can't hit ourself
     if (other->getPlayerID() == playerID_) return;
 
+    // Hit the other thing
+    other->hitByAttack(attack_);
+    // no more hits
     hit_ = true;
 }
 

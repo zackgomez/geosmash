@@ -212,7 +212,9 @@ void Fighter::attackConnected(GameEntity *victim)
     assert(attack_);
     assert(attack_->canHit(victim));
 
-    attack_->hit(victim);
+    stateWrapper(state_->attackConnected(victim));
+    // XXX move this to FighterState::attackConnected
+    //attack_->hit(victim);
 }
 
 bool Fighter::hasAttack() const
@@ -263,7 +265,15 @@ void Fighter::respawn(bool killed)
 
 LimpFighter* Fighter::goLimp(UnlimpCallback *l)
 {
-    // Just go into the limp state
+    // Cancel any current attack
+    if (attack_)
+    {
+        attack_->finish();
+        delete attack_;
+        attack_ = 0;
+    }
+
+    // Then go into the limp state
     delete state_;
     LimpState* ret = new LimpState(this, l);
     state_ = ret;

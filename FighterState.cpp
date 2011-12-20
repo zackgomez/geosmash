@@ -22,6 +22,16 @@ bool FighterState::canBeHit() const
     return invincTime_ <= 0.f;
 }
 
+FighterState* FighterState::attackConnected(GameEntity *victim)
+{
+    assert(fighter_->attack_);
+    victim->hitByAttack(fighter_->attack_);
+    fighter_->attack_->hit(victim);
+
+    // No state change by default
+    return NULL;
+}
+
 rectangle FighterState::getRect() const
 {
     return rectangle(fighter_->pos_.x, fighter_->pos_.y,

@@ -43,7 +43,9 @@ public:
     virtual bool canBeHit() const = 0;
     // When two attacks hit each other- called on both GameEntities
     virtual void attackCollision(const Attack *other) = 0;
-    // When this game entity is hit by an attack
+    // When this game entity is hit by an attack, and the owning entity
+    // determined that this method should be called.  This method should then
+    // deal with damage kb etc.
     virtual void hitByAttack(const Attack *attack) = 0;
     // When this game entity hits someone else with an attack, note
     // the other is non const

@@ -29,6 +29,9 @@ public:
     // other work is done
     virtual FighterState* hitByAttack(const Attack *attack) = 0;
 
+    // Called when Fighter::attackConnected is called
+    virtual FighterState* attackConnected(GameEntity *ent);
+
     virtual rectangle getRect() const;
 
     // This function is the value returned from fighter::canBeHit

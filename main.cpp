@@ -407,7 +407,7 @@ void collisionDetection()
             if (attack->getHitbox().overlaps(victim->getRect()) &&
                 attack->canHit(victim))
             {
-                victim->hitByAttack(attack);
+                // Let the attacker know, the handle the rest
                 attacker->attackConnected(victim);
             }
         }
