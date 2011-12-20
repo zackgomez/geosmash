@@ -129,16 +129,60 @@ void StageManager::renderSphereBackground(float dt)
 // Hazard  
 //////////////////////////////////////////////
 
+HazardEntity::HazardEntity(const std::string &audioID) :
+    victim_(NULL)
+{
+    pre_ = "stageHazardAttack.";
+
+    frameName_ = "Hazard";
+    pos_ = glm::vec2(0, getParam("level.y") + getParam("level.h") / 2 + getParam(pre_ + "sizey") / 2 - 1);
+    size_ = glm::vec2(getParam(pre_ + "sizex"), getParam(pre_ + "sizey"));
+    lifetime_ = getParam(pre_ + "lifetime");
+    dir_ = 1; // initially, we'll go right.
+
+    attack_ = new SimpleAttack(
+            getParam(pre_ + "knockbackpow") *
+            glm::normalize(glm::vec2(getParam(pre_ + "knockbackx"),
+                      getParam(pre_ + "knockbacky"))),
+            getParam(pre_ + "damage"),
+            getParam(pre_ + "stun"),
+            getParam(pre_ + "priority"),
+            pos_, size_, -dir_, playerID_,
+            audioID);
+}
+
 bool HazardEntity::isDone() const
 {
     return false; 
 }
+
 void HazardEntity::update(float dt)
 {
+    // If we have a victim currently just continue to hold them
+    if (victim_)
+    {
+        t_ += dt;
+        if (t_ > getParam(pre_ + "twirlTime"))
+        {
+            // Hit the victim - disconnects them from us
+            victim_->hit(attack_);
+            // Make sure we're disconnected
+            assert(!victim_);
+            // all done for now
+            return;
+        }
+        else
+        {
+            float side = victim_->getEntity()->getPosition().x > pos_.x ? 1 : -1;
+            victim_->setAccel(glm::vec2(-side * getParam(pre_ + "xaccel"), 0));
+        }
+        // Don't do other updates
+        return;
+    }
     // Each frame, we only need to do a couple things.
     // First, move a bit randomly
     // then, update our attack to reflect our location.
-
+    
     // change direction every now and then:
     dir_ = rand() % static_cast<int>(getParam(pre_ + "switchRate")) ? dir_ : -dir_;
     vel_.x = getParam(pre_ + "speed") * dir_;
@@ -165,29 +209,15 @@ void HazardEntity::render(float dt)
             frameName_);
 }
 
-HazardEntity::HazardEntity(const std::string &audioID) 
-{
-    pre_ = "stageHazardAttack.";
-
-    frameName_ = "Hazard";
-    pos_ = glm::vec2(0, getParam("level.y") + getParam("level.h") / 2 + getParam(pre_ + "sizey") / 2 - 1);
-    size_ = glm::vec2(getParam(pre_ + "sizex"), getParam(pre_ + "sizey"));
-    lifetime_ = getParam(pre_ + "lifetime");
-    dir_ = 1; // initially, we'll go right.
-
-    attack_ = new SimpleAttack(
-            getParam(pre_ + "knockbackpow") *
-            glm::normalize(glm::vec2(getParam(pre_ + "knockbackx"),
-                      getParam(pre_ + "knockbacky"))),
-            getParam(pre_ + "damage"),
-            getParam(pre_ + "stun"),
-            getParam(pre_ + "priority"),
-            pos_, size_, -dir_, playerID_,
-            audioID);
-}
-
 void HazardEntity::attackCollision(const Attack*)
 {
+    // Ignore this, our attacks don't get cancelled
+}
+
+bool HazardEntity::hasAttack() const
+{
+    // Don't attack people when we're twirling someone
+    return !victim_;
 }
 
 const Attack *HazardEntity::getAttack() const
@@ -199,16 +229,59 @@ const Attack *HazardEntity::getAttack() const
 
 void HazardEntity::hitByAttack(const Attack*) 
 {
+    // HazardEntity doesn't have life or anything, just ignore it
 }
+
+struct HazardEntityUnlimpCallback : public UnlimpCallback
+{
+    HazardEntityUnlimpCallback(HazardEntity *he) :
+        owner_(he)
+    { }
+
+    virtual void operator() ()
+    {
+        owner_->disconnectVictim();
+    }
+
+private:
+    HazardEntity *owner_;
+};
 
 void HazardEntity::attackConnected(GameEntity *victim)
 {
     attack_->hit(victim);
+    // On a hit we need to do a couple of things
+    // Only hit fighters
+    if (victim->getType() != Fighter::type)
+        return;
+    Fighter *fighter = (Fighter *) victim;
+    // Make them go limp and store it
+    victim_ = fighter->goLimp(new HazardEntityUnlimpCallback(this));
+
+    // Reset the timer
+    t_ = 0;
+
+    // Set initial conditions on the fighter
+    // TODO don't "jerk" the fighter
+    victim_->setPosition(pos_ + glm::vec2(size_.x, 0));
+    float yspeed = getParam(pre_ + "twirlHeight") / getParam(pre_ + "twirlTime");
+    victim_->setVelocity(glm::vec2(0, yspeed));
+    victim_->setAccel(glm::vec2(-getParam(pre_ + "xaccel"), 0));
 }
 
 void HazardEntity::collisionWithGround(const rectangle &ground, bool collision)
 {
     if (!collision)
         dir_ = -dir_;
+}
+
+void HazardEntity::disconnectVictim()
+{
+    assert(victim_);
+    // Simply forget about the victim
+    victim_ = NULL;
+
+    // Reset the (now hit reset) timer
+    t_ = 0;
 }
 

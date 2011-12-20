@@ -13,6 +13,8 @@ public:
             const std::string &audioID, const int playerID);
     virtual ~Projectile();
 
+    virtual std::string getType() const { return "ProjectileEntity"; }
+
     virtual bool isDone() const;
 
     virtual bool hasAttack() const;

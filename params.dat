@@ -413,6 +413,10 @@ stageHazardAttack.knockbackpow 100
 stageHazardAttack.priority   0
 stageHazardAttack.lifetime   20
 
+stageHazardAttack.twirlTime    1.5
+stageHazardAttack.xaccel       1500
+stageHazardAttack.twirlHeight  120
+
 camera.maxVx 200 
 camera.maxVy 150
 camera.maxVz 150

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "Fighter.h"
 
 class Fighter;
 class rectangle;
@@ -205,6 +206,34 @@ private:
     glm::vec2 hbsize_;
     float jumpTime_;
     Ledge *ledge_;
+};
+
+class LimpState : public FighterState, public LimpFighter
+{
+public:
+    LimpState(Fighter *f, UnlimpCallback *callback);
+    virtual ~LimpState();
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* hitByAttack(const Attack *attack);
+    virtual bool canBeHit() const;
+
+    // Inherited from LimpFighter interface
+    virtual void setPosition(const glm::vec2 &pos);
+    virtual void setVelocity(const glm::vec2 &vel);
+    virtual void setAccel(const glm::vec2 &accel);
+    virtual void setFrameName(const std::string &frameName);
+    virtual void hit(const Attack *attack);
+    virtual void release();
+    virtual const GameEntity *getEntity() const;
+
+
+private:
+    UnlimpCallback *unlimpCallback_;
+    std::string frameName_;
+    FighterState *next_;
 };
 
 class RespawnState : public FighterState

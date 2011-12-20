@@ -69,11 +69,17 @@ private:
     void updateLitSegments(void);
 };
 
+class LimpFighter;
+
 class HazardEntity : public GameEntity 
 {
 public:
+    HazardEntity(const std::string &audioID);
+
+    virtual std::string getType() const { return "HazardEntity"; }
+
     virtual bool isDone() const;
-    virtual bool hasAttack() const { return true; }
+    virtual bool hasAttack() const;
     virtual const Attack * getAttack() const;
     virtual bool canBeHit() const { return false; }
 
@@ -90,8 +96,10 @@ public:
 
     //attackCollision can be nop
     
-    HazardEntity(const std::string &audioID);
-
+    // When called disconnects from victim, assuming that LimpFighter interface
+    // is no longer valid.
+    virtual void disconnectVictim();
+    
 private:
     float lifetime_;
     SimpleAttack *attack_;
@@ -99,5 +107,7 @@ private:
     std::string pre_;
     int dir_;
     float t_;
+
+    LimpFighter *victim_;
 };
 

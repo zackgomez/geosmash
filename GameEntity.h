@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <string>
 
 class rectangle;
 class Attack;
@@ -10,6 +11,9 @@ public:
     GameEntity();
     virtual ~GameEntity();
 
+    // Returns a string representing the type of GameEntity - should be unique
+    // per subclass
+    virtual std::string getType() const = 0;
     // ID functions
     // Returns a unique ID for this GameEntity
     virtual int getID() const { return id_; }

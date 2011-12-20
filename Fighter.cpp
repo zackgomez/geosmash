@@ -11,8 +11,11 @@
 #include "audio.h"
 #include "Attack.h"
 #include "Controller.h"
+#include "FighterState.h"
 
 Fighter *getPartnerLifeSteal(int playerID);
+
+const std::string Fighter::type = "FighterEntity";
 
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
     dir_(-1),
@@ -256,6 +259,15 @@ void Fighter::respawn(bool killed)
     else
         // Set state to respawn state
         state_ = new RespawnState(this);
+}
+
+LimpFighter* Fighter::goLimp(UnlimpCallback *l)
+{
+    // Just go into the limp state
+    delete state_;
+    LimpState* ret = new LimpState(this, l);
+    state_ = ret;
+    return ret;
 }
 
 bool Fighter::isAlive() const

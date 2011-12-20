@@ -1254,6 +1254,99 @@ void LedgeGrabState::grabLedge(Ledge *l)
         << " LedgePos: " << l->pos.x << ' ' << l->pos.y << '\n';
 }
 
+//// ------------------------- LIMP STATE ---------------------------------
+
+LimpState::LimpState(Fighter *f, UnlimpCallback *callback) :
+    FighterState(f),
+    unlimpCallback_(callback),
+    frameName_("AirStunned"), // XXX: needs it's own frame
+    next_(NULL)
+{
+}
+
+LimpState::~LimpState()
+{
+    delete unlimpCallback_;
+}
+
+FighterState* LimpState::processInput(controller_state&, float dt)
+{
+    // Do nothing, we're limp!
+    // Just return new state if it exists
+    return next_;
+}
+
+void LimpState::render(float dt)
+{
+    printf("LIMP | Next: %d || ",
+            next_);
+    // Just render the frame
+    fighter_->renderHelper(dt, frameName_, fighter_->getColor());
+}
+
+FighterState* LimpState::collisionWithGround(const rectangle &ground, bool collision)
+{
+    // Ignore this, assume the puppet master knows what they're doing
+    // Just return new state if it exists
+    return next_;
+}
+
+FighterState* LimpState::hitByAttack(const Attack *attack)
+{
+    // XXX: this is probably going to break sometime
+    assert(!next_ && "memory leak");
+    // On hit first disconnect
+    (*unlimpCallback_)();
+    // Then do the normal thing
+    return FighterState::calculateHitResult(attack);
+}
+
+bool LimpState::canBeHit() const
+{
+    // XXX: for now: Can't be hit, except by hit() call
+    // later, controllable, but still no hit while (next_)
+    return false;
+}
+
+void LimpState::setPosition(const glm::vec2 &pos)
+{
+    fighter_->pos_ = pos;
+}
+
+void LimpState::setVelocity(const glm::vec2 &vel)
+{
+    fighter_->vel_ = vel;
+}
+
+void LimpState::setAccel(const glm::vec2 &accel)
+{
+    fighter_->accel_ = accel;
+}
+
+void LimpState::setFrameName(const std::string &frameName)
+{
+    frameName_ = frameName;
+}
+
+void LimpState::hit(const Attack *attack)
+{
+    std::cout << "LIMP HIT\n";
+    // disconnect, we're no longer limp
+    (*unlimpCallback_)();
+    next_ = FighterState::calculateHitResult(attack);
+}
+
+void LimpState::release()
+{
+    // Just do the callback, and set the next state, always air normal
+    (*unlimpCallback_)();
+    next_ = new AirNormalState(fighter_);
+}
+
+const GameEntity * LimpState::getEntity() const
+{
+    return fighter_;
+}
 
 
 //// ----------------------- RESPAWN STATE --------------------------------
