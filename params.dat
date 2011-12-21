@@ -424,6 +424,18 @@ frontThrow.knockbackpow     140
 frontThrow.damage           8
 frontThrow.stun             0.12
 
+backThrow.knockbackx       -5
+backThrow.knockbacky       4
+backThrow.knockbackpow     140
+backThrow.damage           8
+backThrow.stun             0.12
+
+upThrow.knockbackx       0
+upThrow.knockbacky       1
+upThrow.knockbackpow     120
+upThrow.damage           5
+upThrow.stun             0.10
+
 
 stageHazardAttack.cooldown     0.50
 stageHazardAttack.damage       15

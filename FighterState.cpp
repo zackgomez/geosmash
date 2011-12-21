@@ -1103,14 +1103,19 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
     {
         bool shouldThrow = false;
         std::string throwPrefix = "INVALID";
-        // Front throw
-        if (controller.joyx * fighter_->dir_ >= 0
-                && fabs(controller.joyx) > getParam("input.throwThresh"))
+        // Front/back throw
+        if (fabs(controller.joyx) > getParam("input.throwThresh"))
         {
             shouldThrow = true;
-            throwPrefix = "frontThrow.";
+            throwPrefix = controller.joyx * fighter_->dir_ >= 0 ?
+                "frontThrow." : "backThrow.";
         }
-        // TODO back, and up throws
+        // Up throw
+        else if (controller.joyy > getParam("input.throwThresh"))
+        {
+            shouldThrow = true;
+            throwPrefix = "upThrow.";
+        }
         // If we have a throw, create it and do it
         if (shouldThrow)
         {

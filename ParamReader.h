@@ -35,6 +35,12 @@ public:
                 continue;
             if (ss.fail())
                 continue;
+            // Fail on double key read
+            if (params_.find(key) != params_.end())
+            {
+                std::cerr << "FATAL ERROR: Overwritting param " << key << '\n';
+                assert(false);
+            }
             params_[key] = val;
         }
     }
