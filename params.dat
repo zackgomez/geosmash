@@ -417,22 +417,24 @@ grabAttack.hitboxh          30
 
 grabState.holdTime          1.5
 grabState.releaseCooldown   0.25
+# accel = velocity * -damping
+grabState.speedDamping      5
 
 frontThrow.knockbackx       5
 frontThrow.knockbacky       4
-frontThrow.knockbackpow     140
+frontThrow.knockbackpow     170
 frontThrow.damage           8
 frontThrow.stun             0.12
 
 backThrow.knockbackx       -5
 backThrow.knockbacky       4
-backThrow.knockbackpow     140
+backThrow.knockbackpow     170
 backThrow.damage           8
 backThrow.stun             0.12
 
 upThrow.knockbackx       0
 upThrow.knockbacky       1
-upThrow.knockbackpow     120
+upThrow.knockbackpow     160
 upThrow.damage           5
 upThrow.stun             0.10
 

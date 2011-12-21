@@ -362,15 +362,17 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         return NULL;
     }
     // -- Check for grab start --
-    else if (controller.pressrb && !dashing_)
+    else if (controller.pressrb)
     {
+        // Keep speed if we're dashing, stop creeping otherwise
+        if (!dashing_)
+        {
+            fighter_->vel_ = glm::vec2(0.f);
+            fighter_->accel_ = glm::vec2(0.f);
+        }
         // Make sure we're facing the right direction
         if (fabs(controller.joyx) > getParam("input.deadzone"))
             fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-        // FIXME no dash grab
-        // No movement
-        fighter_->vel_ = glm::vec2(0.f);
-        fighter_->accel_ = glm::vec2(0.f);
 
         return new GrabbingState(fighter_);
     }
@@ -1085,6 +1087,9 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
     // Update timers
     holdTimeLeft_ -= dt;
 
+    // Do the speed damping
+    fighter_->accel_ = -getParam(pre_ + "speedDamping") * fighter_->vel_;
+
     // If the "grab attack" has expired and we have no victim, back to ground
     // normal.  grab attack cooldown should take care of grab cooldown
     if (!fighter_->attack_ && !victim_)
@@ -1104,14 +1109,17 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
         bool shouldThrow = false;
         std::string throwPrefix = "INVALID";
         // Front/back throw
-        if (fabs(controller.joyx) > getParam("input.throwThresh"))
+        if (fabs(controller.joyx) > getParam("input.throwThresh")
+            && fabs(controller.joyxv) > getParam("input.velThresh")
+            && controller.joyxv * controller.joyx >= 0)
         {
             shouldThrow = true;
             throwPrefix = controller.joyx * fighter_->dir_ >= 0 ?
                 "frontThrow." : "backThrow.";
         }
         // Up throw
-        else if (controller.joyy > getParam("input.throwThresh"))
+        else if (controller.joyy > getParam("input.throwThresh")
+                 && controller.joyyv > getParam("input.velThresh"))
         {
             shouldThrow = true;
             throwPrefix = "upThrow.";
@@ -1175,6 +1183,7 @@ FighterState* GrabbingState::attackConnected(GameEntity *victim)
     // Limp them
     victim_ = fvictim->goLimp(new GenericUnlimpCallback<GrabbingState>(this));
     // Set up their initial state
+    // TODO change their hitbox to be slightly slimmer (maybe 75%)
     // Put them in front of us, slightly off the ground
     glm::vec2 vicpos(fighter_->pos_.x
             + fighter_->dir_ * (fighter_->size_.x / 2 + fvictim->getSize().x / 3),
@@ -1187,13 +1196,15 @@ FighterState* GrabbingState::attackConnected(GameEntity *victim)
     victim_->setDirection(-fighter_->dir_);
     // They can be hit by other attacks for now
     victim_->setHitable(true);
-    // TODO change their hitbox to be slightly slimmer (maybe 75%)
     // Set hold timer to be hold time remaining
     holdTimeLeft_ = getParam(pre_ + "holdTime");
 
 
     // Finish our attack
     fighter_->attack_->kill();
+    // No more movement
+    fighter_->vel_ = glm::vec2(0.f);
+    fighter_->accel_ = glm::vec2(0.f);
     // Change our frame
     frameName_ = "Grabbing";
 
