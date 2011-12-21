@@ -319,7 +319,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     }
 
 
-    // -- Deal with starting an attack
+    // -- Deal with starting an attack --
     if (controller.pressa)
     {
         // Check for dash attack
@@ -361,8 +361,21 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         fighter_->attack_->start();
         return NULL;
     }
+    // -- Check for grab start --
+    else if (controller.pressrb && !dashing_)
+    {
+        // Make sure we're facing the right direction
+        if (fabs(controller.joyx) > getParam("input.deadzone"))
+            fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+        // FIXME no dash grab
+        // No movement
+        fighter_->vel_ = glm::vec2(0.f);
+        fighter_->accel_ = glm::vec2(0.f);
+
+        return new GrabbingState(fighter_);
+    }
     // Check for dodge
-    else if ((controller.rbumper || controller.rtrigger < -getParam("input.trigThresh") || controller.ltrigger < -getParam("input.trigThresh"))
+    else if ((controller.rtrigger < -getParam("input.trigThresh") || controller.ltrigger < -getParam("input.trigThresh"))
             && fabs(controller.joyx) > getParam("input.dodgeThresh")
             && fabs(controller.joyxv) > getParam("input.velThresh"))
     {
@@ -1061,34 +1074,50 @@ GrabbingState::GrabbingState(Fighter *f) :
     frameName_("GrabAttempt"),
     holdTimeLeft_(-1)
 {
-    // TODO
-    // Set up grabattack here
-    /*
-    fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
+    // Set up attack for collision detection
+    fighter_->attack_ = fighter_->attackMap_["grab"]->clone();
     fighter_->attack_->setFighter(f);
     fighter_->attack_->start();
-    */
 }
 
 FighterState * GrabbingState::processInput(controller_state &, float dt)
 {
+    // Update timers
+    holdTimeLeft_ -= dt;
+
     // If the "grab attack" has expired and we have no victim, back to ground
     // normal.  grab attack cooldown should take care of grab cooldown
     if (!fighter_->attack_ && !victim_)
         return new GroundState(fighter_);
+
+    // If we're grabbing someone, and we've run out of "hold time" then
+    // release them and transition back to the ground state
+    if (victim_ && holdTimeLeft_ < 0)
+    {
+        victim_->release();
+        // A bit of cooldown time here
+        return new GroundState(fighter_, getParam(pre_ + "releaseCooldown"));
+    }
+
+    if (victim_)
+    {
+        // TODO check for throws
+    }
 
     return NULL;
 }
 
 void GrabbingState::render(float dt)
 {
-    printf("GRABBING | || ");
+    printf("GRABBING | Victim: %d  holdTimeLeft: %f || ",
+            victim_ != NULL, holdTimeLeft_);
     fighter_->renderHelper(dt, frameName_, fighter_->getColor());
 }
 
 FighterState* GrabbingState::collisionWithGround(const rectangle &ground, bool collision)
 {
     // TODO just make sure we're still on the ground
+    assert(collision);
     return NULL;
 }
 
@@ -1121,6 +1150,9 @@ FighterState* GrabbingState::attackConnected(GameEntity *victim)
     victim_->setVelocity(glm::vec2(0.f));
     victim_->setAccel(glm::vec2(0.f));
     victim_->setFrameName("Grabbed");
+    // Have them face us
+    victim_->setDirection(-fighter_->dir_);
+    // TODO change their hitbox to be slightly slimmer (maybe 75%)
     // Set hold timer to be hold time remaining
     holdTimeLeft_ = getParam(pre_ + "holdTime");
 
@@ -1431,6 +1463,11 @@ void LimpState::setVelocity(const glm::vec2 &vel)
 void LimpState::setAccel(const glm::vec2 &accel)
 {
     fighter_->accel_ = accel;
+}
+
+void LimpState::setDirection(float dir)
+{
+    fighter_->dir_ = dir;
 }
 
 void LimpState::setFrameName(const std::string &frameName)

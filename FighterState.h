@@ -251,6 +251,7 @@ public:
     virtual void setPosition(const glm::vec2 &pos);
     virtual void setVelocity(const glm::vec2 &vel);
     virtual void setAccel(const glm::vec2 &accel);
+    virtual void setDirection(float dir);
     virtual void setFrameName(const std::string &frameName);
     virtual void hit(const Attack *attack);
     virtual void release();

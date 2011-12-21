@@ -89,6 +89,11 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     attackMap_["upSmash"]->setTwinkle(true);
     attackMap_["upSmash"]->setHitboxFrame("UpSmashHitbox");
 
+    // FIXME No noise for grab hit, or hitbox frame
+    attackMap_["grab"] = loadAttack<FighterAttack>("grabAttack", "", "GrabAttempt");
+    //attackMap_["grab"]->setHitboxFrame("GrabbingHitbox");
+
+
     // Set up the twinkle moves
     attackMap_["airFront"]->setTwinkle(true);
 

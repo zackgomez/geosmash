@@ -400,6 +400,24 @@ neutralSpecialAttack.knockbacky   1
 neutralSpecialAttack.knockbackpow 20.0
 neutralSpecialAttack.lifetime     2.0
 
+grabAttack.startup          0.10
+grabAttack.duration         0.35
+grabAttack.cooldown         0.20
+grabAttack.damage           0
+grabAttack.stun             0
+grabAttack.knockbackx       0
+grabAttack.knockbacky       0
+grabAttack.knockbackpow     0
+grabAttack.priority         0
+grabAttack.hitboxx          35
+grabAttack.hitboxy          5
+grabAttack.hitboxw          30
+grabAttack.hitboxh          30
+
+grabState.holdTime          1.5
+grabState.releaseCooldown   0.25
+
+
 stageHazardAttack.cooldown     0.50
 stageHazardAttack.damage       15
 stageHazardAttack.stun         0.08

@@ -15,7 +15,7 @@ void FrameManager::renderFrame(const glm::mat4 &trans, const glm::vec4 &col,
 {
     if (frames_.find(name) == frames_.end())
     {
-        std::cerr << "Unable to find frame " << name << " || strlen: " << name.length() << '\n';
+        std::cerr << "FATAL ERROR: Unable to find frame " << name << '\n';
         assert(false);
     }
     const anim_frame *frame = frames_[name];
