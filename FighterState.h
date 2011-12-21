@@ -185,6 +185,8 @@ public:
     virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual FighterState* attackConnected(GameEntity *victim);
+    // Override to control invincibility frames during throws
+    virtual bool canBeHit() const;
 
     // Called by LimpFighter when disconnect is necessary, or when we release
     void disconnectCallback();

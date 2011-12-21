@@ -1080,7 +1080,7 @@ GrabbingState::GrabbingState(Fighter *f) :
     fighter_->attack_->start();
 }
 
-FighterState * GrabbingState::processInput(controller_state &, float dt)
+FighterState * GrabbingState::processInput(controller_state &controller, float dt)
 {
     // Update timers
     holdTimeLeft_ -= dt;
@@ -1101,7 +1101,35 @@ FighterState * GrabbingState::processInput(controller_state &, float dt)
 
     if (victim_)
     {
-        // TODO check for throws
+        bool shouldThrow = false;
+        std::string throwPrefix = "INVALID";
+        // Front throw
+        if (controller.joyx * fighter_->dir_ >= 0
+                && fabs(controller.joyx) > getParam("input.throwThresh"))
+        {
+            shouldThrow = true;
+            throwPrefix = "frontThrow.";
+        }
+        // TODO back, and up throws
+        // If we have a throw, create it and do it
+        if (shouldThrow)
+        {
+            glm::vec2 kb = getParam(throwPrefix + "knockbackpow") *
+                glm::normalize(glm::vec2(getParam(throwPrefix + "knockbackx")
+                            * fighter_->dir_,
+                            getParam(throwPrefix + "knockbacky")));
+            SimpleAttack thrw = SimpleAttack(
+                    kb,
+                    getParam(throwPrefix + "damage"),
+                    getParam(throwPrefix + "stun"),
+                    0.f, // priority doesn't matter
+                    glm::vec2(0.f), // position doesn't matter
+                    glm::vec2(0.f), // size doesn't matter
+                    glm::sign(fighter_->pos_.x - victim_->getEntity()->getPosition().x),
+                    fighter_->playerID_,
+                    ""); // FIXME: No audio id for now
+            victim_->hit(&thrw);
+        }
     }
 
     return NULL;
@@ -1166,6 +1194,12 @@ FighterState* GrabbingState::attackConnected(GameEntity *victim)
 
     // No state change
     return NULL;
+}
+
+bool GrabbingState::canBeHit() const
+{
+    // TODO make it so during throw duration we cannot be hit
+    return true;
 }
 
 void GrabbingState::disconnectCallback()

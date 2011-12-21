@@ -44,6 +44,7 @@ input.fallThresh    -0.95
 input.dropThresh    -0.6
 input.trigThresh    0.5
 input.duckThresh    -0.85
+input.throwThresh   0.8
 
 debug.drawHitbox    0
 
@@ -416,6 +417,12 @@ grabAttack.hitboxh          30
 
 grabState.holdTime          1.5
 grabState.releaseCooldown   0.25
+
+frontThrow.knockbackx       5
+frontThrow.knockbacky       4
+frontThrow.knockbackpow     140
+frontThrow.damage           8
+frontThrow.stun             0.12
 
 
 stageHazardAttack.cooldown     0.50
