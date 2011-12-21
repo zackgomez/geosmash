@@ -173,6 +173,29 @@ private:
     std::string pre_;
 };
 
+// Responsible for grabbing, holding and throwing
+class GrabbingState : public FighterState
+{
+public:
+    GrabbingState(Fighter *f);
+    virtual ~GrabbingState() {}
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* hitByAttack(const Attack *attack);
+    virtual FighterState* attackConnected(GameEntity *victim);
+
+    // Called by LimpFighter when disconnect is necessary, or when we release
+    void disconnectCallback();
+
+private:
+    std::string pre_;
+    LimpFighter *victim_;
+    std::string frameName_;
+    float holdTimeLeft_;
+};
+
 class DodgeState : public FighterState
 {
 public:

@@ -98,7 +98,7 @@ public:
     
     // When called disconnects from victim, assuming that LimpFighter interface
     // is no longer valid.
-    virtual void disconnectVictim();
+    virtual void disconnectCallback();
     
 private:
     float lifetime_;

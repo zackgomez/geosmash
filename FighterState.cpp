@@ -1018,6 +1018,7 @@ FighterState * UpSpecialState::processInput(controller_state &, float dt)
     if (!fighter_->attack_)
         return new AirStunnedState(fighter_, HUGE_VAL);
 
+    // Only boost while the hitbox is active
     if (fighter_->attack_->hasHitbox())
     {
         fighter_->vel_.x = fighter_->dir_ * getParam(pre_ + "xvel");
@@ -1051,6 +1052,98 @@ FighterState* UpSpecialState::attackConnected(GameEntity *victim)
     victim->push(glm::vec2(0, 20));
     return FighterState::attackConnected(victim);
 }
+
+//// ---------------------- GRABBING STATE ------------------------------
+GrabbingState::GrabbingState(Fighter *f) :
+    FighterState(f),
+    pre_("grabState."),
+    victim_(NULL),
+    frameName_("GrabAttempt"),
+    holdTimeLeft_(-1)
+{
+    // TODO
+    // Set up grabattack here
+    /*
+    fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
+    fighter_->attack_->setFighter(f);
+    fighter_->attack_->start();
+    */
+}
+
+FighterState * GrabbingState::processInput(controller_state &, float dt)
+{
+    // If the "grab attack" has expired and we have no victim, back to ground
+    // normal.  grab attack cooldown should take care of grab cooldown
+    if (!fighter_->attack_ && !victim_)
+        return new GroundState(fighter_);
+
+    return NULL;
+}
+
+void GrabbingState::render(float dt)
+{
+    printf("GRABBING | || ");
+    fighter_->renderHelper(dt, frameName_, fighter_->getColor());
+}
+
+FighterState* GrabbingState::collisionWithGround(const rectangle &ground, bool collision)
+{
+    // TODO just make sure we're still on the ground
+    return NULL;
+}
+
+FighterState* GrabbingState::hitByAttack(const Attack *attack)
+{
+    // disconnect if necessary
+    if (victim_)
+        victim_->release();
+    return FighterState::calculateHitResult(attack);
+}
+
+
+
+FighterState* GrabbingState::attackConnected(GameEntity *victim)
+{
+    // If we already have someone, ignore this
+    if (victim_) return NULL;
+    // Only care if it's a fighter
+    if (victim->getType() != Fighter::type) return NULL;
+    Fighter *fvictim = (Fighter *) victim;
+
+    // Limp them
+    victim_ = fvictim->goLimp(new GenericUnlimpCallback<GrabbingState>(this));
+    // Set up their initial state
+    // Put them in front of us, slightly off the ground
+    glm::vec2 vicpos(fighter_->pos_.x
+            + fighter_->dir_ * (fighter_->size_.x / 2 + fvictim->getSize().x / 3),
+            fighter_->pos_.y - fighter_->size_.y/2 + fvictim->getSize().y / 2);
+    victim_->setPosition(vicpos);
+    victim_->setVelocity(glm::vec2(0.f));
+    victim_->setAccel(glm::vec2(0.f));
+    victim_->setFrameName("Grabbed");
+    // Set hold timer to be hold time remaining
+    holdTimeLeft_ = getParam(pre_ + "holdTime");
+
+
+    // Finish our attack
+    fighter_->attack_->finish();
+    delete fighter_->attack_;
+    fighter_->attack_ = 0;
+    // Change our frame
+    frameName_ = "Grabbing";
+
+    // No state change
+    return NULL;
+}
+
+void GrabbingState::disconnectCallback()
+{
+    // We should have no attack right now
+    assert(!fighter_->attack_);
+    // Remove victim
+    victim_ = NULL;
+}
+
 
 //// ----------------------- DODGE STATE --------------------------------
 DodgeState::DodgeState(Fighter *f) :

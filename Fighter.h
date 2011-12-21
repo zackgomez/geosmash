@@ -118,6 +118,7 @@ private:
     friend class LedgeGrabState;
     friend class CounterState;
     friend class UpSpecialState;
+    friend class GrabbingState;
     friend class LimpState;
 
     friend class MovingAttack;
@@ -155,5 +156,21 @@ struct UnlimpCallback
 public:
     virtual ~UnlimpCallback() { }
     virtual void operator() () = 0;
+};
+
+template<class T>
+struct GenericUnlimpCallback : public UnlimpCallback
+{
+    GenericUnlimpCallback(T* target) :
+        target_(target)
+    { }
+
+    virtual void operator() ()
+    {
+        target_->disconnectCallback();
+    }
+
+private:
+    T* target_;
 };
 

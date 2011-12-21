@@ -232,21 +232,6 @@ void HazardEntity::hitByAttack(const Attack*)
     // HazardEntity doesn't have life or anything, just ignore it
 }
 
-struct HazardEntityUnlimpCallback : public UnlimpCallback
-{
-    HazardEntityUnlimpCallback(HazardEntity *he) :
-        owner_(he)
-    { }
-
-    virtual void operator() ()
-    {
-        owner_->disconnectVictim();
-    }
-
-private:
-    HazardEntity *owner_;
-};
-
 void HazardEntity::attackConnected(GameEntity *victim)
 {
     attack_->hit(victim);
@@ -256,7 +241,7 @@ void HazardEntity::attackConnected(GameEntity *victim)
         return;
     Fighter *fighter = (Fighter *) victim;
     // Make them go limp and store it
-    victim_ = fighter->goLimp(new HazardEntityUnlimpCallback(this));
+    victim_ = fighter->goLimp(new GenericUnlimpCallback<HazardEntity>(this));
 
     // Reset the timer
     t_ = 0;
@@ -275,7 +260,7 @@ void HazardEntity::collisionWithGround(const rectangle &ground, bool collision)
         dir_ = -dir_;
 }
 
-void HazardEntity::disconnectVictim()
+void HazardEntity::disconnectCallback()
 {
     assert(victim_);
     // Simply forget about the victim
