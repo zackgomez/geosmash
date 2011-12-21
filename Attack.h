@@ -116,6 +116,8 @@ public:
     virtual void render(float dt);
     // Sends to cooldown time
     virtual void cancel();
+    // Ends attack altogether (will be removed)
+    virtual void kill();
     // Called when two attacks collide
     virtual void attackCollision(const Attack *other);
 

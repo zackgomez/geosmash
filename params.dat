@@ -409,9 +409,9 @@ grabAttack.knockbackx       0
 grabAttack.knockbacky       0
 grabAttack.knockbackpow     0
 grabAttack.priority         0
-grabAttack.hitboxx          35
+grabAttack.hitboxx          30
 grabAttack.hitboxy          5
-grabAttack.hitboxw          30
+grabAttack.hitboxw          20
 grabAttack.hitboxh          30
 
 grabState.holdTime          1.5

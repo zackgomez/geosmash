@@ -252,6 +252,7 @@ public:
     virtual void setVelocity(const glm::vec2 &vel);
     virtual void setAccel(const glm::vec2 &accel);
     virtual void setDirection(float dir);
+    virtual void setHitable(bool hitable);
     virtual void setFrameName(const std::string &frameName);
     virtual void hit(const Attack *attack);
     virtual void release();
@@ -262,6 +263,7 @@ private:
     UnlimpCallback *unlimpCallback_;
     std::string frameName_;
     FighterState *next_;
+    bool hitable_;
 };
 
 class RespawnState : public FighterState

@@ -138,6 +138,9 @@ public:
     virtual void setAccel(const glm::vec2 &accel) = 0;
 
     virtual void setDirection(float dir) = 0;
+    // Sets whether or not the limp fighter can be hit by other attacks
+    // DEFAULTS TO FALSE (cannot be hit)
+    virtual void setHitable(bool canHit) = 0;
 
     // Sets the fighters display frame
     virtual void setFrameName(const std::string &frameName) = 0;

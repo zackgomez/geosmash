@@ -1152,15 +1152,15 @@ FighterState* GrabbingState::attackConnected(GameEntity *victim)
     victim_->setFrameName("Grabbed");
     // Have them face us
     victim_->setDirection(-fighter_->dir_);
+    // They can be hit by other attacks for now
+    victim_->setHitable(true);
     // TODO change their hitbox to be slightly slimmer (maybe 75%)
     // Set hold timer to be hold time remaining
     holdTimeLeft_ = getParam(pre_ + "holdTime");
 
 
     // Finish our attack
-    fighter_->attack_->finish();
-    delete fighter_->attack_;
-    fighter_->attack_ = 0;
+    fighter_->attack_->kill();
     // Change our frame
     frameName_ = "Grabbing";
 
@@ -1401,8 +1401,9 @@ void LedgeGrabState::grabLedge(Ledge *l)
 LimpState::LimpState(Fighter *f, UnlimpCallback *callback) :
     FighterState(f),
     unlimpCallback_(callback),
-    frameName_("AirStunned"), // XXX: needs it's own frame
-    next_(NULL)
+    frameName_("Grabbed"), // XXX: needs it's own frame
+    next_(NULL),
+    hitable_(false)
 {
 }
 
@@ -1445,9 +1446,8 @@ FighterState* LimpState::hitByAttack(const Attack *attack)
 
 bool LimpState::canBeHit() const
 {
-    // XXX: for now: Can't be hit, except by hit() call
-    // later, controllable, but still no hit while (next_)
-    return false;
+    // Can only be hit when not transitioning and are hitable
+    return !next_ && hitable_;
 }
 
 void LimpState::setPosition(const glm::vec2 &pos)
@@ -1468,6 +1468,11 @@ void LimpState::setAccel(const glm::vec2 &accel)
 void LimpState::setDirection(float dir)
 {
     fighter_->dir_ = dir;
+}
+
+void LimpState::setHitable(bool hitable)
+{
+    hitable_ = hitable;
 }
 
 void LimpState::setFrameName(const std::string &frameName)

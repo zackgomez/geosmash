@@ -264,6 +264,12 @@ void FighterAttack::cancel()
     t_ = std::max(t_, startup_ + duration_);
 }
 
+void FighterAttack::kill()
+{
+    // Just set t to a massive value, guaranteed to be larger than total time
+    t_ = HUGE_VAL;
+}
+
 void FighterAttack::attackCollision(const Attack *other)
 {
     // Only cancel if we lose or tie priority
