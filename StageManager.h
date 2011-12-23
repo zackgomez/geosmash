@@ -70,11 +70,14 @@ private:
 };
 
 class LimpFighter;
+class Emitter;
+struct CentripetalForceF;
 
 class HazardEntity : public GameEntity 
 {
 public:
     HazardEntity(const std::string &audioID);
+    ~HazardEntity();
 
     virtual std::string getType() const { return "HazardEntity"; }
 
@@ -85,16 +88,12 @@ public:
 
     virtual void update(float dt);
 
+    // GameEntity overrides
     virtual void render(float dt);
-    // Someone hit us. Shake in our boots.
     virtual void attackCollision(const Attack*);
-    // We hit someone! Fuck 'em up!
     virtual void attackConnected(GameEntity*);
-    // XXX what happens here?
     virtual void collisionWithGround(const rectangle&, bool);
     virtual void hitByAttack(const Attack*);
-
-    //attackCollision can be nop
     
     // When called disconnects from victim, assuming that LimpFighter interface
     // is no longer valid.
@@ -103,10 +102,12 @@ public:
 private:
     float lifetime_;
     SimpleAttack *attack_;
-    std::string frameName_;
     std::string pre_;
     int dir_;
     float t_;
+
+    Emitter *emitter;
+    CentripetalForceF *emitter_force;
 
     LimpFighter *victim_;
 };

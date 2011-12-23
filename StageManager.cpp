@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "Fighter.h"
 #include "FrameManager.h"
+#include "PManager.h"
 
 StageManager::StageManager() :
     t_(0)
@@ -134,7 +135,6 @@ HazardEntity::HazardEntity(const std::string &audioID) :
 {
     pre_ = "stageHazardAttack.";
 
-    frameName_ = "Hazard";
     pos_ = glm::vec2(0, getParam("level.y") + getParam("level.h") / 2 + getParam(pre_ + "sizey") / 2 - 1);
     size_ = glm::vec2(getParam(pre_ + "sizex"), getParam(pre_ + "sizey"));
     lifetime_ = getParam(pre_ + "lifetime");
@@ -149,6 +149,30 @@ HazardEntity::HazardEntity(const std::string &audioID) :
             getParam(pre_ + "priority"),
             pos_, size_, -dir_, playerID_,
             audioID);
+
+    // Set up particle effects
+    glm::vec3 up(0, 1, 0);
+    float radius = 0.8f * glm::length(size_/2.f);
+    emitter = ParticleManager::get()->newEmitter();
+    ParticleManager::get()->addEmitter(emitter);
+    emitter_force = new CentripetalForceF(glm::vec3(pos_, 0.f), up, radius);
+
+    PGroup *group = ParticleManager::get()->newGroup("hazardentity");
+    group->addAction(emitter_force);
+    group->addAction(new ConstForceF(50.f, up));
+
+    emitter->setOutputGroup("hazardentity")
+           ->setParticleLocationF(new circleLocationF(radius, up))
+           ->setParticleVelocityF(new circleTangentVelocityF(100, 0, up))
+           ->setParticleLifetimeF(new lifetimeNormalF(1.5, 0.3))
+           ->setLocation(glm::vec3(pos_ - glm::vec2(0.f, size_.y/2), 0.f))
+           ->setOutputRate(1000);
+}
+
+HazardEntity::~HazardEntity()
+{
+    ParticleManager::get()->quashEmitter(emitter);
+    //ParticleManager::get()->removeGroup("hazardentity");
 }
 
 bool HazardEntity::isDone() const
@@ -173,7 +197,7 @@ void HazardEntity::update(float dt)
         }
         else
         {
-            float side = victim_->getEntity()->getPosition().x > pos_.x ? 1 : -1;
+            //float side = victim_->getEntity()->getPosition().x > pos_.x ? 1 : -1;
             //victim_->setAccel(glm::vec2(-side * getParam(pre_ + "xaccel"), 0));
             // Make them spin
             glm::mat4 spintrans = glm::rotate(glm::mat4(1.f), 1000.f*t_, glm::vec3(0, 1, 0));
@@ -200,16 +224,13 @@ void HazardEntity::update(float dt)
 
     GameEntity::update(dt);
     attack_->setPosition(pos_);
+    emitter->setLocation(glm::vec3(pos_ - glm::vec2(0.f, size_.y/2.f), 0.f));
+    emitter_force->setCenter(glm::vec3(pos_, 0.f));
 }
 
 void HazardEntity::render(float dt)
 {
-    glm::mat4 transform = glm::scale(
-            glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
-            glm::vec3(1.f));
-#define HAZARD_COLOR 0.5, 0.5, 1
-    FrameManager::get()->renderFrame(transform, glm::vec4(glm::vec4(HAZARD_COLOR, 0.3)),
-            frameName_);
+    // Do nothing, the particle manager does our rendering
 }
 
 void HazardEntity::attackCollision(const Attack*)

@@ -442,7 +442,7 @@ upThrow.stun             0.10
 stageHazardAttack.cooldown     0.50
 stageHazardAttack.damage       15
 stageHazardAttack.stun         0.08
-stageHazardAttack.speed        100.0
+stageHazardAttack.speed        33.0
 stageHazardAttack.switchRate   100.0
 stageHazardAttack.sizex        60.0
 stageHazardAttack.sizey        40.0

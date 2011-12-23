@@ -14,6 +14,7 @@ libkiss_particles.a: force_look
 
 clean:
 	rm -f ssb *.o *.a
+	cd kiss_particles && make clean
 
 force_look:
 	true
