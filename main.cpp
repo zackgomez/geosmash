@@ -15,7 +15,7 @@
 #include "StatsManager.h"
 #include "CameraManager.h"
 #include "Attack.h"
-#include "ParticleManager.h"
+#include "PManager.h"
 #include "FontManager.h"
 #include "StageManager.h"
 #include "Controller.h"

@@ -1,0 +1,4 @@
+*.o
+*.a
+lastreplay.replay
+kiss_particles

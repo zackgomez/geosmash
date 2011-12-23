@@ -3,7 +3,7 @@
 #include "explosion.h"
 #include "glutils.h"
 #include "FrameManager.h"
-#include "ParticleManager.h"
+#include "PManager.h"
 
 void Twinkle::render(float dt)
 {

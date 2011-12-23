@@ -250,12 +250,12 @@ void HazardEntity::attackConnected(GameEntity *victim)
     t_ = 0;
 
     // Set initial conditions on the fighter
-    // TODO don't "jerk" the fighter
     float yspeed = getParam(pre_ + "twirlHeight") / getParam(pre_ + "twirlTime");
     victim_->setPosition(pos_);
     victim_->setVelocity(glm::vec2(0.f, yspeed));
     victim_->setAccel(glm::vec2(0.f));
     /*
+    // TODO don't "jerk" the fighter
     victim_->setPosition(pos_ + glm::vec2(size_.x, 0));
     victim_->setVelocity(glm::vec2(0, yspeed));
     victim_->setAccel(glm::vec2(-getParam(pre_ + "xaccel"), 0));

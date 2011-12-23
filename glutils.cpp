@@ -685,3 +685,12 @@ const glm::mat4 & getViewMatrix()
 {
     return viewMatrix;
 }
+
+void renderParticle(const glm::vec3 &loc, const glm::vec3 &size,
+        const glm::vec4 &color)
+{
+    glm::mat4 trans = glm::scale(
+            glm::translate(glm::mat4(1.f), loc),
+            size);
+    renderRectangle(trans, color);
+}
