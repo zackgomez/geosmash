@@ -1452,6 +1452,7 @@ LimpState::LimpState(Fighter *f, UnlimpCallback *callback) :
     FighterState(f),
     unlimpCallback_(callback),
     frameName_("Grabbed"), // XXX: needs it's own frame
+    pretrans_(glm::mat4(1.f)), // default to identity matrix, no trans
     next_(NULL),
     hitable_(false)
 {
@@ -1474,7 +1475,7 @@ void LimpState::render(float dt)
     printf("LIMP | Next: %d || ",
             next_ != NULL);
     // Just render the frame
-    fighter_->renderHelper(dt, frameName_, fighter_->getColor());
+    fighter_->renderHelper(dt, frameName_, fighter_->getColor(), pretrans_);
 }
 
 FighterState* LimpState::collisionWithGround(const rectangle &ground, bool collision)
@@ -1528,6 +1529,11 @@ void LimpState::setHitable(bool hitable)
 void LimpState::setFrameName(const std::string &frameName)
 {
     frameName_ = frameName;
+}
+
+void LimpState::setPreTransform(const glm::mat4 &pretrans)
+{
+    pretrans_ = pretrans;
 }
 
 void LimpState::hit(const Attack *attack)

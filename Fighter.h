@@ -144,6 +144,7 @@ public:
 
     // Sets the fighters display frame
     virtual void setFrameName(const std::string &frameName) = 0;
+    virtual void setPreTransform(const glm::mat4 &pretrans) = 0;
 
     // Hits the fighter with the attack-- will trigger disconnect event
     virtual void hit(const Attack *attack) = 0;

@@ -174,7 +174,10 @@ void HazardEntity::update(float dt)
         else
         {
             float side = victim_->getEntity()->getPosition().x > pos_.x ? 1 : -1;
-            victim_->setAccel(glm::vec2(-side * getParam(pre_ + "xaccel"), 0));
+            //victim_->setAccel(glm::vec2(-side * getParam(pre_ + "xaccel"), 0));
+            // Make them spin
+            glm::mat4 spintrans = glm::rotate(glm::mat4(1.f), 1000.f*t_, glm::vec3(0, 1, 0));
+            victim_->setPreTransform(spintrans);
         }
         // Don't do other updates
         return;
@@ -248,10 +251,15 @@ void HazardEntity::attackConnected(GameEntity *victim)
 
     // Set initial conditions on the fighter
     // TODO don't "jerk" the fighter
-    victim_->setPosition(pos_ + glm::vec2(size_.x, 0));
     float yspeed = getParam(pre_ + "twirlHeight") / getParam(pre_ + "twirlTime");
+    victim_->setPosition(pos_);
+    victim_->setVelocity(glm::vec2(0.f, yspeed));
+    victim_->setAccel(glm::vec2(0.f));
+    /*
+    victim_->setPosition(pos_ + glm::vec2(size_.x, 0));
     victim_->setVelocity(glm::vec2(0, yspeed));
     victim_->setAccel(glm::vec2(-getParam(pre_ + "xaccel"), 0));
+    */
 }
 
 void HazardEntity::collisionWithGround(const rectangle &ground, bool collision)

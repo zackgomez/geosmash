@@ -256,6 +256,7 @@ public:
     virtual void setDirection(float dir);
     virtual void setHitable(bool hitable);
     virtual void setFrameName(const std::string &frameName);
+    virtual void setPreTransform(const glm::mat4 &pretrans);
     virtual void hit(const Attack *attack);
     virtual void release();
     virtual const GameEntity *getEntity() const;
@@ -264,6 +265,7 @@ public:
 private:
     UnlimpCallback *unlimpCallback_;
     std::string frameName_;
+    glm::mat4 pretrans_;
     FighterState *next_;
     bool hitable_;
 };
