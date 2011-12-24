@@ -30,7 +30,6 @@ static float WORLD_H;
 bool teams;
 bool muteMusic;
 bool criticalMusic = false;
-SDL_Joystick *joystick;
 
 bool running;
 bool playing;
@@ -41,6 +40,7 @@ std::ofstream logfile;
 
 size_t startTime;
 
+std::vector<SDL_Joystick*> joysticks;
 std::vector<Controller*> controllers;
 std::vector<Fighter*> fighters;
 std::vector<GameEntity *> entities;
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
         fighter->respawn(false);
         fighters.push_back(fighter);
         entities.push_back(fighter);
-        controllers.push_back(new Controller(fighter, i));
+        controllers.push_back(new Controller(fighter, joysticks[i]));
     }
     logfile.open("lastreplay.replay");
 
@@ -205,7 +205,7 @@ void mainloop()
         }
 
         int endms = SDL_GetTicks();
-        int delay = 16 - std::min(16, std::max(1, endms - startms));
+        int delay = 16 - std::min(16, std::max(0, endms - startms));
         std::cout << "Frame time (ms): " << endms - startms << 
             "   Delay time (ms): " << delay << '\n';
         SDL_Delay(delay);
@@ -241,7 +241,8 @@ void checkState()
         playing = false;
         // Turn on the "end of game music"
         AudioManager::get()->setSoundtrack("sfx/PAUSE.wav");
-        AudioManager::get()->startSoundtrack();
+        if (!muteMusic)
+            AudioManager::get()->startSoundtrack();
         if (!teamsAlive.empty())
             winningTeam = *teamsAlive.begin();
 
@@ -250,22 +251,13 @@ void checkState()
     }
 }
 
-void processEvents()
+void globalEvents()
 {
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
         {
-        case SDL_JOYAXISMOTION:
-        case SDL_JOYBUTTONDOWN:
-        case SDL_JOYBUTTONUP:
-            for (unsigned i = 0; i < controllers.size(); i++)
-            {
-                controllers[i]->processEvent(event);
-            }
-            break;
-
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
@@ -296,7 +288,7 @@ void processInput()
     }
 
     // Then update based on new events
-    processEvents();
+    globalEvents();
 
 
     // Now have the fighters process their input
@@ -450,6 +442,7 @@ void render()
     StageManager::get()->renderSphereBackground(dt * !paused);
     StageManager::get()->renderStage(dt * !paused);
 
+    // Draw all entities
     for (unsigned i = 0; i < entities.size(); i++)
         entities[i]->render(dt);
 
@@ -623,7 +616,7 @@ void renderArrow(const Fighter *f)
 
 void inputEndScreen()
 {
-    processEvents();
+    globalEvents();
 }
 
 void renderEndScreen()
@@ -690,11 +683,9 @@ int initJoystick(unsigned numPlayers)
     if (numJoysticks == 0)
         return 0;
 
-    SDL_JoystickEventState(SDL_ENABLE);
-
     unsigned i;
     for (i = 0; i < numJoysticks && i < numPlayers; i++)
-        joystick = SDL_JoystickOpen(i);
+        joysticks.push_back(SDL_JoystickOpen(i));
 
     if (i != numPlayers)
         return 0;
@@ -729,10 +720,11 @@ void cleanup()
         delete entities[i];
     for (unsigned i = 0; i < controllers.size(); i++)
         delete controllers[i];
+    for (unsigned i = 0; i < joysticks.size(); i++)
+        SDL_JoystickClose(joysticks[i]);
 
 
     std::cout << "Quiting nicely\n";
-    SDL_JoystickClose(0);
     SDL_Quit();
 }
 
@@ -766,7 +758,7 @@ int initLibs()
         return 0;
     }
 
-    SDL_WM_SetCaption("Geometry Smash 0.4", "geosmash");
+    SDL_WM_SetCaption("Geometry Smash 0.6", "geosmash");
 
     return 1;
 }

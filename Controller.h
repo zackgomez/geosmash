@@ -10,23 +10,23 @@ struct controller_state
     // The velocities of the main analog stick over some time period
     float joyxv, joyyv;
     // nonzero if the button is pressed
-    int buttona, buttonb, buttonc, jumpbutton, buttonstart;
+    bool buttona, buttonb, buttonc, jumpbutton, buttonstart;
     // nonzero if the button was pressed this frame
-    int pressa, pressb, pressc, pressjump, pressstart;
+    bool pressa, pressb, pressc, pressjump, pressstart;
 
     float rtrigger, ltrigger;
-    int lbumper, rbumper;
-    int presslb, pressrb;
+    bool lbumper, rbumper;
+    bool presslb, pressrb;
 
     // Dpad directions, true if they're press currently
-    int dpadl, dpadr, dpadu, dpadd;
+    bool dpadl, dpadr, dpadu, dpadd;
 };
 
 
 class Controller
 {
 public:
-    Controller(const Fighter *f, int joyWhich);
+    Controller(const Fighter *f, SDL_Joystick *joystick);
     virtual ~Controller();
 
     // Gets the next state
@@ -41,7 +41,7 @@ public:
 
 private:
     const Fighter *fighter_;
-    int which_;
+    SDL_Joystick *joystick_;
     controller_state state_;
     controller_state last_;
 };
