@@ -1,4 +1,6 @@
-CXXFLAGS=-g -O0 -Wall -Iglm-0.9.2.7 -Ikiss_particles
+KISS_PARTICLES=kiss-particles
+
+CXXFLAGS=-g -O0 -Wall -Iglm-0.9.2.7 -I$(KISS_PARTICLES)
 LDFLAGS=-lSDL -lGL -lGLEW  -lsfml-audio
 
 all: ssb
@@ -9,12 +11,12 @@ ssb: main.o glutils.o util.o Fighter.o audio.o explosion.o FrameManager.o StatsM
 	g++ $(CXXFLAGS)  -o $@ $^ $(LDFLAGS)
 
 libkiss_particles.a: force_look
-	cd kiss_particles && make libkiss_particles.a
-	cp kiss_particles/libkiss_particles.a .
+	cd $(KISS_PARTICLES) && make libkiss_particles.a
+	cp $(KISS_PARTICLES)/libkiss_particles.a .
 
 clean:
 	rm -f ssb *.o *.a
-	cd kiss_particles && make clean
+	cd $(KISS_PARTICLES) && make clean
 
 force_look:
 	true
