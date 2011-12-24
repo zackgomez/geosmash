@@ -8,6 +8,10 @@ level.y      -100
 level.w      1024
 level.h      64
 level.d      80
+# level render color
+level.r      0.2
+level.g      0.2
+level.b      0.2
 
 killbox.top     800
 killbox.bottom  -600

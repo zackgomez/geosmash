@@ -26,6 +26,20 @@ StageManager::StageManager() :
     l.dir = 1;
     ledges_.push_back(new Ledge(l));
 
+    initBackground();
+
+    ground_ = rectangle(
+            getParam("level.x"), getParam("level.y"),
+            getParam("level.w"), getParam("level.h"));
+    ground_color_ = glm::vec3(getParam("level.r"),
+            getParam("level.g"), getParam("level.b"));
+
+    // Load the ground mesh
+    level_mesh_ = createMesh("models/level.obj");
+}
+
+void StageManager::initBackground()
+{
     // Create a mesh [-5, 5] with some number of vertices
     meshRes_ = getParam("backgroundSphere.meshRes");
     float *mesh = new float[2 * meshRes_ * meshRes_];
@@ -52,11 +66,6 @@ StageManager::StageManager() :
             array[2*j + 0] = i * meshRes_ + j;
             array[2*j + 1] = (i + 1) * meshRes_ + j;
         }
-        /*
-        if (i == 0)
-            for (int k = 0; k < meshRes_*2; k++)
-                std::cout << "Index: " << k << " value: " << array[k] << '\n';
-        */
     }
 
     // make the shaders
@@ -125,6 +134,19 @@ void StageManager::renderSphereBackground(float dt)
     glDisable(GL_CULL_FACE);
 }
 
+void StageManager::renderStage(float dt)
+{
+    // Draw the land
+    glm::mat4 transform = glm::scale(
+            glm::translate(glm::mat4(1.0f), glm::vec3(ground_.x, ground_.y, 0.1)),
+            glm::vec3(ground_.w/2, ground_.h/2, getParam("level.d")/2));
+    renderMesh(level_mesh_, transform, ground_color_);
+}
+
+rectangle StageManager::getGroundRect() const
+{
+    return ground_;
+}
 
 //////////////////////////////////////////////
 // Hazard  

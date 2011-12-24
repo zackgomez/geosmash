@@ -3,6 +3,8 @@
 #include <GL/glew.h>
 #include "GameEntity.h"
 #include "Attack.h"
+#include "Fighter.h"
+#include "glutils.h"
 
 struct Ledge
 {
@@ -24,11 +26,16 @@ public:
 
     void renderSphereBackground(float dt);
 
+    // Renders the actual stage platform
+    void renderStage(float dt);
+
     // Cleans up and restores this stage manager to default state
     void clear();
 
     // Returns the nearest non occupied ledge, or null
     Ledge * getPossibleLedge(const glm::vec2 &pos);
+
+    rectangle getGroundRect() const;
 
 private:
     StageManager();
@@ -40,6 +47,12 @@ private:
     GLuint sphereProgram_;
     GLuint **indicies_;
     float t_;
+
+    void initBackground();
+
+    rectangle ground_;
+    glm::vec3 ground_color_;
+    mesh level_mesh_;
 };
 
 // Renders a shiny sphere.

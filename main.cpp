@@ -59,12 +59,6 @@ const glm::vec3 teamColors[] =
     glm::vec3(0.8, 0.35, 0.1)
 };
 
-rectangle ground;
-const glm::vec3 groundColor(0.2f, 0.2f, 0.2f);
-mesh cubeMesh;
-mesh levelMesh;
-
-
 // End of game screen members
 GLuint backgroundTex;
 int winningTeam = -1;
@@ -154,11 +148,6 @@ int main(int argc, char *argv[])
         entities.push_back(fighter);
         controllers.push_back(new Controller(fighter, i));
     }
-    ground = rectangle(
-            getParam("level.x"),
-            getParam("level.y"),
-            getParam("level.w"),
-            getParam("level.h"));
     logfile.open("lastreplay.replay");
 
     // Remove initial joystick events
@@ -414,6 +403,7 @@ void collisionDetection()
     }
 
     // Now check for ground hits
+    rectangle ground = StageManager::get()->getGroundRect();
     for (unsigned i = 0; i < entities.size(); i++)
     {
         GameEntity *entity = entities[i];
@@ -458,12 +448,7 @@ void render()
 
     // Draw the background
     StageManager::get()->renderSphereBackground(dt * !paused);
-
-    // Draw the land
-    glm::mat4 transform = glm::scale(
-            glm::translate(glm::mat4(1.0f), glm::vec3(ground.x, ground.y, 0.1)),
-            glm::vec3(ground.w/2, ground.h/2, getParam("level.d")/2));
-    renderMesh(levelMesh, transform, groundColor);
+    StageManager::get()->renderStage(dt * !paused);
 
     for (unsigned i = 0; i < entities.size(); i++)
         entities[i]->render(dt);
@@ -733,10 +718,6 @@ int initGraphics()
 
     // Load END OF GAME SCREEN background
     backgroundTex = make_texture("images/back003.png");
-
-    // Load the ground mesh
-    cubeMesh = createMesh("models/cube.obj");
-    levelMesh = createMesh("models/level.obj");
 
     return 1;
 }
