@@ -77,6 +77,10 @@ void Controller::update(float dt)
     newstate = SDL_JoystickGetButton(joystick_, 3);
     state_.pressjump = newstate && !state_.jumpbutton;
     state_.jumpbutton = newstate;
+    // Start button, id 8
+    newstate = SDL_JoystickGetButton(joystick_, 7);
+    state_.pressstart = newstate && !state_.buttonstart;
+    state_.buttonstart = newstate;
 
     // Bumpers
     // left bumper, id 4
@@ -93,4 +97,7 @@ void Controller::update(float dt)
     state_.dpadl = SDL_JoystickGetAxis(joystick_, 6) < 0;
     state_.dpadu = SDL_JoystickGetAxis(joystick_, 7) < 0;
     state_.dpadd = SDL_JoystickGetAxis(joystick_, 7) > 0;
+
+    if (fighter_->isAlive() && state_.pressstart)
+        togglepause(fighter_->getPlayerID());
 }
