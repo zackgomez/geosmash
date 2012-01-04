@@ -8,14 +8,16 @@ class Fighter;
 class InGameState
 {
 public:
-    InGameState(const std::vector<Fighter *> &fighters);
+    InGameState(const std::vector<Controller *> &controllers,
+            const std::vector<Fighter *> &fighters);
     virtual ~InGameState();
 
     virtual GameState* processInput(std::vector<SDL_Joystick*> &joysticks);
-    virtual void update();
-    virtual void render();
+    virtual void update(float dt);
+    virtual void render(float dt);
 
 private:
+    std::vector<Controller*> controllers_;
     std::vector<Fighter*> fighters_;
     std::vector<GameEntity *> entities_;
 

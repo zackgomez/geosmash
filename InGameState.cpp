@@ -58,7 +58,9 @@ const glm::vec3 teamColors[] =
 };
 */
 
-InGameState::InGameState(const std::vector<Fighter*> &fighters) :
+InGameState::InGameState(const std::vector<Controller *> &controllers,
+        const std::vector<Fighter*> &fighters) :
+    controllers_(controllers),
     fighters_(fighters)
 {
     for (unsigned i = 0; i < fighters.size(); i++)
@@ -88,6 +90,27 @@ InGameState::InGameState(const std::vector<Fighter*> &fighters) :
 
     // Start of match time
     startTime_ = SDL_GetTicks();
+}
+
+InGameState::~InGameState()
+{
+    // TODO lots of stuff.....
+}
+
+GameState * InGameState::processInput(std::vector<SDL_Joystick*> &joysticks)
+{
+    // TODO this function
+    return NULL;
+}
+
+void InGameState::update(float dt)
+{
+    // TODO
+}
+
+void InGameState::render(float dt)
+{
+    // TODO
 }
 
 /*
