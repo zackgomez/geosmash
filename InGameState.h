@@ -8,7 +8,7 @@ class Fighter;
 class InGameState
 {
 public:
-    InGameState(std::vector<Controller *> &controllers, bool teams);
+    InGameState(const std::vector<Fighter *> &fighters);
     virtual ~InGameState();
 
     virtual GameState* processInput(std::vector<SDL_Joystick*> &joysticks);
@@ -16,19 +16,12 @@ public:
     virtual void render();
 
 private:
-    bool teams_;
-    bool makeHazard_;
-
-    bool muteMusic_;
-    bool criticalMusic_;
-
-    int pausedPlayer_;
-
-    size_t startTime_;
-
-    std::vector<Controller*> controllers_;
     std::vector<Fighter*> fighters_;
     std::vector<GameEntity *> entities_;
+
+    bool criticalMusic_;
+    size_t startTime_;
+
 
     // Helper functions
     void integrate(float dt);

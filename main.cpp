@@ -181,6 +181,9 @@ int initLibs()
 
     SDL_WM_SetCaption("Geometry Smash 0.6", "geosmash");
 
+    // Seed random number generator
+    srand(time(NULL));
+
     return 1;
 }
 

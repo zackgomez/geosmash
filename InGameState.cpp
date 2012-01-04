@@ -1,4 +1,5 @@
 #define _USE_MATH_DEFINES
+#include "InGameState.h"
 #include <GL/glew.h>
 #include <SDL/SDL.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -55,92 +56,41 @@ const glm::vec3 teamColors[] =
     glm::vec3(0.8, 0.2, 0.2),
     glm::vec3(0.8, 0.35, 0.1)
 };
+*/
 
-int main(int argc, char *argv[])
+InGameState::InGameState(const std::vector<Fighter*> &fighters) :
+    fighters_(fighters)
 {
-    muteMusic = false;
-    makeHazard = false;
-    unsigned numPlayers = 2;
-    for (int i = 1; i < argc; i++)
+    for (unsigned i = 0; i < fighters.size(); i++)
     {
-        if (i == argc - 1)
-            numPlayers = std::min(4, std::max(2, atoi(argv[i])));
-        if (strcmp(argv[i], "--no-music") == 0)
-            muteMusic = true;
-        if (strcmp(argv[i], "--teams") == 0)
-            teams = true;
-        if (strcmp(argv[i], "--hazard") == 0)
-            makeHazard = true;
-    }
-
-
-    // Init game state
-    ParamReader::get()->loadFile("params.dat");
-    
-    if (teams && numPlayers != 4)
-    {
-        std::cerr << "Teams only supported with 4 players\n";
-        exit(1);
-    }
-
-    if (!initLibs())
-        exit(1);
-
-    if ((initJoystick(numPlayers)) == 0)
-    {
-        std::cerr << "Unable to initialize Joystick(s)\n";
-        exit(1);
-    }
-    if (!initGraphics())
-    {
-        std::cerr << "Unable to initialize graphics resources\n";
-        exit(1);
-    }
-
-    for (unsigned i = 0; i < numPlayers; i++)
-    {
-        const glm::vec3 *colors = teams ? teamColors : playerColors;
-        Fighter *fighter = new Fighter(-225.0f+i*150, 50.f, colors[i], i);
+        Fighter *fighter = fighters[i];
+        // TODO set fighter respawn positions
         fighter->respawn(false);
-        fighters.push_back(fighter);
         entities.push_back(fighter);
-        controllers.push_back(new Controller(fighter, joysticks[i]));
     }
-    logfile.open("lastreplay.replay");
 
-    // Remove initial joystick events
-    processInput();
-
-    paused = false;
-
+    /*
     if (makeHazard)
     {
         HazardEntity *h = new HazardEntity("groundhit");
         entities.push_back(h);
     }
+    */
 
-    srand(time(NULL));
+    // Choose random song
     std::vector<std::string> songs;
     songs.push_back("sfx/geosmash.wav");
     songs.push_back("sfx/hand canyon.wav");
     songs.push_back("sfx/Meat DeFeat.wav");
     songs.push_back("sfx/Pixel Party.wav");
     AudioManager::get()->setSoundtrack(songs[rand() % songs.size()]);
+    AudioManager::get()->startSoundtrack();
 
-    if (!muteMusic)
-        AudioManager::get()->startSoundtrack();
-
-    test_random();
-
-    startTime = SDL_GetTicks();
-    mainloop();
-
-    printstats();
-
-    cleanup();
-    return 0;
+    // Start of match time
+    startTime_ = SDL_GetTicks();
 }
 
+/*
 void mainloop()
 {
     running = true;
