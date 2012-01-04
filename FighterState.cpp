@@ -1460,6 +1460,8 @@ LimpState::LimpState(Fighter *f, UnlimpCallback *callback) :
 
 LimpState::~LimpState()
 {
+    if (!next_)
+        (*unlimpCallback_)();
     delete unlimpCallback_;
 }
 

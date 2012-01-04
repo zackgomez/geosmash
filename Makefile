@@ -11,7 +11,7 @@ ssb: main.o glutils.o util.o Fighter.o audio.o explosion.o FrameManager.o StatsM
 	g++ $(CXXFLAGS)  -o $@ $^ $(LDFLAGS)
 
 libkiss_particles.a: force_look
-	cd $(KISS_PARTICLES) && make libkiss_particles.a
+	cd $(KISS_PARTICLES) && $(MAKE) libkiss_particles.a
 	cp $(KISS_PARTICLES)/libkiss_particles.a .
 
 clean:
