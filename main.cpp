@@ -1,28 +1,20 @@
 #define _USE_MATH_DEFINES
 #include <GL/glew.h>
 #include <SDL/SDL.h>
-#include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <cstdlib>
-#include <cmath>
 #include <vector>
 #include "glutils.h"
-#include "Fighter.h"
 #include "audio.h"
-#include "explosion.h"
 #include "ParamReader.h"
-#include "FrameManager.h"
-#include "StatsManager.h"
-#include "CameraManager.h"
-#include "Attack.h"
-#include "PManager.h"
-#include "FontManager.h"
-#include "StageManager.h"
-#include "Controller.h"
+#include "GameState.h"
+#include "MenuState.h"
+
+static const float dt = 1.f / 60.f;
 
 std::vector<SDL_Joystick*> joysticks;
 bool running;
-GameState *gameState;
+GameState *state;
 
 int initJoystick(unsigned numPlayers);
 int initGraphics();
@@ -51,6 +43,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    state = new MenuState();
+
     running = true;
     mainloop();
 
@@ -63,12 +57,35 @@ void mainloop()
     running = true;
     while (running)
     {
+        // For frame timing
         int startms = SDL_GetTicks();
 
+        // Global events like ESC or mute etc
         globalEvents();
 
         // TODO call state functions here
+        GameState *nextState;
+        // Process input, checking for new states along the way
+        while ((nextState = state->processInput(joysticks)))
+        {
+            delete state;
+            state = nextState;
+        }
 
+        // Update
+        state->update(dt);
+
+        // Render
+        preRender();
+        glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+        state->render(dt);
+
+        postRender();
+        SDL_GL_SwapBuffers();
+
+        // Some timing and delay to force framerate
         int endms = SDL_GetTicks();
         int delay = 16 - std::min(16, std::max(0, endms - startms));
         std::cout << "Frame time (ms): " << endms - startms << 

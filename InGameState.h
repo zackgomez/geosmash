@@ -1,6 +1,10 @@
 #pragma once
 #include "GameState.h"
 
+class Controller;
+class GameEntity;
+class Fighter;
+
 class InGameState
 {
 public:
