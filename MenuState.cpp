@@ -1,5 +1,6 @@
 #include "MenuState.h"
 #include "InGameState.h"
+#include "GameState.h"
 
 
 MenuState::MenuState()

@@ -1,4 +1,6 @@
 #pragma once
+#include <vector>
+#include <SDL/SDL.h>
 
 class GameState
 {

@@ -1,5 +1,6 @@
 #pragma once
 #include "GameState.h"
+#include <string>
 
 
 struct NumPlayersEntry
