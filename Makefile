@@ -8,7 +8,7 @@ all: ssb
 ssb: main.o glutils.o util.o Fighter.o audio.o explosion.o FrameManager.o StatsManager.o \
 	Attack.o FighterState.o GameEntity.o Projectile.o CameraManager.o \
 	StageManager.o FontManager.o Controller.o libkiss_particles.a \
-	InGameState.o
+	InGameState.o MenuState.o
 	g++ $(CXXFLAGS)  -o $@ $^ $(LDFLAGS)
 
 libkiss_particles.a: force_look
