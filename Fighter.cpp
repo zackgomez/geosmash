@@ -31,6 +31,8 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id)
     size_ = glm::vec2(getParam("fighter.w"), getParam("fighter.h"));
     id_ = id;
     playerID_ = id;
+    // TODO take this as a parameter
+    teamID_ = id;
 
     // Load ground attacks
     std::string g = "groundhit";

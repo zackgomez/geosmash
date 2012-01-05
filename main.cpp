@@ -7,6 +7,7 @@
 #include "glutils.h"
 #include "audio.h"
 #include "ParamReader.h"
+#include "FrameManager.h"
 #include "GameState.h"
 #include "MenuState.h"
 
@@ -142,6 +143,8 @@ int initGraphics()
     glViewport(0, 0, getParam("resolution.x"), getParam("resolution.y"));
 
     initGLUtils(getParam("resolution.x"), getParam("resolution.y"));
+
+    FrameManager::get()->loadFile("frames/charlie.frames");
 
     return 0;
 }

@@ -84,6 +84,10 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
     AudioManager::get()->setSoundtrack(songs[rand() % songs.size()]);
     AudioManager::get()->startSoundtrack();
 
+    glm::vec3 cameraLoc(0.f, 0.f, 425.0f);
+    setCamera(cameraLoc);
+    CameraManager::get()->setCurrent(cameraLoc);
+
     // Start of match time
     startTime_ = SDL_GetTicks();
 }
@@ -126,7 +130,161 @@ void InGameState::update(float dt)
 
 void InGameState::render(float dt)
 {
-    // TODO
+    // Make dt 0 if paused
+    dt = dt * !paused_;
+
+    // Draw the background
+    StageManager::get()->renderSphereBackground(dt);
+    StageManager::get()->renderStage(dt);
+
+    // Draw all entities
+    for (unsigned i = 0; i < entities_.size(); i++)
+        entities_[i]->render(dt);
+
+    // Draw the fighter arrows
+    for (unsigned i = 0; i < fighters_.size(); i++)
+        if (fighters_[i]->isAlive())
+        {
+            renderArrow(fighters_[i]);
+        }
+
+    // Draw any explosions
+    ExplosionManager::get()->render(dt);
+    ParticleManager::get()->render(dt);
+
+    renderHUD();
+}
+
+void InGameState::renderHUD()
+{
+    // Render the overlay interface (HUD)
+    glDisable(GL_DEPTH_TEST);
+    glm::mat4 pmat = getProjectionMatrix();
+    glm::mat4 vmat = getViewMatrix();
+    setProjectionMatrix(glm::mat4(1.f));
+    setViewMatrix(glm::mat4(1.f));
+
+    const glm::vec2 hud_center(0, 1.5f/6 - 1);
+    const glm::vec2 lifesize = 0.03f * glm::vec2(1.f, 16.f/9.f);
+    for (unsigned i = 0; i < fighters_.size(); i++)
+    {
+        const glm::vec2 player_hud_center =
+            hud_center + 0.3f * glm::vec2(i - 1.5f, 0.f);
+
+        const Fighter *fighter = fighters_[i];
+        glm::vec3 color = fighter->getColor();
+
+        int lives = fighter->getLives();
+        float damage = fighter->getDamage();
+        // Draw life counts first
+        if (lives < 5)
+        {
+            // If 4 or less lives then draw each live as a box individually
+            glm::vec2 life_area = player_hud_center - 0.75f * glm::vec2(lifesize.x, -lifesize.y);
+            for (int j = 0; j < lives; j++)
+            {
+                glm::mat4 transform = glm::scale(
+                        glm::translate(
+                            glm::mat4(1.0f),
+                            glm::vec3(life_area, 0.f)),
+                        glm::vec3(lifesize, 1.0f));
+                renderRectangle(transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
+
+                glm::mat4 transform2 = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
+                renderRectangle(transform2, glm::vec4(color, 0.0f));
+
+                if (j % 2 == 0)
+                    life_area.x += lifesize.x * 1.5;
+                else
+                {
+                    life_area.x -= lifesize.x * 1.5;
+                    life_area.y -= lifesize.y * 1.5;
+                }
+            }
+        }
+        else
+        {
+            // If 5 or more lives, draw a single life box and a number
+            glm::vec2 life_area = player_hud_center - 0.75f * glm::vec2(lifesize.x, 0);
+            glm::mat4 transform = glm::scale(
+                    glm::translate(
+                        glm::mat4(1.0f),
+                        glm::vec3(life_area, 0.f)),
+                    glm::vec3(lifesize, 1.0f));
+            renderRectangle(transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
+            transform = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
+            renderRectangle(transform, glm::vec4(color, 0.0f));
+
+            // Now draw the numbers
+            life_area.x += lifesize.x * 1.5;
+            transform = glm::scale( glm::translate( glm::mat4(1.0f), glm::vec3(life_area, 0.f)),
+                    glm::vec3(1.5f*lifesize, 1.0f));
+            FontManager::get()->renderNumber(transform, color, lives);
+        }
+
+        // Draw the damage amount with color scaled towards black as the
+        // player has more damage
+        glm::vec2 damageBarMidpoint = player_hud_center + glm::vec2(0.f, -0.8f/6.f);
+        glm::mat4 transform = glm::scale(
+            glm::translate(glm::mat4(1.0f), glm::vec3(damageBarMidpoint, 0.f)),
+            glm::vec3(0.085f, 0.085f, 1.0f));
+        glm::vec3 dmgColor = std::min(1.f, std::max(0.2f, 1.f - damage/200.f)) * color;
+        FontManager::get()->renderNumber(transform, dmgColor, floorf(damage));
+    }
+
+    setProjectionMatrix(pmat);
+    setViewMatrix(vmat);
+}
+
+void InGameState::renderArrow(const Fighter *f)
+{
+    glm::vec4 fpos = glm::vec4(f->getRect().x, f->getRect().y, 0.f, 1.f);
+    glm::vec4 fndc = getProjectionMatrix() * getViewMatrix() * fpos;
+    fndc /= fndc.w;
+    if (fabs(fndc.x) > 1 || fabs(fndc.y) > 1)
+    {
+        std::cout << "DRAWING ARROW\n";
+
+        glm::vec2 dir = glm::vec2(fndc);
+        float dist = glm::length(dir);
+        dir /= dist;
+        // draw arrow
+        glm::vec2 side = (fabs(dir.x) > fabs(dir.y))
+            ? glm::vec2(dir.x / fabs(dir.x), 0)
+            : glm::vec2(0, dir.y / fabs(dir.y));
+        glm::vec2 move = (fabs(dir.x) < fabs(dir.y))
+            ? glm::vec2(dir.x / fabs(dir.x), 0)
+            : glm::vec2(0, dir.y / fabs(dir.y));
+
+        float theta = acos(glm::dot(glm::vec2(-1, 0), dir)) * ((fndc.y > 0) ? -1.f : 1.f);
+
+        glm::vec2 arrowPos = side +
+            move * glm::vec2(1,1) * glm::vec2(fabs(cosf(theta)), fabs(sinf(theta)));
+
+        const float arrowsz = 0.005;
+        float len = glm::length(arrowPos);
+        arrowPos *= (len - 10*arrowsz) / len;
+
+        float scale = 0.002 * ((dist / len - 1.f) * 5.f + 0.5f);
+        float rot = theta * 180.f / M_PI;
+
+        //std::cout << "Arrow pos: " << arrowPos.x << ' ' << arrowPos.y << '\n';
+        glm::mat4 transform =
+            glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f),
+                            glm::vec3(arrowPos, 0.0f)), 
+                        glm::vec3(scale, scale, 1.f)),
+                    rot, glm::vec3(0, 0, 1));
+
+        glm::mat4 pmat = getProjectionMatrix();
+        glm::mat4 vmat = getViewMatrix();
+        setProjectionMatrix(glm::mat4(1.f));
+        setViewMatrix(glm::mat4(1.f));
+
+        FrameManager::get()->renderFrame(transform, glm::vec4(f->getColor(), 0.0f), "OffscreenArrow");
+
+        setProjectionMatrix(pmat);
+        setViewMatrix(vmat);
+    }
 }
 
 /*
@@ -168,10 +326,6 @@ void checkState()
         // Save the replay
         logfile.close();
     }
-}
-
-void processInput()
-{
 }
 
 void update()
@@ -546,94 +700,11 @@ void renderEndScreen()
     SDL_GL_SwapBuffers();
 }
 
-int initJoystick(unsigned numPlayers)
-{
-    unsigned numJoysticks = SDL_NumJoysticks();
-    std::cout << "Available joysticks: " << numJoysticks << '\n';
-    for (unsigned i = 0; i < numJoysticks; i++)
-        std::cout << "Joystick: " << SDL_JoystickName(i) << '\n';
-
-    if (numJoysticks == 0)
-        return 0;
-
-    unsigned i;
-    for (i = 0; i < numJoysticks && i < numPlayers; i++)
-        joysticks.push_back(SDL_JoystickOpen(i));
-
-    if (i != numPlayers)
-        return 0;
-
-    return numPlayers;
-}
-
-int initGraphics()
-{
-    // Set the viewport
-    glViewport(0, 0, getParam("resolution.x"), getParam("resolution.y"));
-
-    initGLUtils(getParam("resolution.x"), getParam("resolution.y"));
-
-    glm::vec3 cameraLoc(0.f, 0.f, 425.0f);
-    setCamera(cameraLoc);
-    CameraManager::get()->setCurrent(cameraLoc);
-
-    // Load some animation frames
-    FrameManager::get()->loadFile("frames/charlie.frames");
-
-    // Load END OF GAME SCREEN background
-    backgroundTex = make_texture("images/back003.png");
-
-    return 1;
-}
-
-void cleanup()
-{
-    std::cout << "Cleaning up...\n";
-    for (unsigned i = 0; i < entities.size(); i++)
-        delete entities[i];
-    for (unsigned i = 0; i < controllers.size(); i++)
-        delete controllers[i];
-    for (unsigned i = 0; i < joysticks.size(); i++)
-        SDL_JoystickClose(joysticks[i]);
-
-
-    std::cout << "Quiting nicely\n";
-    SDL_Quit();
-}
-
 void printstats()
 {
     std::cout << "Run time (s): " << (SDL_GetTicks() - startTime) / 1000.0f << '\n';
 
     StatsManager::get()->printStats();
-}
-
-int initLibs()
-{
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
-    {
-        std::cerr << "Couldn't initialize SDL: " << SDL_GetError() << '\n';
-        return 0;
-    }
-
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_Surface *screen = SDL_SetVideoMode(getParam("resolution.x"),
-            getParam("resolution.y"), 32, SDL_OPENGL);
-    if ( screen == NULL ) {
-        fprintf(stderr, "Couldn't set video mode: %s\n",
-                SDL_GetError());
-        return 0;
-    }
-    GLenum err = glewInit();
-    if (err != GLEW_OK)
-    {
-        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
-        return 0;
-    }
-
-    SDL_WM_SetCaption("Geometry Smash 0.6", "geosmash");
-
-    return 1;
 }
 
 */
