@@ -32,7 +32,7 @@ class MenuState : public GameState
 public:
     MenuState();
 
-    virtual GameState* processInput(const std::vector<SDL_Joystick*>&);
+    virtual GameState* processInput(const std::vector<SDL_Joystick*>&, float);
     virtual void update(float);
     virtual void render(float);
     
@@ -42,5 +42,6 @@ private:
     std::vector<NumPlayersEntry>::iterator playerCountCurr_;
     std::vector<SDL_Joystick*> joysticks;
     std::vector<Controller*> controllers;
+    std::vector<Fighter*> fighters;
 };
 

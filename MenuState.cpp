@@ -15,7 +15,7 @@ MenuState::MenuState()
 
 }
 
-GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix)
+GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
 {
     assert(stix.size() > 0);
     // Only player one may move through the menus
@@ -45,11 +45,12 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*>&stix)
         // create a controller
         // push the controller onto the list
         controllers.push_back(new Controller(f, stix[i]));
+        fighters.push_back(f);
     }
         
 
     // If p1 is pressing start, create a new GameState 
-    GameState *gs = new InGameState(controllers, false);
+    GameState *gs = new InGameState(controllers, fighters);
     return gs;
 }
 
