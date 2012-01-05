@@ -18,6 +18,7 @@ MenuState::MenuState()
 {
     nplayers_ = 4;
     currentRow_ = 0;
+    totalRows_ = 2;
 }
 
 
@@ -43,11 +44,11 @@ void MenuState::render(float dt)
                 glm::vec3(1920.f/10 + 1920.f/5, 1080.f - 1080.f/3/2, 0.1f)), 
             glm::vec3(1.f, 1.f, 1.f));
 
-    // Kills
+    // number of players display
     transform = glm::scale(
             glm::translate(
                 glm::mat4(1.f), 
-                glm::vec3(1920.f/10, 1080.f - 1080.f/3 - 1080.f/3/2, 0.1f)), 
+                glm::vec3(1920.f/10, 1080.f - 1080.f/3  , 0.1f)), 
             glm::vec3(1.f, 1.f, 1.f));
     //transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     for (unsigned i = 1; i <= 4; i++)
@@ -61,7 +62,25 @@ void MenuState::render(float dt)
                 i);
         transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     }
-    SDL_GL_SwapBuffers();
+
+    // Teams
+
+    transform = glm::scale(
+            glm::translate(
+                glm::mat4(1.f), 
+                glm::vec3(1920.f/10, 1080.f - 1080.f/3  , 0.1f)), 
+            glm::vec3(1.f, 1.f, 1.f));
+    transform = glm::translate(transform, glm::vec3(0,100.0f,0));
+    for (unsigned i = 0; i <= 1; i++)
+    {
+        glm::vec3 teamTxtColor = glm::vec3(0.9f, 0.1f, 0.1f);
+        FontManager::get()->renderNumber(
+                glm::scale(transform, 
+                    glm::vec3(100.f, 100.f, 1.f)), 
+                teamTxtColor,
+                i);
+        transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
+    }
 }
 
 GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
@@ -74,12 +93,53 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
     {
         return newGame(stix);
     }
+
+    // First check the current row
+    float yval = SDL_JoystickGetAxis(p1, 1) / MAX_JOYSTICK_VALUE; 
+    if (fabs(yval) < getParam("menu.deadzone"))
+    {
+        canChangeRow_ = true;
+    }
+        
+
     // -1 < xval < 1
     float xval = SDL_JoystickGetAxis(p1, 0) / MAX_JOYSTICK_VALUE; 
     if (fabs(xval) < getParam("menu.deadzone"))
     {
         canIncrement_ = true;
     }
+
+    if (currentRow_ == 0)
+    {
+        checkNPlayers(xval);
+    }
+    
+    return 0;
+}
+
+void MenuState::checkRow(float yval)
+{
+    if (yval < -getParam("menu.thresh") && canChangeRow_)
+    {
+        canChangeRow_ = false;
+        if (currentRow_ > 0)
+        {
+            currentRow_--;
+        }
+    }
+    if (yval > getParam("menu.thresh") && canChangeRow_)
+    {
+        canChangeRow_ = false;
+        if (currentRow_ < totalRows_ - 1)
+        {
+            currentRow_++;
+        }
+    }
+}
+
+
+void MenuState::checkNPlayers(float xval)
+{
     if (xval < -getParam("menu.thresh") && canIncrement_)
     {
         canIncrement_ = false;
@@ -96,10 +156,8 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
             nplayers_++;
         }
     }
-    
-    float yval = SDL_JoystickGetAxis(p1, 1) / MAX_JOYSTICK_VALUE; 
-    return 0;
 }
+
 
 
 GameState* MenuState::newGame(const std::vector<SDL_Joystick*>&stix)

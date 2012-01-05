@@ -41,11 +41,16 @@ private:
     // Player one can only change the number of players if they've
     // recently gone back to the dead zone with the controller stick
     bool canIncrement_;
+    bool canChangeRow_;
     bool teams_;
     int currentRow_;
+    int totalRows_;
     GameState* newGame(const std::vector<SDL_Joystick*>&stix);
     std::vector<SDL_Joystick*> joysticks;
     std::vector<Controller*> controllers;
     std::vector<Fighter*> fighters;
+
+    void checkNPlayers(float xval);
+    void checkRow(float yval);
 };
 
