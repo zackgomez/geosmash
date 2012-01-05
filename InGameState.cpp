@@ -250,7 +250,8 @@ void InGameState::renderPause()
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -1.f)),
             glm::vec3(0.03f / 4, 0.04f / 4, 1.f));
-    FrameManager::get()->renderFrame(transform, glm::vec4(0.6f, 0.6f, 0.6f, 0.3f), "PAUSED");
+    FrameManager::get()->renderFrame(transform,
+            glm::vec4(0.6f, 0.6f, 0.6f, 0.3f), "PAUSED");
     //renderRectangle(transform, glm::vec4(0.1, 0.1, 0.1, 0.0));
 
 
@@ -527,13 +528,6 @@ void logControllerState(std::ostream &out)
             << c.dpadl << ' ' << c.dpadr << ' ' << c.dpadu << ' ' << c.dpadd << '\n';
     }
 }
-
-void printstats()
-{
-    std::cout << "Run time (s): " << (SDL_GetTicks() - startTime) / 1000.0f << '\n';
-
-}
-
 */
 
 // Functions and data structures for entity addition
