@@ -39,7 +39,7 @@ MenuState::MenuState() :
     currentRow_(0),
     totalRows_(2)
 {
-
+    // Start the menu soundtrack
     AudioManager::get()->setSoundtrack("sfx/Terminal Velocity.wav");
     AudioManager::get()->startSoundtrack();
 }
@@ -59,6 +59,11 @@ void MenuState::render(float dt)
     setProjectionMatrix(glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f));
     setViewMatrix(glm::mat4(1.f));
 
+    // Some colors
+    const glm::vec3 theColor = glm::vec3(0.1f, 0.1f, 0.1f);
+    const glm::vec3 selectedColor = glm::vec3(0.9f, 0.9f, 0.9f);
+    const glm::vec4 rowSelectColor = glm::vec4(0.5f, 0.5f, 0.15f, 0.0f);
+
     // Draw the players, highlight the winner
     glm::mat4 transform = 
         glm::scale(
@@ -76,8 +81,6 @@ void MenuState::render(float dt)
     //transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     for (unsigned i = 1; i <= 4; i++)
     {
-        glm::vec3 theColor = glm::vec3(0.1f, 0.1f, 0.1f);
-        glm::vec3 selectedColor = glm::vec3(0.9f, 0.9f, 0.9f);
         FontManager::get()->renderNumber(
                 glm::scale(transform, 
                     glm::vec3(100.f, 100.f, 1.f)), 
@@ -87,26 +90,31 @@ void MenuState::render(float dt)
     }
 
     // Teams
-
     transform = glm::scale(
             glm::translate(
                 glm::mat4(1.f), 
                 glm::vec3(1920.f/10, 1080.f - 1080.f/3  , 0.1f)), 
             glm::vec3(1.f, 1.f, 1.f));
-    transform = glm::translate(transform, glm::vec3(0,100.0f,0));
-    for (unsigned i = 0; i <= 1; i++)
-    {
-        glm::vec3 teamTxtColor = glm::vec3(0.9f, 0.1f, 0.1f);
-        FontManager::get()->renderNumber(
-                glm::scale(transform, 
-                    glm::vec3(100.f, 100.f, 1.f)), 
-                teamTxtColor,
-                i);
-        transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-    }
+    transform = glm::translate(transform, glm::vec3(0, -150.0f,0));
+
+    FontManager::get()->renderNumber(
+            glm::scale(transform, 
+                glm::vec3(100.f, 100.f, 1.f)), 
+            teams_ ? selectedColor : theColor,
+            teams_ ? 1 : 0);
+    transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
+
+    // Row highlight
+    transform = glm::scale(
+            glm::translate(
+                glm::mat4(1.f), 
+                glm::vec3(1920.f * 0.4f, 1080.f - 1080.f/3 - 150.0f * currentRow_, 0.1f)), 
+            glm::vec3(1920.f/3 * 2, 110.f, 1.f));
+
+    renderRectangle(transform, rowSelectColor);
 }
 
-GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
+GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float)
 {
     assert(stix.size() > 0);
     // Only player one may move through the menus
@@ -128,6 +136,7 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
     {
         canChangeRow_ = true;
     }
+    checkRow(yval);
         
 
     // -1 < xval < 1
@@ -140,6 +149,10 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
     if (currentRow_ == 0)
     {
         checkNPlayers(xval);
+    }
+    else if (currentRow_ == 1 && canIncrement_ && fabs(xval) > getParam("menu.deadzone"))
+    {
+        teams_ = xval > 0;
     }
     
     return 0;
@@ -188,7 +201,7 @@ void MenuState::checkNPlayers(float xval)
 
 
 
-GameState* MenuState::newGame(const std::vector<SDL_Joystick*>&stix)
+GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
 {
 
     for (int i = 0; i < nplayers_; i++)

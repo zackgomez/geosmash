@@ -57,7 +57,7 @@ debug.drawHitbox    0
 
 fighter.w             50
 fighter.h             60
-fighter.lives         1
+fighter.lives         2
 fighter.respawnTime   1.0
 fighter.gbThresh      600.0
 fighter.gbVelDamping  0.6
