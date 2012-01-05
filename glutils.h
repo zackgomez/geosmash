@@ -20,6 +20,7 @@ GLuint make_shader(GLenum type, const char *filename);
 GLuint make_program(GLuint vertex_shader, GLuint fragment_shader);
 
 GLuint make_texture(const char *filename);
+void   free_texture(GLuint tex);
 
 bool initGLUtils(int screenw, int screenh);
 void cleanGLUtils();

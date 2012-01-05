@@ -169,6 +169,11 @@ GLuint make_texture(const char *filename)
     return texture;
 }
 
+void free_texture(GLuint tex)
+{
+    glDeleteTextures(1, &tex);
+}
+
 void blurTexture(GLuint texture, bool horiz)
 {
     GLuint program = horiz ? resources.hblurprogram : resources.vblurprogram;

@@ -412,33 +412,6 @@ void InGameState::togglePause(int controllerID)
 
 
 /*
-bool pause(int playerID)
-{
-    if (!paused)
-    {
-        paused = true;
-        pausedPlayer = playerID;
-        AudioManager::get()->pauseSoundtrack();
-        AudioManager::get()->playSound("pausein");
-        return true;
-    }
-    return false;
-}
-
-bool unpause(int playerID)
-{
-    if (paused && pausedPlayer == playerID)
-    {
-        paused = false;
-        pausedPlayer = -1;
-        if (!muteMusic)
-            AudioManager::get()->startSoundtrack();
-        AudioManager::get()->playSound("pauseout");
-        return true;
-    }
-    return false;
-}
-
 void checkState()
 {
     int alivePlayers = 0;
@@ -562,10 +535,7 @@ void printstats()
 
 */
 
-/*
-
-*/
-
+// Functions and data structures for entity addition
 static std::vector<GameEntity *> entitiesToAdd;
 
 void addEntity(GameEntity *ent)
