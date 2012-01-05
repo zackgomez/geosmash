@@ -8,6 +8,7 @@
 #include <GL/glew.h>
 #include "glutils.h"
 #include "FontManager.h"
+#include "ParamReader.h"
 
 #define FIGHTER_SPAWN_Y 50.0f
 #define JOYSTICK_START 7
@@ -47,7 +48,7 @@ void MenuState::render(float dt)
                 glm::mat4(1.f), 
                 glm::vec3(1920.f/10, 1080.f - 1080.f/3 - 1080.f/3/2, 0.1f)), 
             glm::vec3(1.f, 1.f, 1.f));
-    transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
+    //transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     for (unsigned i = 1; i <= 4; i++)
     {
         FontManager::get()->renderNumber(
@@ -70,7 +71,29 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
     {
         return newGame(stix);
     }
+    // -1 < xval < 1
     float xval = SDL_JoystickGetAxis(p1, 0) / MAX_JOYSTICK_VALUE; 
+    if (fabs(xval) < getParam("menu.deadzone"))
+    {
+        canIncrement_ = true;
+    }
+    if (xval < -getParam("menu.thresh") && canIncrement_)
+    {
+        canIncrement_ = false;
+        if (nplayers_ > 1)
+        {
+            nplayers_--;
+        }
+    }
+    if (xval > getParam("menu.thresh") && canIncrement_)
+    {
+        canIncrement_ = false;
+        if (nplayers_ < 4)
+        {
+            nplayers_++;
+        }
+    }
+    
     float yval = SDL_JoystickGetAxis(p1, 1) / MAX_JOYSTICK_VALUE; 
     return 0;
 }

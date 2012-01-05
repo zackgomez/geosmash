@@ -50,6 +50,9 @@ input.trigThresh    0.5
 input.duckThresh    -0.85
 input.throwThresh   0.8
 
+menu.deadzone       0.2
+menu.thresh         0.7
+
 debug.drawHitbox    0
 
 fighter.w             50
