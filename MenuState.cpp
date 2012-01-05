@@ -62,14 +62,15 @@ void MenuState::render(float dt)
     const glm::vec3 theColor = glm::vec3(0.1f, 0.1f, 0.1f);
     const glm::vec3 selectedColor = glm::vec3(0.9f, 0.9f, 0.9f);
     const glm::vec4 rowSelectColor = glm::vec4(0.5f, 0.5f, 0.15f, 0.0f);
+    glm::mat4 transform;
 
-    // Draw the players, highlight the winner
-    glm::mat4 transform = 
-        glm::scale(
+    // Row background highlight
+    transform = glm::scale(
             glm::translate(
                 glm::mat4(1.f), 
-                glm::vec3(1920.f/10 + 1920.f/5, 1080.f - 1080.f/3/2, 0.1f)), 
-            glm::vec3(1.f, 1.f, 1.f));
+                glm::vec3(1920.f * 0.4f, 1080.f - 1080.f/3 - 150.0f * currentRow_, 0.0f)), 
+            glm::vec3(1920.f/3 * 2, 110.f, 1.f));
+    renderRectangle(transform, rowSelectColor);
 
     // number of players display
     transform = glm::scale(
@@ -102,15 +103,6 @@ void MenuState::render(float dt)
             teams_ ? selectedColor : theColor,
             teams_ ? 1 : 0);
     transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-
-    // Row highlight
-    transform = glm::scale(
-            glm::translate(
-                glm::mat4(1.f), 
-                glm::vec3(1920.f * 0.4f, 1080.f - 1080.f/3 - 150.0f * currentRow_, 0.1f)), 
-            glm::vec3(1920.f/3 * 2, 110.f, 1.f));
-
-    renderRectangle(transform, rowSelectColor);
 }
 
 GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float)
