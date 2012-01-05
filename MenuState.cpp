@@ -17,6 +17,7 @@
 MenuState::MenuState()
 {
     nplayers_ = 4;
+    currentRow_ = 0;
 }
 
 
@@ -56,7 +57,7 @@ void MenuState::render(float dt)
         FontManager::get()->renderNumber(
                 glm::scale(transform, 
                     glm::vec3(100.f, 100.f, 1.f)), 
-                i == nplayers_ ? theColor : selectedColor,
+                i == nplayers_ ? selectedColor : theColor,
                 i);
         transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     }
