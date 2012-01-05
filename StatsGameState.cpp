@@ -19,6 +19,9 @@ StatsGameState::StatsGameState(
 
     AudioManager::get()->setSoundtrack("sfx/PAUSE.wav");
     AudioManager::get()->startSoundtrack();
+
+    // Print stats to console
+    StatsManager::get()->printStats();
 }
 
 StatsGameState::~StatsGameState()

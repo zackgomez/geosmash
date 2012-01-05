@@ -59,6 +59,9 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
     }
     */
 
+    // Clear the stats
+    StatsManager::get()->clear();
+
     // Choose random song
     std::vector<std::string> songs;
     songs.push_back("sfx/geosmash.wav");
@@ -142,6 +145,10 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
         int winningTeam = -1;
         if (!teamsAlive.empty())
             winningTeam = *teamsAlive.begin();
+
+        // Set the run time stat
+        StatsManager::get()->setStat("MatchLength",
+                (SDL_GetTicks() - startTime_) / 1000.0f);
 
         // Transition to end of game state
         return new StatsGameState(fighters_, winningTeam);
@@ -518,65 +525,10 @@ void logControllerState(std::ostream &out)
     }
 }
 
-void renderEndScreen()
-{
-    preRender();
-    // Start with a blank slate
-    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-    setProjectionMatrix(glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f));
-    setViewMatrix(glm::mat4(1.f));
-
-    // Draw the background
-    glm::mat4 backtrans = glm::scale(
-            glm::translate(glm::mat4(1.f), glm::vec3(1920.f/2, 1080.f/2, 0)),
-                glm::vec3(1920.f, -1080.f, 1.f));
-    renderTexturedRectangle(backtrans, backgroundTex);
-
-    // Draw the players, highlight the winner
-    glm::mat4 transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10 + 1920.f/5, 1080.f - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
-    for (unsigned i = 0; i < fighters.size(); i++)
-    {
-        float glow = 0.5f;
-        if (getTeamID(fighters[i]->getPlayerID()) != winningTeam)
-            glow = 0.0f;
-        FrameManager::get()->renderFrame(glm::scale(transform, glm::vec3(3.f, 3.f, 0.f)), glm::vec4(fighters[i]->getColor(), glow), "GroundNormal");
-        transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-    }
-    // Kills
-    transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10, 1080.f - 1080.f/3 - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
-    // Draw banner
-    FrameManager::get()->renderFrame(glm::scale(transform, glm::vec3(3.f, 3.f, 0.f)), glm::vec4(1.f, 1.f, 1.f, 0.f), "KO");
-    transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-    for (unsigned i = 0; i < fighters.size(); i++)
-    {
-        float kills = StatsManager::get()->getStat(StatsManager::getStatPrefix(fighters[i]->getPlayerID()) + "kills.total");
-        FontManager::get()->renderNumber(glm::scale(transform, glm::vec3(100.f, 100.f, 1.f)), fighters[i]->getColor(), kills);
-        transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-    }
-    // Damage
-    transform = glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(1920.f/10, 1080.f - 2*1080.f/3 - 1080.f/3/2, 0.1f)), glm::vec3(1.f, 1.f, 1.f));
-    // Draw banner
-    FrameManager::get()->renderFrame(glm::scale(transform, glm::vec3(3.f, 3.f, 0.f)), glm::vec4(1.f, 1.f, 1.f, 0.f), "DMG");
-    transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-    for (unsigned i = 0; i < fighters.size(); i++)
-    {
-        float damage = StatsManager::get()->getStat(StatsManager::getStatPrefix(fighters[i]->getPlayerID()) + "damageGiven");
-        FontManager::get()->renderNumber(glm::scale(transform, glm::vec3(100.f, 100.f, 1.f)), fighters[i]->getColor(), damage);
-        transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-    }
-
-    // Finish
-    postRender();
-    SDL_GL_SwapBuffers();
-}
-
 void printstats()
 {
     std::cout << "Run time (s): " << (SDL_GetTicks() - startTime) / 1000.0f << '\n';
 
-    StatsManager::get()->printStats();
 }
 
 */
