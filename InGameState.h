@@ -5,14 +5,15 @@ class Controller;
 class GameEntity;
 class Fighter;
 
-class InGameState
+class InGameState : public GameState
 {
 public:
     InGameState(const std::vector<Controller *> &controllers,
             const std::vector<Fighter *> &fighters);
     virtual ~InGameState();
 
-    virtual GameState* processInput(std::vector<SDL_Joystick*> &joysticks);
+    virtual GameState* processInput(std::vector<SDL_Joystick*> &joysticks,
+            float dt);
     virtual void update(float dt);
     virtual void render(float dt);
 
@@ -21,6 +22,7 @@ private:
     std::vector<Fighter*> fighters_;
     std::vector<GameEntity *> entities_;
 
+    bool paused_;
     bool criticalMusic_;
     size_t startTime_;
 

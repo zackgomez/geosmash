@@ -21,12 +21,7 @@
 #include "StageManager.h"
 #include "Controller.h"
 
-bool paused;
 bool teams;
-std::vector<Fighter*> fighters;
-std::vector<GameEntity *> entities;
-int pausedPlayer = -1;
-
 /*
 bool teams;
 bool muteMusic;
@@ -61,14 +56,15 @@ const glm::vec3 teamColors[] =
 InGameState::InGameState(const std::vector<Controller *> &controllers,
         const std::vector<Fighter*> &fighters) :
     controllers_(controllers),
-    fighters_(fighters)
+    fighters_(fighters),
+    paused_(false)
 {
     for (unsigned i = 0; i < fighters.size(); i++)
     {
         Fighter *fighter = fighters[i];
         // TODO set fighter respawn positions
         fighter->respawn(false);
-        entities.push_back(fighter);
+        entities_.push_back(fighter);
     }
 
     /*
@@ -97,9 +93,29 @@ InGameState::~InGameState()
     // TODO lots of stuff.....
 }
 
-GameState * InGameState::processInput(std::vector<SDL_Joystick*> &joysticks)
+GameState * InGameState::processInput(std::vector<SDL_Joystick*> &joysticks, float dt)
 {
-    // TODO this function
+    // First update controllers / frame
+    for (unsigned i = 0; i < controllers_.size(); i++)
+    {
+        controllers_[i]->update(dt);
+    }
+
+    // TODO check for pause toggle from controllers
+
+
+    // If paused, don't update fighters or ask for next state
+    if (paused_)
+        return NULL;
+
+    // Now have the fighters process their input
+    for (unsigned i = 0; i < fighters_.size(); i++)
+    {
+        controller_state cs = controllers_[i]->nextState();
+        fighters_[i]->processInput(cs, dt);
+    }
+
+    // TODO for now, no state changes
     return NULL;
 }
 
@@ -114,34 +130,6 @@ void InGameState::render(float dt)
 }
 
 /*
-void mainloop()
-{
-    running = true;
-    playing = true;
-    while (running)
-    {
-        int startms = SDL_GetTicks();
-
-        if (playing)
-        {
-            checkState();
-            processInput();
-            update();
-            render();
-        }
-        else
-        {
-            inputEndScreen();
-            renderEndScreen();
-        }
-
-        int endms = SDL_GetTicks();
-        int delay = 16 - std::min(16, std::max(0, endms - startms));
-        std::cout << "Frame time (ms): " << endms - startms << 
-            "   Delay time (ms): " << delay << '\n';
-        SDL_Delay(delay);
-    }
-}
 
 void checkState()
 {
@@ -182,54 +170,8 @@ void checkState()
     }
 }
 
-void globalEvents()
-{
-    SDL_Event event;
-    while (SDL_PollEvent(&event))
-    {
-        switch (event.type)
-        {
-        case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_ESCAPE)
-                running = false;
-            if (event.key.keysym.sym == SDLK_m)
-            {
-                AudioManager::get()->pauseSoundtrack();
-                muteMusic = true;
-            }
-            if (event.key.keysym.sym == SDLK_p)
-            {
-                AudioManager::get()->startSoundtrack();
-                muteMusic = false;
-            }
-            break;
-        case SDL_QUIT:
-            running = false;
-            break;
-        }
-    }
-}
-
 void processInput()
 {
-    // First update controllers / frame
-    for (unsigned i = 0; i < controllers.size(); i++)
-    {
-        controllers[i]->update(dt);
-    }
-
-    // Then update based on new events
-    globalEvents();
-
-
-    // Now have the fighters process their input
-    if (paused)
-        return;
-    for (unsigned i = 0; i < fighters.size(); i++)
-    {
-        controller_state cs = controllers[i]->nextState();
-        fighters[i]->processInput(cs, dt);
-    }
 }
 
 void update()
@@ -694,14 +636,9 @@ int initLibs()
     return 1;
 }
 
-
-// XXX this should be moved
-float getParam(const std::string &param)
-{
-    return ParamReader::get()->get(param);
-}
 */
 
+/*
 bool pause(int playerID)
 {
     if (!paused)
@@ -721,11 +658,8 @@ bool unpause(int playerID)
     {
         paused = false;
         pausedPlayer = -1;
-        /*
-         * TODO add back in
         if (!muteMusic)
             AudioManager::get()->startSoundtrack();
-            */
         AudioManager::get()->playSound("pauseout");
         return true;
     }
@@ -737,37 +671,14 @@ bool togglepause(int playerID)
     if (paused) return unpause(playerID);
     else return pause(playerID);
 }
-
-int getTeamID(int playerID)
-{
-    if (!teams)
-        return playerID;
-    if (playerID <= 1)
-        return 1;
-    else
-        return 2;
-}
-
-Fighter* getPartnerLifeSteal(int playerID)
-{
-    if (!teams)
-        return NULL;
-    if (playerID == 0)
-        return fighters[1]->getLives() > 1 ? fighters[1] : NULL;
-    if (playerID == 1)
-        return fighters[0]->getLives() > 1 ? fighters[0] : NULL;
-    if (playerID == 2)
-        return fighters[3]->getLives() > 1 ? fighters[3] : NULL;
-    if (playerID == 3)
-        return fighters[2]->getLives() > 1 ? fighters[2] : NULL;
-
-    assert(false);
-    return NULL;
-}
+*/
 
 void addEntity(GameEntity *ent)
 {
+    // TODO do this function
+    assert(false);
+
     // TODO investigate placing these into a temporary buffer that's added
     // at the beginning of each frame to avoid strange behavior.
-    entities.push_back(ent);
+    //entities.push_back(ent);
 }

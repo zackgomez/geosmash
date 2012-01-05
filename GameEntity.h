@@ -19,6 +19,8 @@ public:
     virtual int getID() const { return id_; }
     // Returns the ID of the player that 'owns' this GameEntity or -1 if none
     virtual int getPlayerID() const { return playerID_; }
+    // Returns the ID of the team this player is on
+    virtual int getTeamID() const { return teamID_; }
 
     // Returns true if this GameEntity is no longer needed and should be
     // cleaned up
@@ -69,9 +71,6 @@ public:
     virtual void render(float dt) = 0;
 
 
-    // Mutators
-    void setPlayerID(int playerID);
-
     // Push the game entity by the passed vector
     void push(const glm::vec2 &vec);
 
@@ -79,7 +78,7 @@ protected:
     glm::vec2 pos_, vel_, accel_;
     glm::vec2 size_;
 
-    int id_, playerID_;
+    int id_, playerID_, teamID_;
 
 private:
     static int lastID_;

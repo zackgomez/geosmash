@@ -13,8 +13,6 @@
 #include "Controller.h"
 #include "FighterState.h"
 
-Fighter *getPartnerLifeSteal(int playerID);
-
 const std::string Fighter::type = "FighterEntity";
 
 Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int id) :
@@ -136,6 +134,7 @@ rectangle Fighter::getRect() const
 
 void Fighter::processInput(controller_state &controller, float dt)
 {
+    // TODO move this to update? frame vs realtime issue then
     // Update the attack
     if (attack_)
     {
@@ -146,20 +145,6 @@ void Fighter::processInput(controller_state &controller, float dt)
             delete attack_;
             attack_ = NULL;
         }
-    }
-
-    // Check for pause/life steal
-    if (controller.pressstart && lives_ == 0)
-    {
-        // check for life steal from partner
-		Fighter *partner = getPartnerLifeSteal(playerID_);
-		if (partner)
-		{
-			assert(partner->lives_ > 1);
-			partner->lives_--;
-			lives_++;
-			respawn(false);
-		}
     }
 
     // Update state

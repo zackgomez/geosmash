@@ -8,9 +8,9 @@ public:
     GameState() {}
     virtual ~GameState() {}
 
-    virtual GameState* processInput(const std::vector<SDL_Joystick*> &joysticks) = 0;
+    virtual GameState* processInput(const std::vector<SDL_Joystick*> &joysticks,
+            float dt) = 0;
     virtual void update(float dt) = 0;
     virtual void render(float dt) = 0;
-
 };
 

@@ -5,8 +5,6 @@
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 
-bool togglepause(int);
-
 Controller::Controller(const Fighter *f, SDL_Joystick *joystick) :
     fighter_(f), joystick_(joystick)
 {
@@ -97,7 +95,4 @@ void Controller::update(float dt)
     state_.dpadl = SDL_JoystickGetAxis(joystick_, 6) < 0;
     state_.dpadu = SDL_JoystickGetAxis(joystick_, 7) < 0;
     state_.dpadd = SDL_JoystickGetAxis(joystick_, 7) > 0;
-
-    if (fighter_->isAlive() && state_.pressstart)
-        togglepause(fighter_->getPlayerID());
 }
