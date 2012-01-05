@@ -215,6 +215,26 @@ void InGameState::render(float dt)
     ParticleManager::get()->render(dt);
 
     renderHUD();
+
+    renderPause();
+}
+void InGameState::renderPause()
+{
+    glDisable(GL_DEPTH_TEST);
+    glm::mat4 pmat = getProjectionMatrix();
+    glm::mat4 vmat = getViewMatrix();
+    setProjectionMatrix(glm::mat4(1.f));
+    setViewMatrix(glm::mat4(1.f));
+
+    glm::mat4 transform = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -1.f)),
+            glm::vec3(0.5f, 0.5f, 1.f));
+    FrameManager::get()->renderFrame(transform, glm::vec4(0.6f, 0.6f, 0.6f, 0.3f), "PAUSED");
+    //renderRectangle(transform, glm::vec4(0.1, 0.1, 0.1, 0.0));
+
+
+    setProjectionMatrix(pmat);
+    setViewMatrix(vmat);
 }
 
 void InGameState::renderHUD()
