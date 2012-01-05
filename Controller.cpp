@@ -77,7 +77,7 @@ void Controller::update(float dt)
     newstate = SDL_JoystickGetButton(joystick_, 3);
     state_.pressjump = newstate && !state_.jumpbutton;
     state_.jumpbutton = newstate;
-    // Start button, id 8
+    // Start button, id 7
     newstate = SDL_JoystickGetButton(joystick_, 7);
     state_.pressstart = newstate && !state_.buttonstart;
     state_.buttonstart = newstate;

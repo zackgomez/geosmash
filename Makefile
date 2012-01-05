@@ -1,6 +1,6 @@
 KISS_PARTICLES=kiss-particles
 
-CXXFLAGS=-g -O0 -Wall -Iglm-0.9.2.7 -I$(KISS_PARTICLES)
+CXXFLAGS=-g -O0 -Wall -Iglm-0.9.2.7 -I$(KISS_PARTICLES) 
 LDFLAGS=-lSDL -lGL -lGLEW  -lsfml-audio
 
 all: ssb
