@@ -7,6 +7,7 @@
 #include "FontManager.h"
 #include "FrameManager.h"
 #include "audio.h"
+#include "MenuState.h"
 
 StatsGameState::StatsGameState(
         const std::vector<Fighter *> fighters,
@@ -31,7 +32,15 @@ StatsGameState::~StatsGameState()
 GameState * StatsGameState::processInput(const std::vector<SDL_Joystick*> &joysticks,
         float dt)
 {
-    // TODO go to menu state on start
+    static const int JOYSTICK_START = 7;
+    assert(joysticks.size() > 0);
+
+    // TODO go to menu state when player 1 presses start
+    if (SDL_JoystickGetButton(joysticks[0], JOYSTICK_START))
+    {
+        return new MenuState();
+    }
+
     return NULL;
 }
 
