@@ -64,7 +64,6 @@ void mainloop()
         // Global events like ESC or mute etc
         globalEvents();
 
-        // TODO call state functions here
         GameState *nextState;
         // Process input, checking for new states along the way
         while ((nextState = state->processInput(joysticks, dt)))

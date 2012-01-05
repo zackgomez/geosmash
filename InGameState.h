@@ -26,10 +26,14 @@ private:
     bool criticalMusic_;
     size_t startTime_;
 
+    int pausingController_;
+
 
     // Helper functions
     void integrate(float dt);
     void collisionDetection();
     void renderHUD();
     void renderArrow(const Fighter *fighter);
+
+    void togglePause(int controllerID);
 };
