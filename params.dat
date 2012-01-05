@@ -23,7 +23,8 @@ hud.y       -0.70
 hud.w       1.4
 hud.h       0.125
 
-soundtrack.volume 80
+#soundtrack.volume 80
+soundtrack.volume 0
 sfx.volume 80
 # these alter the volume of individual sfx
 sfx.smashhit.volume 1.0
