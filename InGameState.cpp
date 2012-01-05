@@ -21,7 +21,6 @@
 #include "StageManager.h"
 #include "Controller.h"
 
-bool teams;
 /*
 bool teams;
 bool muteMusic;
@@ -125,7 +124,29 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
 
 void InGameState::update(float dt)
 {
-    // TODO
+    if (paused_)
+        return;
+
+    // First remove done GameEntities
+    std::vector<GameEntity *>::iterator it;
+    for (it = entities_.begin(); it != entities_.end();)
+    {
+        if ((*it)->isDone())
+        {
+            delete *it;
+            it = entities_.erase(it);
+        }
+        else
+            it++;
+    }
+
+    // TODO: something fancy (or not so fancy) to make this dt smaller,
+    // if necessary (if a velocity is over some threshold)
+    integrate(dt);
+    collisionDetection();
+
+    AudioManager::get()->update(dt);
+    CameraManager::get()->update(dt, fighters_);
 }
 
 void InGameState::render(float dt)
@@ -287,6 +308,109 @@ void InGameState::renderArrow(const Fighter *f)
     }
 }
 
+void InGameState::integrate(float dt)
+{
+    for (unsigned i = 0; i < entities_.size(); i++)
+    {
+        entities_[i]->update(dt);
+    }
+}
+
+void InGameState::collisionDetection()
+{
+    // First check for hitbox collisions
+    for (unsigned i = 0; i < entities_.size(); i++)
+    {
+        GameEntity *entityi = entities_[i];
+        if (!entityi->hasAttack()) continue;
+
+        const Attack *attacki = entityi->getAttack();
+
+        for (unsigned j = i + 1; j < entities_.size(); j++)
+        {
+            GameEntity *entityj = entities_[j];
+            if (!entityj->hasAttack()) continue;
+
+            const Attack *attackj = entityj->getAttack();
+
+            if (attacki->getHitbox().overlaps(attackj->getHitbox()))
+            {
+                entityi->attackCollision(attackj);
+                entityj->attackCollision(attacki);
+                // Generate a small explosion to show cancelling
+                rectangle hitboxi = attacki->getHitbox();
+                rectangle hitboxj = attackj->getHitbox();
+                float x = (hitboxi.x + hitboxj.x) / 2;
+                float y = (hitboxi.y + hitboxj.y) / 2;
+                ExplosionManager::get()->addExplosion(x, y, 0.1f);
+            }
+        }
+    }
+
+    // Now go through and check for hitboxes hitting game entities
+    for (unsigned i = 0; i < entities_.size(); i++)
+    {
+        GameEntity *attacker = entities_[i];
+        if (!attacker->hasAttack()) continue;
+
+        const Attack *attack = attacker->getAttack();
+
+        for (unsigned j = 0; j < entities_.size(); j++)
+        {
+            // Don't check for hitting themself
+            //if (i == j) continue;
+
+            GameEntity *victim = entities_[j];
+            // If the victim cannot be hit, just quit now
+            if (!victim->canBeHit()) continue;
+
+            // Hit occurs when there is overlap and attack can hit
+            if (attack->getHitbox().overlaps(victim->getRect()) &&
+                attack->canHit(victim))
+            {
+                // Let the attacker know, the handle the rest
+                attacker->attackConnected(victim);
+            }
+        }
+    }
+
+    // Now check for ground hits
+    rectangle ground = StageManager::get()->getGroundRect();
+    for (unsigned i = 0; i < entities_.size(); i++)
+    {
+        GameEntity *entity = entities_[i];
+        entity->collisionWithGround(ground,
+                entity->getRect().overlaps(ground));
+    }
+
+    // Figher specific checks here
+    // Check for fighter death
+    for (unsigned i = 0; i < fighters_.size(); i++)
+    {
+        Fighter *fighter = fighters_[i];
+        if (!fighter->isAlive()) continue;
+
+        // Respawn condition
+        if (fighter->getRect().y < getParam("killbox.bottom") || fighter->getRect().y > getParam("killbox.top")
+                || fighter->getRect().x < getParam("killbox.left") || fighter->getRect().x > getParam("killbox.right"))
+        {
+            std::string died = StatsManager::getPlayerName(fighter->getPlayerID());
+            // Record the kill if it's not a self destruct
+            if (fighter->getLastHitBy() != -1)
+            {
+                std::string killer = StatsManager::getPlayerName(fighter->getLastHitBy());
+                StatsManager::get()->addStat(killer+ ".kills." + died, 1);
+                StatsManager::get()->addStat(killer+ ".kills.total", 1);
+            }
+            else
+                StatsManager::get()->addStat(died+ ".suicides", 1);
+            fighter->respawn(true);
+            break;
+        }
+    }
+}
+
+
 /*
 
 void checkState()
@@ -353,108 +477,6 @@ void update()
 
     AudioManager::get()->update(dt);
     CameraManager::get()->update(dt, fighters);
-}
-
-void integrate(float dt)
-{
-    for (unsigned i = 0; i < entities.size(); i++)
-    {
-        entities[i]->update(dt);
-    }
-}
-
-void collisionDetection()
-{
-    // First check for hitbox collisions
-    for (unsigned i = 0; i < entities.size(); i++)
-    {
-        GameEntity *entityi = entities[i];
-        if (!entityi->hasAttack()) continue;
-
-        const Attack *attacki = entityi->getAttack();
-
-        for (unsigned j = i + 1; j < entities.size(); j++)
-        {
-            GameEntity *entityj = entities[j];
-            if (!entityj->hasAttack()) continue;
-
-            const Attack *attackj = entityj->getAttack();
-
-            if (attacki->getHitbox().overlaps(attackj->getHitbox()))
-            {
-                entityi->attackCollision(attackj);
-                entityj->attackCollision(attacki);
-                // Generate a small explosion to show cancelling
-                rectangle hitboxi = attacki->getHitbox();
-                rectangle hitboxj = attackj->getHitbox();
-                float x = (hitboxi.x + hitboxj.x) / 2;
-                float y = (hitboxi.y + hitboxj.y) / 2;
-                ExplosionManager::get()->addExplosion(x, y, 0.1f);
-            }
-        }
-    }
-
-    // Now go through and check for hitboxes hitting game entities
-    for (unsigned i = 0; i < entities.size(); i++)
-    {
-        GameEntity *attacker = entities[i];
-        if (!attacker->hasAttack()) continue;
-
-        const Attack *attack = attacker->getAttack();
-
-        for (unsigned j = 0; j < entities.size(); j++)
-        {
-            // Don't check for hitting themself
-            //if (i == j) continue;
-
-            GameEntity *victim = entities[j];
-            // If the victim cannot be hit, just quit now
-            if (!victim->canBeHit()) continue;
-
-            // Hit occurs when there is overlap and attack can hit
-            if (attack->getHitbox().overlaps(victim->getRect()) &&
-                attack->canHit(victim))
-            {
-                // Let the attacker know, the handle the rest
-                attacker->attackConnected(victim);
-            }
-        }
-    }
-
-    // Now check for ground hits
-    rectangle ground = StageManager::get()->getGroundRect();
-    for (unsigned i = 0; i < entities.size(); i++)
-    {
-        GameEntity *entity = entities[i];
-        entity->collisionWithGround(ground,
-                entity->getRect().overlaps(ground));
-    }
-
-    // Figher specific checks here
-    // Check for fighter death
-    for (unsigned i = 0; i < fighters.size(); i++)
-    {
-        Fighter *fighter = fighters[i];
-        if (!fighter->isAlive()) continue;
-
-        // Respawn condition
-        if (fighter->getRect().y < getParam("killbox.bottom") || fighter->getRect().y > getParam("killbox.top")
-                || fighter->getRect().x < getParam("killbox.left") || fighter->getRect().x > getParam("killbox.right"))
-        {
-            std::string died = StatsManager::getPlayerName(fighter->getPlayerID());
-            // Record the kill if it's not a self destruct
-            if (fighter->getLastHitBy() != -1)
-            {
-                std::string killer = StatsManager::getPlayerName(fighter->getLastHitBy());
-                StatsManager::get()->addStat(killer+ ".kills." + died, 1);
-                StatsManager::get()->addStat(killer+ ".kills.total", 1);
-            }
-            else
-                StatsManager::get()->addStat(died+ ".suicides", 1);
-            fighter->respawn(true);
-            break;
-        }
-    }
 }
 
 void render()
