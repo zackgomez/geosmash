@@ -153,6 +153,9 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
     else if (currentRow_ == 1 && canIncrement_ && fabs(xval) > getParam("menu.deadzone"))
     {
         teams_ = xval > 0;
+
+        if (nplayers_ != 4)
+            teams_ = false;
     }
     
     return 0;
@@ -197,21 +200,26 @@ void MenuState::checkNPlayers(float xval)
             nplayers_++;
         }
     }
+
+    if (nplayers_ != 4)
+        teams_ = false;
 }
 
 
 
 GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
 {
-
+    const glm::vec3 *colors = teams_ ? teamColors : playerColors;
     for (int i = 0; i < nplayers_; i++)
     {
+        int playerID = i;
+        int teamID = teams_ ? (i < 2 ? 0 : 1) : playerID;
         // create a new fighter
-
         Fighter *f = new Fighter(0-225.0f+i*150,
                 FIGHTER_SPAWN_Y, 
-                playerColors[i],
-                i);
+                colors[i],
+                playerID,
+                teamID);
 
         // create a controller
         // push the controller onto the list
