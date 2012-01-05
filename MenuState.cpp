@@ -51,10 +51,12 @@ void MenuState::render(float dt)
     //transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     for (unsigned i = 1; i <= 4; i++)
     {
+        glm::vec3 theColor = glm::vec3(0.5f, 0.5f, 0.5f);
+        glm::vec3 selectedColor = glm::vec3(0.5f, 0.5f, 1.0f);
         FontManager::get()->renderNumber(
                 glm::scale(transform, 
                     glm::vec3(100.f, 100.f, 1.f)), 
-                glm::vec3(0.5f, 0.5f, 0.5f),
+                i == nplayers_ ? theColor : selectedColor,
                 i);
         transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
     }
