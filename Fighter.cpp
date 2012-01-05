@@ -289,6 +289,13 @@ void Fighter::render(float dt)
     state_->render(dt);
 }
 
+void Fighter::stealLife()
+{
+    assert(lives_ > 1);
+    lives_--;
+}
+
+
 void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color,
         const glm::mat4 &postTrans)
 {

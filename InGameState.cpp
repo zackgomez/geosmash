@@ -27,6 +27,8 @@
 std::vector<GameEntity *> getEntitiesToAdd();
 void addEntity(GameEntity *ent);
 
+InGameState *InGameState::instance = NULL;
+
 InGameState::InGameState(const std::vector<Controller *> &controllers,
         const std::vector<Fighter*> &fighters) :
     controllers_(controllers),
@@ -78,6 +80,8 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
 
     // Start of match time
     startTime_ = SDL_GetTicks();
+
+    instance = this;
 }
 
 InGameState::~InGameState()
@@ -219,6 +223,22 @@ void InGameState::render(float dt)
     if (paused_)
         renderPause();
 }
+
+bool InGameState::stealLife(int teamID)
+{
+    for (size_t i = 0; i < fighters_.size(); i++)
+    {
+        if (fighters_[i]->getLives() > 1 && fighters_[i]->getTeamID() == teamID)
+        {
+            fighters_[i]->stealLife();
+            return true;
+        }
+    }
+
+    // no life found
+    return false;
+}
+
 void InGameState::renderPause()
 {
     glDisable(GL_DEPTH_TEST);

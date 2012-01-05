@@ -17,6 +17,9 @@ public:
     virtual void update(float dt);
     virtual void render(float dt);
 
+    static InGameState *instance;
+    bool stealLife(int teamID);
+
 private:
     std::vector<Controller*> controllers_;
     std::vector<Fighter*> fighters_;

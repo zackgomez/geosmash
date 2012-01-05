@@ -73,6 +73,9 @@ public:
     // life be removed
     void respawn(bool killed);
 
+
+    void stealLife();
+
     // Puts the fighter into a limp state, they have no control and can be
     // controlled by the caller.  Passed function object is called when the
     // fighter is pulled out of the limp state for whatever reason - the
