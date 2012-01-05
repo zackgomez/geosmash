@@ -10,6 +10,8 @@ Controller::Controller(const Fighter *f, SDL_Joystick *joystick) :
 {
     // Clear the state
     memset(&state_, 0, sizeof(controller_state));
+    // Get the current state
+    update(0);
 }
 
 Controller::~Controller()
@@ -95,4 +97,10 @@ void Controller::update(float dt)
     state_.dpadl = SDL_JoystickGetAxis(joystick_, 6) < 0;
     state_.dpadu = SDL_JoystickGetAxis(joystick_, 7) < 0;
     state_.dpadd = SDL_JoystickGetAxis(joystick_, 7) > 0;
+}
+
+bool Controller::wantsPauseToggle() const
+{
+    // pause if alive and start pressed
+    return state_.pressstart && fighter_->isAlive();
 }

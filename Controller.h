@@ -32,6 +32,8 @@ public:
     // Gets the next state
     virtual controller_state nextState();
     virtual controller_state lastState();
+    // Returns true if this controller would like the game to be paused/unpaused
+    virtual bool wantsPauseToggle() const;
 
     // Does per frame controller updates...
     virtual void update(float dt);

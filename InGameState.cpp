@@ -28,7 +28,8 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
         const std::vector<Fighter*> &fighters) :
     controllers_(controllers),
     fighters_(fighters),
-    paused_(false)
+    paused_(false),
+    pausingController_(-1)
 {
     for (unsigned i = 0; i < fighters.size(); i++)
     {
@@ -77,6 +78,11 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
     }
 
     // TODO check for pause toggle from controllers
+    for (unsigned i = 0; i < controllers_.size(); i++)
+    {
+        if (controllers_[i]->wantsPauseToggle())
+            togglePause(i);
+    }
 
 
     // If paused, don't update fighters or ask for next state
@@ -386,8 +392,52 @@ void InGameState::collisionDetection()
     }
 }
 
+void InGameState::togglePause(int controllerID)
+{
+    if (!paused_)
+    {
+        paused_ = true;
+        pausingController_ = controllerID;
+        AudioManager::get()->pauseSoundtrack();
+        AudioManager::get()->playSound("pausein");
+    }
+    else if (paused_ && pausingController_ == controllerID)
+    {
+        paused_ = false;
+        pausingController_ = -1;
+        AudioManager::get()->startSoundtrack();
+        AudioManager::get()->playSound("pauseout");
+    }
+}
+
 
 /*
+bool pause(int playerID)
+{
+    if (!paused)
+    {
+        paused = true;
+        pausedPlayer = playerID;
+        AudioManager::get()->pauseSoundtrack();
+        AudioManager::get()->playSound("pausein");
+        return true;
+    }
+    return false;
+}
+
+bool unpause(int playerID)
+{
+    if (paused && pausedPlayer == playerID)
+    {
+        paused = false;
+        pausedPlayer = -1;
+        if (!muteMusic)
+            AudioManager::get()->startSoundtrack();
+        AudioManager::get()->playSound("pauseout");
+        return true;
+    }
+    return false;
+}
 
 void checkState()
 {
@@ -513,38 +563,7 @@ void printstats()
 */
 
 /*
-bool pause(int playerID)
-{
-    if (!paused)
-    {
-        paused = true;
-        pausedPlayer = playerID;
-        AudioManager::get()->pauseSoundtrack();
-        AudioManager::get()->playSound("pausein");
-        return true;
-    }
-    return false;
-}
 
-bool unpause(int playerID)
-{
-    if (paused && pausedPlayer == playerID)
-    {
-        paused = false;
-        pausedPlayer = -1;
-        if (!muteMusic)
-            AudioManager::get()->startSoundtrack();
-        AudioManager::get()->playSound("pauseout");
-        return true;
-    }
-    return false;
-}
-
-bool togglepause(int playerID)
-{
-    if (paused) return unpause(playerID);
-    else return pause(playerID);
-}
 */
 
 static std::vector<GameEntity *> entitiesToAdd;
