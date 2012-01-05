@@ -33,6 +33,7 @@ private:
     void integrate(float dt);
     void collisionDetection();
     void renderHUD();
+    void renderPause();
     void renderArrow(const Fighter *fighter);
 
     void togglePause(int controllerID);
