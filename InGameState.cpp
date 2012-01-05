@@ -227,8 +227,9 @@ void InGameState::renderPause()
 
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -1.f)),
-            glm::vec3(2.f, 2.f, 0.f));
-    renderRectangle(transform, glm::vec4(0.1, 0.1, 0.1, 0.0));
+            glm::vec3(0.5f, 0.5f, 1.f));
+    FrameManager::get()->renderFrame(transform, glm::vec4(0.6f, 0.6f, 0.6f, 0.3f), "PAUSED");
+    //renderRectangle(transform, glm::vec4(0.1, 0.1, 0.1, 0.0));
 
 
     setProjectionMatrix(pmat);
