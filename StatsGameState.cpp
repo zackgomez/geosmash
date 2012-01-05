@@ -6,6 +6,7 @@
 #include "StatsManager.h"
 #include "FontManager.h"
 #include "FrameManager.h"
+#include "audio.h"
 
 StatsGameState::StatsGameState(
         const std::vector<Fighter *> fighters,
@@ -14,6 +15,9 @@ StatsGameState::StatsGameState(
     winningTeam_(winningTeam)
 {
     backgroundTex_ = make_texture("images/back003.png");
+
+    AudioManager::get()->setSoundtrack("sfx/PAUSE.wav");
+    AudioManager::get()->startSoundtrack();
 }
 
 StatsGameState::~StatsGameState()
@@ -21,7 +25,6 @@ StatsGameState::~StatsGameState()
     for (size_t i = 0; i < fighters_.size(); i++)
         delete fighters_[i];
 
-    // TODO delete background tex
     free_texture(backgroundTex_);
 }
 

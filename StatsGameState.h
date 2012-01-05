@@ -4,7 +4,7 @@
 
 class Fighter;
 
-class StatsGameState
+class StatsGameState : public GameState
 {
 public:
     StatsGameState(const std::vector<Fighter *> fighters, int winningTeam);

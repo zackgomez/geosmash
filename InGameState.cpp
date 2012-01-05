@@ -1,4 +1,5 @@
 #define _USE_MATH_DEFINES
+// TODO clean up these includes for the love of god
 #include "InGameState.h"
 #include <GL/glew.h>
 #include <SDL/SDL.h>
@@ -20,6 +21,8 @@
 #include "FontManager.h"
 #include "StageManager.h"
 #include "Controller.h"
+#include <cassert>
+#include "StatsGameState.h"
 
 std::vector<GameEntity *> getEntitiesToAdd();
 void addEntity(GameEntity *ent);
@@ -38,8 +41,11 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
         fighter->respawn(false);
         entities_.push_back(fighter);
     }
+    // Need this assertion for destructor
+    assert(entities_.size() == fighters_.size());
 
     /*
+     * TODO
     if (makeHazard)
     {
         HazardEntity *h = new HazardEntity("groundhit");
@@ -66,7 +72,11 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
 
 InGameState::~InGameState()
 {
-    // TODO lots of stuff.....
+    for (size_t i = 0; i < controllers_.size(); i++)
+        delete controllers_[i];
+    // Delete all non fighter entities, assume the fighters at front of entities list
+    for (size_t i = fighters_.size(); i < entities_.size(); i++)
+        delete entities_[i];
 }
 
 GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joysticks, float dt)
@@ -77,7 +87,7 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
         controllers_[i]->update(dt);
     }
 
-    // TODO check for pause toggle from controllers
+    // Check for pause toggle from controllers
     for (unsigned i = 0; i < controllers_.size(); i++)
     {
         if (controllers_[i]->wantsPauseToggle())
@@ -96,7 +106,42 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
         fighters_[i]->processInput(cs, dt);
     }
 
-    // TODO for now, no state changes
+    // Check for state changes
+    // change when only 1 or 0 teams left alive
+    int alivePlayers = 0;
+    int totalLives = 0;
+    std::set<int> teamsAlive;
+    for (unsigned i = 0; i < fighters_.size(); i++)
+    {
+        totalLives += fighters_[i]->getLives();
+        if (fighters_[i]->isAlive())
+        {
+            alivePlayers++;
+            teamsAlive.insert(fighters_[i]->getTeamID());
+        }
+    }
+
+    // Check for switch to tense music
+    if (alivePlayers == totalLives && !criticalMusic_)
+    {
+        criticalMusic_ = true;
+        AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
+        AudioManager::get()->startSoundtrack();
+    }
+
+    // End the game when zero or one team is left
+    if (teamsAlive.size() < 2)
+    {
+        // Winning team is -1 if no team exists
+        int winningTeam = -1;
+        if (!teamsAlive.empty())
+            winningTeam = *teamsAlive.begin();
+
+        // Transition to end of game state
+        return new StatsGameState(fighters_, winningTeam);
+    }
+
+    // No state change
     return NULL;
 }
 
@@ -465,11 +510,6 @@ void logControllerState(std::ostream &out)
             << c.pressstart << ' ' << c.presslb << ' ' << c.pressrb << ' '
             << c.dpadl << ' ' << c.dpadr << ' ' << c.dpadu << ' ' << c.dpadd << '\n';
     }
-}
-
-void inputEndScreen()
-{
-    globalEvents();
 }
 
 void renderEndScreen()
