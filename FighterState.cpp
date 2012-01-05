@@ -1158,7 +1158,7 @@ void GrabbingState::render(float dt)
 FighterState* GrabbingState::collisionWithGround(const rectangle &ground, bool collision)
 {
     // TODO just make sure we're still on the ground
-    assert(collision);
+    //assert(collision);
     return NULL;
 }
 

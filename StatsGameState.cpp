@@ -17,7 +17,7 @@ StatsGameState::StatsGameState(
 {
     backgroundTex_ = make_texture("images/back003.png");
 
-    AudioManager::get()->setSoundtrack("sfx/PAUSE.wav");
+    AudioManager::get()->setSoundtrack("sfx/09 Virtual Void (loop).wav");
     AudioManager::get()->startSoundtrack();
 
     // Print stats to console

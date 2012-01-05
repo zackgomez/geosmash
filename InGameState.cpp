@@ -64,10 +64,11 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
 
     // Choose random song
     std::vector<std::string> songs;
-    songs.push_back("sfx/geosmash.wav");
-    songs.push_back("sfx/hand canyon.wav");
-    songs.push_back("sfx/Meat DeFeat.wav");
-    songs.push_back("sfx/Pixel Party.wav");
+    songs.push_back("sfx/03 GeoSMASH (loop).wav");
+    songs.push_back("sfx/04 Horrors of the Hidden Levels (loop).wav");
+    songs.push_back("sfx/05 Pharticle Pysics (loop).wav");
+    songs.push_back("sfx/06 Meat Defeat (loop).wav");
+    songs.push_back("sfx/07 Pixel Party (loop).wav");
     AudioManager::get()->setSoundtrack(songs[rand() % songs.size()]);
     AudioManager::get()->startSoundtrack();
 
@@ -134,7 +135,7 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
     if (alivePlayers == totalLives && !criticalMusic_)
     {
         criticalMusic_ = true;
-        AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
+        AudioManager::get()->setSoundtrack("sfx/08 Critical Stealth (loop).wav");
         AudioManager::get()->startSoundtrack();
     }
 
@@ -470,45 +471,6 @@ void InGameState::togglePause(int controllerID)
 
 
 /*
-void checkState()
-{
-    int alivePlayers = 0;
-    int totalLives = 0;
-    std::set<int> teamsAlive;
-    for (unsigned i = 0; i < fighters.size(); i++)
-    {
-        totalLives += fighters[i]->getLives();
-        if (fighters[i]->isAlive())
-        {
-            alivePlayers++;
-            teamsAlive.insert(getTeamID(fighters[i]->getPlayerID()));
-        }
-    }
-
-    // Check for switch to tense music
-    if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
-    {
-        criticalMusic = true;
-        AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
-        AudioManager::get()->startSoundtrack();
-    }
-
-    // End the game when zero or one team is left
-    if (teamsAlive.size() < 2)
-    {
-        playing = false;
-        // Turn on the "end of game music"
-        AudioManager::get()->setSoundtrack("sfx/PAUSE.wav");
-        if (!muteMusic)
-            AudioManager::get()->startSoundtrack();
-        if (!teamsAlive.empty())
-            winningTeam = *teamsAlive.begin();
-
-        // Save the replay
-        logfile.close();
-    }
-}
-
 void logControllerState(std::ostream &out)
 {
     for (unsigned i = 0; i < controllers.size(); i++)
