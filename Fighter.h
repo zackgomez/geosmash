@@ -27,9 +27,11 @@ struct UnlimpCallback;
 class Fighter : public GameEntity
 {
 public:
-    Fighter(float respawnx, float respawny, const glm::vec3 &color, int playerID,
-            int teamID);
+    Fighter(const glm::vec3 &color, int playerID,
+            int teamID, int startingLives);
     ~Fighter();
+
+    void setRespawnLocation(float x, float y);
 
     static const std::string type;
     // required for subclassing GameEntity

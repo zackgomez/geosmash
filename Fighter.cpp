@@ -15,14 +15,14 @@
 
 const std::string Fighter::type = "FighterEntity";
 
-Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int playerID,
-        int teamID) :
+Fighter::Fighter(const glm::vec3& color, int playerID,
+        int teamID, int startingLives) :
     dir_(-1),
     state_(0),
     damage_(0),
     shieldHealth_(getParam("shield.maxHealth")),
-    lives_(getParam("fighter.lives")),
-    respawnx_(respawnx), respawny_(respawny),
+    lives_(startingLives),
+    respawnx_(0), respawny_(0),
     color_(color),
     attack_(NULL),
     lastHitBy_(-1)
@@ -97,6 +97,12 @@ Fighter::Fighter(float respawnx, float respawny, const glm::vec3& color, int pla
     attackMap_["airFront"]->setTwinkle(true);
 
     state_ = 0;
+}
+
+void Fighter::setRespawnLocation(float x, float y)
+{
+    respawnx_ = x;
+    respawny_ = y;
 }
 
 Fighter::~Fighter()

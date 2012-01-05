@@ -11,7 +11,6 @@
 #include "audio.h"
 #include "ParamReader.h"
 
-#define FIGHTER_SPAWN_Y 50.0f
 #define JOYSTICK_START 7
 #define MAX_JOYSTICK_VALUE 32767.0f
 
@@ -215,11 +214,14 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
         int playerID = i;
         int teamID = teams_ ? (i < 2 ? 0 : 1) : playerID;
         // create a new fighter
-        Fighter *f = new Fighter(0-225.0f+i*150,
-                FIGHTER_SPAWN_Y, 
+        Fighter *f = new Fighter(
+                /*
+                */
                 colors[i],
                 playerID,
-                teamID);
+                teamID,
+                // TODO change this to use a menu option
+                getParam("fighter.lives"));
 
         // create a controller
         // push the controller onto the list

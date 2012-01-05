@@ -36,10 +36,16 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
 {
     for (unsigned i = 0; i < fighters.size(); i++)
     {
+        const float FIGHTER_SPAWN_Y = 50.f;
+
         Fighter *fighter = fighters[i];
-        // TODO set fighter respawn positions
-        fighter->respawn(false);
         entities_.push_back(fighter);
+
+        fighter->setRespawnLocation(
+                0-225.0f+i*150,
+                FIGHTER_SPAWN_Y); 
+        fighter->respawn(false);
+
     }
     // Need this assertion for destructor
     assert(entities_.size() == fighters_.size());
