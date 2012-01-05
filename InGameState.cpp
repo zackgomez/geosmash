@@ -21,36 +21,8 @@
 #include "StageManager.h"
 #include "Controller.h"
 
-/*
-bool teams;
-bool muteMusic;
-bool criticalMusic = false;
-
-bool running;
-bool playing;
-int pausedPlayer = -1;
-bool makeHazard;
-std::ofstream logfile;
-
-size_t startTime;
-
-std::vector<SDL_Joystick*> joysticks;
-std::vector<Controller*> controllers;
-const glm::vec3 playerColors[] =
-{
-    glm::vec3(0.0, 0.2, 1.0),
-    glm::vec3(0.1, 0.6, 0.1),
-    glm::vec3(0.8, 0.2, 0.2),
-    glm::vec3(0.7, 0.7, 0.2)
-};
-const glm::vec3 teamColors[] =
-{
-    glm::vec3(0.0, 0.2, 1.0),
-    glm::vec3(0.2, 0.6, 0.8),
-    glm::vec3(0.8, 0.2, 0.2),
-    glm::vec3(0.8, 0.35, 0.1)
-};
-*/
+std::vector<GameEntity *> getEntitiesToAdd();
+void addEntity(GameEntity *ent);
 
 InGameState::InGameState(const std::vector<Controller *> &controllers,
         const std::vector<Fighter*> &fighters) :
@@ -127,7 +99,11 @@ void InGameState::update(float dt)
     if (paused_)
         return;
 
-    // First remove done GameEntities
+    // Add new GameEntities
+    std::vector<GameEntity *> newEntities = getEntitiesToAdd();
+    entities_.insert(entities_.end(), newEntities.begin(), newEntities.end());
+
+    // then remove done GameEntities
     std::vector<GameEntity *>::iterator it;
     for (it = entities_.begin(); it != entities_.end();)
     {
@@ -452,71 +428,6 @@ void checkState()
     }
 }
 
-void update()
-{
-    if (paused)
-        return;
-
-    // First remove done GameEntities
-    std::vector<GameEntity *>::iterator it;
-    for (it = entities.begin(); it != entities.end();)
-    {
-        if ((*it)->isDone())
-        {
-            delete *it;
-            it = entities.erase(it);
-        }
-        else
-            it++;
-    }
-
-    // TODO: something fancy (or not so fancy) to make this dt smaller,
-    // if necessary (if a velocity is over some threshold)
-    integrate(dt);
-    collisionDetection();
-
-    AudioManager::get()->update(dt);
-    CameraManager::get()->update(dt, fighters);
-}
-
-void render()
-{
-    preRender();
-
-    // Start with a blank slate
-    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-    // Draw the background
-    StageManager::get()->renderSphereBackground(dt * !paused);
-    StageManager::get()->renderStage(dt * !paused);
-
-    // Draw all entities
-    for (unsigned i = 0; i < entities.size(); i++)
-        entities[i]->render(dt);
-
-    // Draw the fighter arrows
-    for (unsigned i = 0; i < fighters.size(); i++)
-        if (fighters[i]->isAlive())
-        {
-            renderArrow(fighters[i]);
-        }
-
-    // Draw any explosions
-    ExplosionManager::get()->render(dt * !paused);
-    ParticleManager::get()->render(dt * !paused);
-
-    renderHUD();
-
-
-    // Finish
-    postRender();
-    SDL_GL_SwapBuffers();
-
-    // Save the state of the controllers
-    logControllerState(logfile);
-}
-
 void logControllerState(std::ostream &out)
 {
     for (unsigned i = 0; i < controllers.size(); i++)
@@ -530,136 +441,6 @@ void logControllerState(std::ostream &out)
             << c.pressa << ' ' << c.pressb << ' ' << c.pressc << ' ' << c.pressjump << ' '
             << c.pressstart << ' ' << c.presslb << ' ' << c.pressrb << ' '
             << c.dpadl << ' ' << c.dpadr << ' ' << c.dpadu << ' ' << c.dpadd << '\n';
-    }
-}
-
-void renderHUD()
-{
-    // Render the overlay interface (HUD)
-    glDisable(GL_DEPTH_TEST);
-    glm::mat4 pmat = getProjectionMatrix();
-    glm::mat4 vmat = getViewMatrix();
-    setProjectionMatrix(glm::mat4(1.f));
-    setViewMatrix(glm::mat4(1.f));
-
-    const glm::vec3 *colors = teams ? teamColors : playerColors;
-    const glm::vec2 hud_center(0, 1.5f/6 - 1);
-    const glm::vec2 lifesize = 0.03f * glm::vec2(1.f, 16.f/9.f);
-    for (unsigned i = 0; i < fighters.size(); i++)
-    {
-        const glm::vec2 player_hud_center =
-            hud_center + 0.3f * glm::vec2(i - 1.5f, 0.f);
-
-        int lives = fighters[i]->getLives();
-        float damage = fighters[i]->getDamage();
-        // Draw life counts first
-        if (lives < 5)
-        {
-            // If 4 or less lives then draw each live as a box individually
-            glm::vec2 life_area = player_hud_center - 0.75f * glm::vec2(lifesize.x, -lifesize.y);
-            for (int j = 0; j < lives; j++)
-            {
-                glm::mat4 transform = glm::scale(
-                        glm::translate(
-                            glm::mat4(1.0f),
-                            glm::vec3(life_area, 0.f)),
-                        glm::vec3(lifesize, 1.0f));
-                renderRectangle(transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
-
-                glm::mat4 transform2 = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
-                renderRectangle(transform2, glm::vec4(colors[i], 0.0f));
-
-                if (j % 2 == 0)
-                    life_area.x += lifesize.x * 1.5;
-                else
-                {
-                    life_area.x -= lifesize.x * 1.5;
-                    life_area.y -= lifesize.y * 1.5;
-                }
-            }
-        }
-        else
-        {
-            // If 5 or more lives, draw a single life box and a number
-            glm::vec2 life_area = player_hud_center - 0.75f * glm::vec2(lifesize.x, 0);
-            glm::mat4 transform = glm::scale(
-                    glm::translate(
-                        glm::mat4(1.0f),
-                        glm::vec3(life_area, 0.f)),
-                    glm::vec3(lifesize, 1.0f));
-            renderRectangle(transform, glm::vec4(0.25f, 0.25f, 0.25f, 0.0f));
-            transform = glm::scale(transform, glm::vec3(0.8, 0.8, 1.0f));
-            renderRectangle(transform, glm::vec4(colors[i], 0.0f));
-
-            // Now draw the numbers
-            life_area.x += lifesize.x * 1.5;
-            transform = glm::scale( glm::translate( glm::mat4(1.0f), glm::vec3(life_area, 0.f)),
-                    glm::vec3(1.5f*lifesize, 1.0f));
-            FontManager::get()->renderNumber(transform, colors[i], lives);
-        }
-
-        // Draw the damage amount with color scaled towards black as the
-        // player has more damage
-        glm::vec2 damageBarMidpoint = player_hud_center + glm::vec2(0.f, -0.8f/6.f);
-        glm::mat4 transform = glm::scale(
-            glm::translate(glm::mat4(1.0f), glm::vec3(damageBarMidpoint, 0.f)),
-            glm::vec3(0.085f, 0.085f, 1.0f));
-        glm::vec3 dmgColor = std::min(1.f, std::max(0.2f, 1.f - damage/200.f)) * colors[i];
-        FontManager::get()->renderNumber(transform, dmgColor, floorf(damage));
-    }
-
-    setProjectionMatrix(pmat);
-    setViewMatrix(vmat);
-}
-
-void renderArrow(const Fighter *f)
-{
-    glm::vec4 fpos = glm::vec4(f->getRect().x, f->getRect().y, 0.f, 1.f);
-    glm::vec4 fndc = getProjectionMatrix() * getViewMatrix() * fpos;
-    fndc /= fndc.w;
-    if (fabs(fndc.x) > 1 || fabs(fndc.y) > 1)
-    {
-        std::cout << "DRAWING ARROW\n";
-
-        glm::vec2 dir = glm::vec2(fndc);
-        float dist = glm::length(dir);
-        dir /= dist;
-        // draw arrow
-        glm::vec2 side = (fabs(dir.x) > fabs(dir.y))
-            ? glm::vec2(dir.x / fabs(dir.x), 0)
-            : glm::vec2(0, dir.y / fabs(dir.y));
-        glm::vec2 move = (fabs(dir.x) < fabs(dir.y))
-            ? glm::vec2(dir.x / fabs(dir.x), 0)
-            : glm::vec2(0, dir.y / fabs(dir.y));
-
-        float theta = acos(glm::dot(glm::vec2(-1, 0), dir)) * ((fndc.y > 0) ? -1.f : 1.f);
-
-        glm::vec2 arrowPos = side +
-            move * glm::vec2(1,1) * glm::vec2(fabs(cosf(theta)), fabs(sinf(theta)));
-
-        const float arrowsz = 0.005;
-        float len = glm::length(arrowPos);
-        arrowPos *= (len - 10*arrowsz) / len;
-
-        float scale = 0.002 * ((dist / len - 1.f) * 5.f + 0.5f);
-        float rot = theta * 180.f / M_PI;
-
-        //std::cout << "Arrow pos: " << arrowPos.x << ' ' << arrowPos.y << '\n';
-        glm::mat4 transform =
-            glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f),
-                            glm::vec3(arrowPos, 0.0f)), 
-                        glm::vec3(scale, scale, 1.f)),
-                    rot, glm::vec3(0, 0, 1));
-
-        glm::mat4 pmat = getProjectionMatrix();
-        glm::mat4 vmat = getViewMatrix();
-        setProjectionMatrix(glm::mat4(1.f));
-        setViewMatrix(glm::mat4(1.f));
-
-        FrameManager::get()->renderFrame(transform, glm::vec4(f->getColor(), 0.0f), "OffscreenArrow");
-
-        setProjectionMatrix(pmat);
-        setViewMatrix(vmat);
     }
 }
 
@@ -766,12 +547,16 @@ bool togglepause(int playerID)
 }
 */
 
+static std::vector<GameEntity *> entitiesToAdd;
+
 void addEntity(GameEntity *ent)
 {
-    // TODO do this function
-    assert(false);
+    entitiesToAdd.push_back(ent);
+}
 
-    // TODO investigate placing these into a temporary buffer that's added
-    // at the beginning of each frame to avoid strange behavior.
-    //entities.push_back(ent);
+std::vector<GameEntity *> getEntitiesToAdd()
+{
+    std::vector<GameEntity *> ret = entitiesToAdd;
+    entitiesToAdd.clear();
+    return ret;
 }
