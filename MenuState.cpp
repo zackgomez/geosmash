@@ -3,6 +3,11 @@
 #include "GameState.h"
 #include "Fighter.h"
 #include <cassert>
+#include <glm/gtc/matrix_transform.hpp>
+#include <SDL/SDL.h>
+#include <GL/glew.h>
+#include "glutils.h"
+#include "FontManager.h"
 
 #define FIGHTER_SPAWN_Y 50.0f
 #define JOYSTICK_START 7
@@ -21,7 +26,38 @@ void MenuState::update(float)
 
 void MenuState::render(float dt)
 {
-    // Render some text!
+    // Start with a blank slate
+    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+    setProjectionMatrix(glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f));
+    setViewMatrix(glm::mat4(1.f));
+
+    // Draw the players, highlight the winner
+    glm::mat4 transform = 
+        glm::scale(
+            glm::translate(
+                glm::mat4(1.f), 
+                glm::vec3(1920.f/10 + 1920.f/5, 1080.f - 1080.f/3/2, 0.1f)), 
+            glm::vec3(1.f, 1.f, 1.f));
+
+    // Kills
+    transform = glm::scale(
+            glm::translate(
+                glm::mat4(1.f), 
+                glm::vec3(1920.f/10, 1080.f - 1080.f/3 - 1080.f/3/2, 0.1f)), 
+            glm::vec3(1.f, 1.f, 1.f));
+    transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
+    for (unsigned i = 1; i <= 4; i++)
+    {
+        FontManager::get()->renderNumber(
+                glm::scale(transform, 
+                    glm::vec3(100.f, 100.f, 1.f)), 
+                glm::vec3(0.5f, 0.5f, 0.5f),
+                i);
+        transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
+    }
+    SDL_GL_SwapBuffers();
 }
 
 GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
