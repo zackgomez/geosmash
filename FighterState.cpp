@@ -58,7 +58,7 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     fighter_->damage_ += dd;
     // Record damage given/taken
     StatsManager::get()->addStat(StatsManager::getStatPrefix(fighter_->playerID_) + "damageTaken", dd);
-    if (getTeamID(attack->getPlayerID()) == getTeamID(fighter_->playerID_))
+    if (attack->getTeamID() == fighter_->getTeamID())
         StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "teamDamageGiven", dd);
     else
         StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "damageGiven", dd);
@@ -1139,7 +1139,7 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
                     glm::vec2(0.f), // position doesn't matter
                     glm::vec2(0.f), // size doesn't matter
                     glm::sign(fighter_->pos_.x - victim_->getEntity()->getPosition().x),
-                    fighter_->playerID_,
+                    fighter_->getPlayerID(), fighter_->getTeamID(),
                     ""); // FIXME: No audio id for now
             victim_->hit(&thrw);
         }

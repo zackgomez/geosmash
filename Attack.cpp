@@ -19,9 +19,9 @@ SimpleAttack::SimpleAttack(const glm::vec2 &kb,
         float damage, float stun, float priority,
         const glm::vec2 &pos, const glm::vec2 &size,
         float odir,
-        int playerID, const std::string &audioID) :
+        int playerID, int teamID, const std::string &audioID) :
     Attack(),
-    playerID_(playerID),
+    playerID_(playerID), teamID_(teamID),
     damage_(damage), stun_(stun), priority_(priority),
     odir_(odir),
     pos_(pos),
@@ -55,6 +55,11 @@ glm::vec2 SimpleAttack::getKnockback(const GameEntity *) const
 int SimpleAttack::getPlayerID() const
 {
     return playerID_;
+}
+
+int SimpleAttack::getTeamID() const
+{
+    return teamID_;
 }
 
 std::string SimpleAttack::getAudioID() const
@@ -523,7 +528,8 @@ void NeutralSpecialAttack::update(float dt)
         Projectile *projectile =
             new Projectile(owner_->getPosition(),
                     glm::vec2(owner_->getDirection(), 0.f), paramPrefix_,
-                    "Projectile", "projectilehit", owner_->getPlayerID());
+                    "Projectile", "projectilehit", owner_->getPlayerID(),
+                    owner_->getTeamID());
         addEntity(projectile);
 
         released_ = true;

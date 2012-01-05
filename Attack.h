@@ -23,6 +23,7 @@ public:
     virtual glm::vec2 getKnockback(const GameEntity *victim) const = 0;
 
     virtual int getPlayerID() const = 0;
+    virtual int getTeamID() const = 0;
     virtual std::string getAudioID() const = 0;
 
     virtual bool canHit(const GameEntity *f) const = 0;
@@ -36,7 +37,8 @@ class SimpleAttack : public Attack
 public:
     SimpleAttack() { }
     SimpleAttack(const glm::vec2 &kb, float damage, float stun, float priority,
-            const glm::vec2 &pos, const glm::vec2 &size, float odir, int playerID,
+            const glm::vec2 &pos, const glm::vec2 &size, float odir,
+            int playerID, int teamID,
             const std::string &audioID);
     virtual ~SimpleAttack();
 
@@ -48,6 +50,7 @@ public:
     virtual glm::vec2 getKnockback(const GameEntity *) const;
 
     virtual int getPlayerID() const;
+    virtual int getTeamID() const;
     virtual std::string getAudioID() const;
 
     // True if this attack can hit the passed GameEntity now
@@ -64,7 +67,7 @@ public:
     void setOriginDirection(float odir);
 
 protected:
-    int playerID_;
+    int playerID_, teamID_;
     
     float damage_, stun_, priority_;
     float odir_;

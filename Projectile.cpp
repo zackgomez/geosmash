@@ -8,7 +8,7 @@
 #include "PManager.h"
 Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
         const std::string &paramPrefix, const std::string &frameName,
-        const std::string &audioID, int playerID) :
+        const std::string &audioID, int playerID, int teamID) :
     GameEntity(),
     attack_(NULL),
     t_(0),
@@ -18,6 +18,7 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
 {
     paramPrefix_ = paramPrefix + '.';
     playerID_ = playerID;
+    teamID_ = teamID;
 
     pos_ = pos;
     vel_ = dir * getParam(paramPrefix_ + "speed");
@@ -34,7 +35,7 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
             getParam(paramPrefix_ + "damage"),
             getParam(paramPrefix_ + "stun"),
             0.f, // 0 priority
-            pos_, size_, -dir.x, playerID_,
+            pos_, size_, -dir.x, playerID_, teamID_,
             audioID_);
     attack_->setKBDirection(vel_.x > 0 ? 1 : -1);
 

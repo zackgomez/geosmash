@@ -169,7 +169,7 @@ HazardEntity::HazardEntity(const std::string &audioID) :
             getParam(pre_ + "damage"),
             getParam(pre_ + "stun"),
             getParam(pre_ + "priority"),
-            pos_, size_, -dir_, playerID_,
+            pos_, size_, -dir_, playerID_, teamID_,
             audioID);
 
     // Set up particle effects

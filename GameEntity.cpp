@@ -4,7 +4,7 @@
 int GameEntity::lastID_ = 100;
 
 GameEntity::GameEntity() :
-    pos_(), vel_(), accel_(), size_(), id_(lastID_++), playerID_(-1)
+    pos_(), vel_(), accel_(), size_(), id_(lastID_++), playerID_(-1), teamID_(-1)
 {
     /* Empty */
 }
