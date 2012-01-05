@@ -8,6 +8,7 @@
 #include <GL/glew.h>
 #include "glutils.h"
 #include "FontManager.h"
+#include "audio.h"
 #include "ParamReader.h"
 
 #define FIGHTER_SPAWN_Y 50.0f
@@ -29,11 +30,18 @@ const glm::vec3 teamColors[] =
     glm::vec3(0.8, 0.35, 0.1)
 };
 
-MenuState::MenuState()
+MenuState::MenuState() :
+    nplayers_(4),
+    canIncrement_(false),
+    canChangeRow_(false),
+    startPrimed_(false),
+    teams_(false),
+    currentRow_(0),
+    totalRows_(2)
 {
-    nplayers_ = 4;
-    currentRow_ = 0;
-    totalRows_ = 2;
+
+    AudioManager::get()->setSoundtrack("sfx/Terminal Velocity.wav");
+    AudioManager::get()->startSoundtrack();
 }
 
 
@@ -106,7 +114,12 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
 
     if (SDL_JoystickGetButton(p1, JOYSTICK_START))
     {
-        return newGame(stix);
+        if (startPrimed_)
+            return newGame(stix);
+    }
+    else
+    {
+        startPrimed_ = true;
     }
 
     // First check the current row

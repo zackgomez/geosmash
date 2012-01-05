@@ -44,9 +44,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    state = new MenuState();
 
-    running = true;
     mainloop();
 
     cleanup();
@@ -56,6 +54,7 @@ int main(int argc, char *argv[])
 void mainloop()
 {
     running = true;
+    state = new MenuState();
     while (running)
     {
         // For frame timing
