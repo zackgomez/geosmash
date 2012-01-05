@@ -15,6 +15,17 @@ MenuState::MenuState()
 
 }
 
+void MenuState::update(float)
+{
+
+    //nop
+}
+
+void MenuState::render(float dt)
+{
+    // Render some text!
+}
+
 GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
 {
     assert(stix.size() > 0);
