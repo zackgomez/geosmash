@@ -37,9 +37,8 @@ public:
     virtual void render(float);
     
 private:
+    int nplayers_;
     GameState* newGame(const std::vector<SDL_Joystick*>&stix);
-    std::vector<NumPlayersEntry> playerCountItems_;
-    std::vector<NumPlayersEntry>::iterator playerCountCurr_;
     std::vector<SDL_Joystick*> joysticks;
     std::vector<Controller*> controllers;
     std::vector<Fighter*> fighters;

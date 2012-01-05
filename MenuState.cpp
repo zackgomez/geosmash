@@ -6,18 +6,16 @@
 
 #define FIGHTER_SPAWN_Y 50.0f
 #define JOYSTICK_START 7
+#define MAX_JOYSTICK_VALUE 32767.0f
+
 MenuState::MenuState()
 {
-    playerCountItems_.push_back(NumPlayersEntry(1, "one"));
-    playerCountItems_.push_back(NumPlayersEntry(2, "two"));
-    playerCountItems_.push_back(NumPlayersEntry(3, "three"));
-    playerCountItems_.push_back(NumPlayersEntry(4, "four"));
-
+    nplayers_ = 4;
 }
+
 
 void MenuState::update(float)
 {
-
     //nop
 }
 
@@ -36,6 +34,8 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
     {
         return newGame(stix);
     }
+    float xval = SDL_JoystickGetAxis(p1, 0) / MAX_JOYSTICK_VALUE; 
+    float yval = SDL_JoystickGetAxis(p1, 1) / MAX_JOYSTICK_VALUE; 
     return 0;
 }
 
@@ -43,8 +43,7 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*>&stix, float)
 GameState* MenuState::newGame(const std::vector<SDL_Joystick*>&stix)
 {
 
-    int np = playerCountCurr_->val;
-    for (int i = 0; i < np; i++)
+    for (int i = 0; i < nplayers_; i++)
     {
         // create a new fighter
 
