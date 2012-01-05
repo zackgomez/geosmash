@@ -39,7 +39,7 @@ MenuState::MenuState() :
     totalRows_(2)
 {
     // Start the menu soundtrack
-    AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).wav");
+    AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).ogg");
     AudioManager::get()->startSoundtrack();
 }
 

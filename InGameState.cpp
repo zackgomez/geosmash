@@ -64,11 +64,11 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
 
     // Choose random song
     std::vector<std::string> songs;
-    songs.push_back("sfx/03 GeoSMASH (loop).wav");
-    songs.push_back("sfx/04 Horrors of the Hidden Levels (loop).wav");
-    songs.push_back("sfx/05 Pharticle Pysics (loop).wav");
-    songs.push_back("sfx/06 Meat Defeat (loop).wav");
-    songs.push_back("sfx/07 Pixel Party (loop).wav");
+    songs.push_back("sfx/03 GeoSMASH (loop).ogg");
+    songs.push_back("sfx/04 Horrors of the Hidden Levels (loop).ogg");
+    songs.push_back("sfx/05 Pharticle Pysics (loop).ogg");
+    songs.push_back("sfx/06 Meat DeFeat (loop).ogg");
+    songs.push_back("sfx/07 Pixel Party (loop).ogg");
     AudioManager::get()->setSoundtrack(songs[rand() % songs.size()]);
     AudioManager::get()->startSoundtrack();
 
@@ -135,7 +135,7 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
     if (alivePlayers == totalLives && !criticalMusic_)
     {
         criticalMusic_ = true;
-        AudioManager::get()->setSoundtrack("sfx/08 Critical Stealth (loop).wav");
+        AudioManager::get()->setSoundtrack("sfx/08 Critical Stealth (loop).ogg");
         AudioManager::get()->startSoundtrack();
     }
 
@@ -216,7 +216,8 @@ void InGameState::render(float dt)
 
     renderHUD();
 
-    renderPause();
+    if (paused_)
+        renderPause();
 }
 void InGameState::renderPause()
 {
@@ -228,7 +229,7 @@ void InGameState::renderPause()
 
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -1.f)),
-            glm::vec3(0.5f, 0.5f, 1.f));
+            glm::vec3(0.03f / 4, 0.04f / 4, 1.f));
     FrameManager::get()->renderFrame(transform, glm::vec4(0.6f, 0.6f, 0.6f, 0.3f), "PAUSED");
     //renderRectangle(transform, glm::vec4(0.1, 0.1, 0.1, 0.0));
 
