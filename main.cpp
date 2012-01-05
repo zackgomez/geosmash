@@ -66,7 +66,7 @@ void mainloop()
         // TODO call state functions here
         GameState *nextState;
         // Process input, checking for new states along the way
-        while ((nextState = state->processInput(joysticks)))
+        while ((nextState = state->processInput(joysticks, dt)))
         {
             delete state;
             state = nextState;

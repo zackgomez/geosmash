@@ -93,7 +93,7 @@ InGameState::~InGameState()
     // TODO lots of stuff.....
 }
 
-GameState * InGameState::processInput(std::vector<SDL_Joystick*> &joysticks, float dt)
+GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joysticks, float dt)
 {
     // First update controllers / frame
     for (unsigned i = 0; i < controllers_.size(); i++)
