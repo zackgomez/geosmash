@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <vector>
 #include "glutils.h"
-#include "audio.h"
+#include "AudioManager.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
 #include "GameState.h"

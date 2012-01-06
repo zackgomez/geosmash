@@ -10,8 +10,8 @@
 #include <vector>
 #include "glutils.h"
 #include "Fighter.h"
-#include "audio.h"
-#include "explosion.h"
+#include "AudioManager.h"
+#include "ExplosionManager.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
 #include "StatsManager.h"

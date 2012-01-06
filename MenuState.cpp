@@ -8,7 +8,7 @@
 #include <GL/glew.h>
 #include "glutils.h"
 #include "FontManager.h"
-#include "audio.h"
+#include "AudioManager.h"
 #include "ParamReader.h"
 
 #define JOYSTICK_START 7

@@ -1,6 +1,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "explosion.h"
+#include "ExplosionManager.h"
 #include "glutils.h"
 #include "FrameManager.h"
 #include "PManager.h"

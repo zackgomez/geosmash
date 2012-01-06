@@ -6,7 +6,7 @@
 #include "StatsManager.h"
 #include "FontManager.h"
 #include "FrameManager.h"
-#include "audio.h"
+#include "AudioManager.h"
 #include "MenuState.h"
 
 fighter_stat::fighter_stat(const std::string &sname, const std::string &dname) :

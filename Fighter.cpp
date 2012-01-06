@@ -5,10 +5,10 @@
 #include <GL/glew.h>
 #include "glutils.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include "explosion.h"
+#include "ExplosionManager.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
-#include "audio.h"
+#include "AudioManager.h"
 #include "Attack.h"
 #include "Controller.h"
 #include "FighterState.h"
