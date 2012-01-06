@@ -144,6 +144,8 @@ FighterAttack* FighterAttack::clone() const
 void FighterAttack::setFighter(Fighter *fighter)
 {
     owner_ = fighter;
+    playerID_ = owner_->getPlayerID();
+    teamID_ = owner_->getTeamID();
 }
 
 int FighterAttack::getPlayerID() const

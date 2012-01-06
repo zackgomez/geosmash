@@ -10,6 +10,7 @@
 #include "StatsManager.h"
 #include "StageManager.h"
 #include "Controller.h"
+#include "InGameState.h"
 
 int getTeamID(int);
 
@@ -1158,7 +1159,7 @@ void GrabbingState::render(float dt)
 FighterState* GrabbingState::collisionWithGround(const rectangle &ground, bool collision)
 {
     // TODO just make sure we're still on the ground
-    assert(collision);
+    //assert(collision);
     return NULL;
 }
 
@@ -1623,7 +1624,13 @@ bool DeadState::canBeHit() const
 
 FighterState* DeadState::processInput(controller_state &controller, float dt)
 {
-    // NOTHING
+    // check for life steal
+    if (controller.pressstart && InGameState::instance->stealLife(fighter_->getTeamID()))
+    {
+        fighter_->lives_++;
+        fighter_->respawn(false);
+    }
+
     return NULL;
 }
 

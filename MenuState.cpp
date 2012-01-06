@@ -63,7 +63,7 @@ MenuState::MenuState() :
     widgetInd_(0)
 {
     // Start the menu soundtrack
-    AudioManager::get()->setSoundtrack("sfx/Terminal Velocity.wav");
+    AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).ogg");
     AudioManager::get()->startSoundtrack();
 
     widgets.push_back(new MenuWidget("Players", 2, 4));

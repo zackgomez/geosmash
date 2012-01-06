@@ -27,6 +27,8 @@
 std::vector<GameEntity *> getEntitiesToAdd();
 void addEntity(GameEntity *ent);
 
+InGameState *InGameState::instance = NULL;
+
 InGameState::InGameState(const std::vector<Controller *> &controllers,
         const std::vector<Fighter*> &fighters) :
     controllers_(controllers),
@@ -64,10 +66,11 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
 
     // Choose random song
     std::vector<std::string> songs;
-    songs.push_back("sfx/geosmash.wav");
-    songs.push_back("sfx/hand canyon.wav");
-    songs.push_back("sfx/Meat DeFeat.wav");
-    songs.push_back("sfx/Pixel Party.wav");
+    songs.push_back("sfx/03 GeoSMASH (loop).ogg");
+    songs.push_back("sfx/04 Horrors of the Hidden Levels (loop).ogg");
+    songs.push_back("sfx/05 Pharticle Pysics (loop).ogg");
+    songs.push_back("sfx/06 Meat DeFeat (loop).ogg");
+    songs.push_back("sfx/07 Pixel Party (loop).ogg");
     AudioManager::get()->setSoundtrack(songs[rand() % songs.size()]);
     AudioManager::get()->startSoundtrack();
 
@@ -77,6 +80,8 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
 
     // Start of match time
     startTime_ = SDL_GetTicks();
+
+    instance = this;
 }
 
 InGameState::~InGameState()
@@ -134,7 +139,7 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
     if (alivePlayers == totalLives && !criticalMusic_)
     {
         criticalMusic_ = true;
-        AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
+        AudioManager::get()->setSoundtrack("sfx/08 Critical Stealth (loop).ogg");
         AudioManager::get()->startSoundtrack();
     }
 
@@ -215,8 +220,25 @@ void InGameState::render(float dt)
 
     renderHUD();
 
-    renderPause();
+    if (paused_)
+        renderPause();
 }
+
+bool InGameState::stealLife(int teamID)
+{
+    for (size_t i = 0; i < fighters_.size(); i++)
+    {
+        if (fighters_[i]->getLives() > 1 && fighters_[i]->getTeamID() == teamID)
+        {
+            fighters_[i]->stealLife();
+            return true;
+        }
+    }
+
+    // no life found
+    return false;
+}
+
 void InGameState::renderPause()
 {
     glDisable(GL_DEPTH_TEST);
@@ -227,8 +249,9 @@ void InGameState::renderPause()
 
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -1.f)),
-            glm::vec3(0.5f, 0.5f, 1.f));
-    FrameManager::get()->renderFrame(transform, glm::vec4(0.6f, 0.6f, 0.6f, 0.3f), "PAUSED");
+            glm::vec3(0.03f / 4, 0.04f / 4, 1.f));
+    FrameManager::get()->renderFrame(transform,
+            glm::vec4(0.6f, 0.6f, 0.6f, 0.3f), "PAUSED");
     //renderRectangle(transform, glm::vec4(0.1, 0.1, 0.1, 0.0));
 
 
@@ -490,45 +513,6 @@ void InGameState::togglePause(int controllerID)
 
 
 /*
-void checkState()
-{
-    int alivePlayers = 0;
-    int totalLives = 0;
-    std::set<int> teamsAlive;
-    for (unsigned i = 0; i < fighters.size(); i++)
-    {
-        totalLives += fighters[i]->getLives();
-        if (fighters[i]->isAlive())
-        {
-            alivePlayers++;
-            teamsAlive.insert(getTeamID(fighters[i]->getPlayerID()));
-        }
-    }
-
-    // Check for switch to tense music
-    if (alivePlayers == totalLives && !muteMusic && !criticalMusic)
-    {
-        criticalMusic = true;
-        AudioManager::get()->setSoundtrack("sfx/Critical Stealth.wav");
-        AudioManager::get()->startSoundtrack();
-    }
-
-    // End the game when zero or one team is left
-    if (teamsAlive.size() < 2)
-    {
-        playing = false;
-        // Turn on the "end of game music"
-        AudioManager::get()->setSoundtrack("sfx/PAUSE.wav");
-        if (!muteMusic)
-            AudioManager::get()->startSoundtrack();
-        if (!teamsAlive.empty())
-            winningTeam = *teamsAlive.begin();
-
-        // Save the replay
-        logfile.close();
-    }
-}
-
 void logControllerState(std::ostream &out)
 {
     for (unsigned i = 0; i < controllers.size(); i++)
@@ -544,13 +528,6 @@ void logControllerState(std::ostream &out)
             << c.dpadl << ' ' << c.dpadr << ' ' << c.dpadu << ' ' << c.dpadd << '\n';
     }
 }
-
-void printstats()
-{
-    std::cout << "Run time (s): " << (SDL_GetTicks() - startTime) / 1000.0f << '\n';
-
-}
-
 */
 
 // Functions and data structures for entity addition
