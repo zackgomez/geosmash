@@ -29,9 +29,11 @@ const glm::vec3 teamColors[] =
     glm::vec3(0.8, 0.35, 0.1)
 };
 
-MenuWidget::MenuWidget(const std::string &name, int min, int max) :
+MenuWidget::MenuWidget(const std::string &name, int min, int max, int defval) :
     name_(name), min_(min), max_(max), value_(min), primed_(false)
 {
+    if (defval != -1)
+        value_ = defval;
 }
 
 void MenuWidget::handleInput(float val)
@@ -67,7 +69,7 @@ void MenuWidget::render(const glm::vec2 &center, bool selected) const
     glm::mat4 transform;
 
     // Render name
-    glm::vec2 strcenter = center - glm::vec2(charsize * name_.length()/2, 0.f);
+    glm::vec2 strcenter = center - glm::vec2(0.75f * charsize * name_.length()/2, 0.f);
     transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(strcenter, 0.f)),
             glm::vec3(charsize, charsize, 1.f));
@@ -77,7 +79,7 @@ void MenuWidget::render(const glm::vec2 &center, bool selected) const
             name_);
 
     // Render value
-    glm::vec2 valcenter = center + glm::vec2(charsize * numDigits(value_), 0.f);
+    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * numDigits(value_), 0.f);
     transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
             glm::vec3(charsize, charsize, 1.f));
@@ -104,7 +106,8 @@ MenuState::MenuState() :
 
     widgets.push_back(new MenuWidget("Players", 2, 4));
     widgets.push_back(new MenuWidget("Teams", 0, 1));
-    widgets.push_back(new MenuWidget("Lives", 1, 99));
+    widgets.push_back(new MenuWidget("Lives", 1, 99, 4));
+    widgets.push_back(new MenuWidget("Stage Hazard", 0, 1));
 }
 
 MenuState::~MenuState()

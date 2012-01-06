@@ -23,8 +23,7 @@ hud.y       -0.70
 hud.w       1.4
 hud.h       0.125
 
-#soundtrack.volume 80
-soundtrack.volume 0
+soundtrack.volume 80
 sfx.volume 80
 # these alter the volume of individual sfx
 sfx.smashhit.volume 1.0
@@ -51,7 +50,7 @@ input.trigThresh    0.5
 input.duckThresh    -0.85
 input.throwThresh   0.8
 
-menu.deadzone       0.2
+menu.deadzone       0.5
 menu.thresh         0.7
 
 debug.drawHitbox    0

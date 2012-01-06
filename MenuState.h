@@ -7,7 +7,7 @@
 class MenuWidget
 {
 public:
-    MenuWidget(const std::string &name, int min, int max);
+    MenuWidget(const std::string &name, int min, int max, int defval = -1);
 
     int value() const;
 
