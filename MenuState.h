@@ -12,7 +12,7 @@ public:
     int value() const;
 
     void handleInput(float val);
-    void render(const glm::mat4 &transform, bool selected) const;
+    void render(const glm::vec2 &transform, bool selected) const;
 
 private:
     std::string name_;

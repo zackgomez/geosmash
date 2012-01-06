@@ -115,7 +115,7 @@ void FontManager::renderCharacter(const glm::mat4 &transform, const glm::vec3 &c
     // Set up the texture
     glActiveTexture(GL_TEXTURE0);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, numberTex_);
+    glBindTexture(GL_TEXTURE_2D, letterTex_);
 
     renderRectangleProgram(glm::scale(transform, glm::vec3(0.66f, -1.f, 1.f)), numProgram_);
 

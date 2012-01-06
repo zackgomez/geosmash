@@ -52,15 +52,40 @@ void MenuWidget::handleInput(float val)
     primed_ = false;
 }
 
-void MenuWidget::render(const glm::mat4 &center, bool selected) const
+int numDigits(int num)
 {
+    int count;
+    for (count = 0; num != 0; num /= 10, count++);
+
+    return std::max(count, 1);
+}
+
+void MenuWidget::render(const glm::vec2 &center, bool selected) const
+{
+    static const float charsize = 100.f;
     glm::vec3 color = selected ? glm::vec3(.9, .9, .9) : glm::vec3(.3, .3, .3);
-    // TODO render text
-    
+    glm::mat4 transform;
+
+    // Render name
+    glm::vec2 strcenter = center - glm::vec2(charsize * name_.length()/2, 0.f);
+    transform = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(strcenter, 0.f)),
+            glm::vec3(charsize, charsize, 1.f));
+    FontManager::get()->renderString(
+            transform,
+            color,
+            name_);
+
+    // Render value
+    glm::vec2 valcenter = center + glm::vec2(charsize * numDigits(value_), 0.f);
+    transform = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
+            glm::vec3(charsize, charsize, 1.f));
     FontManager::get()->renderNumber(
-            glm::scale(center, glm::vec3(100.f, 100.f, 1.f)),
+            transform,
             color,
             value_);
+
 }
 
 int MenuWidget::value() const
@@ -104,8 +129,7 @@ void MenuState::render(float dt)
     for (size_t i = 0; i < widgets.size(); i++)
     {
         bool selected = static_cast<int>(i) == widgetInd_;
-        const glm::mat4 transform = glm::translate(glm::mat4(1.f), glm::vec3(center, 0.f));
-        widgets[i]->render(transform, selected);
+        widgets[i]->render(center, selected);
         center -= glm::vec2(0, 1080.f / 8);
     }
 }

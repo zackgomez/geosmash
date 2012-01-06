@@ -511,25 +511,6 @@ void InGameState::togglePause(int controllerID)
     }
 }
 
-
-/*
-void logControllerState(std::ostream &out)
-{
-    for (unsigned i = 0; i < controllers.size(); i++)
-    {
-        const controller_state c = controllers[i]->lastState();
-
-        out << c.joyx << ' ' << c.joyy << ' ' << c.joyxv << ' ' << c.joyyv
-            << c.rtrigger << ' ' << c.ltrigger << ' ' << c.buttona << ' ' << c.buttonb << ' '
-            << c.buttonc << ' ' << c.jumpbutton << ' ' << c.buttonstart << ' '
-            << c.lbumper << ' ' << c.rbumper << ' '
-            << c.pressa << ' ' << c.pressb << ' ' << c.pressc << ' ' << c.pressjump << ' '
-            << c.pressstart << ' ' << c.presslb << ' ' << c.pressrb << ' '
-            << c.dpadl << ' ' << c.dpadr << ' ' << c.dpadu << ' ' << c.dpadd << '\n';
-    }
-}
-*/
-
 // Functions and data structures for entity addition
 static std::vector<GameEntity *> entitiesToAdd;
 
