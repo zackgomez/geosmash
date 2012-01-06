@@ -159,6 +159,8 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
 
     const glm::vec3 *colors = teams ? teamColors : playerColors;
 
+	assert(nplayers <= stix.size());
+
     std::vector<Controller *> controllers;
     std::vector<Fighter *> fighters;
     for (int i = 0; i < nplayers; i++)

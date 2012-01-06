@@ -98,7 +98,9 @@ anim_frame* FrameManager::loadAnimFrame(std::istream &stream)
 
     // First line is name
     std::getline(stream, name);
-    name.erase(name.end() - 1);
+	if (name == "")
+		return 0;
+    name.erase(name.end());
     // Next line is height/width
     std::getline(stream, line);
     if (sscanf(line.c_str(), "%d %d\n", &w, &h) != 2)

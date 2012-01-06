@@ -17,6 +17,7 @@ std::vector<SDL_Joystick*> joysticks;
 bool running;
 GameState *state;
 
+// returns
 int initJoystick(unsigned numPlayers);
 int initGraphics();
 int initLibs();
@@ -130,9 +131,6 @@ int initJoystick(unsigned numPlayers)
     unsigned i;
     for (i = 0; i < numJoysticks && i < numPlayers; i++)
         joysticks.push_back(SDL_JoystickOpen(i));
-
-    if (i != numPlayers)
-        return 0;
 
     return numPlayers;
 }

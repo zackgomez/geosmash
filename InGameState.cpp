@@ -168,6 +168,8 @@ void InGameState::update(float dt)
     if (paused_)
         return;
 
+	ParticleManager::get()->startUpdate(dt);
+
     // Add new GameEntities
     std::vector<GameEntity *> newEntities = getEntitiesToAdd();
     entities_.insert(entities_.end(), newEntities.begin(), newEntities.end());
@@ -192,6 +194,7 @@ void InGameState::update(float dt)
 
     AudioManager::get()->update(dt);
     CameraManager::get()->update(dt, fighters_);
+	ParticleManager::get()->update();
 }
 
 void InGameState::render(float dt)
@@ -298,11 +301,11 @@ void InGameState::renderHUD()
                 renderRectangle(transform2, glm::vec4(color, 0.0f));
 
                 if (j % 2 == 0)
-                    life_area.x += lifesize.x * 1.5;
+                    life_area.x += lifesize.x * 1.5f;
                 else
                 {
-                    life_area.x -= lifesize.x * 1.5;
-                    life_area.y -= lifesize.y * 1.5;
+                    life_area.x -= lifesize.x * 1.5f;
+                    life_area.y -= lifesize.y * 1.5f;
                 }
             }
         }
