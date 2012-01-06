@@ -4,6 +4,24 @@
 #include <glm/glm.hpp>
 #include "Controller.h"
 
+class MenuWidget
+{
+public:
+    MenuWidget(const std::string &name, int min, int max);
+
+    int value() const;
+
+    void handleInput(float val);
+    void render(const glm::mat4 &transform) const;
+
+private:
+    std::string name_;
+    int min_, max_;
+    int value_;
+
+    bool primed_;
+};
+
 
 class MenuState : public GameState
 {
@@ -15,21 +33,17 @@ public:
     virtual void render(float);
     
 private:
-    int nplayers_;
     // Player one can only change the number of players if they've
     // recently gone back to the dead zone with the controller stick
-    bool canIncrement_;
-    bool canChangeRow_;
+    bool rowChangePrimed_;
     // True when start will send to next menu
     bool startPrimed_;
-    bool teams_;
-    int currentRow_;
-    int totalRows_;
-    GameState* newGame(const std::vector<SDL_Joystick*>&stix);
-    std::vector<Controller*> controllers;
-    std::vector<Fighter*> fighters;
+    // index into widget array
+    int widgetInd_;
 
-    void checkNPlayers(float xval);
-    void checkRow(float yval);
+    std::vector<MenuWidget*> widgets;
+
+    GameState* newGame(const std::vector<SDL_Joystick*>&stix);
+
 };
 

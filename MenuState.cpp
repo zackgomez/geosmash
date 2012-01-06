@@ -29,32 +29,58 @@ const glm::vec3 teamColors[] =
     glm::vec3(0.8, 0.35, 0.1)
 };
 
+MenuWidget::MenuWidget(const std::string &name, int min, int max) :
+    name_(name), min_(min), max_(max), value_(min), primed_(false)
+{
+}
+
+void MenuWidget::handleInput(float val)
+{
+    if (fabs(val) < getParam("menu.deadzone"))
+    {
+        primed_ = true;
+        return;
+    }
+
+    if (!primed_)
+        return;
+
+    int sign = val > 0 ? 1 : -1;
+
+    value_ += sign;
+    value_ = std::max(std::min(value_, max_), min_);
+    primed_ = false;
+}
+
+int MenuWidget::value() const
+{
+    return value_;
+}
+
 MenuState::MenuState() :
-    nplayers_(4),
-    canIncrement_(false),
-    canChangeRow_(false),
+    rowChangePrimed_(false),
     startPrimed_(false),
-    teams_(false),
-    currentRow_(0),
-    totalRows_(2)
+    widgetInd_(0)
 {
     // Start the menu soundtrack
     AudioManager::get()->setSoundtrack("sfx/Terminal Velocity.wav");
     AudioManager::get()->startSoundtrack();
+
+    widgets.push_back(new MenuWidget("Players", 2, 4));
+    widgets.push_back(new MenuWidget("Teams", 0, 1));
+    widgets.push_back(new MenuWidget("Lives", 1, 99));
 }
 
 
 void MenuState::update(float)
 {
-    //nop
+    for (size_t i = 0; i < widgets.size(); i++)
+        delete widgets[i];
 }
 
 void MenuState::render(float dt)
 {
-    // Start with a blank slate
-    glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
+    /*
     setProjectionMatrix(glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f));
     setViewMatrix(glm::mat4(1.f));
 
@@ -103,6 +129,7 @@ void MenuState::render(float dt)
             teams_ ? selectedColor : theColor,
             teams_ ? 1 : 0);
     transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
+    */
 }
 
 GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float)
@@ -111,109 +138,58 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
     // Only player one may move through the menus
     SDL_Joystick* p1 = stix[0];
 
-    if (SDL_JoystickGetButton(p1, JOYSTICK_START))
+    bool startbutton = SDL_JoystickGetButton(p1, JOYSTICK_START);
+    float xval = SDL_JoystickGetAxis(p1, 0) / MAX_JOYSTICK_VALUE; 
+    float yval = SDL_JoystickGetAxis(p1, 1) / MAX_JOYSTICK_VALUE; 
+
+    // Check for transition to InGamestate
+    if (startbutton)
     {
         if (startPrimed_)
             return newGame(stix);
     }
     else
-    {
         startPrimed_ = true;
-    }
 
-    // First check the current row
-    float yval = SDL_JoystickGetAxis(p1, 1) / MAX_JOYSTICK_VALUE; 
-    if (fabs(yval) < getParam("menu.deadzone"))
+    // Check for row change
+    if (fabs(yval) > getParam("menu.deadzone") && rowChangePrimed_)
     {
-        canChangeRow_ = true;
-    }
-    checkRow(yval);
-        
+        int sign = yval > 0 ? 1 : -1;
+        // Move and clamp
+        glm::clamp(widgetInd_ + sign, 0, (int)widgets.size());
 
-    // -1 < xval < 1
-    float xval = SDL_JoystickGetAxis(p1, 0) / MAX_JOYSTICK_VALUE; 
-    if (fabs(xval) < getParam("menu.deadzone"))
-    {
-        canIncrement_ = true;
+        rowChangePrimed_ = false;
     }
+    else if (fabs(yval) < getParam("menu.deadzone"))
+        rowChangePrimed_ = true;
 
-    if (currentRow_ == 0)
-    {
-        checkNPlayers(xval);
-    }
-    else if (currentRow_ == 1 && canIncrement_ && fabs(xval) > getParam("menu.deadzone"))
-    {
-        teams_ = xval > 0;
+    // Check for value change etc
+    widgets[widgetInd_]->handleInput(xval);
 
-        if (nplayers_ != 4)
-            teams_ = false;
-    }
-    
-    return 0;
+    // No transition
+    return NULL;
 }
-
-void MenuState::checkRow(float yval)
-{
-    if (yval < -getParam("menu.thresh") && canChangeRow_)
-    {
-        canChangeRow_ = false;
-        if (currentRow_ > 0)
-        {
-            currentRow_--;
-        }
-    }
-    if (yval > getParam("menu.thresh") && canChangeRow_)
-    {
-        canChangeRow_ = false;
-        if (currentRow_ < totalRows_ - 1)
-        {
-            currentRow_++;
-        }
-    }
-}
-
-
-void MenuState::checkNPlayers(float xval)
-{
-    if (xval < -getParam("menu.thresh") && canIncrement_)
-    {
-        canIncrement_ = false;
-        if (nplayers_ > 1)
-        {
-            nplayers_--;
-        }
-    }
-    if (xval > getParam("menu.thresh") && canIncrement_)
-    {
-        canIncrement_ = false;
-        if (nplayers_ < 4)
-        {
-            nplayers_++;
-        }
-    }
-
-    if (nplayers_ != 4)
-        teams_ = false;
-}
-
-
 
 GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
 {
-    const glm::vec3 *colors = teams_ ? teamColors : playerColors;
-    for (int i = 0; i < nplayers_; i++)
+    int nplayers = widgets[0]->value();
+    bool teams = widgets[1]->value();
+    int lives = widgets[2]->value();
+
+    const glm::vec3 *colors = teams ? teamColors : playerColors;
+
+    std::vector<Controller *> controllers;
+    std::vector<Fighter *> fighters;
+    for (int i = 0; i < nplayers; i++)
     {
         int playerID = i;
-        int teamID = teams_ ? (i < 2 ? 0 : 1) : playerID;
+        int teamID = teams ? (i < 2 ? 0 : 1) : playerID;
         // create a new fighter
         Fighter *f = new Fighter(
-                /*
-                */
                 colors[i],
                 playerID,
                 teamID,
-                // TODO change this to use a menu option
-                getParam("fighter.lives"));
+                lives);
 
         // create a controller
         // push the controller onto the list
