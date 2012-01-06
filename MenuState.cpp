@@ -14,20 +14,25 @@
 #define JOYSTICK_START 7
 #define MAX_JOYSTICK_VALUE 32767.0f
 
-const glm::vec3 playerColors[] =
+static const glm::vec3 playerColors[] =
 {
     glm::vec3(0.0, 0.2, 1.0),
     glm::vec3(0.1, 0.6, 0.1),
     glm::vec3(0.8, 0.2, 0.2),
     glm::vec3(0.7, 0.7, 0.2)
 };
-const glm::vec3 teamColors[] =
+static const glm::vec3 teamColors[] =
 {
     glm::vec3(0.0, 0.2, 1.0),
     glm::vec3(0.2, 0.6, 0.8),
     glm::vec3(0.8, 0.2, 0.2),
     glm::vec3(0.8, 0.35, 0.1)
 };
+
+static int defplayers = 2;
+static int defteams = 0;
+static int deflives = 4;
+static int defhazard = 0;
 
 MenuWidget::MenuWidget(const std::string &name, int min, int max, int defval) :
     name_(name), min_(min), max_(max), value_(min), primed_(false)
@@ -96,10 +101,10 @@ MenuState::MenuState() :
     AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).ogg");
     AudioManager::get()->startSoundtrack();
 
-    widgets.push_back(new MenuWidget("Players", 2, 4));
-    widgets.push_back(new MenuWidget("Teams", 0, 1));
-    widgets.push_back(new MenuWidget("Lives", 1, 99, 4));
-    widgets.push_back(new MenuWidget("Stage Hazard", 0, 1));
+    widgets.push_back(new MenuWidget("Players", 2, defplayers));
+    widgets.push_back(new MenuWidget("Teams", 0, defteams));
+    widgets.push_back(new MenuWidget("Lives", 1, 99, deflives));
+    widgets.push_back(new MenuWidget("Stage Hazard", 0, 1, defhazard));
 }
 
 MenuState::~MenuState()
@@ -175,6 +180,9 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
     int nplayers = widgets[0]->value();
     bool teams = widgets[1]->value();
     int lives = widgets[2]->value();
+    bool hazard = widgets[3]->value();
+
+    assert(nplayers <= stix.size());
 
     const glm::vec3 *colors = teams ? teamColors : playerColors;
 
@@ -196,7 +204,13 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
         controllers.push_back(new Controller(f, stix[i]));
         fighters.push_back(f);
     }
-        
+
+    // Record values for next time we create a menu
+    defplayers = widgets[0]->value();
+    defteams = widgets[1]->value();
+    deflives = widgets[2]->value();
+    defhazard = widgets[3]->value();
+
 
     // If p1 is pressing start, create a new GameState 
     GameState *gs = new InGameState(controllers, fighters);
