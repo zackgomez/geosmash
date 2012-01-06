@@ -12,7 +12,7 @@ public:
     int value() const;
 
     void handleInput(float val);
-    void render(const glm::mat4 &transform) const;
+    void render(const glm::mat4 &transform, bool selected) const;
 
 private:
     std::string name_;
@@ -27,6 +27,7 @@ class MenuState : public GameState
 {
 public:
     MenuState();
+    ~MenuState();
 
     virtual GameState* processInput(const std::vector<SDL_Joystick*>&, float);
     virtual void update(float);

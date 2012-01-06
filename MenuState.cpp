@@ -52,6 +52,17 @@ void MenuWidget::handleInput(float val)
     primed_ = false;
 }
 
+void MenuWidget::render(const glm::mat4 &center, bool selected) const
+{
+    glm::vec3 color = selected ? glm::vec3(.9, .9, .9) : glm::vec3(.3, .3, .3);
+    // TODO render text
+    
+    FontManager::get()->renderNumber(
+            glm::scale(center, glm::vec3(100.f, 100.f, 1.f)),
+            color,
+            value_);
+}
+
 int MenuWidget::value() const
 {
     return value_;
@@ -71,65 +82,32 @@ MenuState::MenuState() :
     widgets.push_back(new MenuWidget("Lives", 1, 99));
 }
 
-
-void MenuState::update(float)
+MenuState::~MenuState()
 {
     for (size_t i = 0; i < widgets.size(); i++)
         delete widgets[i];
 }
 
+void MenuState::update(float)
+{
+    // nop
+}
+
+
 void MenuState::render(float dt)
 {
-    /*
     setProjectionMatrix(glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f));
     setViewMatrix(glm::mat4(1.f));
 
-    // Some colors
-    const glm::vec3 theColor = glm::vec3(0.1f, 0.1f, 0.1f);
-    const glm::vec3 selectedColor = glm::vec3(0.9f, 0.9f, 0.9f);
-    const glm::vec4 rowSelectColor = glm::vec4(0.5f, 0.5f, 0.15f, 0.0f);
-    glm::mat4 transform;
+    glm::vec2 center(1920.f / 2, 1080.f - 1080.f / 8 * 2);
 
-    // Row background highlight
-    transform = glm::scale(
-            glm::translate(
-                glm::mat4(1.f), 
-                glm::vec3(1920.f * 0.4f, 1080.f - 1080.f/3 - 150.0f * currentRow_, 0.0f)), 
-            glm::vec3(1920.f/3 * 2, 110.f, 1.f));
-    renderRectangle(transform, rowSelectColor);
-
-    // number of players display
-    transform = glm::scale(
-            glm::translate(
-                glm::mat4(1.f), 
-                glm::vec3(1920.f/10, 1080.f - 1080.f/3  , 0.1f)), 
-            glm::vec3(1.f, 1.f, 1.f));
-    //transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-    for (unsigned i = 1; i <= 4; i++)
+    for (size_t i = 0; i < widgets.size(); i++)
     {
-        FontManager::get()->renderNumber(
-                glm::scale(transform, 
-                    glm::vec3(100.f, 100.f, 1.f)), 
-                i == nplayers_ ? selectedColor : theColor,
-                i);
-        transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
+        bool selected = static_cast<int>(i) == widgetInd_;
+        const glm::mat4 transform = glm::translate(glm::mat4(1.f), glm::vec3(center, 0.f));
+        widgets[i]->render(transform, selected);
+        center -= glm::vec2(0, 1080.f / 8);
     }
-
-    // Teams
-    transform = glm::scale(
-            glm::translate(
-                glm::mat4(1.f), 
-                glm::vec3(1920.f/10, 1080.f - 1080.f/3  , 0.1f)), 
-            glm::vec3(1.f, 1.f, 1.f));
-    transform = glm::translate(transform, glm::vec3(0, -150.0f,0));
-
-    FontManager::get()->renderNumber(
-            glm::scale(transform, 
-                glm::vec3(100.f, 100.f, 1.f)), 
-            teams_ ? selectedColor : theColor,
-            teams_ ? 1 : 0);
-    transform = glm::translate(transform, glm::vec3(1920.f/5, 0.f, 0.f));
-    */
 }
 
 GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float)
@@ -156,7 +134,10 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
     {
         int sign = yval > 0 ? 1 : -1;
         // Move and clamp
-        glm::clamp(widgetInd_ + sign, 0, (int)widgets.size());
+        widgetInd_ += sign;
+        widgetInd_ = std::max(std::min(widgetInd_, ((int) widgets.size())-1), 0);
+        
+        std::cout << "Changing rows: " << widgetInd_ << '\n';
 
         rowChangePrimed_ = false;
     }
