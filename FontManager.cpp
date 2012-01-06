@@ -63,6 +63,14 @@ void FontManager::renderString(const glm::mat4 &transform,
     }
 }
 
+int FontManager::numDigits(int n)
+{
+    int count;
+    for (count = 0; n != 0; n /= 10, count++);
+
+    return std::max(count, 1);
+}
+
 
 void FontManager::renderDigit(const glm::mat4 &transform, const glm::vec3 &color,
         char dig)

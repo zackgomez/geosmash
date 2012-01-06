@@ -12,6 +12,7 @@
 #include "Attack.h"
 #include "Controller.h"
 #include "FighterState.h"
+#include "StatsManager.h"
 
 const std::string Fighter::type = "FighterEntity";
 
@@ -252,6 +253,8 @@ void Fighter::respawn(bool killed)
     {
         --lives_;
         AudioManager::get()->playSound("ko");
+        StatsManager::get()->addStat(
+                StatsManager::getStatPrefix(playerID_) + "deaths", 1);
     }
     delete state_;
     // Set the new state, either respawn or dead

@@ -18,6 +18,9 @@ public:
     void renderString(const glm::mat4 &transform, const glm::vec3 &color,
             const std::string &str);
 
+    // Returns the number of digits to be rendered in positive integer n
+    static int numDigits(int n);
+
 private:
     FontManager();
     ~FontManager();

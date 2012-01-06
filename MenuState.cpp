@@ -54,14 +54,6 @@ void MenuWidget::handleInput(float val)
     primed_ = false;
 }
 
-int numDigits(int num)
-{
-    int count;
-    for (count = 0; num != 0; num /= 10, count++);
-
-    return std::max(count, 1);
-}
-
 void MenuWidget::render(const glm::vec2 &center, bool selected) const
 {
     static const float charsize = 100.f;
@@ -79,7 +71,7 @@ void MenuWidget::render(const glm::vec2 &center, bool selected) const
             name_);
 
     // Render value
-    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * numDigits(value_), 0.f);
+    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * FontManager::numDigits(value_), 0.f);
     transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
             glm::vec3(charsize, charsize, 1.f));
