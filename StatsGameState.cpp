@@ -1,6 +1,7 @@
 #include "StatsGameState.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <sstream>
 #include "Fighter.h"
 #include "glutils.h"
 #include "StatsManager.h"
@@ -32,6 +33,14 @@ StatsGameState::StatsGameState(
     stats_.push_back(new fighter_stat("damageTaken", "Damage Taken"));
     stats_.push_back(new fighter_stat("teamDamageGiven", "Team Damage"));
     stats_.push_back(new fighter_stat("maxKillStreak", "Max KO Streak"));
+
+    for (size_t i = 0; i < fighters_.size(); i++)
+    {
+        std::stringstream ss;
+        ss << "Player" << i;
+        stats_.push_back(
+                new fighter_stat("kills" + ss.str(), ss.str() + " KOs"));
+    }
 
     // Print stats to console
     StatsManager::get()->printStats();

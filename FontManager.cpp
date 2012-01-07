@@ -57,7 +57,19 @@ void FontManager::renderString(const glm::mat4 &transform,
         glm::mat4 final_transform =
             glm::translate(transform, glm::vec3(offset, 0.f, 0.f));
 
-        renderCharacter(final_transform, color, str[i]);
+        char ch = str[i];
+
+        if (isalpha(ch))
+            renderCharacter(final_transform, color, ch);
+        else if (isdigit(ch))
+            renderDigit(final_transform, color, ch);
+        else if (isspace(ch))
+        {
+            // nothing
+        }
+        else
+            assert(false && "Can't render unknown character");
+            
 
         offset += widthRatio;
     }
@@ -103,9 +115,6 @@ void FontManager::renderDigit(const glm::mat4 &transform, const glm::vec3 &color
 void FontManager::renderCharacter(const glm::mat4 &transform, const glm::vec3 &color,
         char ch)
 {
-    if (ch == ' ')
-        return;
-
     ch = toupper(ch);
     int ind = ch - 'A';
     assert(ind >= 0 && ind < 26);
