@@ -189,11 +189,3 @@ int initLibs()
 
     return 1;
 }
-
-
-// XXX this should be moved
-float getParam(const std::string &param)
-{
-    return ParamReader::get()->get(param);
-}
-
