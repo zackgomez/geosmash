@@ -92,13 +92,13 @@ InGameState::~InGameState()
 
 GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joysticks, float dt)
 {
-    /*
-    if (joysticks[0] && paused_ && pausingController_ == 0
-            && )
+    // Check for player one pressing back (id 6) while paused
+    if (SDL_JoystickGetButton(joysticks[0], 6)
+            && paused_ && pausingController_ == 0)
     {
         return new StatsGameState(fighters_, -1);
     }
-    */
+
     // First update controllers / frame
     for (unsigned i = 0; i < controllers_.size(); i++)
     {
