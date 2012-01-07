@@ -30,7 +30,7 @@ void addEntity(GameEntity *ent);
 InGameState *InGameState::instance = NULL;
 
 InGameState::InGameState(const std::vector<Controller *> &controllers,
-        const std::vector<Fighter*> &fighters) :
+        const std::vector<Fighter*> &fighters, bool makeHazard) :
     controllers_(controllers),
     fighters_(fighters),
     paused_(false),
@@ -52,14 +52,11 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
     // Need this assertion for destructor
     assert(entities_.size() == fighters_.size());
 
-    /*
-     * TODO
     if (makeHazard)
     {
         HazardEntity *h = new HazardEntity("groundhit");
-        entities.push_back(h);
+        entities_.push_back(h);
     }
-    */
 
     // Clear the stats
     StatsManager::get()->clear();
@@ -95,6 +92,13 @@ InGameState::~InGameState()
 
 GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joysticks, float dt)
 {
+    /*
+    if (joysticks[0] && paused_ && pausingController_ == 0
+            && )
+    {
+        return new StatsGameState(fighters_, -1);
+    }
+    */
     // First update controllers / frame
     for (unsigned i = 0; i < controllers_.size(); i++)
     {

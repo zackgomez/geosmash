@@ -70,9 +70,9 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     attackMap_["upSpecial"]->setStartSound("upspecial");
     attackMap_["neutralSpecial"] = new NeutralSpecialAttack("neutralSpecialAttack", "NeutralSpecial");
     attackMap_["neutralSpecial"]->setStartSound("projectile");
-    attackMap_["sideSpecial"] = loadAttack<MovingAttack>("sideSpecialAttack", "sidespecialhit", "SideSpecial");
-    attackMap_["sideSpecial"]->setHitboxFrame("Null");
-    attackMap_["sideSpecial"]->setStartSound("sidespecialhit");
+    attackMap_["dashSpecial"] = loadAttack<FighterAttack>("dashSpecialAttack", "dashspecialhit", "DashSpecial");
+    attackMap_["dashSpecial"]->setHitboxFrame("Null");
+    attackMap_["dashSpecial"]->setStartSound("dashspecialhit");
 
     attackMap_["taunt"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
 

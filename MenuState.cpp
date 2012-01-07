@@ -101,8 +101,8 @@ MenuState::MenuState() :
     AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).ogg");
     AudioManager::get()->startSoundtrack();
 
-    widgets.push_back(new MenuWidget("Players", 2, defplayers));
-    widgets.push_back(new MenuWidget("Teams", 0, defteams));
+    widgets.push_back(new MenuWidget("Players", 2, 4, defplayers));
+    widgets.push_back(new MenuWidget("Teams", 0, 1, defteams));
     widgets.push_back(new MenuWidget("Lives", 1, 99, deflives));
     widgets.push_back(new MenuWidget("Stage Hazard", 0, 1, defhazard));
 }
@@ -213,7 +213,7 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
 
 
     // If p1 is pressing start, create a new GameState 
-    GameState *gs = new InGameState(controllers, fighters);
+    GameState *gs = new InGameState(controllers, fighters, hazard);
     return gs;
 }
 

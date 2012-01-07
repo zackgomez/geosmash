@@ -126,6 +126,8 @@ private:
     friend class UpSpecialState;
     friend class GrabbingState;
     friend class LimpState;
+    friend class SpecialState;
+    friend class DashSpecialState;
 
     friend class MovingAttack;
     friend class DashAttack;
