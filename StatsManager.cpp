@@ -25,6 +25,16 @@ void StatsManager::addStat(std::string stat, float delta)
         stats_[stat] += delta;
 }
 
+void StatsManager::maxStat(std::string stat, float val)
+{
+    // If not there, just set val
+    if (stats_.find(stat) == stats_.end())
+        stats_[stat] = val;
+    // If the input is larger, set to input
+    else if (val > stats_[stat])
+        stats_[stat] = val;
+}
+
 float StatsManager::getStat(std::string stat)
 {
     if (stats_.find(stat) == stats_.end())
@@ -60,4 +70,9 @@ std::string StatsManager::getPlayerName(int playerID)
 std::string StatsManager::getStatPrefix(int playerID)
 {
     return getPlayerName(playerID) + '.';
+}
+
+std::string statPrefix(int playerID)
+{
+    return StatsManager::getStatPrefix(playerID);
 }

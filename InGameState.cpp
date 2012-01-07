@@ -485,12 +485,17 @@ void InGameState::collisionDetection()
             // Record the kill if it's not a self destruct
             if (fighter->getLastHitBy() != -1)
             {
-                std::string killer = StatsManager::getPlayerName(fighter->getLastHitBy());
+                int killerID = fighter->getLastHitBy();
+                std::string killer = StatsManager::getPlayerName(killerID);
                 StatsManager::get()->addStat(killer+ ".kills." + died, 1);
                 StatsManager::get()->addStat(killer+ ".kills.total", 1);
+                // Update kill streak
+                StatsManager::get()->addStat(killer + ".curKillStreak", 1); // cleared in fighter::respawn
+                StatsManager::get()->maxStat(killer + ".maxKillStreak",
+                        StatsManager::get()->getStat(killer + ".curKillStreak"));
             }
             else
-                StatsManager::get()->addStat(died+ ".suicides", 1);
+                StatsManager::get()->addStat(died + ".suicides", 1);
             fighter->respawn(true);
             break;
         }

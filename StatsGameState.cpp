@@ -31,6 +31,7 @@ StatsGameState::StatsGameState(
     stats_.push_back(new fighter_stat("damageGiven", "Damage Given"));
     stats_.push_back(new fighter_stat("damageTaken", "Damage Taken"));
     stats_.push_back(new fighter_stat("teamDamageGiven", "Team Damage"));
+    stats_.push_back(new fighter_stat("maxKillStreak", "Max KO Streak"));
 
     // Print stats to console
     StatsManager::get()->printStats();

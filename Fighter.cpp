@@ -248,13 +248,14 @@ void Fighter::respawn(bool killed)
     accel_ = glm::vec2(0.f);
     damage_ = 0;
     lastHitBy_ = -1;
+    // Clear the kill streak, if exists
+    StatsManager::get()->setStat(statPrefix(playerID_) + "curKillStreak", 0);
     // If we died remove a life and play a sound
     if (killed)
     {
         --lives_;
         AudioManager::get()->playSound("ko");
-        StatsManager::get()->addStat(
-                StatsManager::getStatPrefix(playerID_) + "deaths", 1);
+        StatsManager::get()->addStat(statPrefix(playerID_) + "deaths", 1);
     }
     delete state_;
     // Set the new state, either respawn or dead
