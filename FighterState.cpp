@@ -118,7 +118,7 @@ void FighterState::collisionHelper(const rectangle &ground)
     }
 }
 
-FighterState* FighterState::checkForLedgeGrab()
+FighterState* FighterState::checkForLedgeGrab(bool attackOK)
 {
     // You must be /*facing the ledge*/ and be completely below the ledge and
     // be within ledge grabbing distance of the ledge and not attacking
@@ -128,7 +128,7 @@ FighterState* FighterState::checkForLedgeGrab()
     // We should either get no ledge or a ledge that's unoccupied
     assert(!ledge || !ledge->occupied);
     if (ledge
-        && !fighter_->attack_
+        && (!fighter_->attack_ || attackOK)
         && (ledge->pos.y > (fpos.y + fighter_->getRect().h / 2)) 
         && glm::length(fpos - ledge->pos) <= getParam("ledgeGrab.dist")
         && ledge->dir * (fpos.x - ledge->pos.x) >= 1)
@@ -136,6 +136,8 @@ FighterState* FighterState::checkForLedgeGrab()
         AudioManager::get()->playSound("ledgegrab");
         LedgeGrabState *lgs = new LedgeGrabState(fighter_);
         lgs->grabLedge(ledge);
+        if (fighter_->attack_)
+            fighter_->attack_->kill();
         return lgs;
     }
 
@@ -1106,7 +1108,8 @@ FighterState * DashSpecialState::processInput(controller_state &, float dt)
     }
 
     // TODO make this ignore the fact that we have an attack
-    return checkForLedgeGrab();
+    // True is for being able to grab during attack
+    return checkForLedgeGrab(true);
 }
 
 void DashSpecialState::render(float dt)

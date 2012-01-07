@@ -44,7 +44,7 @@ protected:
 
     FighterState* calculateHitResult(const Attack *attack);
     void collisionHelper(const rectangle &ground);
-    FighterState* checkForLedgeGrab();
+    FighterState* checkForLedgeGrab(bool attackOK = false);
     // Helper for dealing with all B moves.
     FighterState* performBMove(const controller_state &, bool ground = true);
     template<typename T> 
