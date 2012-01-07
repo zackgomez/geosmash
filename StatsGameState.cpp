@@ -39,7 +39,7 @@ StatsGameState::StatsGameState(
         std::stringstream ss;
         ss << "Player" << i;
         stats_.push_back(
-                new fighter_stat("kills" + ss.str(), ss.str() + " KOs"));
+                new fighter_stat("kills." + ss.str(), ss.str() + " KOs"));
     }
 
     // Print stats to console
