@@ -44,6 +44,9 @@ public:
     // Pauses the soundtrack song
     void pauseSoundtrack();
 
+    // Mutes all sounds
+    void mute();
+
     // Called every frame, allows AudioManager to cleanup its state 
     // (free members, etc)
     void update(float dt);
@@ -51,6 +54,8 @@ public:
 private:
     AudioManager();
     ~AudioManager();
+
+    bool muted_;
 
     // List of all buffers representing small sounds, like attack noises
     std::map<std::string, sf::SoundBuffer *>buffers_;

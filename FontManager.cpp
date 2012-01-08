@@ -7,14 +7,18 @@
 const float widthRatio = 0.75f;
 
 FontManager::FontManager() :
-    numTex_(0)
+    numberTex_(0),
+    letterTex_(0)
 {
     initialize();
 }
 
 FontManager::~FontManager()
 {
-    // TODO free textures etc
+    free_texture(numberTex_);
+    free_texture(letterTex_);
+
+    // TODO free/unattach program/shader
 }
 
 void FontManager::renderNumber(const glm::mat4 &transform,
@@ -40,6 +44,46 @@ void FontManager::renderNumber(const glm::mat4 &transform,
     }
 }
 
+void FontManager::renderString(const glm::mat4 &transform,
+        const glm::vec3 &color, const std::string &str)
+{
+    const size_t len = str.length();
+
+    float offset = static_cast<float>(len) / -2.f + 0.5f;
+    offset *= widthRatio;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        glm::mat4 final_transform =
+            glm::translate(transform, glm::vec3(offset, 0.f, 0.f));
+
+        char ch = str[i];
+
+        if (isalpha(ch))
+            renderCharacter(final_transform, color, ch);
+        else if (isdigit(ch))
+            renderDigit(final_transform, color, ch);
+        else if (isspace(ch))
+        {
+            // nothing
+        }
+        else
+            assert(false && "Can't render unknown character");
+            
+
+        offset += widthRatio;
+    }
+}
+
+int FontManager::numDigits(int n)
+{
+    int count;
+    for (count = 0; n != 0; n /= 10, count++);
+
+    return std::max(count, 1);
+}
+
+
 void FontManager::renderDigit(const glm::mat4 &transform, const glm::vec3 &color,
         char dig)
 {
@@ -61,7 +105,37 @@ void FontManager::renderDigit(const glm::mat4 &transform, const glm::vec3 &color
     // Set up the texture
     glActiveTexture(GL_TEXTURE0);
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, numTex_);
+    glBindTexture(GL_TEXTURE_2D, numberTex_);
+
+    renderRectangleProgram(glm::scale(transform, glm::vec3(0.66f, -1.f, 1.f)), numProgram_);
+
+    glDisable(GL_TEXTURE_2D);
+}
+
+void FontManager::renderCharacter(const glm::mat4 &transform, const glm::vec3 &color,
+        char ch)
+{
+    ch = toupper(ch);
+    int ind = ch - 'A';
+    assert(ind >= 0 && ind < 26);
+
+    glm::vec2 size(1.f/26.f, 1.f);
+    glm::vec2 pos(size.x * static_cast<float>(ind), 0.f);
+
+    // Set up the shader
+    GLuint posUniform = glGetUniformLocation(numProgram_, "pos");
+    GLuint sizeUniform = glGetUniformLocation(numProgram_, "size");
+    GLuint colorUniform = glGetUniformLocation(numProgram_, "color");
+
+    glUseProgram(numProgram_);
+    glUniform2fv(posUniform, 1, glm::value_ptr(pos));
+    glUniform2fv(sizeUniform, 1, glm::value_ptr(size));
+    glUniform3fv(colorUniform, 1, glm::value_ptr(color));
+    glUseProgram(0);
+    // Set up the texture
+    glActiveTexture(GL_TEXTURE0);
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, letterTex_);
 
     renderRectangleProgram(glm::scale(transform, glm::vec3(0.66f, -1.f, 1.f)), numProgram_);
 
@@ -76,7 +150,8 @@ FontManager * FontManager::get()
 
 void FontManager::initialize()
 {
-    numTex_ = make_texture("images/numbers-64.png");
+    numberTex_ = make_texture("images/numbers-64.png");
+    letterTex_ = make_texture("images/capital-letters-64.png");
 
     GLuint vert = make_shader(GL_VERTEX_SHADER, "shaders/num.v.glsl");
     GLuint frag = make_shader(GL_FRAGMENT_SHADER, "shaders/num.f.glsl");

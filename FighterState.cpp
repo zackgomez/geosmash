@@ -3,10 +3,10 @@
 #include "Fighter.h"
 #include "Attack.h"
 #include "ParamReader.h"
-#include "explosion.h"
+#include "ExplosionManager.h"
 #include "Projectile.h"
 #include "glutils.h"
-#include "audio.h"
+#include "AudioManager.h"
 #include "StatsManager.h"
 #include "StageManager.h"
 #include "Controller.h"
@@ -118,7 +118,7 @@ void FighterState::collisionHelper(const rectangle &ground)
     }
 }
 
-FighterState* FighterState::checkForLedgeGrab()
+FighterState* FighterState::checkForLedgeGrab(bool attackOK)
 {
     // You must be /*facing the ledge*/ and be completely below the ledge and
     // be within ledge grabbing distance of the ledge and not attacking
@@ -128,7 +128,7 @@ FighterState* FighterState::checkForLedgeGrab()
     // We should either get no ledge or a ledge that's unoccupied
     assert(!ledge || !ledge->occupied);
     if (ledge
-        && !fighter_->attack_
+        && (!fighter_->attack_ || attackOK)
         && (ledge->pos.y > (fpos.y + fighter_->getRect().h / 2)) 
         && glm::length(fpos - ledge->pos) <= getParam("ledgeGrab.dist")
         && ledge->dir * (fpos.x - ledge->pos.x) >= 1)
@@ -136,6 +136,8 @@ FighterState* FighterState::checkForLedgeGrab()
         AudioManager::get()->playSound("ledgegrab");
         LedgeGrabState *lgs = new LedgeGrabState(fighter_);
         lgs->grabLedge(ledge);
+        if (fighter_->attack_)
+            fighter_->attack_->kill();
         return lgs;
     }
 
@@ -164,10 +166,7 @@ FighterState* FighterState::performBMove(const controller_state &controller, boo
     else if (fabs(controller.joyx) > getParam("input.tiltThresh") 
                 && fabs(tiltDir.x) > fabs(tiltDir.y))
     {
-        fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-        fighter_->attack_ = fighter_->attackMap_["sideSpecial"]->clone();
-        fighter_->attack_->setFighter(fighter_);
-        fighter_->attack_->start();
+        next = new DashSpecialState(fighter_, ground);
     }
     // Otherwise neutral B
     else
@@ -413,7 +412,14 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     // Check for taunt
     else if (controller.dpadu && !dashing_)
     {
-        fighter_->attack_ = fighter_->attackMap_["taunt"]->clone();
+        fighter_->attack_ = fighter_->attackMap_["tauntUp"]->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+        return NULL;
+    }
+    else if (controller.dpadd && !dashing_)
+    {
+        fighter_->attack_ = fighter_->attackMap_["tauntDown"]->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return NULL;
@@ -914,10 +920,37 @@ AirNormalState * AirNormalState::setNoGrabTime(float t)
 }
 
 
+//// ----------------------- SPECIAL STATE --------------------------------
+
+SpecialState::SpecialState(Fighter *f, bool ground) :
+    FighterState(f), ground_(ground)
+{
+}
+
+FighterState* SpecialState::collisionWithGround(const rectangle &ground, bool collision)
+{
+    if (collision)
+    {
+        collisionHelper(ground);
+        fighter_->vel_ = glm::vec2(0.f);
+        fighter_->accel_ = glm::vec2(0.f);
+        ground_ = true;
+    }
+    else
+    {
+        // No collision, fall
+        ground_ = false;
+        fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
+    }
+
+    // No state change
+    return NULL;
+}
+
 //// ----------------------- COUNTER STATE --------------------------------
 
 CounterState::CounterState(Fighter *f, bool ground) :
-    FighterState(f), t_(0), ground_(ground), pre_("counterSpecial."),
+    SpecialState(f, ground), t_(0), pre_("counterSpecial."),
     playedSound_(false)
 {
     frameName_ = "Counter";
@@ -978,21 +1011,7 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
 
 FighterState* CounterState::collisionWithGround(const rectangle &ground, bool collision)
 {
-    if (collision)
-    {
-        collisionHelper(ground);
-        fighter_->vel_ =  glm::vec2(0.f);
-        fighter_->accel_ = glm::vec2(0.f);
-        ground_ = true;
-    }
-    else
-    {
-        // No collision, fall
-        ground_ = false;
-        fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
-    }
-    // No state change
-    return NULL;
+    return SpecialState::collisionWithGround(ground, collision);
 }
 
 void CounterState::render(float dt)
@@ -1066,6 +1085,83 @@ FighterState* UpSpecialState::attackConnected(GameEntity *victim)
 {
     // XXX this can create problems...
     victim->push(glm::vec2(0, 20));
+    return FighterState::attackConnected(victim);
+}
+
+//// ------------------- DASH SPECIAL STATE -----------------------------
+DashSpecialState::DashSpecialState(Fighter *f, bool ground) :
+    SpecialState(f, ground)
+{
+    pre_ = "dashSpecialState.";
+    fighter_->attack_ = fighter_->attackMap_["dashSpecial"]->clone();
+    fighter_->attack_->setFighter(f);
+    fighter_->attack_->start();
+}
+
+FighterState * DashSpecialState::processInput(controller_state &, float dt)
+{
+    // Check for transition away
+    if (!fighter_->attack_)
+    {
+        // Clear x velocity
+        fighter_->vel_.x = 0.f;
+
+        if (ground_)
+        {
+            fighter_->vel_.y = 0.f;
+            return new GroundState(fighter_);
+        }
+        else
+            return new AirNormalState(fighter_);
+    }
+
+    // TODO make this ignore the fact that we have an attack
+    // True is for being able to grab during attack
+    return checkForLedgeGrab(true);
+}
+
+void DashSpecialState::render(float dt)
+{
+    printf("DASH SPECIAL | ground: %d || ",
+            ground_);
+    assert(fighter_->attack_);
+    fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
+}
+
+void DashSpecialState::update(float dt)
+{
+    // Only boost while the hitbox is active
+    if (fighter_->attack_ && fighter_->attack_->hasHitbox())
+    {
+        fighter_->vel_.x = fighter_->dir_ * getParam(pre_ + "xvel");
+        fighter_->vel_.y = 0.f;
+        // TODO figure out what to do with the yvel
+        /*
+        if (!ground_)
+            fighter_->vel_.y = getParam(pre_ + "yvel");
+            */
+    }
+    else
+        fighter_->vel_.x = 0.f;
+
+    SpecialState::update(dt);
+}
+
+FighterState* DashSpecialState::collisionWithGround(const rectangle &ground, bool collision)
+{
+    float xvel = fighter_->vel_.x;
+    FighterState *ret = SpecialState::collisionWithGround(ground, collision);
+    fighter_->vel_.x = xvel;
+    return ret;
+}
+
+FighterState* DashSpecialState::hitByAttack(const Attack *attack)
+{
+    return FighterState::calculateHitResult(attack);
+}
+
+FighterState* DashSpecialState::attackConnected(GameEntity *victim)
+{
     return FighterState::attackConnected(victim);
 }
 

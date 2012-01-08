@@ -38,6 +38,12 @@ StageManager::StageManager() :
     level_mesh_ = createMesh("models/level.obj");
 }
 
+void StageManager::clear()
+{
+    for (size_t i = 0; i < ledges_.size(); i++)
+        ledges_[i]->occupied = false;
+}
+
 void StageManager::initBackground()
 {
     // Create a mesh [-5, 5] with some number of vertices

@@ -3,9 +3,9 @@
 #include "Fighter.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "glutils.h"
-#include "explosion.h"
+#include "ExplosionManager.h"
 #include "FrameManager.h"
-#include "audio.h"
+#include "AudioManager.h"
 #include "Projectile.h"
 
 

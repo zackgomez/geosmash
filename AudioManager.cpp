@@ -1,4 +1,4 @@
-#include "audio.h"
+#include "AudioManager.h"
 #include <iostream>
 #include <cassert>
 #include "ParamReader.h"
@@ -25,7 +25,8 @@ void AudioManager::playSound(const std::string &fname)
 {
 	// XXX
 	return;
-
+    if (muted_)
+        return;
     // Now that the data is loaded into a buffer, add the data to a Sound obj
     // object that has a location in 3D space, volume, etc.
     sf::Sound *s = new sf::Sound();
@@ -45,8 +46,8 @@ void AudioManager::playSound(const std::string &fname,
 {
 	// XXX
 	return;
-
-
+    if (muted_)
+        return;
     double vol;
     double D1 = getParam("sfx.damagefloor");
     double D2 = getParam("sfx.damageceiling");
@@ -128,6 +129,8 @@ void AudioManager::setSoundtrack(const std::string &file)
 
 void AudioManager::startSoundtrack()
 {
+    if (muted_)
+        return;
     soundtrack_.Play();
 }
 

@@ -5,13 +5,14 @@
 #include <GL/glew.h>
 #include "glutils.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include "explosion.h"
+#include "ExplosionManager.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
-#include "audio.h"
+#include "AudioManager.h"
 #include "Attack.h"
 #include "Controller.h"
 #include "FighterState.h"
+#include "StatsManager.h"
 
 const std::string Fighter::type = "FighterEntity";
 
@@ -69,11 +70,12 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     attackMap_["upSpecial"]->setStartSound("upspecial");
     attackMap_["neutralSpecial"] = new NeutralSpecialAttack("neutralSpecialAttack", "NeutralSpecial");
     attackMap_["neutralSpecial"]->setStartSound("projectile");
-    attackMap_["sideSpecial"] = loadAttack<MovingAttack>("sideSpecialAttack", "sidespecialhit", "SideSpecial");
-    attackMap_["sideSpecial"]->setHitboxFrame("Null");
-    attackMap_["sideSpecial"]->setStartSound("sidespecialhit");
+    attackMap_["dashSpecial"] = loadAttack<FighterAttack>("dashSpecialAttack", "dashspecialhit", "DashSpecial");
+    attackMap_["dashSpecial"]->setHitboxFrame("Null");
+    attackMap_["dashSpecial"]->setStartSound("dashspecialhit");
 
-    attackMap_["taunt"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
+    attackMap_["tauntUp"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
+    attackMap_["tauntDown"] = loadAttack<FighterAttack>("tauntAttack", a, "Bong");
 
     attackMap_["neutralSmash"] = loadAttack<FighterAttack>("neutralSmashAttack", s, "NeutralSmash");
     attackMap_["neutralSmash"]->setTwinkle(true);
@@ -247,11 +249,14 @@ void Fighter::respawn(bool killed)
     accel_ = glm::vec2(0.f);
     damage_ = 0;
     lastHitBy_ = -1;
+    // Clear the kill streak, if exists
+    StatsManager::get()->setStat(statPrefix(playerID_) + "curKillStreak", 0);
     // If we died remove a life and play a sound
     if (killed)
     {
         --lives_;
         AudioManager::get()->playSound("ko");
+        StatsManager::get()->addStat(statPrefix(playerID_) + "deaths", 1);
     }
     delete state_;
     // Set the new state, either respawn or dead

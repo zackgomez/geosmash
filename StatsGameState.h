@@ -1,8 +1,17 @@
 #pragma once
 #include "GameState.h"
 #include <GL/glew.h>
+#include <string>
 
 class Fighter;
+
+struct fighter_stat
+{
+    std::string stat_name;
+    std::string display_name;
+
+    fighter_stat(const std::string &sname, const std::string &dname);
+};
 
 class StatsGameState : public GameState
 {
@@ -18,6 +27,8 @@ public:
 private:
     std::vector<Fighter *> fighters_;
     int winningTeam_;
+
+    std::vector<fighter_stat *> stats_;
 
     GLuint backgroundTex_;
 };

@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <vector>
 #include "glutils.h"
-#include "audio.h"
+#include "AudioManager.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
 #include "GameState.h"
@@ -187,11 +187,3 @@ int initLibs()
 
     return 1;
 }
-
-
-// XXX this should be moved
-float getParam(const std::string &param)
-{
-    return ParamReader::get()->get(param);
-}
-

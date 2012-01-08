@@ -23,8 +23,8 @@ hud.y       -0.70
 hud.w       1.4
 hud.h       0.125
 
-#soundtrack.volume 80
-soundtrack.volume 50
+#80
+soundtrack.volume 80 
 sfx.volume 80
 # these alter the volume of individual sfx
 sfx.smashhit.volume 1.0
@@ -51,7 +51,7 @@ input.trigThresh    0.5
 input.duckThresh    -0.85
 input.throwThresh   0.8
 
-menu.deadzone       0.2
+menu.deadzone       0.5
 menu.thresh         0.7
 
 debug.drawHitbox    0
@@ -323,21 +323,21 @@ upSpecialAttack.xvel            160
 upSpecialAttack.yvel            600
 
 
-sideSpecialAttack.startup      0.18
-sideSpecialAttack.duration     0.30
-sideSpecialAttack.cooldown     0.30
-sideSpecialAttack.damage       9
-sideSpecialAttack.stun         0.10
-sideSpecialAttack.knockbackx   2
-sideSpecialAttack.knockbacky   4 
-sideSpecialAttack.knockbackpow 100.0
-sideSpecialAttack.hitboxx      0
-sideSpecialAttack.hitboxy      0
-sideSpecialAttack.hitboxw      50
-sideSpecialAttack.hitboxh      60
-sideSpecialAttack.priority     1.0
-sideSpecialAttack.yvel            0
-sideSpecialAttack.xvel            800
+dashSpecialAttack.startup      0.18
+dashSpecialAttack.duration     0.30
+dashSpecialAttack.cooldown     0.30
+dashSpecialAttack.damage       9
+dashSpecialAttack.stun         0.10
+dashSpecialAttack.knockbackx   2
+dashSpecialAttack.knockbacky   4 
+dashSpecialAttack.knockbackpow 100.0
+dashSpecialAttack.hitboxx      0
+dashSpecialAttack.hitboxy      0
+dashSpecialAttack.hitboxw      50
+dashSpecialAttack.hitboxh      60
+dashSpecialAttack.priority     1.0
+dashSpecialState.yvel         0
+dashSpecialState.xvel         800
 
 neutralSmashAttack.startup      0.40
 neutralSmashAttack.duration     0.05

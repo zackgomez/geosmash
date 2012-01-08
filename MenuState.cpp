@@ -8,20 +8,20 @@
 #include <GL/glew.h>
 #include "glutils.h"
 #include "FontManager.h"
-#include "audio.h"
+#include "AudioManager.h"
 #include "ParamReader.h"
 
 #define JOYSTICK_START 7
 #define MAX_JOYSTICK_VALUE 32767.0f
 
-const glm::vec3 playerColors[] =
+static const glm::vec3 playerColors[] =
 {
     glm::vec3(0.0, 0.2, 1.0),
     glm::vec3(0.1, 0.6, 0.1),
     glm::vec3(0.8, 0.2, 0.2),
     glm::vec3(0.7, 0.7, 0.2)
 };
-const glm::vec3 teamColors[] =
+static const glm::vec3 teamColors[] =
 {
     glm::vec3(0.0, 0.2, 1.0),
     glm::vec3(0.2, 0.6, 0.8),
@@ -29,9 +29,16 @@ const glm::vec3 teamColors[] =
     glm::vec3(0.8, 0.35, 0.1)
 };
 
-MenuWidget::MenuWidget(const std::string &name, int min, int max) :
+static int defplayers = 2;
+static int defteams = 0;
+static int deflives = 4;
+static int defhazard = 0;
+
+MenuWidget::MenuWidget(const std::string &name, int min, int max, int defval) :
     name_(name), min_(min), max_(max), value_(min), primed_(false)
 {
+    if (defval != -1)
+        value_ = defval;
 }
 
 void MenuWidget::handleInput(float val)
@@ -52,15 +59,32 @@ void MenuWidget::handleInput(float val)
     primed_ = false;
 }
 
-void MenuWidget::render(const glm::mat4 &center, bool selected) const
+void MenuWidget::render(const glm::vec2 &center, bool selected) const
 {
+    static const float charsize = 100.f;
     glm::vec3 color = selected ? glm::vec3(.9, .9, .9) : glm::vec3(.3, .3, .3);
-    // TODO render text
-    
+    glm::mat4 transform;
+
+    // Render name
+    glm::vec2 strcenter = center - glm::vec2(0.75f * charsize * name_.length()/2, 0.f);
+    transform = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(strcenter, 0.f)),
+            glm::vec3(charsize, charsize, 1.f));
+    FontManager::get()->renderString(
+            transform,
+            color,
+            name_);
+
+    // Render value
+    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * FontManager::numDigits(value_), 0.f);
+    transform = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
+            glm::vec3(charsize, charsize, 1.f));
     FontManager::get()->renderNumber(
-            glm::scale(center, glm::vec3(100.f, 100.f, 1.f)),
+            transform,
             color,
             value_);
+
 }
 
 int MenuWidget::value() const
@@ -77,9 +101,10 @@ MenuState::MenuState() :
     AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).ogg");
     AudioManager::get()->startSoundtrack();
 
-    widgets.push_back(new MenuWidget("Players", 2, 4));
-    widgets.push_back(new MenuWidget("Teams", 0, 1));
-    widgets.push_back(new MenuWidget("Lives", 1, 99));
+    widgets.push_back(new MenuWidget("Players", 2, 4, defplayers));
+    widgets.push_back(new MenuWidget("Teams", 0, 1, defteams));
+    widgets.push_back(new MenuWidget("Lives", 1, 99, deflives));
+    widgets.push_back(new MenuWidget("Stage Hazard", 0, 1, defhazard));
 }
 
 MenuState::~MenuState()
@@ -104,8 +129,7 @@ void MenuState::render(float dt)
     for (size_t i = 0; i < widgets.size(); i++)
     {
         bool selected = static_cast<int>(i) == widgetInd_;
-        const glm::mat4 transform = glm::translate(glm::mat4(1.f), glm::vec3(center, 0.f));
-        widgets[i]->render(transform, selected);
+        widgets[i]->render(center, selected);
         center -= glm::vec2(0, 1080.f / 8);
     }
 }
@@ -156,6 +180,9 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
     int nplayers = widgets[0]->value();
     bool teams = widgets[1]->value();
     int lives = widgets[2]->value();
+    bool hazard = widgets[3]->value();
+
+    assert(nplayers <= stix.size());
 
     const glm::vec3 *colors = teams ? teamColors : playerColors;
 
@@ -179,10 +206,16 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
         controllers.push_back(new Controller(f, stix[i]));
         fighters.push_back(f);
     }
-        
+
+    // Record values for next time we create a menu
+    defplayers = widgets[0]->value();
+    defteams = widgets[1]->value();
+    deflives = widgets[2]->value();
+    defhazard = widgets[3]->value();
+
 
     // If p1 is pressing start, create a new GameState 
-    GameState *gs = new InGameState(controllers, fighters);
+    GameState *gs = new InGameState(controllers, fighters, hazard);
     return gs;
 }
 

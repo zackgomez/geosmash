@@ -7,12 +7,12 @@
 class MenuWidget
 {
 public:
-    MenuWidget(const std::string &name, int min, int max);
+    MenuWidget(const std::string &name, int min, int max, int defval = -1);
 
     int value() const;
 
     void handleInput(float val);
-    void render(const glm::mat4 &transform, bool selected) const;
+    void render(const glm::vec2 &transform, bool selected) const;
 
 private:
     std::string name_;

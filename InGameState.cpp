@@ -10,8 +10,8 @@
 #include <vector>
 #include "glutils.h"
 #include "Fighter.h"
-#include "audio.h"
-#include "explosion.h"
+#include "AudioManager.h"
+#include "ExplosionManager.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
 #include "StatsManager.h"
@@ -30,12 +30,15 @@ void addEntity(GameEntity *ent);
 InGameState *InGameState::instance = NULL;
 
 InGameState::InGameState(const std::vector<Controller *> &controllers,
-        const std::vector<Fighter*> &fighters) :
+        const std::vector<Fighter*> &fighters, bool makeHazard) :
     controllers_(controllers),
     fighters_(fighters),
     paused_(false),
     pausingController_(-1)
 {
+    StageManager::get()->clear();
+    ParticleManager::get()->reset();
+
     for (unsigned i = 0; i < fighters.size(); i++)
     {
         const float FIGHTER_SPAWN_Y = 50.f;
@@ -52,14 +55,11 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
     // Need this assertion for destructor
     assert(entities_.size() == fighters_.size());
 
-    /*
-     * TODO
     if (makeHazard)
     {
         HazardEntity *h = new HazardEntity("groundhit");
-        entities.push_back(h);
+        entities_.push_back(h);
     }
-    */
 
     // Clear the stats
     StatsManager::get()->clear();
@@ -95,6 +95,13 @@ InGameState::~InGameState()
 
 GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joysticks, float dt)
 {
+    // Check for player one pressing back (id 6) while paused
+    if (SDL_JoystickGetButton(joysticks[0], 6)
+            && paused_ && pausingController_ == 0)
+    {
+        return new StatsGameState(fighters_, -1);
+    }
+
     // First update controllers / frame
     for (unsigned i = 0; i < controllers_.size(); i++)
     {
@@ -484,12 +491,17 @@ void InGameState::collisionDetection()
             // Record the kill if it's not a self destruct
             if (fighter->getLastHitBy() != -1)
             {
-                std::string killer = StatsManager::getPlayerName(fighter->getLastHitBy());
+                int killerID = fighter->getLastHitBy();
+                std::string killer = StatsManager::getPlayerName(killerID);
                 StatsManager::get()->addStat(killer+ ".kills." + died, 1);
                 StatsManager::get()->addStat(killer+ ".kills.total", 1);
+                // Update kill streak
+                StatsManager::get()->addStat(killer + ".curKillStreak", 1); // cleared in fighter::respawn
+                StatsManager::get()->maxStat(killer + ".maxKillStreak",
+                        StatsManager::get()->getStat(killer + ".curKillStreak"));
             }
             else
-                StatsManager::get()->addStat(died+ ".suicides", 1);
+                StatsManager::get()->addStat(died + ".suicides", 1);
             fighter->respawn(true);
             break;
         }
@@ -513,25 +525,6 @@ void InGameState::togglePause(int controllerID)
         AudioManager::get()->playSound("pauseout");
     }
 }
-
-
-/*
-void logControllerState(std::ostream &out)
-{
-    for (unsigned i = 0; i < controllers.size(); i++)
-    {
-        const controller_state c = controllers[i]->lastState();
-
-        out << c.joyx << ' ' << c.joyy << ' ' << c.joyxv << ' ' << c.joyyv
-            << c.rtrigger << ' ' << c.ltrigger << ' ' << c.buttona << ' ' << c.buttonb << ' '
-            << c.buttonc << ' ' << c.jumpbutton << ' ' << c.buttonstart << ' '
-            << c.lbumper << ' ' << c.rbumper << ' '
-            << c.pressa << ' ' << c.pressb << ' ' << c.pressc << ' ' << c.pressjump << ' '
-            << c.pressstart << ' ' << c.presslb << ' ' << c.pressrb << ' '
-            << c.dpadl << ' ' << c.dpadr << ' ' << c.dpadu << ' ' << c.dpadd << '\n';
-    }
-}
-*/
 
 // Functions and data structures for entity addition
 static std::vector<GameEntity *> entitiesToAdd;

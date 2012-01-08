@@ -44,7 +44,7 @@ protected:
 
     FighterState* calculateHitResult(const Attack *attack);
     void collisionHelper(const rectangle &ground);
-    FighterState* checkForLedgeGrab();
+    FighterState* checkForLedgeGrab(bool attackOK = false);
     // Helper for dealing with all B moves.
     FighterState* performBMove(const controller_state &, bool ground = true);
     template<typename T> 
@@ -138,7 +138,23 @@ private:
     bool gb_;
 };
 
-class CounterState : public FighterState
+// For special moves (b-moves)
+class SpecialState : public FighterState
+{
+public:
+    SpecialState(Fighter *f, bool ground);
+    virtual ~SpecialState() {}
+
+    virtual FighterState* processInput(controller_state&, float dt) = 0;
+    virtual void render(float dt) = 0;
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* hitByAttack(const Attack *attack) = 0;
+
+protected:
+    bool ground_;
+};
+
+class CounterState : public SpecialState
 {
 public:
     CounterState(Fighter *f, bool ground);
@@ -152,7 +168,6 @@ public:
 private:
     // How long have we been in this state?
     float t_;
-    bool ground_;
     std::string pre_;
     bool playedSound_;
 };
@@ -168,6 +183,24 @@ public:
     virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual FighterState* attackConnected(GameEntity *victim);
+
+private:
+    std::string pre_;
+};
+
+class DashSpecialState : public SpecialState
+{
+public:
+    DashSpecialState(Fighter *f, bool ground);
+    virtual ~DashSpecialState() {}
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* hitByAttack(const Attack *attack);
+    virtual FighterState* attackConnected(GameEntity *victim);
+
+    virtual void update(float dt);
 
 private:
     std::string pre_;
