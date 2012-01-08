@@ -412,7 +412,14 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     // Check for taunt
     else if (controller.dpadu && !dashing_)
     {
-        fighter_->attack_ = fighter_->attackMap_["taunt"]->clone();
+        fighter_->attack_ = fighter_->attackMap_["tauntUp"]->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+        return NULL;
+    }
+    else if (controller.dpadd && !dashing_)
+    {
+        fighter_->attack_ = fighter_->attackMap_["tauntDown"]->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return NULL;
@@ -925,6 +932,7 @@ FighterState* SpecialState::collisionWithGround(const rectangle &ground, bool co
     if (collision)
     {
         collisionHelper(ground);
+        fighter_->vel_ = glm::vec2(0.f);
         fighter_->accel_ = glm::vec2(0.f);
         ground_ = true;
     }
@@ -1141,7 +1149,10 @@ void DashSpecialState::update(float dt)
 
 FighterState* DashSpecialState::collisionWithGround(const rectangle &ground, bool collision)
 {
-    return SpecialState::collisionWithGround(ground, collision);
+    float xvel = fighter_->vel_.x;
+    FighterState *ret = SpecialState::collisionWithGround(ground, collision);
+    fighter_->vel_.x = xvel;
+    return ret;
 }
 
 FighterState* DashSpecialState::hitByAttack(const Attack *attack)

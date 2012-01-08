@@ -36,6 +36,10 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
     paused_(false),
     pausingController_(-1)
 {
+    StageManager::get()->clear();
+    // TODO
+    //ParticleManager::get()->clear();
+
     for (unsigned i = 0; i < fighters.size(); i++)
     {
         const float FIGHTER_SPAWN_Y = 50.f;

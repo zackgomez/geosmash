@@ -74,7 +74,8 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     attackMap_["dashSpecial"]->setHitboxFrame("Null");
     attackMap_["dashSpecial"]->setStartSound("dashspecialhit");
 
-    attackMap_["taunt"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
+    attackMap_["tauntUp"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
+    attackMap_["tauntDown"] = loadAttack<FighterAttack>("tauntAttack", a, "Bong");
 
     attackMap_["neutralSmash"] = loadAttack<FighterAttack>("neutralSmashAttack", s, "NeutralSmash");
     attackMap_["neutralSmash"]->setTwinkle(true);
