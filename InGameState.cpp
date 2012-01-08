@@ -37,8 +37,7 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
     pausingController_(-1)
 {
     StageManager::get()->clear();
-    // TODO
-    //ParticleManager::get()->clear();
+    ParticleManager::get()->reset();
 
     for (unsigned i = 0; i < fighters.size(); i++)
     {

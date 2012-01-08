@@ -1162,7 +1162,6 @@ FighterState* DashSpecialState::hitByAttack(const Attack *attack)
 
 FighterState* DashSpecialState::attackConnected(GameEntity *victim)
 {
-    fighter_->attack_->cancel();
     return FighterState::attackConnected(victim);
 }
 
