@@ -169,7 +169,7 @@ struct UnlimpCallback
 {
 public:
     virtual ~UnlimpCallback() { }
-    virtual void operator() () = 0;
+    virtual void operator() (LimpFighter *caller) = 0;
 };
 
 template<class T>
@@ -179,9 +179,9 @@ struct GenericUnlimpCallback : public UnlimpCallback
         target_(target)
     { }
 
-    virtual void operator() ()
+    virtual void operator() (LimpFighter *caller)
     {
-        target_->disconnectCallback();
+        target_->disconnectCallback(caller);
     }
 
 private:

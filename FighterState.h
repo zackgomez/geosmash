@@ -222,7 +222,7 @@ public:
     virtual bool canBeHit() const;
 
     // Called by LimpFighter when disconnect is necessary, or when we release
-    void disconnectCallback();
+    void disconnectCallback(LimpFighter *caller);
 
 private:
     std::string pre_;

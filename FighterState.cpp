@@ -1315,10 +1315,11 @@ bool GrabbingState::canBeHit() const
     return true;
 }
 
-void GrabbingState::disconnectCallback()
+void GrabbingState::disconnectCallback(LimpFighter *caller)
 {
+    assert(victim_ == caller);
     // We should have no attack right now
-    assert(!fighter_->attack_);
+    assert(!fighter_->attack_ || fighter_->attack_->isDone());
     // Remove victim
     victim_ = NULL;
 }
@@ -1558,7 +1559,7 @@ LimpState::LimpState(Fighter *f, UnlimpCallback *callback) :
 LimpState::~LimpState()
 {
     if (!next_)
-        (*unlimpCallback_)();
+        (*unlimpCallback_)(this);
     delete unlimpCallback_;
 }
 
@@ -1589,7 +1590,7 @@ FighterState* LimpState::hitByAttack(const Attack *attack)
     // XXX: this is probably going to break sometime
     assert(!next_ && "memory leak");
     // On hit first disconnect
-    (*unlimpCallback_)();
+    (*unlimpCallback_)(this);
     // Then do the normal thing
     return FighterState::calculateHitResult(attack);
 }
@@ -1639,14 +1640,14 @@ void LimpState::hit(const Attack *attack)
 {
     std::cout << "LIMP HIT\n";
     // disconnect, we're no longer limp
-    (*unlimpCallback_)();
+    (*unlimpCallback_)(this);
     next_ = FighterState::calculateHitResult(attack);
 }
 
 void LimpState::release()
 {
     // Just do the callback, and set the next state, always air normal
-    (*unlimpCallback_)();
+    (*unlimpCallback_)(this);
     next_ = new AirNormalState(fighter_);
 }
 
