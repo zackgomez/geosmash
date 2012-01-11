@@ -494,6 +494,29 @@ rectangle MovingHitboxAttack::getHitbox() const
 }
 
 // ----------------------------------------------------------------------------
+// VaryingDirectionAttack class methods
+// ----------------------------------------------------------------------------
+
+VaryingDirectionAttack::VaryingDirectionAttack(const std::string &paramPrefix, const std::string &audioID,
+        const std::string &frameName) :
+    FighterAttack(paramPrefix, audioID, frameName)
+{
+}
+
+FighterAttack *VaryingDirectionAttack::clone() const
+{
+    return new VaryingDirectionAttack(*this);
+}
+
+glm::vec2 VaryingDirectionAttack::calcKnockback(const GameEntity *victim,
+        float damage) const
+{
+    glm::vec2 apos(getHitbox().x, getHitbox().y);
+    glm::vec2 kbdir = glm::normalize(victim->getPosition() - apos);
+    return kbdir * (kbbase_ + damage * kbscaling_);
+}
+
+// ----------------------------------------------------------------------------
 // NeutralSpecialAttack class methods
 // ----------------------------------------------------------------------------
 

@@ -77,13 +77,13 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     attackMap_["tauntUp"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
     attackMap_["tauntDown"] = loadAttack<FighterAttack>("tauntAttack", a, "Bong");
 
-    attackMap_["neutralSmash"] = loadAttack<FighterAttack>("neutralSmashAttack", s, "NeutralSmash");
+    attackMap_["neutralSmash"] = loadAttack<VaryingDirectionAttack>("neutralSmashAttack", s, "NeutralSmash");
     attackMap_["neutralSmash"]->setTwinkle(true);
     attackMap_["neutralSmash"]->setHitboxFrame("Null");
     attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
     attackMap_["sideSmash"]->setTwinkle(true);
     attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
-    attackMap_["downSmash"] = loadAttack<FighterAttack>("downSmashAttack", s, "DownSmash");
+    attackMap_["downSmash"] = loadAttack<VaryingDirectionAttack>("downSmashAttack", s, "DownSmash");
     attackMap_["downSmash"]->setTwinkle(true);
     attackMap_["downSmash"]->setHitboxFrame("DownSmashHitbox");
     attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");

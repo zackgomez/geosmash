@@ -170,6 +170,17 @@ private:
     glm::vec2 hb0, hb1;
 };
 
+// kbdir is based on direction of victim from hitbox center
+class VaryingDirectionAttack : public FighterAttack
+{
+public:
+    VaryingDirectionAttack(const std::string &paramPrefix, const std::string &audioID,
+            const std::string &frameName);
+
+    virtual FighterAttack *clone() const;
+    virtual glm::vec2 calcKnockback(const GameEntity * victim, float damage) const;
+};
+
 
 // An attack that is responsible for moving the character.
 // (Current Up - B 0.7)
