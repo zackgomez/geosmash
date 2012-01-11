@@ -994,8 +994,8 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
         return calculateHitResult(attack);
     }
 
-    float incdamage = attack->getDamage();
-    float calcedpow = incdamage * getParam("counterAttack.kbscaling");
+    float calcedpow = getParam("counterAttack.reflectfact") *
+        glm::length(attack->calcKnockback(fighter_, fighter_->getDamage()));
 
     // Now the other player gets screwed over for attacking us at the wrong time.
     // Otherwise create a new Fighter attack helper.
