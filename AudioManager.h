@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <glm/glm.hpp>
+#include "Logger.h"
 
 //
 // SFML Notes
@@ -54,6 +55,7 @@ public:
 private:
     AudioManager();
     ~AudioManager();
+    LoggerPtr logger_;
 
     bool muted_;
 

@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include "glutils.h"
+#include "Logger.h"
 
 struct anim_frame
 {
@@ -27,6 +28,8 @@ private:
     FrameManager();
     FrameManager(const FrameManager &);
     ~FrameManager();
+
+    LoggerPtr logger_;
 
     std::map<std::string, const anim_frame*> frames_;
 

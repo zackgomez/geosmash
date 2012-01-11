@@ -1,6 +1,5 @@
 #include "FrameManager.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include <iostream>
 #include <fstream>
 #include <cstdio>
 
@@ -15,7 +14,7 @@ void FrameManager::renderFrame(const glm::mat4 &trans, const glm::vec4 &col,
 {
     if (frames_.find(name) == frames_.end())
     {
-        std::cerr << "FATAL ERROR: Unable to find frame " << name << '\n';
+        logger_->error() << "Unable to find frame " << name << '\n';
         assert(false);
     }
     const anim_frame *frame = frames_[name];
@@ -32,7 +31,7 @@ void FrameManager::loadFile(const std::string &filename)
     std::ifstream file(filename.c_str());
     if (!file)
     {
-        std::cerr << "Unable to open file " << filename << '\n';
+        logger_->error() << "Unable to open file " << filename << '\n';
         assert(false);
     }
 
@@ -41,7 +40,7 @@ void FrameManager::loadFile(const std::string &filename)
         anim_frame *frm = loadAnimFrame(file);
         if (!frm)
             continue;
-        std::cout << "Loaded frame " << frm->id << '\n';
+        logger_->info() << "Loaded frame " << frm->id << '\n';
         addFrame(frm);
     }
 }
@@ -62,7 +61,7 @@ void FrameManager::clear()
 
 FrameManager::FrameManager()
 {
-    /* Empty */
+    logger_ = Logger::getLogger("FrameManager");
 }
 
 FrameManager::~FrameManager()
@@ -108,14 +107,14 @@ anim_frame* FrameManager::loadAnimFrame(std::istream &stream)
     std::getline(stream, line);
     if (sscanf(line.c_str(), "%d %d\n", &w, &h) != 2)
     {
-        std::cerr << "Unable to load w,h for name " << name << '\n';
+        logger_->warning() << "Unable to load w,h for name " << name << '\n';
         return 0;
     }
     // Next line is center x/y
     std::getline(stream, line);
     if (sscanf(line.c_str(), "%f %f\n", &x, &y) != 2)
     {
-        std::cerr << "Unable to load x,y for name " << name << '\n';
+        logger_->warning() << "Unable to load x,y for name " << name << '\n';
         return 0;
     }
 

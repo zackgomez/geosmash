@@ -161,8 +161,6 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
         widgetInd_ += sign;
         widgetInd_ = std::max(std::min(widgetInd_, ((int) widgets.size())-1), 0);
         
-        std::cout << "Changing rows: " << widgetInd_ << '\n';
-
         rowChangePrimed_ = false;
     }
     else if (fabs(yval) < getParam("menu.deadzone"))
