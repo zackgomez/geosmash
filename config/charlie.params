@@ -1,69 +1,44 @@
-worldWidth   1500
-worldHeight  800
-resolution.x 2560
-resolution.y 1600
+walkSpeed        133.3
+dashSpeed        400.0
 
-level.x      0
-level.y      -100
-level.w      1024
-level.h      64
-level.d      80
-# level render color
-level.r      0.2
-level.g      0.2
-level.b      0.2
+# force applied when in AirNormal state
+airForce         450.0
+# "gravity"
+airAccel         -1100.0
+# for when the fighter is stunned
+airDI            200.0
 
-killbox.top     800
-killbox.bottom  -600
-killbox.left    -1300
-killbox.right   1300
+# also determines short hop input window
+jumpStartupTime  0.060
+jumpSpeed        600.0
+hopSpeed         275.0
+secondJumpSpeed  500.0
+# Maximum x speed from input
+jumpAirSpeed     200.0
+landingCooldownTime 0.05
 
-hud.x       0
-hud.y       -0.70
-hud.w       1.4
-hud.h       0.125
+dashStartupTime  0.06
+dashChangeTime   0.17
 
-#80
-soundtrack.volume 80 
-sfx.volume 80
-# these alter the volume of individual sfx
-sfx.smashhit.volume 1.0
-sfx.projectile.volume 0.5
-sfx.shieldon.volume 0.5
-sfx.shieldhit.volume 0.6
-sfx.counterhit.volume 0.5
-sfx.damagefloor 25
-sfx.damageceiling 300
-sfx.minvolume 40
-sfx.maxvolume 100
-
-
-input.dashThresh    0.9
-input.dashMin       0.6
-input.velThresh     0.15
-input.jumpThresh    0.9
-input.deadzone      0.2
-input.tiltThresh    0.4
-input.dodgeThresh   0.6
-input.fallThresh    -0.95
-input.dropThresh    -0.6
-input.trigThresh    0.5
-input.duckThresh    -0.85
-input.throwThresh   0.8
-
-menu.deadzone       0.5
-menu.thresh         0.7
-
-debug.drawHitbox    0
+fastFallAccel    -600.0
+fastFallInitialSpeed -250.0
+fastFallMaxInitialSpeed -500
+fastFallMaxSpeed -1000
 
 fighter.w             50
 fighter.h             60
-fighter.lives         4
-fighter.respawnTime   1.0
-fighter.gbThresh      600.0
-fighter.gbVelDamping  0.6
-fighter.gbStunDamping 0.15
 fighter.minDashTime   0.25
+
+
+dodge.duration    0.42
+dodge.invincTime  0.32
+dodge.speed       450
+dodge.cooldown    0.15
+
+stepdodge.invincTime  0.18
+stepdodge.cooldown    0.20
+stepdodge.zoffset     -15
+# ^ aesthetic only
 
 shield.maxHealth 50.0
 shield.regen     8.0
@@ -74,34 +49,6 @@ shield.cooldown  0.18
 shield.dazeTime  3.0
 shield.stunFactor 0.002
 
-walkSpeed        133.3
-dashSpeed        400.0
-airForce         450.0
-airAccel         -1100.0
-airDI            200.0
-jumpStartupTime  0.060
-jumpSpeed        600.0
-hopSpeed         275.0
-jumpAirSpeed     200.0
-secondJumpSpeed  500.0
-dashStartupTime  0.06
-dashChangeTime   0.17
-landingCooldownTime 0.05
-fastFallAccel    -600.0
-fastFallInitialSpeed -250.0
-fastFallMaxInitialSpeed -500
-fastFallMaxSpeed -1000
-
-dodge.duration    0.42
-dodge.invincTime  0.32
-dodge.speed       450
-dodge.cooldown    0.15
-
-stepdodge.invincTime  0.18
-stepdodge.cooldown    0.20
-# aesthetic only
-stepdodge.zoffset     -15
-
 ledgeGrab.grabInvincTime 1.0
 ledgeGrab.hbwidth        40.0
 ledgeGrab.hbheight       60.0
@@ -111,6 +58,10 @@ ledgeGrab.wakeupTime     0.15
 ledgeGrab.attackInvinc   0.40
 ledgeGrab.wakeUpInvinc   0.15
 
+
+# ---------------
+# - DASH ATTACK -
+# ---------------
 dashAttack.startup      0.05
 dashAttack.duration     0.55
 dashAttack.cooldown     0.15
@@ -128,6 +79,10 @@ dashAttack.priority     1.0
 dashAttack.initialSpeed 550.0
 dashAttack.deceleration -800.0
 
+
+# ----------------
+# - LEDGE ATTACK -
+# ----------------
 ledgeAttack.startup      0.15
 ledgeAttack.duration     0.22
 ledgeAttack.cooldown     0.20
@@ -144,10 +99,10 @@ ledgeAttack.hitboxh      25
 ledgeAttack.priority     2.0
 
 
+
 # ----------------
 # - TILT ATTACKS -
 # ----------------
-
 neutralTiltAttack.startup      0.03
 neutralTiltAttack.duration     0.15
 neutralTiltAttack.cooldown     0.1
@@ -210,29 +165,9 @@ upTiltAttack.priority     1.0
 
 
 
-counterAttack.startup      0.0
-counterAttack.duration     0.30
-counterAttack.cooldown     0.25
-counterAttack.damage       8
-counterAttack.stun         0.10
-counterAttack.knockbackx   5
-counterAttack.knockbacky   2
-counterAttack.kbbase       120.0
-counterAttack.kbscaling    0
-counterAttack.hitboxx      45
-counterAttack.hitboxy      0
-counterAttack.hitboxw      60
-counterAttack.hitboxh      60
-counterAttack.priority     2.5
-# counter kb = reflectfact * incoming kb
-counterAttack.reflectfact  1
-
-counterSpecial.startup      0.15
-counterSpecial.duration     0.25
-counterSpecial.cooldown     0.30
-
-
-
+# ------------------
+# - AERIAL ATTACKS -
+# ------------------
 airNeutralAttack.startup      0.05
 airNeutralAttack.duration     0.36
 airNeutralAttack.cooldown     0.15
@@ -323,7 +258,23 @@ tauntAttack.hitboxw      0
 tauntAttack.hitboxh      0
 tauntAttack.priority     0
 
-# Special Attacks
+
+
+# -------------------
+# - Special Attacks -
+# -------------------
+neutralSpecialAttack.startup      0.30
+neutralSpecialAttack.cooldown     0.15
+neutralSpecialAttack.damage       5
+neutralSpecialAttack.stun         0.06
+neutralSpecialAttack.speed        550.0
+neutralSpecialAttack.sizex        20.0
+neutralSpecialAttack.sizey        20.0
+neutralSpecialAttack.knockbackx   1
+neutralSpecialAttack.knockbacky   1
+neutralSpecialAttack.kbbase       20.0
+neutralSpecialAttack.kbscaling    0.20
+neutralSpecialAttack.lifetime     2.0
 
 upSpecialAttack.startup      0.07
 upSpecialAttack.duration     0.20
@@ -360,6 +311,32 @@ dashSpecialAttack.priority     1.0
 dashSpecialState.yvel         0
 dashSpecialState.xvel         800
 
+counterSpecial.startup      0.15
+counterSpecial.duration     0.25
+counterSpecial.cooldown     0.30
+# when hit the counterAttack comes out
+counterAttack.startup      0.0
+counterAttack.duration     0.30
+counterAttack.cooldown     0.25
+counterAttack.damage       8
+counterAttack.stun         0.10
+counterAttack.knockbackx   5
+counterAttack.knockbacky   2
+counterAttack.kbbase       120.0
+counterAttack.kbscaling    0
+counterAttack.hitboxx      45
+counterAttack.hitboxy      0
+counterAttack.hitboxw      60
+counterAttack.hitboxh      60
+counterAttack.priority     2.5
+# counter kb = reflectfact * incoming kb
+counterAttack.reflectfact  1
+
+
+
+# -----------------
+# - SMASH ATTACKS -
+# -----------------
 neutralSmashAttack.startup      0.40
 neutralSmashAttack.duration     0.05
 neutralSmashAttack.cooldown     0.20
@@ -422,19 +399,11 @@ upSmashAttack.hitboxy      30
 upSmashAttack.hitboxx1     35
 upSmashAttack.hitboxy1     30
 
-neutralSpecialAttack.startup      0.30
-neutralSpecialAttack.cooldown     0.15
-neutralSpecialAttack.damage       5
-neutralSpecialAttack.stun         0.06
-neutralSpecialAttack.speed        550.0
-neutralSpecialAttack.sizex        20.0
-neutralSpecialAttack.sizey        20.0
-neutralSpecialAttack.knockbackx   1
-neutralSpecialAttack.knockbacky   1
-neutralSpecialAttack.kbbase       20.0
-neutralSpecialAttack.kbscaling    0.20
-neutralSpecialAttack.lifetime     2.0
 
+
+# ----------------------
+# - GRAB/THROW ATTACKS -
+# ----------------------
 grabAttack.startup          0.10
 grabAttack.duration         0.35
 grabAttack.cooldown         0.20
@@ -475,40 +444,3 @@ upThrow.kbbase           200
 upThrow.kbscaling        4.00
 upThrow.damage           5
 upThrow.stun             0.10
-
-
-#stageHazardAttack.cooldown     0.50
-#stageHazardAttack.damage       15
-#stageHazardAttack.stun         0.08
-#stageHazardAttack.speed        33.0
-#stageHazardAttack.switchRate   100.0
-#stageHazardAttack.sizex        60.0
-#stageHazardAttack.sizey        40.0
-#stageHazardAttack.knockbackx   1
-#stageHazardAttack.knockbacky   5
-#stageHazardAttack.kbbase       100
-#stageHazardAttack.priority   0
-#stageHazardAttack.lifetime   20
-
-#stageHazardAttack.twirlTime    1.5
-#stageHazardAttack.xaccel       1500
-#stageHazardAttack.twirlHeight  120
-
-camera.maxVx 200 
-camera.maxVy 150
-camera.maxVz 150
-camera.minZoom 500
-camera.maxZoom 300
-camera.maxSpread 800
-camera.yfactor 0.4
-camera.margin 250
-camera.minY -150
-camera.maxY 500
-camera.xrange 1000
-camera.fov 90
-
-backgroundSphere.radius         2000
-backgroundSphere.pulseCount     1000
-backgroundSphere.divisionCount  1000
-backgroundSphere.lineCount      10
-backgroundSphere.meshRes        512

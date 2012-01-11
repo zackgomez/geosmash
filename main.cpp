@@ -28,7 +28,8 @@ void globalEvents();
 int main(int argc, char *argv[])
 {
     // Init game state
-    ParamReader::get()->loadFile("params.dat");
+    ParamReader::get()->loadFile("config/global.params");
+    ParamReader::get()->loadFile("config/charlie.params");
 
     if (!initLibs())
         exit(1);
@@ -145,6 +146,7 @@ int initGraphics()
     initGLUtils(getParam("resolution.x"), getParam("resolution.y"));
 
     FrameManager::get()->loadFile("frames/charlie.frames");
+    FrameManager::get()->loadFile("frames/global.frames");
 
     return 0;
 }
