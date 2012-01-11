@@ -105,7 +105,6 @@ private:
 
     // ---- Helper functions ----
     void stateWrapper(FighterState *fs);
-    float damageFunc() const; // Returns a scaling factor based on damage
     void renderHelper(float dt, const std::string &frameName, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
     // Loads an attack from the params using the attackName.param syntax
     template<class AttackClass>

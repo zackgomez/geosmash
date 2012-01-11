@@ -27,17 +27,20 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
     size_ = glm::vec2(getParam(paramPrefix_ + "sizex"),
             getParam(paramPrefix_ + "sizey"));
 
+    glm::vec2 kbdir = glm::normalize(glm::vec2(
+                getParam(paramPrefix_ + "knockbackx"),
+                getParam(paramPrefix_ + "knockbacky")));
+    kbdir *= glm::vec2(glm::sign(vel_.x), 1.f);
+
     attack_ = new SimpleAttack(
-            getParam(paramPrefix_ + "knockbackpow") *
-            glm::normalize(glm::vec2(
-                    getParam(paramPrefix_ + "knockbackx"),
-                    getParam(paramPrefix_ + "knockbacky"))),
+            kbdir,
+            getParam(paramPrefix_ + "kbbase"),
+            getParam(paramPrefix_ + "kbscaling"),
             getParam(paramPrefix_ + "damage"),
             getParam(paramPrefix_ + "stun"),
             0.f, // 0 priority
             pos_, size_, -dir.x, playerID_, teamID_,
             audioID_);
-    attack_->setKBDirection(vel_.x > 0 ? 1 : -1);
 
     glm::vec4 pcolors_raw[] =
     {

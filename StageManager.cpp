@@ -168,14 +168,12 @@ HazardEntity::HazardEntity(const std::string &audioID)
     lifetime_ = getParam(pre_ + "lifetime");
     dir_ = 1; // initially, we'll go right.
 
+    // All that matters for this attack is simply that it connects,
+    // and thus its size and perhaps audio
     attack_ = new SimpleAttack(
-            getParam(pre_ + "knockbackpow") *
-            glm::normalize(glm::vec2(getParam(pre_ + "knockbackx"),
-                      getParam(pre_ + "knockbacky"))),
-            getParam(pre_ + "damage"),
-            getParam(pre_ + "stun"),
-            getParam(pre_ + "priority"),
-            pos_, size_, -dir_, playerID_, teamID_,
+            glm::vec2(0.f), 0.f, 0.f,
+            0.f, 0.f, 0.f,
+            pos_, size_, 0, playerID_, teamID_,
             audioID);
 
     // Set up particle effects
@@ -224,8 +222,6 @@ void HazardEntity::update(float dt)
         }
         else
         {
-            //float side = victim_->getEntity()->getPosition().x > pos_.x ? 1 : -1;
-            //victim_->setAccel(glm::vec2(-side * getParam(pre_ + "xaccel"), 0));
             // Make them spin
             glm::mat4 spintrans = glm::rotate(glm::mat4(1.f), 1000.f*t_, glm::vec3(0, 1, 0));
             data.victim->setPreTransform(spintrans);
@@ -273,8 +269,6 @@ bool HazardEntity::hasAttack() const
 
 const Attack *HazardEntity::getAttack() const
 {
-    attack_->setKBDirection(dir_);
-    attack_->setOriginDirection(-dir_);
     return attack_;
 }
 

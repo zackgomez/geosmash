@@ -55,7 +55,7 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     }
 
     // Take damage
-    float dd = attack->getDamage(fighter_);
+    float dd = attack->getDamage();
     fighter_->damage_ += dd;
     // Record damage given/taken
     StatsManager::get()->addStat(StatsManager::getStatPrefix(fighter_->playerID_) + "damageTaken", dd);
@@ -66,7 +66,7 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
 
 
     // Calculate direction of hit
-    glm::vec2 knockback = attack->getKnockback(fighter_) * fighter_->damageFunc();
+    glm::vec2 knockback = attack->calcKnockback(fighter_, fighter_->damage_);
 
     // Get knocked back
     fighter_->vel_ = knockback;
@@ -86,7 +86,7 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     fighter_->pos_.y += 4;
 
     // Go to the stunned state
-    float stunDuration = attack->getStun(fighter_) * fighter_->damageFunc();
+    float stunDuration = attack->calcStun(fighter_, fighter_->damage_);
     std::cout << "StunDuration: " << stunDuration << '\n';
     return new AirStunnedState(fighter_, stunDuration, fighter_->vel_.y < 0);
 }
@@ -733,10 +733,10 @@ FighterState* BlockingState::hitByAttack(const Attack *attack)
     else
     {
         // block it and take shield damage
-        fighter_->shieldHealth_ -= attack->getDamage(fighter_);
+        fighter_->shieldHealth_ -= attack->getDamage();
         // Experience some hit stun
         hitStunTime_ = getParam("shield.stunFactor")
-            * glm::length(attack->getKnockback(fighter_));
+            * glm::length(attack->calcStun(fighter_, fighter_->damage_));
         AudioManager::get()->playSound("shieldhit");
     }
 
@@ -994,7 +994,7 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
         return calculateHitResult(attack);
     }
 
-    float incdamage = attack->getDamage(fighter_);
+    float incdamage = attack->getDamage();
     float calcedpow = incdamage * getParam("counterAttack.kbscaling");
 
     // Now the other player gets screwed over for attacking us at the wrong time.
@@ -1003,7 +1003,7 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
     fighter_->attack_->setHitboxFrame("CounterAttackHitbox");
     fighter_->attack_->setFighter(fighter_);
     fighter_->attack_->start();
-    fighter_->attack_->setKnockbackPow(calcedpow);
+    fighter_->attack_->setBaseKnockback(calcedpow);
     fighter_->dir_ = attack->getOriginDirection(fighter_);
 
     return NULL;
@@ -1224,12 +1224,15 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
         // If we have a throw, create it and do it
         if (shouldThrow)
         {
-            glm::vec2 kb = getParam(throwPrefix + "knockbackpow") *
-                glm::normalize(glm::vec2(getParam(throwPrefix + "knockbackx")
-                            * fighter_->dir_,
-                            getParam(throwPrefix + "knockbacky")));
+            glm::vec2 kbdir = glm::normalize(
+                    glm::vec2(getParam(throwPrefix + "knockbackx"),
+                        getParam(throwPrefix + "knockbacky")));
+            kbdir *= glm::vec2(fighter_->getDirection(), 1.f);
+
             SimpleAttack thrw = SimpleAttack(
-                    kb,
+                    kbdir,
+                    getParam(throwPrefix + "kbbase"),
+                    getParam(throwPrefix + "kbscaling"),
                     getParam(throwPrefix + "damage"),
                     getParam(throwPrefix + "stun"),
                     0.f, // priority doesn't matter

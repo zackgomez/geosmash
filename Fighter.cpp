@@ -328,11 +328,6 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
         attack_->render(dt);
 }
 
-float Fighter::damageFunc() const
-{
-    return 1.2*(damage_) / 33 + 1.5;
-}
-
 template<class AttackClass>
 AttackClass* Fighter::loadAttack(std::string attackName, const std::string &audioID,
         const std::string &fname)

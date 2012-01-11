@@ -15,7 +15,8 @@ void addEntity(GameEntity *ent);
 // ----------------------------------------------------------------------------
 // SimpleAttack class methods
 // ----------------------------------------------------------------------------
-SimpleAttack::SimpleAttack(const glm::vec2 &kb,
+SimpleAttack::SimpleAttack(
+        const glm::vec2 &kbdir, float kbbase, float kbscaling,
         float damage, float stun, float priority,
         const glm::vec2 &pos, const glm::vec2 &size,
         float odir,
@@ -26,8 +27,9 @@ SimpleAttack::SimpleAttack(const glm::vec2 &kb,
     odir_(odir),
     pos_(pos),
     size_(size),
-    kb_(kb),
-    dir_(1.f),
+    kbdir_(kbdir),
+    kbbase_(kbbase),
+    kbscaling_(kbscaling),
     audioID_(audioID)
 {
 }
@@ -43,13 +45,21 @@ rectangle SimpleAttack::getHitbox() const
 }
 
 float SimpleAttack::getPriority() const { return priority_; }
-float SimpleAttack::getDamage(const GameEntity *) const { return damage_; }
-float SimpleAttack::getStun(const GameEntity *) const { return stun_; }
-float SimpleAttack::getOriginDirection(const GameEntity *) const { return odir_; }
+float SimpleAttack::getDamage() const { return damage_; }
 
-glm::vec2 SimpleAttack::getKnockback(const GameEntity *) const
+float SimpleAttack::calcStun(const GameEntity *, float damage) const
 {
-    return glm::vec2(dir_, 1.f) * kb_;
+    return stun_ * (damage * 1.2/33 + 1.5);
+}
+
+glm::vec2 SimpleAttack::calcKnockback(const GameEntity *, float damage) const
+{
+    return kbdir_ * (kbbase_ + damage * kbscaling_);
+}
+
+float SimpleAttack::getOriginDirection(const GameEntity *) const
+{
+    return odir_;
 }
 
 int SimpleAttack::getPlayerID() const
@@ -72,9 +82,9 @@ void SimpleAttack::setPosition(const glm::vec2 &position)
     pos_ = position;
 }
 
-void SimpleAttack::setKBDirection(float dir)
+void SimpleAttack::setBaseKnockback(float pow)
 {
-    dir_ = dir;
+    kbbase_ = pow;
 }
 
 void SimpleAttack::setOriginDirection(float odir)
@@ -120,10 +130,11 @@ FighterAttack::FighterAttack(const std::string &paramPrefix, const std::string &
     cooldown_ = getParam(pp + "cooldown");
     damage_ = getParam(pp + "damage");
     stun_ = getParam(pp + "stun");
-    knockbackdir_ = glm::vec2(
-                getParam(pp + "knockbackx"),
-                getParam(pp + "knockbacky"));
-    knockbackpow_ = getParam(pp + "knockbackpow");
+    kbdir_ = glm::normalize(glm::vec2(
+            getParam(pp + "knockbackx"),
+            getParam(pp + "knockbacky")));
+    kbbase_ = getParam(pp + "kbbase");
+    kbscaling_ = getParam(pp + "kbscaling");
     hboffset_ = glm::vec2(getParam(pp + "hitboxx"), getParam(pp + "hitboxy"));
     hbsize_ = glm::vec2(getParam(pp + "hitboxw"), getParam(pp + "hitboxh"));
     priority_ = getParam(pp + "priority");
@@ -132,8 +143,6 @@ FighterAttack::FighterAttack(const std::string &paramPrefix, const std::string &
     paramPrefix_ = pp;
 
     twinkle_ = false;
-
-    knockbackdir_ = knockbackdir_ == glm::vec2(0, 0) ? knockbackdir_ : glm::normalize(knockbackdir_);
 }
 
 FighterAttack* FighterAttack::clone() const
@@ -167,20 +176,6 @@ void FighterAttack::finish()
     /* Empty */
 }
 
-glm::vec2 FighterAttack::getKnockback(const GameEntity *victim) const
-{
-    if (knockbackdir_ == glm::vec2(0,0))
-    {
-        glm::vec2 apos = glm::vec2(getHitbox().x, getHitbox().y);
-        glm::vec2 fpos = glm::vec2(victim->getPosition().x, victim->getPosition().y);
-        glm::vec2 dir = glm::normalize(fpos - apos);
-        return knockbackpow_ * dir;
-    }
-    else
-        return knockbackdir_ * knockbackpow_ * glm::vec2(owner_->getDirection(), 1.f);
-
-}
-
 float FighterAttack::getOriginDirection(const GameEntity *victim) const
 {
     // Direction is based on their direction from the owner
@@ -198,12 +193,19 @@ rectangle FighterAttack::getHitbox() const
     return ret;
 }
 
+glm::vec2 FighterAttack::calcKnockback(const GameEntity *victim, float damage) const
+{
+    float dir = owner_->getDirection();
+    glm::vec2 kb = glm::vec2(dir, 1.f) * kbdir_;
+    kb *= kbbase_ + damage * kbscaling_;
+    return kb;
+}
+
 std::string FighterAttack::getFrameName() const { return frameName_; }
 
 void FighterAttack::setTwinkle(bool twinkle) { twinkle_ = twinkle; }
 void FighterAttack::setHitboxFrame(const std::string &frame) { hbframe_ = frame; }
 void FighterAttack::setStartSound(const std::string &soundID) { startSoundID_ = soundID; }
-void FighterAttack::setKnockbackPow(float pow) { knockbackpow_ = pow; }
 
 bool FighterAttack::hasTwinkle() const
 {
