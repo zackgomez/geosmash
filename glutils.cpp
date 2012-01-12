@@ -35,8 +35,8 @@ static struct
 } resources;
 
 static glm::vec2 screensize;
-static glm::mat4 projectionMatrix;
-static glm::mat4 viewMatrix;
+static MatrixStack projectionMatrixStack;
+static MatrixStack viewMatrixStack;
 
 GLuint make_buffer(GLenum target, const void *buffer_data, GLsizei buffer_size)
 {
@@ -217,9 +217,9 @@ void preRender()
 
 void postRender()
 {
-    glm::mat4 projMat = projectionMatrix;
-    glm::mat4 viewMat = viewMatrix;
-    projectionMatrix = viewMatrix = glm::mat4(1.f);
+    projectionMatrixStack.push();
+    viewMatrixStack.push();
+    projectionMatrixStack.current() = viewMatrixStack.current() = glm::mat4(1.f);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     // blur the glow texture
@@ -249,8 +249,8 @@ void postRender()
             resources.rendertex[1]);
     glDisable(GL_BLEND);
 
-    projectionMatrix = projMat;
-    viewMatrix = viewMat;
+    projectionMatrixStack.pop();
+    viewMatrixStack.pop();
 }
 
 bool initGLUtils(int screenw, int screenh)
@@ -370,8 +370,8 @@ void renderRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color)
 
     // Enable program and set up values
     glUseProgram(resources.program);
-    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix * modelMatrix));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrixStack.current()));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
@@ -394,8 +394,8 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix, GLuint program)
 
     // Enable program and set up values
     glUseProgram(program);
-    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix * modelMatrix));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrixStack.current()));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
     glEnableVertexAttribArray(0);
@@ -418,8 +418,8 @@ void renderTexturedRectangle(const glm::mat4 &modelMatrix, GLuint texture)
 
     // Enable program and set up values
     glUseProgram(resources.texprogram);
-    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
-    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix * modelMatrix));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrixStack.current()));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
     glUniform1i(textureUniform, 0);
 
     glActiveTexture(GL_TEXTURE0);
@@ -450,8 +450,8 @@ void renderMaskedRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color,
 
     // Enable program and set up values
     glUseProgram(resources.maskprogram);
-    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix * modelMatrix));
-    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrixStack.current()));
     glUniform1i(textureUniform, 0);
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
     glUniform2fv(texsizeUniform, 1, glm::value_ptr(glm::vec2(frame->w, frame->h)));
@@ -630,7 +630,7 @@ mesh createMesh(std::string objfile)
 
 void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &color)
 {
-    glm::vec4 lightPos = viewMatrix * glm::vec4(500.f, 400.f, 200.f, 1.f);
+    glm::vec4 lightPos = viewMatrixStack.current() * glm::vec4(500.f, 400.f, 200.f, 1.f);
     lightPos /= lightPos.w;
     // Uniform locations
     GLuint modelViewUniform = glGetUniformLocation(resources.meshprogram, "modelViewMatrix");
@@ -640,8 +640,8 @@ void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &co
     GLuint lightPosUniform = glGetUniformLocation(resources.meshprogram, "lightpos");
     // Enable program and set up values
     glUseProgram(resources.meshprogram);
-    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrix * modelMatrix));
-    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrixStack.current()));
     glUniformMatrix4fv(normalUniform, 1, GL_FALSE, glm::value_ptr(glm::inverse(modelMatrix)));
     glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(color, 1.0f)));
     glUniform4fv(lightPosUniform, 1, glm::value_ptr(lightPos));
@@ -665,30 +665,22 @@ void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &co
     glUseProgram(0);
 }
 
-void setProjectionMatrix(const glm::mat4 &mat)
-{
-    projectionMatrix = mat;
-}
-
-void setViewMatrix(const glm::mat4 &mat)
-{
-    viewMatrix = mat;
-}
-
 void setCamera(const glm::vec3 &pos)
 {
-    setProjectionMatrix(glm::perspective(getParam("camera.fov"), 16.f / 9.f, 0.1f, 6000.f));
-    setViewMatrix(glm::translate(glm::mat4(1.f), -pos));
+    projectionMatrixStack.current() =
+        glm::perspective(getParam("camera.fov"), 16.f / 9.f, 0.1f, 6000.f);
+    viewMatrixStack.current() =
+        glm::translate(glm::mat4(1.f), -pos);
 }
 
-const glm::mat4 & getProjectionMatrix()
+MatrixStack & getProjectionMatrixStack()
 {
-    return projectionMatrix;
+    return projectionMatrixStack;
 }
 
-const glm::mat4 & getViewMatrix()
+MatrixStack & getViewMatrixStack()
 {
-    return viewMatrix;
+    return viewMatrixStack;
 }
 
 void renderParticle(const glm::vec3 &loc, const glm::vec3 &size,

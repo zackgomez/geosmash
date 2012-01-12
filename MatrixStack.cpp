@@ -31,3 +31,10 @@ void MatrixStack::pop()
     current_ = stack_.top();
     stack_.pop();
 }
+
+void MatrixStack::clear()
+{
+    current_ = glm::mat4(1.f);
+    while (!stack_.empty())
+        stack_.pop();
+}

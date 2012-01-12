@@ -44,6 +44,12 @@ StatsGameState::StatsGameState(
 
     // Print stats to console
     StatsManager::get()->printStats();
+
+
+    // Set up matrices
+    getProjectionMatrixStack().clear();
+    getProjectionMatrixStack().current() = glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f);
+    getViewMatrixStack().clear();
 }
 
 StatsGameState::~StatsGameState()
@@ -94,10 +100,6 @@ float columnRight(int col)
 
 void StatsGameState::render(float dt)
 {
-    // Set up matrices
-    setProjectionMatrix(glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f));
-    setViewMatrix(glm::mat4(1.f));
-
     // Draw the background
     glm::mat4 backtrans = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(1920.f/2, 1080.f/2, -0.1f)),

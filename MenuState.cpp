@@ -39,6 +39,10 @@ MenuWidget::MenuWidget(const std::string &name, int min, int max, int defval) :
 {
     if (defval != -1)
         value_ = defval;
+
+    getProjectionMatrixStack().clear();
+    getViewMatrixStack().clear();
+    getProjectionMatrixStack().current() = glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f);
 }
 
 void MenuWidget::handleInput(float val)
@@ -121,9 +125,6 @@ void MenuState::update(float)
 
 void MenuState::render(float dt)
 {
-    setProjectionMatrix(glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f));
-    setViewMatrix(glm::mat4(1.f));
-
     glm::vec2 center(1920.f / 2, 1080.f - 1080.f / 8 * 2);
 
     for (size_t i = 0; i < widgets.size(); i++)

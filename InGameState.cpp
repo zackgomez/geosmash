@@ -249,10 +249,10 @@ bool InGameState::stealLife(int teamID)
 void InGameState::renderPause()
 {
     glDisable(GL_DEPTH_TEST);
-    glm::mat4 pmat = getProjectionMatrix();
-    glm::mat4 vmat = getViewMatrix();
-    setProjectionMatrix(glm::mat4(1.f));
-    setViewMatrix(glm::mat4(1.f));
+    getProjectionMatrixStack().push();
+    getViewMatrixStack().push();
+    getProjectionMatrixStack().current() = glm::mat4(1.f);
+    getViewMatrixStack().current() = glm::mat4(1.f);
 
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -1.f)),
@@ -262,18 +262,18 @@ void InGameState::renderPause()
     //renderRectangle(transform, glm::vec4(0.1, 0.1, 0.1, 0.0));
 
 
-    setProjectionMatrix(pmat);
-    setViewMatrix(vmat);
+    getProjectionMatrixStack().pop();
+    getViewMatrixStack().pop();
 }
 
 void InGameState::renderHUD()
 {
     // Render the overlay interface (HUD)
     glDisable(GL_DEPTH_TEST);
-    glm::mat4 pmat = getProjectionMatrix();
-    glm::mat4 vmat = getViewMatrix();
-    setProjectionMatrix(glm::mat4(1.f));
-    setViewMatrix(glm::mat4(1.f));
+    getProjectionMatrixStack().push();
+    getViewMatrixStack().push();
+    getProjectionMatrixStack().current() = glm::mat4(1.f);
+    getViewMatrixStack().current() = glm::mat4(1.f);
 
     const glm::vec2 hud_center(0, 1.5f/6 - 1);
     const glm::vec2 lifesize = 0.03f * glm::vec2(1.f, 16.f/9.f);
@@ -343,14 +343,14 @@ void InGameState::renderHUD()
         FontManager::get()->renderNumber(transform, dmgColor, floorf(damage));
     }
 
-    setProjectionMatrix(pmat);
-    setViewMatrix(vmat);
+    getProjectionMatrixStack().pop();
+    getViewMatrixStack().pop();
 }
 
 void InGameState::renderArrow(const Fighter *f)
 {
     glm::vec4 fpos = glm::vec4(f->getRect().x, f->getRect().y, 0.f, 1.f);
-    glm::vec4 fndc = getProjectionMatrix() * getViewMatrix() * fpos;
+    glm::vec4 fndc = getProjectionMatrixStack().current() * getViewMatrixStack().current() * fpos;
     fndc /= fndc.w;
     if (fabs(fndc.x) > 1 || fabs(fndc.y) > 1)
     {
@@ -386,15 +386,15 @@ void InGameState::renderArrow(const Fighter *f)
                         glm::vec3(scale, scale, 1.f)),
                     rot, glm::vec3(0, 0, 1));
 
-        glm::mat4 pmat = getProjectionMatrix();
-        glm::mat4 vmat = getViewMatrix();
-        setProjectionMatrix(glm::mat4(1.f));
-        setViewMatrix(glm::mat4(1.f));
+        getProjectionMatrixStack().push();
+        getViewMatrixStack().push();
+        getProjectionMatrixStack().current() = glm::mat4(1.f);
+        getViewMatrixStack().current() = glm::mat4(1.f);
 
         FrameManager::get()->renderFrame(transform, glm::vec4(f->getColor(), 0.0f), "OffscreenArrow");
 
-        setProjectionMatrix(pmat);
-        setViewMatrix(vmat);
+        getProjectionMatrixStack().pop();
+        getViewMatrixStack().pop();
     }
 }
 

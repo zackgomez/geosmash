@@ -103,7 +103,8 @@ sf::SoundBuffer* AudioManager::getBuffer(const std::string &fname)
 
 float AudioManager::getPanningFactor(const glm::vec2 &worldPos)
 {
-    glm::vec4 screenPos = getProjectionMatrix() * getViewMatrix() * glm::vec4(worldPos, 0.f, 1.f);
+    glm::vec4 screenPos = getProjectionMatrixStack().current() *
+        getViewMatrixStack().current() * glm::vec4(worldPos, 0.f, 1.f);
     screenPos /= screenPos.w;
 
     // if the player is hit off the screen, we need to clip this val to be in

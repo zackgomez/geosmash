@@ -19,6 +19,9 @@ public:
     // Pops the top of stack and sets current to the popped value
     void pop();
 
+    // resets to identity and empty stack
+    void clear();
+
 private:
     glm::mat4 current_;
     std::stack<glm::mat4> stack_;

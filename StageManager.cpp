@@ -124,8 +124,8 @@ void StageManager::renderSphereBackground(float dt)
     GLuint modelViewUniform = glGetUniformLocation(sphereProgram_, "modelViewMatrix");
 
     glUseProgram(sphereProgram_);
-    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrix()));
-    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(getViewMatrix() * transform));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrixStack().current()));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(getViewMatrixStack().current() * transform));
 
     glBindBuffer(GL_ARRAY_BUFFER, meshBuf_);
     glEnableVertexAttribArray(0);
