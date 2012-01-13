@@ -124,7 +124,7 @@ private:
 class AirStunnedState : public FighterState
 {
 public:
-    AirStunnedState(Fighter *f, float duration, bool groundBounce = false);
+    AirStunnedState(Fighter *f, float duration, float bounceMag = -HUGE_VAL);
     virtual ~AirStunnedState() { }
 
     virtual FighterState* processInput(controller_state&, float dt);
@@ -135,7 +135,7 @@ public:
 private:
     float stunDuration_;
     float stunTime_;
-    bool gb_;
+    float gbMag_;
 };
 
 // For special moves (b-moves)

@@ -96,10 +96,12 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     // Pop up a bit so that we're not overlapping the ground
     fighter_->pos_.y += 4;
 
+
+    float gbmag = glm::length(fighter_->vel_);
     // Go to the stunned state
     float stunDuration = attack->calcStun(fighter_, fighter_->damage_);
     std::cout << "StunDuration: " << stunDuration << '\n';
-    return new AirStunnedState(fighter_, stunDuration, fighter_->vel_.y < 0);
+    return new AirStunnedState(fighter_, stunDuration, gbmag > 0 ? gbmag : -HUGE_VAL);
 }
 
 void FighterState::collisionHelper(const rectangle &ground)
@@ -192,8 +194,8 @@ FighterState* FighterState::performBMove(const controller_state &controller, boo
 
 
 //// ---------------------- AIR STUNNED STATE -----------------------
-AirStunnedState::AirStunnedState(Fighter *f, float duration, bool gb) : 
-    FighterState(f), stunDuration_(duration), stunTime_(0), gb_(gb)
+AirStunnedState::AirStunnedState(Fighter *f, float duration, float gbmag) : 
+    FighterState(f), stunDuration_(duration), stunTime_(0), gbMag_(gbmag)
 {
     frameName_ = "AirStunned";
 }
@@ -248,14 +250,17 @@ FighterState* AirStunnedState::collisionWithGround(const rectangle &ground, bool
 
     // Check for ground bounce
     if (fighter_->vel_.y < -getParam("fighter.gbThresh")
-            && gb_)
+            && gbMag_ > 0.f)
     {
-        // reflect and dampen yvel and stun
+        // reflect and set magnitude of knockback to be initial gb speed
+        fighter_->vel_ /= glm::length(fighter_->vel_);
+        fighter_->vel_ *= gbMag_;
         fighter_->vel_.y *= -getParam("fighter.gbVelDamping");
         fighter_->vel_.x *= getParam("fighter.gbVelDamping");
+        // Dampen stun
         stunTime_ *= getParam("fighter.gbStunDamping");
         // Cannot be bounced again unless hit again
-        gb_ = false;
+        gbMag_ = -HUGE_VAL;
     }
     else
     {
