@@ -256,7 +256,8 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &stix)
                 colors[i],
                 playerID,
                 teamID,
-                lives);
+                lives,
+                StatsManager::guest_user);
 
         // create a controller
         // push the controller onto the list

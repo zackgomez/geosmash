@@ -28,7 +28,7 @@ class Fighter : public GameEntity
 {
 public:
     Fighter(const glm::vec3 &color, int playerID,
-            int teamID, int startingLives);
+            int teamID, int startingLives, const std::string &username);
     ~Fighter();
 
     void setRespawnLocation(float x, float y);
@@ -93,6 +93,7 @@ private:
     // Fighter ID members
     float respawnx_, respawny_;
     glm::vec3 color_;
+    std::string username_;
 
     // Current attack members
     FighterAttack* attack_;

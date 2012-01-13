@@ -17,7 +17,7 @@
 const std::string Fighter::type = "FighterEntity";
 
 Fighter::Fighter(const glm::vec3& color, int playerID,
-        int teamID, int startingLives) :
+        int teamID, int startingLives, const std::string &username) :
     dir_(-1),
     state_(0),
     damage_(0),
@@ -25,6 +25,7 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     lives_(startingLives),
     respawnx_(0), respawny_(0),
     color_(color),
+    username_(username),
     attack_(NULL),
     lastHitBy_(-1)
 {

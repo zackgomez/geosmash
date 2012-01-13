@@ -14,6 +14,8 @@ StatsManager * StatsManager::get()
     return &sm;
 }
 
+const std::string StatsManager::guest_user = "GUEST";
+
 void StatsManager::setStat(std::string stat, float val)
 {
     stats_[stat] = val;
@@ -111,7 +113,7 @@ void StatsManager::readUserFile(const std::string &filename)
 std::vector<std::string> StatsManager::getUsernames() const
 {
     std::vector<std::string> names;
-    names.push_back("GUEST");
+    names.push_back(guest_user);
     for (size_t i = 0; i < user_stats_.size(); i++)
         names.push_back(user_stats_[i].username);
 
