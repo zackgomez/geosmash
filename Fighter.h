@@ -47,6 +47,7 @@ public:
     float getDamage() const;
     float getDirection() const; // returns -1 or 1
     const glm::vec3& getColor() const { return color_; }
+    const std::string& getUsername() const { return username_; }
     // Returns the id of the player that last hit this fighter, or -1 if there
     // is none
     int getLastHitBy() const;

@@ -46,7 +46,6 @@ StatsGameState::StatsGameState(
     // Print stats to console
     StatsManager::get()->printStats();
 
-
     // Set up matrices
     getProjectionMatrixStack().clear();
     getProjectionMatrixStack().current() = glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f);

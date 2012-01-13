@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include "Fighter.h"
 
 StatsManager::StatsManager()
 {
@@ -98,7 +99,7 @@ void StatsManager::readUserFile(const std::string &filename)
         ss  >> stats.username
             >> stats.kills >> stats.deaths
             >> stats.games_played >> stats.games_won
-            >> stats.damage_dealt >> stats.team_damage;
+            >> stats.damage_dealt >> stats.damage_taken >> stats.team_damage;
 
         if (!ss)
         {
@@ -106,7 +107,7 @@ void StatsManager::readUserFile(const std::string &filename)
             continue;
         }
 
-        user_stats_.push_back(stats);
+        user_stats_[stats.username] = stats;
     }
 }
 
@@ -114,10 +115,52 @@ std::vector<std::string> StatsManager::getUsernames() const
 {
     std::vector<std::string> names;
     names.push_back(guest_user);
-    for (size_t i = 0; i < user_stats_.size(); i++)
-        names.push_back(user_stats_[i].username);
+    std::map<std::string, lifetime_stats>::const_iterator it;
+    for (it = user_stats_.begin(); it != user_stats_.end(); it++)
+        names.push_back(it->first);
 
     return names;
+}
+
+void StatsManager::updateUserStats(const std::vector<Fighter*> fighters)
+{
+    for (size_t i = 0; i < fighters.size(); i++)
+    {
+        std::string username = fighters[i]->getUsername();
+        // Don't keep stats for the guest user
+        if (username == guest_user)
+            continue;
+        assert(user_stats_.find(username) == user_stats_.end());
+
+        lifetime_stats cur = user_stats_[username];
+
+        std::string prefix = statPrefix(fighters[i]->getPlayerID());
+
+        cur.kills += getStat(prefix + ".kills");
+        cur.deaths += getStat(prefix + ".deaths");
+        cur.games_played += 1;
+        cur.games_won += getStat("winningTeam") == fighters[i]->getTeamID() ? 1 : 0;
+        cur.damage_dealt += getStat(prefix + ".damageGiven");
+        cur.damage_taken += getStat(prefix + ".damageTaken");
+        cur.team_damage += getStat(prefix + ".teamDamageGiven");
+    }
+}
+
+void StatsManager::writeUserStats(const std::string &filename)
+{
+    std::ofstream ofile(filename.c_str());
+
+    // Now write to a new file
+    std::map<std::string, lifetime_stats>::const_iterator it;
+    for (it = user_stats_.begin(); it != user_stats_.end(); it++)
+    {
+        lifetime_stats stats = it->second;
+        ofile << stats.username << ' '
+           << stats.kills << ' ' << stats.deaths << ' '
+           << stats.games_played << ' ' << stats.games_won << ' '
+           << stats.damage_dealt << ' ' << stats.damage_taken << ' ' << stats.team_damage
+           << '\n';
+    }
 }
 
 // FREE FUNCTIONS
@@ -125,3 +168,4 @@ std::string statPrefix(int playerID)
 {
     return StatsManager::getStatPrefix(playerID);
 }
+

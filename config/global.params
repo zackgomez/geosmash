@@ -1,4 +1,5 @@
 debug.drawHitbox    0
+debug.saveStats     1
 
 # -------------------
 # - GAMEPLAY PARAMS -

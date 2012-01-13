@@ -163,6 +163,12 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
                 (SDL_GetTicks() - startTime_) / 1000.0f);
 
         // Transition to end of game state
+        StatsManager::get()->setStat("winningTeam", winningTeam);
+        if (getParam("debug.saveStats"))
+        {
+            StatsManager::get()->updateUserStats(fighters_);
+            StatsManager::get()->writeUserStats("user_stats.dat");
+        }
         return new StatsGameState(fighters_, winningTeam);
     }
 

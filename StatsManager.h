@@ -4,12 +4,14 @@
 #include <vector>
 #include "Logger.h"
 
+class Fighter;
+
 struct lifetime_stats
 {
     std::string username;
     unsigned kills, deaths;
     unsigned games_played, games_won;
-    unsigned damage_dealt, team_damage;
+    unsigned damage_dealt, damage_taken, team_damage;
 };
 
 class StatsManager
@@ -40,15 +42,18 @@ public:
 
     void readUserFile(const std::string &filename);
     std::vector<std::string> getUsernames() const;
+    void updateUserStats(const std::vector<Fighter*> fighters);
+    void writeUserStats(const std::string &filename);
 
 private:
     StatsManager();
     StatsManager(const StatsManager &);
 
     std::map<std::string, float> stats_;
-    std::vector<lifetime_stats> user_stats_;
+    std::map<std::string, lifetime_stats> user_stats_;
 
     LoggerPtr logger_;
 };
 
 std::string statPrefix(int playerID);
+
