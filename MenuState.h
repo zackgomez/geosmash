@@ -12,7 +12,7 @@ public:
     virtual int value() const = 0;
 
     virtual void handleInput(float val) = 0;
-    virtual void render(const glm::vec2 &transform, bool selected) const = 0;
+    virtual void render(const glm::vec2 &center, bool selected) const = 0;
 };
 
 
@@ -24,12 +24,31 @@ public:
     virtual int value() const;
 
     virtual void handleInput(float val);
-    virtual void render(const glm::vec2 &transform, bool selected) const;
+    virtual void render(const glm::vec2 &center, bool selected) const;
 
 private:
     std::string name_;
     int min_, max_;
     int value_;
+
+    bool primed_;
+};
+
+class StringSelectWidget : public MenuWidget
+{
+public:
+    StringSelectWidget(const std::string &name, const std::vector<std::string> &strs,
+            int defval = 0);
+
+    virtual int value() const;
+
+    virtual void handleInput(float val);
+    virtual void render(const glm::vec2 &transform, bool selected) const;
+
+private:
+    std::string name_;
+    const std::vector<std::string> values_;
+    int idx_;
 
     bool primed_;
 };

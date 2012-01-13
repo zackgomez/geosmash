@@ -8,6 +8,7 @@
 #include "AudioManager.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
+#include "StatsManager.h"
 #include "GameState.h"
 #include "MenuState.h"
 
@@ -45,6 +46,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    // Read in lifetime stats/usernames
+    StatsManager::get()->readUserFile("user_stats.dat");
 
     mainloop();
 
@@ -107,8 +110,10 @@ void globalEvents()
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
             if (event.key.keysym.sym == SDLK_m)
+                AudioManager::get()->mute();
                 AudioManager::get()->pauseSoundtrack();
             if (event.key.keysym.sym == SDLK_p)
+                AudioManager::get()->unmute();
                 AudioManager::get()->startSoundtrack();
             break;
         case SDL_QUIT:

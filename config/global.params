@@ -100,7 +100,8 @@ hud.h       0.125
 # ----------------
 # - AUDIO PARAMS -
 # ----------------
-soundtrack.volume 80 
+#soundtrack.volume 80 
+soundtrack.volume 0
 sfx.volume 80
 # controls volume/damage scaling relation
 sfx.damagefloor 25

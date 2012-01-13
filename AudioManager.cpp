@@ -158,3 +158,12 @@ void AudioManager::update(float dt)
     }
 }
 
+void AudioManager::mute()
+{
+    muted_ = true;
+}
+
+void AudioManager::unmute()
+{
+    muted_ = false;
+}

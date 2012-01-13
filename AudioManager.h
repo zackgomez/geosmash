@@ -47,6 +47,7 @@ public:
 
     // Mutes all sounds
     void mute();
+    void unmute();
 
     // Called every frame, allows AudioManager to cleanup its state 
     // (free members, etc)

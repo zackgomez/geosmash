@@ -9,6 +9,7 @@
 #include "glutils.h"
 #include "FontManager.h"
 #include "AudioManager.h"
+#include "StatsManager.h"
 #include "ParamReader.h"
 
 #define JOYSTICK_START 7
@@ -88,12 +89,67 @@ void NumberSelectWidget::render(const glm::vec2 &center, bool selected) const
             transform,
             color,
             value_);
-
 }
 
 int NumberSelectWidget::value() const
 {
     return value_;
+}
+
+StringSelectWidget::StringSelectWidget(const std::string &name,
+        const std::vector<std::string> &strings, int defval) :
+    name_(name), values_(strings), idx_(defval), primed_(false)
+{
+}
+
+int StringSelectWidget::value() const
+{
+    return idx_;
+}
+
+void StringSelectWidget::handleInput(float val)
+{
+    if (fabs(val) < getParam("menu.deadzone"))
+    {
+        primed_ = true;
+        return;
+    }
+
+    if (!primed_)
+        return;
+
+    int sign = val > 0 ? 1 : -1;
+
+    idx_ += sign;
+    idx_ = std::max(std::min(idx_, (int)values_.size() - 1), 0);
+    primed_ = false;
+}
+
+void StringSelectWidget::render(const glm::vec2 &center, bool selected) const
+{
+    static const float charsize = 100.f;
+    glm::vec3 color = selected ? glm::vec3(.9, .9, .9) : glm::vec3(.3, .3, .3);
+    glm::mat4 transform;
+
+    // Render name
+    glm::vec2 strcenter = center - glm::vec2(0.75f * charsize * name_.length()/2, 0.f);
+    transform = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(strcenter, 0.f)),
+            glm::vec3(charsize, charsize, 1.f));
+    FontManager::get()->renderString(
+            transform,
+            color,
+            name_);
+
+    // Render value
+    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * (values_[idx_].length()/2 + 1), 0.f);
+    transform = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
+            glm::vec3(charsize, charsize, 1.f));
+    FontManager::get()->renderString(
+            transform,
+            color,
+            values_[idx_]);
 }
 
 MenuState::MenuState() :
@@ -105,10 +161,14 @@ MenuState::MenuState() :
     AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).ogg");
     AudioManager::get()->startSoundtrack();
 
+    std::vector<std::string> boolstrs;
+    boolstrs.push_back("no"); boolstrs.push_back("yes");
+
     widgets.push_back(new NumberSelectWidget("Players", 2, 4, defplayers));
-    widgets.push_back(new NumberSelectWidget("Teams", 0, 1, defteams));
+    widgets.push_back(new StringSelectWidget("Teams", boolstrs, defteams));
     widgets.push_back(new NumberSelectWidget("Lives", 1, 99, deflives));
-    widgets.push_back(new NumberSelectWidget("Stage Hazard", 0, 1, defhazard));
+    widgets.push_back(new StringSelectWidget("Stage Hazard", boolstrs, defhazard));
+    widgets.push_back(new StringSelectWidget("User", StatsManager::get()->getUsernames()));
 }
 
 MenuState::~MenuState()
