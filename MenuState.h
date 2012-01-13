@@ -7,12 +7,24 @@
 class MenuWidget
 {
 public:
-    MenuWidget(const std::string &name, int min, int max, int defval = -1);
+    virtual ~MenuWidget() {}
 
-    int value() const;
+    virtual int value() const = 0;
 
-    void handleInput(float val);
-    void render(const glm::vec2 &transform, bool selected) const;
+    virtual void handleInput(float val) = 0;
+    virtual void render(const glm::vec2 &transform, bool selected) const = 0;
+};
+
+
+class NumberSelectWidget : public MenuWidget
+{
+public:
+    NumberSelectWidget(const std::string &name, int min, int max, int defval = -1);
+
+    virtual int value() const;
+
+    virtual void handleInput(float val);
+    virtual void render(const glm::vec2 &transform, bool selected) const;
 
 private:
     std::string name_;

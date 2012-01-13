@@ -34,7 +34,7 @@ static int defteams = 0;
 static int deflives = 4;
 static int defhazard = 0;
 
-MenuWidget::MenuWidget(const std::string &name, int min, int max, int defval) :
+NumberSelectWidget::NumberSelectWidget(const std::string &name, int min, int max, int defval) :
     name_(name), min_(min), max_(max), value_(min), primed_(false)
 {
     if (defval != -1)
@@ -45,7 +45,7 @@ MenuWidget::MenuWidget(const std::string &name, int min, int max, int defval) :
     getProjectionMatrixStack().current() = glm::ortho(0.f, 1920.f, 0.f, 1080.f, -1.f, 1.f);
 }
 
-void MenuWidget::handleInput(float val)
+void NumberSelectWidget::handleInput(float val)
 {
     if (fabs(val) < getParam("menu.deadzone"))
     {
@@ -63,7 +63,7 @@ void MenuWidget::handleInput(float val)
     primed_ = false;
 }
 
-void MenuWidget::render(const glm::vec2 &center, bool selected) const
+void NumberSelectWidget::render(const glm::vec2 &center, bool selected) const
 {
     static const float charsize = 100.f;
     glm::vec3 color = selected ? glm::vec3(.9, .9, .9) : glm::vec3(.3, .3, .3);
@@ -91,7 +91,7 @@ void MenuWidget::render(const glm::vec2 &center, bool selected) const
 
 }
 
-int MenuWidget::value() const
+int NumberSelectWidget::value() const
 {
     return value_;
 }
@@ -105,10 +105,10 @@ MenuState::MenuState() :
     AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).ogg");
     AudioManager::get()->startSoundtrack();
 
-    widgets.push_back(new MenuWidget("Players", 2, 4, defplayers));
-    widgets.push_back(new MenuWidget("Teams", 0, 1, defteams));
-    widgets.push_back(new MenuWidget("Lives", 1, 99, deflives));
-    widgets.push_back(new MenuWidget("Stage Hazard", 0, 1, defhazard));
+    widgets.push_back(new NumberSelectWidget("Players", 2, 4, defplayers));
+    widgets.push_back(new NumberSelectWidget("Teams", 0, 1, defteams));
+    widgets.push_back(new NumberSelectWidget("Lives", 1, 99, deflives));
+    widgets.push_back(new NumberSelectWidget("Stage Hazard", 0, 1, defhazard));
 }
 
 MenuState::~MenuState()
