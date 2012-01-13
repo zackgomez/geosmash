@@ -62,7 +62,12 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     if (attack->getTeamID() == fighter_->getTeamID())
         StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "teamDamageGiven", dd);
     else
-        StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "damageGiven", dd);
+    {
+        StatsManager::get()->addStat(statPrefix(attack->getPlayerID()) + "damageGiven", dd);
+        StatsManager::get()->addStat(statPrefix(attack->getPlayerID()) + "damageStreak", dd);
+        StatsManager::get()->maxStat(statPrefix(attack->getPlayerID()) + "maxDamageStreak",
+            StatsManager::get()->getStat(statPrefix(attack->getPlayerID()) + "damageStreak"));
+    }
 
 
     // Calculate direction of hit
@@ -1320,6 +1325,7 @@ bool GrabbingState::canBeHit() const
 
 void GrabbingState::disconnectCallback(LimpFighter *caller)
 {
+    assert(victim_);
     assert(victim_ == caller);
     // We should have no attack right now
     assert(!fighter_->attack_ || fighter_->attack_->isDone());
