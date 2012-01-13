@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "Fighter.h"
+#include "Logger.h"
 
 class Fighter;
 class rectangle;
@@ -11,9 +12,7 @@ class Ledge;
 class FighterState
 {
 public:
-    FighterState(Fighter *f) :
-        fighter_(f), frameName_("GroundNeutral"), invincTime_(0.f)
-    {}
+    FighterState(Fighter *f);
     virtual ~FighterState() {}
 
     // State behavior functions
@@ -39,6 +38,7 @@ public:
 
 protected:
     Fighter *fighter_;
+    LoggerPtr logger_;
     std::string frameName_;
     float invincTime_;
 

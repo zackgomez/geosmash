@@ -18,6 +18,12 @@ int getTeamID(int);
 // FighterState class methods
 // ----------------------------------------------------------------------------
 
+FighterState::FighterState(Fighter *f) :
+    fighter_(f), frameName_("GroundNeutral"), invincTime_(0.f)
+{
+    logger_ = Logger::getLogger("FighterState");
+}
+
 bool FighterState::canBeHit() const
 {
     return invincTime_ <= 0.f;
@@ -1649,7 +1655,10 @@ void LimpState::hit(const Attack *attack)
 {
     std::cout << "LIMP HIT\n";
     // disconnect, we're no longer limp
-    (*unlimpCallback_)(this);
+    if (!next_)
+        (*unlimpCallback_)(this);
+    else
+        logger_->warning() << "already next in LimpState::hit()\n";
     next_ = FighterState::calculateHitResult(attack);
 }
 
