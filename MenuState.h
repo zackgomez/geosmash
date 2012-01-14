@@ -1,58 +1,55 @@
 #pragma once
 #include "GameState.h"
 #include <string>
+#include <vector>
 #include <glm/glm.hpp>
 #include "Controller.h"
 
-class MenuWidget
+class StringSelectWidget
 {
 public:
-    virtual ~MenuWidget() {}
+    StringSelectWidget(const std::string &name,
+            const std::vector<std::string> &strings, int defval);
+    
+    int value() const;
+    void handleInput(float val);
+    void render(const glm::vec2 &center,
+            const glm::vec2 &size, bool highlight) const;
 
-    virtual int value() const = 0;
-
-    virtual void handleInput(float val) = 0;
-    virtual void render(const glm::vec2 &center, bool selected) const = 0;
-};
-
-
-class NumberSelectWidget : public MenuWidget
-{
-public:
-    NumberSelectWidget(const std::string &name, int min, int max, int defval = -1);
-
-    virtual int value() const;
-
-    virtual void handleInput(float val);
-    virtual void render(const glm::vec2 &center, bool selected) const;
+    std::string strValue() const;
 
 private:
     std::string name_;
-    int min_, max_;
-    int value_;
-
-    bool primed_;
-};
-
-class StringSelectWidget : public MenuWidget
-{
-public:
-    StringSelectWidget(const std::string &name, const std::vector<std::string> &strs,
-            int defval = 0);
-
-    virtual int value() const;
-
-    virtual void handleInput(float val);
-    virtual void render(const glm::vec2 &transform, bool selected) const;
-
-private:
-    std::string name_;
-    const std::vector<std::string> values_;
+    std::vector<std::string> values_;
     int idx_;
-
     bool primed_;
 };
 
+class PlayerWidget
+{
+public:
+    PlayerWidget(const glm::vec3 &col, const glm::vec3 &teamcol, int playerID);
+    ~PlayerWidget();
+
+    bool isActive() const;
+    bool wantsStart() const;
+
+    void processInput(SDL_Joystick *joystick, float dt);
+    void render(const glm::vec2 &center, const glm::vec2 &size, float dt);
+
+    void getController(int teamID, int lives, SDL_Joystick *stick,
+        Fighter **outfighter, Controller **outcntrl) const;
+
+private:
+    int playerID_;
+
+    bool active_;
+    bool holdStart_, pressStart_;
+
+    glm::vec3 col_, teamcol_;
+
+    StringSelectWidget usernameWidget_;
+};
 
 class MenuState : public GameState
 {
@@ -60,22 +57,13 @@ public:
     MenuState();
     ~MenuState();
 
-    virtual GameState* processInput(const std::vector<SDL_Joystick*>&, float);
-    virtual void update(float);
-    virtual void render(float);
+    virtual GameState* processInput(const std::vector<SDL_Joystick*>&, float dt);
+    virtual void update(float dt);
+    virtual void render(float dt);
     
 private:
-    // Player one can only change the number of players if they've
-    // recently gone back to the dead zone with the controller stick
-    bool rowChangePrimed_;
-    // True when start will send to next menu
-    bool startPrimed_;
-    // index into widget array
-    int widgetInd_;
+    std::vector<PlayerWidget> widgets_;
 
-    std::vector<MenuWidget*> widgets;
-
-    GameState* newGame(const std::vector<SDL_Joystick*>&stix);
-
+    GameState* newGame(const std::vector<SDL_Joystick*>&);
 };
 

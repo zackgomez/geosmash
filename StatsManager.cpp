@@ -85,9 +85,7 @@ void StatsManager::readUserFile(const std::string &filename)
     std::string line;
     while (std::getline(file, line))
     {
-        if (line.empty())
-            continue;
-        if (isspace(line[line.size() - 1]))
+        while (!line.empty() && isspace(line[line.size() - 1]))
             line.erase(line.end() - 1);
         if (line.empty())
             continue;
@@ -107,6 +105,7 @@ void StatsManager::readUserFile(const std::string &filename)
             continue;
         }
 
+        logger_->info() << "Read stats for user: '" << stats.username << "'\n";
         user_stats_[stats.username] = stats;
     }
 }
