@@ -135,7 +135,7 @@ void StatsManager::updateUserStats(const std::vector<Fighter*> fighters)
 
         std::string prefix = statPrefix(fighters[i]->getPlayerID());
 
-        cur.kills += getStat(prefix + "kills");
+        cur.kills += getStat(prefix + "kills.total");
         cur.deaths += getStat(prefix + "deaths");
         cur.games_played += 1;
         cur.games_won += getStat("winningTeam") == fighters[i]->getTeamID() ? 1 : 0;

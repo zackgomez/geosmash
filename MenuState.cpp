@@ -18,25 +18,23 @@
 
 static const glm::vec3 playerColors[] =
 {
-    glm::vec3(0.0, 0.2, 1.0),
-    glm::vec3(0.1, 0.6, 0.1),
-    glm::vec3(0.8, 0.2, 0.2),
-    glm::vec3(0.7, 0.7, 0.2)
+    glm::vec3(0.0, 0.2, 1.0), // blue
+    glm::vec3(0.1, 0.6, 0.1), // green
+    glm::vec3(0.8, 0.2, 0.2), // red
+    glm::vec3(0.7, 0.7, 0.2)  // yellow
 };
-static const glm::vec3 teamColors[] =
+static const glm::vec3 alternateColors[] =
 {
-    glm::vec3(0.0, 0.2, 1.0),
-    glm::vec3(0.2, 0.6, 0.8),
-    glm::vec3(0.8, 0.2, 0.2),
-    glm::vec3(0.8, 0.35, 0.1)
+    glm::vec3(0.0, 0.2, 1.0), // blue
+    glm::vec3(0.2, 0.6, 0.8), // teal
+    glm::vec3(0.8, 0.2, 0.2), // red
+    glm::vec3(0.8, 0.35, 0.1) // orange
 };
+static const std::string teamStrs_[] = {"A", "B", "C", "D"};
+static const std::string *teamStrs__ = teamStrs_;
+static const std::vector<std::string> teamStrs(teamStrs__, teamStrs__ + 4);
 
 /*
-static int defplayers = 2;
-static int defteams = 0;
-static int deflives = 4;
-static int defhazard = 0;
-
 NumberSelectWidget::NumberSelectWidget(const std::string &name, int min, int max, int defval) :
     name_(name), min_(min), max_(max), value_(min), primed_(false)
 {
@@ -157,11 +155,17 @@ void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
             values_[idx_]);
 }
 
-PlayerWidget::PlayerWidget(const glm::vec3 &col, const glm::vec3 &teamcol,
-        int playerID) :
-    playerID_(playerID), col_(col), teamcol_(teamcol),
-    usernameWidget_("Profile ", StatsManager::get()->getUsernames(), 0)
+PlayerWidget::PlayerWidget( int playerID) :
+    playerID_(playerID),
+    usernameWidget_(NULL),
+    teamIDWidget_(NULL),
+    widgetIdx_(0),
+    widgetChangePrimed_(false)
 {
+    usernameWidget_ = new StringSelectWidget("Profile ", StatsManager::get()->getUsernames(), 0);
+    teamIDWidget_ = new StringSelectWidget("Team ", teamStrs, playerID);
+    widgets_.push_back(usernameWidget_);
+    widgets_.push_back(teamIDWidget_);
 }
 
 PlayerWidget::~PlayerWidget() { }
@@ -195,14 +199,28 @@ void PlayerWidget::processInput(SDL_Joystick *joystick, float dt)
 
     // Left stick
     float xval = SDL_JoystickGetAxis(joystick, 0) / MAX_JOYSTICK_VALUE;
-    float yval = -SDL_JoystickGetAxis(joystick, 1) / MAX_JOYSTICK_VALUE;
+    float yval = SDL_JoystickGetAxis(joystick, 1) / MAX_JOYSTICK_VALUE;
 
-    usernameWidget_.handleInput(xval);
+    if (fabs(yval) > getParam("menu.thresh") && widgetChangePrimed_)
+    {
+        widgetIdx_ += glm::sign(yval);
+        widgetIdx_ = std::max(std::min(widgetIdx_, (int)widgets_.size() - 1), 0);
+    }
+    else if (fabs(yval) <= getParam("menu.thresh"))
+        widgetChangePrimed_ = true;
+
+    widgets_[widgetIdx_]->handleInput(xval);
+}
+
+glm::vec3 PlayerWidget::getColor() const
+{
+    return playerColors[teamIDWidget_->value()];
 }
 
 void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float dt)
 {
         glm::mat4 trans;
+        const glm::vec3 color = getColor();
 
         if (!active_)
         {
@@ -218,23 +236,27 @@ void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float 
             trans = glm::scale(glm::translate(glm::mat4(1.f),
                         glm::vec3(center.x + 0.3f * size.x, center.y, -0.1f)),
                     glm::vec3(5.f, -5.f, 0.f));
-            FrameManager::get()->renderFrame(trans, glm::vec4(col_, 0.f), "GroundNormal");
+            FrameManager::get()->renderFrame(trans, glm::vec4(color, 0.15f), "GroundNormal");
 
-            usernameWidget_.render(center - glm::vec2(size.x * 0.1, size.y * 0.25),
-                    size * glm::vec2(0.33f, 0.1), dt);
+            // XXX: use loop here over widgets_ instead
+            usernameWidget_->render(center - glm::vec2(size.x * 0.1, size.y * 0.25),
+                    size * glm::vec2(0.33f, 0.1), widgetIdx_ == 0);
+            teamIDWidget_->render(center - glm::vec2(size.x * 0.1, 2 * 0.25 + size.y * .1),
+                    size * glm::vec2(0.33f, 0.1), widgetIdx_ == 1);
         }
 
 }
 
-void PlayerWidget::getController(int teamID, int lives, SDL_Joystick *stick,
+void PlayerWidget::getController(int lives, SDL_Joystick *stick,
         Fighter **outfighter, Controller **outcntrl) const
 {
+    glm::vec3 color = getColor();
     *outfighter = new Fighter(
-            col_,
+            color,
             playerID_,
-            teamID,
+            teamIDWidget_->value(),
             lives,
-            usernameWidget_.strValue());
+            usernameWidget_->strValue());
 
     *outcntrl = new Controller(*outfighter, stick);
 }
@@ -250,7 +272,7 @@ MenuState::MenuState()
 
     for (int i = 0; i < 4; i++)
     {
-        widgets_.push_back(PlayerWidget(playerColors[i], teamColors[i], i));
+        widgets_.push_back(PlayerWidget(i));
     }
 
     getProjectionMatrixStack().clear();
@@ -312,8 +334,7 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
 GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
 {
     // TODO fix these
-    bool teams = false;
-    int lives = 1;
+    int lives = 4;
     bool hazard = false;
 
     std::vector<Controller *> controllers;
@@ -326,8 +347,7 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
             Controller *controller = 0;
             Fighter *fighter = 0;
 
-            // TODO take into account teams
-            widgets_[i].getController(i, lives, sticks[i], &fighter, &controller);
+            widgets_[i].getController(lives, sticks[i], &fighter, &controller);
 
             std::cout << "Fighter: " << fighter << " Controller: " << controller << '\n';
 

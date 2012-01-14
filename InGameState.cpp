@@ -347,6 +347,13 @@ void InGameState::renderHUD()
             glm::vec3(0.085f, 0.085f, 1.0f));
         glm::vec3 dmgColor = std::min(1.f, std::max(0.2f, 1.f - damage/200.f)) * color;
         FontManager::get()->renderNumber(transform, dmgColor, floorf(damage));
+
+        // Draw the player profile name
+        glm::vec2 profileNameMidpoint = player_hud_center + glm::vec2(0.f, -1.2f/6.f);
+        transform = glm::scale(
+            glm::translate(glm::mat4(1.0f), glm::vec3(profileNameMidpoint, 0.f)),
+            glm::vec3(0.045f, 0.045f, 1.0f));
+        FontManager::get()->renderString(transform, color, fighter->getUsername());
     }
 
     getProjectionMatrixStack().pop();

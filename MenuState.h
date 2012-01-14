@@ -5,7 +5,20 @@
 #include <glm/glm.hpp>
 #include "Controller.h"
 
-class StringSelectWidget
+class MenuWidget
+{
+public:
+    virtual ~MenuWidget() { }
+
+    virtual int value() const = 0;
+    virtual void handleInput(float val) = 0;
+    virtual void render(const glm::vec2 &center,
+            const glm::vec2 &size, bool highlight) const = 0;
+
+private:
+};
+
+class StringSelectWidget : public MenuWidget
 {
 public:
     StringSelectWidget(const std::string &name,
@@ -28,7 +41,7 @@ private:
 class PlayerWidget
 {
 public:
-    PlayerWidget(const glm::vec3 &col, const glm::vec3 &teamcol, int playerID);
+    PlayerWidget(int playerID);
     ~PlayerWidget();
 
     bool isActive() const;
@@ -37,7 +50,7 @@ public:
     void processInput(SDL_Joystick *joystick, float dt);
     void render(const glm::vec2 &center, const glm::vec2 &size, float dt);
 
-    void getController(int teamID, int lives, SDL_Joystick *stick,
+    void getController(int lives, SDL_Joystick *stick,
         Fighter **outfighter, Controller **outcntrl) const;
 
 private:
@@ -46,9 +59,14 @@ private:
     bool active_;
     bool holdStart_, pressStart_;
 
-    glm::vec3 col_, teamcol_;
+    StringSelectWidget *usernameWidget_;
+    StringSelectWidget *teamIDWidget_;
 
-    StringSelectWidget usernameWidget_;
+    int widgetIdx_;
+    std::vector<MenuWidget*> widgets_;
+    bool widgetChangePrimed_;
+
+    glm::vec3 getColor() const;
 };
 
 class MenuState : public GameState
