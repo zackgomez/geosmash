@@ -33,8 +33,8 @@ static const glm::vec3 alternateColors[] =
 static const std::string teamStrs_[] = {"A", "B", "C", "D"};
 static const std::string *teamStrs__ = teamStrs_;
 static const std::vector<std::string> teamStrs(teamStrs__, teamStrs__ + 4);
+static int deflives = 4;
 
-/*
 NumberSelectWidget::NumberSelectWidget(const std::string &name, int min, int max, int defval) :
     name_(name), min_(min), max_(max), value_(min), primed_(false)
 {
@@ -60,9 +60,10 @@ void NumberSelectWidget::handleInput(float val)
     primed_ = false;
 }
 
-void NumberSelectWidget::render(const glm::vec2 &center, bool selected) const
+void NumberSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
+        bool selected) const
 {
-    static const float charsize = 100.f;
+    static const float charsize = size.y;
     glm::vec3 color = selected ? glm::vec3(.9, .9, .9) : glm::vec3(.3, .3, .3);
     glm::mat4 transform;
 
@@ -70,7 +71,7 @@ void NumberSelectWidget::render(const glm::vec2 &center, bool selected) const
     glm::vec2 strcenter = center - glm::vec2(0.75f * charsize * name_.length()/2, 0.f);
     transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(strcenter, 0.f)),
-            glm::vec3(charsize, charsize, 1.f));
+            glm::vec3(charsize, -charsize, 1.f));
     FontManager::get()->renderString(
             transform,
             color,
@@ -80,7 +81,7 @@ void NumberSelectWidget::render(const glm::vec2 &center, bool selected) const
     glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * FontManager::numDigits(value_), 0.f);
     transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
-            glm::vec3(charsize, charsize, 1.f));
+            glm::vec3(charsize, -charsize, 1.f));
     FontManager::get()->renderNumber(
             transform,
             color,
@@ -91,7 +92,6 @@ int NumberSelectWidget::value() const
 {
     return value_;
 }
-*/
 
 StringSelectWidget::StringSelectWidget(const std::string &name,
         const std::vector<std::string> &strings, int defval) :
@@ -285,19 +285,23 @@ MenuState::MenuState()
     boolstrs.push_back("no"); boolstrs.push_back("yes");
 
     for (int i = 0; i < 4; i++)
-    {
         widgets_.push_back(new PlayerWidget(i));
-    }
+
+    topWidgets_.push_back(new NumberSelectWidget("Lives", 1, 99, deflives));
 
     getProjectionMatrixStack().clear();
     getViewMatrixStack().clear();
     getProjectionMatrixStack().current() = glm::ortho(0.f, 1920.f, 1080.f, 0.f, -1.f, 1.f);
+
+    topSelected_[0] = topSelected_[1] = topSelected_[2] = topSelected_[3] = false;
 }
 
 MenuState::~MenuState()
 {
     for (size_t i = 0; i < widgets_.size(); i++)
         delete widgets_[i];
+    for (size_t i = 0; i < topWidgets_.size(); i++)
+        delete topWidgets_[i];
 }
 
 void MenuState::update(float)
@@ -322,6 +326,14 @@ void MenuState::render(float dt)
 
         widgets_[i]->render(center, size, dt);
     }
+
+    for (size_t i = 0; i < topWidgets_.size(); i++)
+    {
+        glm::vec2 center(1920.f/2, yoffset/2);
+        glm::vec2 size(1920.f, yoffset/2 * 0.75);
+
+        topWidgets_[i]->render(center, size, dt);
+    }
 }
 
 GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float dt)
@@ -332,6 +344,14 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
     int numPlayers = 0;
     for (size_t i = 0; i < widgets_.size(); i++)
     {
+        // Check for y button to check for top selected
+        if (SDL_JoystickGetButton(stix[i], 3))
+        {
+            float xval = SDL_JoystickGetAxis(stix[i], 0) / MAX_JOYSTICK_VALUE;;
+            topWidgets_[0]->handleInput(xval);
+            continue;
+        }
+
         widgets_[i]->processInput(stix[i], dt);
         shouldStart |= widgets_[i]->wantsStart();
         if (widgets_[i]->isActive())
@@ -350,7 +370,7 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
 GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
 {
     // TODO fix these
-    int lives = 4;
+    int lives = topWidgets_[0]->value();
     bool hazard = false;
 
     std::vector<Controller *> controllers;
@@ -381,6 +401,8 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
     // If p1 is pressing start, create a new GameState 
     GameState *gs = new InGameState(controllers, fighters, hazard);
     return gs;
+
+    deflives = lives;
 
     return NULL;
 }

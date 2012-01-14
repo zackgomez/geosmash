@@ -18,11 +18,30 @@ public:
 private:
 };
 
+class NumberSelectWidget : public MenuWidget
+{
+public:
+    NumberSelectWidget(const std::string &name,
+            int min, int max, int defval = 0);
+    
+    int value() const;
+    void handleInput(float val);
+    void render(const glm::vec2 &center,
+            const glm::vec2 &size, bool highlight) const;
+
+private:
+    std::string name_;
+    int min_, max_;
+    int value_;
+    bool primed_;
+};
+
+
 class StringSelectWidget : public MenuWidget
 {
 public:
     StringSelectWidget(const std::string &name,
-            const std::vector<std::string> &strings, int defval);
+            const std::vector<std::string> &strings, int defval = -1);
     
     int value() const;
     void handleInput(float val);
@@ -82,6 +101,9 @@ public:
     
 private:
     std::vector<PlayerWidget*> widgets_;
+    std::vector<MenuWidget*> topWidgets_;
+
+    bool topSelected_[4];
 
     GameState* newGame(const std::vector<SDL_Joystick*>&);
 };
