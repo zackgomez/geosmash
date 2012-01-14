@@ -41,7 +41,7 @@ private:
 class PlayerWidget
 {
 public:
-    PlayerWidget(int playerID);
+    explicit PlayerWidget(int playerID);
     ~PlayerWidget();
 
     bool isActive() const;
@@ -50,8 +50,9 @@ public:
     void processInput(SDL_Joystick *joystick, float dt);
     void render(const glm::vec2 &center, const glm::vec2 &size, float dt);
 
-    void getController(int lives, SDL_Joystick *stick,
+    void getController(int lives, SDL_Joystick *stick, int colorScheme,
         Fighter **outfighter, Controller **outcntrl) const;
+    int getTeamID() const;
 
 private:
     int playerID_;
@@ -66,7 +67,7 @@ private:
     std::vector<MenuWidget*> widgets_;
     bool widgetChangePrimed_;
 
-    glm::vec3 getColor() const;
+    glm::vec3 getColor(int colorScheme = 0) const;
 };
 
 class MenuState : public GameState
@@ -80,7 +81,7 @@ public:
     virtual void render(float dt);
     
 private:
-    std::vector<PlayerWidget> widgets_;
+    std::vector<PlayerWidget*> widgets_;
 
     GameState* newGame(const std::vector<SDL_Joystick*>&);
 };

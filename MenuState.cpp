@@ -25,9 +25,9 @@ static const glm::vec3 playerColors[] =
 };
 static const glm::vec3 alternateColors[] =
 {
-    glm::vec3(0.0, 0.2, 1.0), // blue
     glm::vec3(0.2, 0.6, 0.8), // teal
-    glm::vec3(0.8, 0.2, 0.2), // red
+    glm::vec3(0.2, 0.6, 0.8), // teal
+    glm::vec3(0.8, 0.35, 0.1), // orange
     glm::vec3(0.8, 0.35, 0.1) // orange
 };
 static const std::string teamStrs_[] = {"A", "B", "C", "D"};
@@ -155,7 +155,7 @@ void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
             values_[idx_]);
 }
 
-PlayerWidget::PlayerWidget( int playerID) :
+PlayerWidget::PlayerWidget(int playerID) :
     playerID_(playerID),
     usernameWidget_(NULL),
     teamIDWidget_(NULL),
@@ -168,7 +168,11 @@ PlayerWidget::PlayerWidget( int playerID) :
     widgets_.push_back(teamIDWidget_);
 }
 
-PlayerWidget::~PlayerWidget() { }
+PlayerWidget::~PlayerWidget()
+{
+    delete usernameWidget_;
+    delete teamIDWidget_;
+}
 
 bool PlayerWidget::isActive() const { return active_; }
 bool PlayerWidget::wantsStart() const { return pressStart_; }
@@ -212,9 +216,14 @@ void PlayerWidget::processInput(SDL_Joystick *joystick, float dt)
     widgets_[widgetIdx_]->handleInput(xval);
 }
 
-glm::vec3 PlayerWidget::getColor() const
+glm::vec3 PlayerWidget::getColor(int colorScheme) const
 {
-    return playerColors[teamIDWidget_->value()];
+    if (colorScheme == 0)
+        return playerColors[teamIDWidget_->value()];
+    else if (colorScheme == 1)
+        return alternateColors[teamIDWidget_->value()];
+    else
+        assert(false && "Unknown color scheme to PlayerWidget::getColor");
 }
 
 void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float dt)
@@ -247,10 +256,10 @@ void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float 
 
 }
 
-void PlayerWidget::getController(int lives, SDL_Joystick *stick,
+void PlayerWidget::getController(int lives, SDL_Joystick *stick, int colorScheme,
         Fighter **outfighter, Controller **outcntrl) const
 {
-    glm::vec3 color = getColor();
+    glm::vec3 color = getColor(colorScheme);
     *outfighter = new Fighter(
             color,
             playerID_,
@@ -259,6 +268,11 @@ void PlayerWidget::getController(int lives, SDL_Joystick *stick,
             usernameWidget_->strValue());
 
     *outcntrl = new Controller(*outfighter, stick);
+}
+
+int PlayerWidget::getTeamID() const
+{
+    return teamIDWidget_->value();
 }
 
 MenuState::MenuState()
@@ -272,7 +286,7 @@ MenuState::MenuState()
 
     for (int i = 0; i < 4; i++)
     {
-        widgets_.push_back(PlayerWidget(i));
+        widgets_.push_back(new PlayerWidget(i));
     }
 
     getProjectionMatrixStack().clear();
@@ -282,6 +296,8 @@ MenuState::MenuState()
 
 MenuState::~MenuState()
 {
+    for (size_t i = 0; i < widgets_.size(); i++)
+        delete widgets_[i];
 }
 
 void MenuState::update(float)
@@ -296,7 +312,7 @@ void MenuState::render(float dt)
     const float ysize = 500.f;
     const float xoffset = 0.f;
     const float yoffset = 1080.f - 2 * ysize;
-    for (int i = 0; i < widgets_.size(); i++)
+    for (size_t i = 0; i < widgets_.size(); i++)
     {
         int x = i % 2;
         int y = i / 2;
@@ -304,7 +320,7 @@ void MenuState::render(float dt)
         glm::vec2 size(xsize, ysize);
 
 
-        widgets_[i].render(center, size, dt);
+        widgets_[i]->render(center, size, dt);
     }
 }
 
@@ -314,11 +330,11 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
 
     bool shouldStart = false;
     int numPlayers = 0;
-    for (int i = 0; i < widgets_.size(); i++)
+    for (size_t i = 0; i < widgets_.size(); i++)
     {
-        widgets_[i].processInput(stix[i], dt);
-        shouldStart |= widgets_[i].wantsStart();
-        if (widgets_[i].isActive())
+        widgets_[i]->processInput(stix[i], dt);
+        shouldStart |= widgets_[i]->wantsStart();
+        if (widgets_[i]->isActive())
             numPlayers += 1;
     }
 
@@ -340,19 +356,24 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
     std::vector<Controller *> controllers;
     std::vector<Fighter *> fighters;
 
+    int teamCounts[4] = {0, 0, 0, 0};
+
     for (size_t i = 0; i < widgets_.size(); i++)
     {
-        if (widgets_[i].isActive())
+        if (widgets_[i]->isActive())
         {
             Controller *controller = 0;
             Fighter *fighter = 0;
 
-            widgets_[i].getController(lives, sticks[i], &fighter, &controller);
+            widgets_[i]->getController(lives, sticks[i], teamCounts[widgets_[i]->getTeamID()],
+                    &fighter, &controller);
 
             std::cout << "Fighter: " << fighter << " Controller: " << controller << '\n';
 
             fighters.push_back(fighter);
             controllers.push_back(controller);
+
+            teamCounts[fighter->getTeamID()]++;
         }
     }
 
