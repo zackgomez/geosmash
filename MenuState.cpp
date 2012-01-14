@@ -157,6 +157,7 @@ void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
 
 PlayerWidget::PlayerWidget(int playerID) :
     playerID_(playerID),
+    active_(false), holdStart_(false), pressStart_(false),
     usernameWidget_(NULL),
     teamIDWidget_(NULL),
     widgetIdx_(0),
