@@ -1612,7 +1612,8 @@ FighterState* LimpState::hitByAttack(const Attack *attack)
     // On hit first disconnect
     (*unlimpCallback_)(this);
     // Then do the normal thing
-    return FighterState::calculateHitResult(attack);
+    next_ = FighterState::calculateHitResult(attack);
+    return next_;
 }
 
 bool LimpState::canBeHit() const
