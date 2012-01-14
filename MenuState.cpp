@@ -313,7 +313,7 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
 {
     // TODO fix these
     bool teams = false;
-    int lives = 4;
+    int lives = 1;
     bool hazard = false;
 
     std::vector<Controller *> controllers;

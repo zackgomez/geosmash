@@ -129,19 +129,19 @@ void StatsManager::updateUserStats(const std::vector<Fighter*> fighters)
         // Don't keep stats for the guest user
         if (username == guest_user)
             continue;
-        assert(user_stats_.find(username) == user_stats_.end());
+        assert(user_stats_.find(username) != user_stats_.end());
 
-        lifetime_stats cur = user_stats_[username];
+        lifetime_stats& cur = user_stats_[username];
 
         std::string prefix = statPrefix(fighters[i]->getPlayerID());
 
-        cur.kills += getStat(prefix + ".kills");
-        cur.deaths += getStat(prefix + ".deaths");
+        cur.kills += getStat(prefix + "kills");
+        cur.deaths += getStat(prefix + "deaths");
         cur.games_played += 1;
         cur.games_won += getStat("winningTeam") == fighters[i]->getTeamID() ? 1 : 0;
-        cur.damage_dealt += getStat(prefix + ".damageGiven");
-        cur.damage_taken += getStat(prefix + ".damageTaken");
-        cur.team_damage += getStat(prefix + ".teamDamageGiven");
+        cur.damage_dealt += getStat(prefix + "damageGiven");
+        cur.damage_taken += getStat(prefix + "damageTaken");
+        cur.team_damage += getStat(prefix + "teamDamageGiven");
     }
 }
 
