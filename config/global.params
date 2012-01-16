@@ -6,8 +6,8 @@ debug.saveStats     1
 # -------------------
 fighter.respawnTime   1.0
 fighter.gbThresh      600.0
-fighter.gbVelDamping  0.6
-fighter.gbStunDamping 0.15
+fighter.gbVelDamping  0.7
+fighter.gbStunDamping 0.13
 
 
 # ----------------
@@ -70,8 +70,8 @@ killbox.right   1300
 # -------------------
 # - GRAPHICS PARAMS -
 # -------------------
-resolution.x 1920
-resolution.y 1080
+resolution.x 2560
+resolution.y 1600
 
 camera.maxVx 200 
 camera.maxVy 150
@@ -102,7 +102,7 @@ hud.h       0.125
 # - AUDIO PARAMS -
 # ----------------
 #soundtrack.volume 80 
-soundtrack.volume 0
+soundtrack.volume 80
 sfx.volume 80
 # controls volume/damage scaling relation
 sfx.damagefloor 25

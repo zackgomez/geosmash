@@ -9,7 +9,7 @@ class Fighter;
 struct lifetime_stats
 {
     std::string username;
-    unsigned kills, deaths;
+    unsigned kills, deaths, suicides;
     unsigned games_played, games_won;
     unsigned damage_dealt, damage_taken, team_damage;
 };
