@@ -211,7 +211,7 @@ class GrabbingState : public FighterState
 {
 public:
     GrabbingState(Fighter *f);
-    virtual ~GrabbingState() {}
+    virtual ~GrabbingState();
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);

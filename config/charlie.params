@@ -310,6 +310,7 @@ dashSpecialAttack.hitboxh      60
 dashSpecialAttack.priority     1.0
 dashSpecialState.yvel         0
 dashSpecialState.xvel         800
+dashSpecialState.endxvel      200
 
 counterSpecial.startup      0.15
 counterSpecial.duration     0.25
@@ -443,4 +444,4 @@ upThrow.knockbacky       1
 upThrow.kbbase           200
 upThrow.kbscaling        4.00
 upThrow.damage           5
-upThrow.stun             0.10
+upThrow.stun             0.15
