@@ -60,7 +60,7 @@ private:
 class PlayerWidget
 {
 public:
-    explicit PlayerWidget(int playerID);
+    explicit PlayerWidget(int playerID, const bool *teams);
     ~PlayerWidget();
 
     bool isActive() const;
@@ -88,6 +88,11 @@ private:
     std::vector<MenuWidget*> widgets_;
     bool widgetChangePrimed_;
 
+    int colorIdx_;
+    bool colorChangePrimed_;
+
+    const bool *teams_;
+
     glm::vec3 getColor(int colorScheme = 0) const;
 };
 
@@ -105,8 +110,14 @@ private:
     std::vector<PlayerWidget*> widgets_;
     std::vector<MenuWidget*> topWidgets_;
 
-    bool topSelected_[4];
+    bool teams_;
+    int topMenuController_;
+    int topWidgetIdx_;
+    bool topWidgetPrimed_;
+    bool topMenuExitPrimed_;
+    bool topMenuPrimed_[4];
 
     GameState* newGame(const std::vector<SDL_Joystick*>&);
+    void handleTopMenu(SDL_Joystick *stick);
 };
 
