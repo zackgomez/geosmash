@@ -42,7 +42,7 @@ static struct
     bool active[4];
 } defstate =
 {
-    1,
+    4,
     {0, 0, 0, 0},
     {0, 1, 2, 3},
     {false, false, false, false}
