@@ -33,7 +33,20 @@ static const glm::vec3 alternateColors[] =
 static const std::string teamStrs_[] = {"A", "B", "C", "D"};
 static const std::string *teamStrs__ = teamStrs_;
 static const std::vector<std::string> teamStrs(teamStrs__, teamStrs__ + 4);
-static int deflives = 4;
+
+static struct
+{
+    int lives;
+    int profileID[4];
+    int teamID[4];
+    bool active[4];
+} defstate =
+{
+    1,
+    {0, 0, 0, 0},
+    {0, 1, 2, 3},
+    {false, false, false, false}
+};
 
 NumberSelectWidget::NumberSelectWidget(const std::string &name, int min, int max, int defval) :
     name_(name), min_(min), max_(max), value_(min), primed_(false)
@@ -157,16 +170,20 @@ void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
 
 PlayerWidget::PlayerWidget(int playerID) :
     playerID_(playerID),
-    active_(false), holdStart_(false), pressStart_(false),
+    active_(false), startPrimed_(false), wantsStart_(false),
     usernameWidget_(NULL),
     teamIDWidget_(NULL),
     widgetIdx_(0),
     widgetChangePrimed_(false)
 {
-    usernameWidget_ = new StringSelectWidget("Profile ", StatsManager::get()->getUsernames(), 0);
-    teamIDWidget_ = new StringSelectWidget("Team ", teamStrs, playerID);
+    assert(playerID < 4);
+    usernameWidget_ = new StringSelectWidget("Profile ", StatsManager::get()->getUsernames(),
+            defstate.profileID[playerID]);
+    teamIDWidget_ = new StringSelectWidget("Team ", teamStrs, defstate.teamID[playerID]);
     widgets_.push_back(usernameWidget_);
     widgets_.push_back(teamIDWidget_);
+
+    active_ = defstate.active[playerID];
 }
 
 PlayerWidget::~PlayerWidget()
@@ -176,7 +193,7 @@ PlayerWidget::~PlayerWidget()
 }
 
 bool PlayerWidget::isActive() const { return active_; }
-bool PlayerWidget::wantsStart() const { return pressStart_; }
+bool PlayerWidget::wantsStart() const { return wantsStart_; }
 
 void PlayerWidget::processInput(SDL_Joystick *joystick, float dt)
 {
@@ -192,14 +209,14 @@ void PlayerWidget::processInput(SDL_Joystick *joystick, float dt)
         active_ = false;
 
     // Start button
-    if (SDL_JoystickGetButton(joystick, 7))
+    if (SDL_JoystickGetButton(joystick, 7) && startPrimed_)
     {
-        pressStart_ = !holdStart_;
-        holdStart_ = true;
+        startPrimed_ = false;
+        wantsStart_ = true;
     }
-    else
+    else if (!SDL_JoystickGetButton(joystick, 7))
     {
-        pressStart_ = holdStart_ = false;
+        startPrimed_ = true;
     }
 
     // Left stick
@@ -276,6 +293,11 @@ int PlayerWidget::getTeamID() const
     return teamIDWidget_->value();
 }
 
+int PlayerWidget::getProfileID() const
+{
+    return usernameWidget_->value();
+}
+
 MenuState::MenuState()
 {
     // Start the menu soundtrack
@@ -288,7 +310,7 @@ MenuState::MenuState()
     for (int i = 0; i < 4; i++)
         widgets_.push_back(new PlayerWidget(i));
 
-    topWidgets_.push_back(new NumberSelectWidget("Lives", 1, 99, deflives));
+    topWidgets_.push_back(new NumberSelectWidget("Lives", 1, 99, defstate.lives));
 
     getProjectionMatrixStack().clear();
     getViewMatrixStack().clear();
@@ -343,6 +365,7 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
 
     bool shouldStart = false;
     int numPlayers = 0;
+    int startingPlayer = -1;
     for (size_t i = 0; i < widgets_.size(); i++)
     {
         // Check for y button to check for top selected
@@ -355,12 +378,15 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
 
         widgets_[i]->processInput(stix[i], dt);
         shouldStart |= widgets_[i]->wantsStart();
+        if (shouldStart && startingPlayer == -1)
+            startingPlayer = i;
         if (widgets_[i]->isActive())
             numPlayers += 1;
     }
 
     if (numPlayers >= 2 && shouldStart)
     {
+        std::cout << "Starting a new game by from Player " << startingPlayer+1 << "'s request\n";
         return newGame(stix);
     }
 
@@ -398,13 +424,25 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
         }
     }
 
+    // Save the state for next time
+    defstate.lives = lives;
+    for (size_t i = 0; i < widgets_.size(); i++)
+    {
+        if (widgets_[i]->isActive())
+        {
+            defstate.active[i] = true;
+            defstate.teamID[i] = widgets_[i]->getTeamID();
+            defstate.profileID[i]  = widgets_[i]->getProfileID();
+        }
+        else
+        {
+            defstate.active[i] = false;
+            defstate.teamID[i] = i;
+            defstate.profileID[i] = 0;
+        }
+    }
 
-    // If p1 is pressing start, create a new GameState 
     GameState *gs = new InGameState(controllers, fighters, hazard);
     return gs;
-
-    deflives = lives;
-
-    return NULL;
 }
 

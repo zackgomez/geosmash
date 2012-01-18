@@ -72,12 +72,14 @@ public:
     void getController(int lives, SDL_Joystick *stick, int colorScheme,
         Fighter **outfighter, Controller **outcntrl) const;
     int getTeamID() const;
+    int getProfileID() const;
 
 private:
     int playerID_;
 
     bool active_;
-    bool holdStart_, pressStart_;
+    bool startPrimed_;
+    bool wantsStart_;
 
     StringSelectWidget *usernameWidget_;
     StringSelectWidget *teamIDWidget_;
