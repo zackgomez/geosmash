@@ -424,8 +424,8 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
     assert(stix.size() >= widgets_.size());
 
     bool shouldStart = false;
-    int numPlayers = 0;
     int startingPlayer = -1;
+    std::set<int> teams;
     for (size_t i = 0; i < widgets_.size(); i++)
     {
         // Check for y button to transition to top menu
@@ -450,12 +450,13 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
         shouldStart |= widgets_[i]->wantsStart();
         if (shouldStart && startingPlayer == -1)
             startingPlayer = i;
+        // Keep track of teams selected
         if (widgets_[i]->isActive())
-            numPlayers += 1;
+            teams.insert(widgets_[i]->getTeamID());
     }
 
 
-    if (numPlayers >= 2 && shouldStart)
+    if (teams.size() >= 2 && shouldStart)
     {
         std::cout << "Starting a new game by from Player " << startingPlayer+1 << "'s request\n";
         return newGame(stix);
