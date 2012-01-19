@@ -58,13 +58,15 @@ static struct
     int profileID[4];
     int teamID[4];
     bool active[4];
+    int colors[4];
 } defstate =
 {
     4,
     false,
     {0, 0, 0, 0},
     {0, 1, 2, 3},
-    {false, false, false, false}
+    {false, false, false, false},
+    {0, 1, 2, 3},
 };
 
 NumberSelectWidget::NumberSelectWidget(const std::string &name, int min, int max, int defval) :
@@ -189,12 +191,12 @@ void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
 
 PlayerWidget::PlayerWidget(int playerID, const bool *teams) :
     playerID_(playerID),
-    active_(false), startPrimed_(false), wantsStart_(false),
+    active_(defstate.active[playerID]), startPrimed_(false), wantsStart_(false),
     usernameWidget_(NULL),
     teamIDWidget_(NULL),
     widgetIdx_(0),
     widgetChangePrimed_(false),
-    colorIdx_(playerID),
+    colorIdx_(defstate.colors[playerID]),
     colorChangePrimed_(false),
     teams_(teams)
 {
@@ -204,8 +206,6 @@ PlayerWidget::PlayerWidget(int playerID, const bool *teams) :
     teamIDWidget_ = new StringSelectWidget("Team ", teamStrs, defstate.teamID[playerID]);
     widgets_.push_back(usernameWidget_);
     widgets_.push_back(teamIDWidget_);
-
-    active_ = defstate.active[playerID];
 }
 
 PlayerWidget::~PlayerWidget()
@@ -346,6 +346,11 @@ int PlayerWidget::getTeamID() const
 int PlayerWidget::getProfileID() const
 {
     return usernameWidget_->value();
+}
+
+int PlayerWidget::getColorID() const
+{
+    return colorIdx_;
 }
 
 MenuState::MenuState() :
@@ -543,12 +548,14 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
             defstate.active[i] = true;
             defstate.teamID[i] = widgets_[i]->getTeamID();
             defstate.profileID[i]  = widgets_[i]->getProfileID();
+            defstate.colors[i] = widgets_[i]->getColorID();
         }
         else
         {
             defstate.active[i] = false;
             defstate.teamID[i] = i;
             defstate.profileID[i] = 0;
+            defstate.colors[i] = i;
         }
     }
 

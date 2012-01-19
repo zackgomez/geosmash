@@ -73,6 +73,7 @@ public:
         Fighter **outfighter, Controller **outcntrl) const;
     int getTeamID() const;
     int getProfileID() const;
+    int getColorID() const;
 
 private:
     int playerID_;
