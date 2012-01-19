@@ -4,7 +4,7 @@
 #include "GameEntity.h"
 #include "Attack.h"
 #include "Fighter.h"
-#include "glutils.h"
+#include "Engine.h"
 
 struct Ledge
 {

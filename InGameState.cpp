@@ -8,7 +8,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <vector>
-#include "glutils.h"
+#include "Engine.h"
 #include "Fighter.h"
 #include "AudioManager.h"
 #include "ExplosionManager.h"

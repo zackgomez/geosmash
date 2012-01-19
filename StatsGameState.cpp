@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <sstream>
 #include "Fighter.h"
-#include "glutils.h"
+#include "Engine.h"
 #include "StatsManager.h"
 #include "FontManager.h"
 #include "FrameManager.h"

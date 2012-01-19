@@ -2,7 +2,7 @@
 #include "ParamReader.h"
 #include "Fighter.h"
 #include <glm/gtc/matrix_transform.hpp>
-#include "glutils.h"
+#include "Engine.h"
 #include "ExplosionManager.h"
 #include "FrameManager.h"
 #include "AudioManager.h"
