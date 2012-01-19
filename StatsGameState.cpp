@@ -17,9 +17,12 @@ fighter_stat::fighter_stat(const std::string &sname, const std::string &dname) :
 
 StatsGameState::StatsGameState(
         const std::vector<Fighter *> fighters,
+        const std::vector<int> joystickIDs,
         int winningTeam) :
     fighters_(fighters),
-    winningTeam_(winningTeam)
+    winningTeam_(winningTeam),
+    joystickIDs_(joystickIDs),
+    ready_(fighters.size(), false)
 {
     backgroundTex_ = make_texture("images/back003.png");
 
@@ -31,9 +34,12 @@ StatsGameState::StatsGameState(
     stats_.push_back(new fighter_stat("suicides", "Suicides"));
     stats_.push_back(new fighter_stat("damageGiven", "Damage Given"));
     stats_.push_back(new fighter_stat("damageTaken", "Damage Taken"));
-    stats_.push_back(new fighter_stat("teamDamageGiven", "Team Damage"));
     stats_.push_back(new fighter_stat("maxDamageStreak", "Damage Streak"));
     stats_.push_back(new fighter_stat("maxKillStreak", "Max KO Streak"));
+    // TODO check to see if it's a team game for these ones
+    // if (teamGame_)
+    stats_.push_back(new fighter_stat("kills.team", "Team Kills"));
+    stats_.push_back(new fighter_stat("teamDamageGiven", "Team Damage"));
 
     for (size_t i = 0; i < fighters_.size(); i++)
     {
@@ -64,11 +70,24 @@ GameState * StatsGameState::processInput(const std::vector<SDL_Joystick*> &joyst
         float dt)
 {
     static const int JOYSTICK_START = 7;
-    assert(joysticks.size() > 0);
+    assert(joysticks.size() >= joystickIDs_.back());
 
-    bool startbutton = SDL_JoystickGetButton(joysticks[0], JOYSTICK_START);
+    for (size_t i = 0; i < joystickIDs_.size(); i++)
+    {
+        SDL_Joystick *joystick = joysticks[joystickIDs_[i]];
+        bool startbutton = SDL_JoystickGetButton(joystick, JOYSTICK_START);
 
-    if (startbutton)
+        // Check if they're ready
+        if (startbutton)
+            ready_[i] = true;
+    }
+
+    // if everyone is ready, transition
+    bool allReady = true;
+    for (size_t i = 0; i < ready_.size(); i++)
+        allReady &= ready_[i];
+
+    if (allReady)
         return new MenuState();
 
     return NULL;
@@ -107,9 +126,11 @@ void StatsGameState::render(float dt)
     renderTexturedRectangle(backtrans, backgroundTex_);
 
     // Some constants
-    const float fighter_height = 1080.f - 1080.f/6.f;
+    const float name_height = 1080.f - 1080.f/15.f;
+    const float name_size = 60.f;
+    const float fighter_height = 1080.f - 1080.f/5.f;
     const float stat_size = 35.f;
-    const float stat_height = 1080.f - 1080.f/3 - stat_size;;
+    const float stat_height = 1080.f - 1080.f/3 - stat_size;
     const float stat_xmargin = 10.f;
     const glm::vec3 stat_color(0.8f, 0.8f, 0.8f);
 
@@ -121,12 +142,23 @@ void StatsGameState::render(float dt)
             fighter_color.a = 0.5f;
         glm::mat4 transform;
 
-        // First draw fighter at top of column
+        // Profile name
         transform = glm::scale(
                 glm::translate(glm::mat4(1.f),
-                    glm::vec3(columnCenter(i), fighter_height, 0.0f)),
-                glm::vec3(3.f, 3.f, 1.f));
-        FrameManager::get()->renderFrame(transform, fighter_color,  "GroundNormal");
+                    glm::vec3(columnCenter(i), name_height, 0.0f)),
+                glm::vec3(name_size, name_size, 1.f));
+        FontManager::get()->renderString(transform, glm::vec3(fighter_color), fighters_[i]->getUsername());
+
+        // draw fighter at top of column, only if not ready
+        assert(ready_.size() == fighters_.size());
+        if (!ready_[i])
+        {
+            transform = glm::scale(
+                    glm::translate(glm::mat4(1.f),
+                        glm::vec3(columnCenter(i), fighter_height, 0.0f)),
+                    glm::vec3(3.f, 3.f, 1.f));
+            FrameManager::get()->renderFrame(transform, fighter_color,  "GroundNormal");
+        }
 
         // Next loop over the stats and render each
         for (size_t j = 0; j < stats_.size(); j++)

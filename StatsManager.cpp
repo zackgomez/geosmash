@@ -98,7 +98,7 @@ void StatsManager::readUserFile(const std::string &filename)
             >> stats.kills >> stats.deaths
             >> stats.games_played >> stats.games_won
             >> stats.damage_dealt >> stats.damage_taken >> stats.team_damage
-            >> stats.suicides;
+            >> stats.suicides >> stats.team_kills;
 
         if (!ss)
         {
@@ -144,6 +144,8 @@ void StatsManager::updateUserStats(const std::vector<Fighter*> fighters)
         cur.damage_dealt += getStat(prefix + "damageGiven");
         cur.damage_taken += getStat(prefix + "damageTaken");
         cur.team_damage += getStat(prefix + "teamDamageGiven");
+        // TODO get team kills here
+        cur.team_kills += 0;
     }
 }
 
@@ -160,7 +162,7 @@ void StatsManager::writeUserStats(const std::string &filename)
            << stats.kills << ' ' << stats.deaths << ' '
            << stats.games_played << ' ' << stats.games_won << ' '
            << stats.damage_dealt << ' ' << stats.damage_taken << ' ' << stats.team_damage
-           << ' ' << stats.suicides
+           << ' ' << stats.suicides << ' ' << stats.team_kills
            << '\n';
     }
 }

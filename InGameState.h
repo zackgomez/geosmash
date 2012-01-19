@@ -40,4 +40,6 @@ private:
     void renderArrow(const Fighter *fighter);
 
     void togglePause(int controllerID);
+
+    std::vector<int> getControllerIDs() const;
 };
