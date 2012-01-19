@@ -85,9 +85,7 @@ void StatsManager::readUserFile(const std::string &filename)
     std::string line;
     while (std::getline(file, line))
     {
-        if (line.empty())
-            continue;
-        if (isspace(line[line.size() - 1]))
+        while (!line.empty() && isspace(line[line.size() - 1]))
             line.erase(line.end() - 1);
         if (line.empty())
             continue;
@@ -99,7 +97,8 @@ void StatsManager::readUserFile(const std::string &filename)
         ss  >> stats.username
             >> stats.kills >> stats.deaths
             >> stats.games_played >> stats.games_won
-            >> stats.damage_dealt >> stats.damage_taken >> stats.team_damage;
+            >> stats.damage_dealt >> stats.damage_taken >> stats.team_damage
+            >> stats.suicides >> stats.team_kills;
 
         if (!ss)
         {
@@ -107,6 +106,7 @@ void StatsManager::readUserFile(const std::string &filename)
             continue;
         }
 
+        logger_->info() << "Read stats for user: '" << stats.username << "'\n";
         user_stats_[stats.username] = stats;
     }
 }
@@ -130,19 +130,22 @@ void StatsManager::updateUserStats(const std::vector<Fighter*> fighters)
         // Don't keep stats for the guest user
         if (username == guest_user)
             continue;
-        assert(user_stats_.find(username) == user_stats_.end());
+        assert(user_stats_.find(username) != user_stats_.end());
 
-        lifetime_stats cur = user_stats_[username];
+        lifetime_stats& cur = user_stats_[username];
 
         std::string prefix = statPrefix(fighters[i]->getPlayerID());
 
-        cur.kills += getStat(prefix + ".kills");
-        cur.deaths += getStat(prefix + ".deaths");
+        cur.kills += getStat(prefix + "kills.total");
+        cur.deaths += getStat(prefix + "deaths");
+        cur.suicides += getStat(prefix + "suicides");
         cur.games_played += 1;
         cur.games_won += getStat("winningTeam") == fighters[i]->getTeamID() ? 1 : 0;
-        cur.damage_dealt += getStat(prefix + ".damageGiven");
-        cur.damage_taken += getStat(prefix + ".damageTaken");
-        cur.team_damage += getStat(prefix + ".teamDamageGiven");
+        cur.damage_dealt += getStat(prefix + "damageGiven");
+        cur.damage_taken += getStat(prefix + "damageTaken");
+        cur.team_damage += getStat(prefix + "teamDamageGiven");
+        // TODO get team kills here
+        cur.team_kills += 0;
     }
 }
 
@@ -159,6 +162,7 @@ void StatsManager::writeUserStats(const std::string &filename)
            << stats.kills << ' ' << stats.deaths << ' '
            << stats.games_played << ' ' << stats.games_won << ' '
            << stats.damage_dealt << ' ' << stats.damage_taken << ' ' << stats.team_damage
+           << ' ' << stats.suicides << ' ' << stats.team_kills
            << '\n';
     }
 }

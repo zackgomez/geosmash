@@ -1119,16 +1119,18 @@ FighterState * DashSpecialState::processInput(controller_state &, float dt)
     // Check for transition away
     if (!fighter_->attack_)
     {
-        // Clear x velocity
-        fighter_->vel_.x = 0.f;
 
         if (ground_)
         {
             fighter_->vel_.y = 0.f;
+            // Clear x velocity
+            fighter_->vel_.x = 0.f;
             return new GroundState(fighter_);
         }
         else
+        {
             return new AirNormalState(fighter_);
+        }
     }
 
     // TODO make this ignore the fact that we have an attack
@@ -1157,6 +1159,8 @@ void DashSpecialState::update(float dt)
             fighter_->vel_.y = getParam(pre_ + "yvel");
             */
     }
+    else if (fighter_->attack_ && !ground_)
+        fighter_->vel_.x = getParam(pre_ + "endxvel") * fighter_->dir_;
     else
         fighter_->vel_.x = 0.f;
 
@@ -1193,6 +1197,13 @@ GrabbingState::GrabbingState(Fighter *f) :
     fighter_->attack_ = fighter_->attackMap_["grab"]->clone();
     fighter_->attack_->setFighter(f);
     fighter_->attack_->start();
+}
+
+GrabbingState::~GrabbingState()
+{
+    if (victim_)
+        victim_->release();
+    assert(!victim_);
 }
 
 FighterState * GrabbingState::processInput(controller_state &controller, float dt)
@@ -1612,7 +1623,8 @@ FighterState* LimpState::hitByAttack(const Attack *attack)
     // On hit first disconnect
     (*unlimpCallback_)(this);
     // Then do the normal thing
-    return FighterState::calculateHitResult(attack);
+    next_ = FighterState::calculateHitResult(attack);
+    return next_;
 }
 
 bool LimpState::canBeHit() const

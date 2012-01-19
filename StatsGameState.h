@@ -16,7 +16,8 @@ struct fighter_stat
 class StatsGameState : public GameState
 {
 public:
-    StatsGameState(const std::vector<Fighter *> fighters, int winningTeam);
+    StatsGameState(const std::vector<Fighter *> fighters, 
+            const std::vector<int> joystickIDs, int winningTeam);
     virtual ~StatsGameState();
 
     virtual GameState* processInput(const std::vector<SDL_Joystick*> &joysticks,
@@ -29,6 +30,8 @@ private:
     int winningTeam_;
 
     std::vector<fighter_stat *> stats_;
+    std::vector<int> joystickIDs_;
+    std::vector<bool> ready_;
 
     GLuint backgroundTex_;
 };

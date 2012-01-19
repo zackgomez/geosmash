@@ -5,8 +5,8 @@
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 
-Controller::Controller(const Fighter *f, SDL_Joystick *joystick) :
-    fighter_(f), joystick_(joystick)
+Controller::Controller(const Fighter *f, SDL_Joystick *joystick, int controllerID) :
+    fighter_(f), joystick_(joystick), controllerID_(controllerID)
 {
     // Clear the state
     memset(&state_, 0, sizeof(controller_state));
@@ -105,4 +105,9 @@ bool Controller::wantsPauseToggle() const
 {
     // pause if alive and start pressed
     return state_.pressstart && fighter_->isAlive();
+}
+
+int Controller::getControllerID() const
+{
+    return controllerID_;
 }

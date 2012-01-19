@@ -26,7 +26,7 @@ struct controller_state
 class Controller
 {
 public:
-    Controller(const Fighter *f, SDL_Joystick *joystick);
+    Controller(const Fighter *f, SDL_Joystick *joystick, int controllerID);
     virtual ~Controller();
 
     // Gets the next state
@@ -41,10 +41,14 @@ public:
     // For human controllers only - processes an SDL event
     void processEvent(SDL_Event &e);
 
+    int getControllerID() const;
+
 private:
     const Fighter *fighter_;
     SDL_Joystick *joystick_;
     controller_state state_;
     controller_state last_;
+
+    int controllerID_;
 };
 

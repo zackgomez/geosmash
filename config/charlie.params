@@ -280,7 +280,7 @@ upSpecialAttack.startup      0.07
 upSpecialAttack.duration     0.20
 upSpecialAttack.cooldown     0.00
 upSpecialAttack.damage       2
-upSpecialAttack.stun         0.15
+upSpecialAttack.stun         0.11
 upSpecialAttack.knockbackx   1
 upSpecialAttack.knockbacky   3
 upSpecialAttack.kbbase       70.0
@@ -310,6 +310,7 @@ dashSpecialAttack.hitboxh      60
 dashSpecialAttack.priority     1.0
 dashSpecialState.yvel         0
 dashSpecialState.xvel         800
+dashSpecialState.endxvel      200
 
 counterSpecial.startup      0.15
 counterSpecial.duration     0.25
@@ -424,15 +425,15 @@ grabState.releaseCooldown   0.25
 # accel = velocity * -damping
 grabState.speedDamping      4
 
-frontThrow.knockbackx       5
+frontThrow.knockbackx       7
 frontThrow.knockbacky       4
 frontThrow.kbbase           350
 frontThrow.kbscaling        4.00
 frontThrow.damage           8
 frontThrow.stun             0.12
 
-backThrow.knockbackx       -5
-backThrow.knockbacky       5
+backThrow.knockbackx       -8
+backThrow.knockbacky       4
 backThrow.kbbase           400
 backThrow.kbscaling        4.00
 backThrow.damage           8
@@ -440,7 +441,7 @@ backThrow.stun             0.12
 
 upThrow.knockbackx       0
 upThrow.knockbacky       1
-upThrow.kbbase           200
-upThrow.kbscaling        4.00
+upThrow.kbbase           400
+upThrow.kbscaling        5.00
 upThrow.damage           5
-upThrow.stun             0.10
+upThrow.stun             0.15

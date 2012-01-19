@@ -92,14 +92,23 @@ InGameState::~InGameState()
     for (size_t i = fighters_.size(); i < entities_.size(); i++)
         delete entities_[i];
 }
+std::vector<int> InGameState::getControllerIDs() const
+{
+    std::vector<int> controllerIDs;
+    for (size_t i = 0; i < controllers_.size(); i++)
+        controllerIDs.push_back(controllers_[i]->getControllerID());
+    return controllerIDs;
+}
+
 
 GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joysticks, float dt)
 {
     // Check for player one pressing back (id 6) while paused
-    if (SDL_JoystickGetButton(joysticks[0], 6)
-            && paused_ && pausingController_ == 0)
+    for (size_t i = 0; i < controllers_.size(); i++)
     {
-        return new StatsGameState(fighters_, -1);
+        if (paused_ && pausingController_ == i &&
+                SDL_JoystickGetButton(joysticks[controllers_[i]->getControllerID()], 6))
+            return new StatsGameState(fighters_, getControllerIDs(), -1);
     }
 
     // First update controllers / frame
@@ -169,7 +178,7 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
             StatsManager::get()->updateUserStats(fighters_);
             StatsManager::get()->writeUserStats("user_stats.dat");
         }
-        return new StatsGameState(fighters_, winningTeam);
+        return new StatsGameState(fighters_, getControllerIDs(), winningTeam);
     }
 
     // No state change
@@ -347,6 +356,13 @@ void InGameState::renderHUD()
             glm::vec3(0.085f, 0.085f, 1.0f));
         glm::vec3 dmgColor = std::min(1.f, std::max(0.2f, 1.f - damage/200.f)) * color;
         FontManager::get()->renderNumber(transform, dmgColor, floorf(damage));
+
+        // Draw the player profile name
+        glm::vec2 profileNameMidpoint = player_hud_center + glm::vec2(0.f, -1.2f/6.f);
+        transform = glm::scale(
+            glm::translate(glm::mat4(1.0f), glm::vec3(profileNameMidpoint, 0.f)),
+            glm::vec3(0.045f, 0.045f, 1.0f));
+        FontManager::get()->renderString(transform, color, fighter->getUsername());
     }
 
     getProjectionMatrixStack().pop();
@@ -497,11 +513,17 @@ void InGameState::collisionDetection()
                 int killerID = fighter->getLastHitBy();
                 std::string killer = StatsManager::getPlayerName(killerID);
                 StatsManager::get()->addStat(killer+ ".kills." + died, 1);
-                StatsManager::get()->addStat(killer+ ".kills.total", 1);
-                // Update kill streak
-                StatsManager::get()->addStat(killer + ".curKillStreak", 1); // cleared in fighter::respawn
-                StatsManager::get()->maxStat(killer + ".maxKillStreak",
-                        StatsManager::get()->getStat(killer + ".curKillStreak"));
+                // check for team kill
+                if (fighter->getTeamID() == fighters_[fighter->getLastHitBy()]->getTeamID())
+                    StatsManager::get()->addStat(killer+ ".kills.team", 1);
+                else
+                {
+                    StatsManager::get()->addStat(killer+ ".kills.total", 1);
+                    // Update kill streak
+                    StatsManager::get()->addStat(killer + ".curKillStreak", 1); // cleared in fighter::respawn
+                    StatsManager::get()->maxStat(killer + ".maxKillStreak",
+                            StatsManager::get()->getStat(killer + ".curKillStreak"));
+                }
             }
             else
                 StatsManager::get()->addStat(died + ".suicides", 1);
