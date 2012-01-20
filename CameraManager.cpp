@@ -1,5 +1,6 @@
 #include "CameraManager.h"
 #include "ParamReader.h"
+#include "Engine.h"
 
 #define MINY -75.0
 #define MINX (-100.0f)

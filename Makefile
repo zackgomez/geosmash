@@ -5,7 +5,7 @@ LDFLAGS=-lSDL -lGL -lGLEW  -lsfml-audio
 
 all: ssb
 
-ssb: main.o glutils.o util.o Fighter.o AudioManager.o ExplosionManager.o \
+ssb: main.o Engine.o util.o Fighter.o AudioManager.o ExplosionManager.o \
 	FrameManager.o StatsManager.o Attack.o FighterState.o GameEntity.o \
 	Projectile.o CameraManager.o StageManager.o FontManager.o Controller.o \
 	libkiss_particles.a InGameState.o MenuState.o StatsGameState.o ParamReader.o \

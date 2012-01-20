@@ -1,6 +1,6 @@
 #pragma once
 #include <map>
-#include "glutils.h"
+#include "Engine.h"
 #include "Logger.h"
 
 struct anim_frame

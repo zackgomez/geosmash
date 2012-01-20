@@ -1,6 +1,5 @@
 #pragma once
 
-#include "glutils.h"
 #include <vector>
 #include <glm/glm.hpp>
 #include "Fighter.h"

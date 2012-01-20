@@ -6,7 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <SDL/SDL.h>
 #include <GL/glew.h>
-#include "glutils.h"
+#include "Engine.h"
 #include "FontManager.h"
 #include "AudioManager.h"
 #include "StatsManager.h"

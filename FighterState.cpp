@@ -5,7 +5,7 @@
 #include "ParamReader.h"
 #include "ExplosionManager.h"
 #include "Projectile.h"
-#include "glutils.h"
+#include "Engine.h"
 #include "AudioManager.h"
 #include "StatsManager.h"
 #include "StageManager.h"

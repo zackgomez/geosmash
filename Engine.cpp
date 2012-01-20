@@ -1,3 +1,4 @@
+#include "Engine.h"
 #include <GL/glew.h>
 #include <cstdlib>
 #include <cstdio>
@@ -9,7 +10,6 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
-#include "glutils.h"
 #include "util.h"
 #include "FrameManager.h"
 #include "ParamReader.h"
