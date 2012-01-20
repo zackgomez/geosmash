@@ -297,7 +297,7 @@ upSpecialAttack.yvel            600
 dashSpecialAttack.startup      0.18
 dashSpecialAttack.duration     0.30
 dashSpecialAttack.cooldown     0.45
-dashSpecialAttack.damage       9
+dashSpecialAttack.damage       7
 dashSpecialAttack.stun         0.10
 dashSpecialAttack.knockbackx   2
 dashSpecialAttack.knockbacky   4 

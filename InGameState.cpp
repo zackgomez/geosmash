@@ -292,6 +292,7 @@ void InGameState::renderHUD()
 
     const glm::vec2 hud_center(0, 1.5f/6 - 1);
     const glm::vec2 lifesize = 0.03f * glm::vec2(1.f, 16.f/9.f);
+    const glm::vec3 danger_color = glm::vec3(0.8, 0.1, 0.1);
     for (unsigned i = 0; i < fighters_.size(); i++)
     {
         const glm::vec2 player_hud_center =
@@ -348,14 +349,13 @@ void InGameState::renderHUD()
             FontManager::get()->renderNumber(transform, color, lives);
         }
 
-        // Draw the damage amount with color scaled towards black as the
-        // player has more damage
+        // Draw the damage amount, if the player is over 150% instead render in dange red
         glm::vec2 damageBarMidpoint = player_hud_center + glm::vec2(0.f, -0.8f/6.f);
         glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(damageBarMidpoint, 0.f)),
             glm::vec3(0.085f, 0.085f, 1.0f));
-        glm::vec3 dmgColor = std::min(1.f, std::max(0.2f, 1.f - damage/200.f)) * color;
-        FontManager::get()->renderNumber(transform, dmgColor, floorf(damage));
+        FontManager::get()->renderNumber(transform,
+                damage > 150.f ? danger_color : color, floorf(damage));
 
         // Draw the player profile name
         glm::vec2 profileNameMidpoint = player_hud_center + glm::vec2(0.f, -1.2f/6.f);

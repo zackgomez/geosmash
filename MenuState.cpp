@@ -26,6 +26,7 @@ static const glm::vec3 playerColors__[] =
     glm::vec3(0.8, 0.35, 0.1), // orange
     glm::vec3(0.4, 0.2, 0.9), // purple
     glm::vec3(0.8, 0.2, 0.8), // pink
+    glm::vec3(0.4, 0.4, 0.4), // gray
 };
 
 std::vector<glm::vec3> playerColors(playerColors__,
