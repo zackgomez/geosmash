@@ -1438,6 +1438,7 @@ LedgeGrabState::LedgeGrabState(Fighter *f) :
     jumpTime_(HUGE_VAL),
     ledge_(NULL)
 {
+    fighter_->lastHitBy_ = -1;
     invincTime_ = getParam("ledgeGrab.grabInvincTime");
 }
 
