@@ -14,7 +14,7 @@
 
 static const float dt = 1.f / 60.f;
 
-std::vector<SDL_Joystick*> joysticks;
+std::vector<Controller*> controllers;
 bool running;
 GameState *state;
 
@@ -67,9 +67,13 @@ void mainloop()
         // Global events like ESC or mute etc
         globalEvents();
 
+        // Update controllers
+        for (size_t i = 0; i < controllers.size(); i++)
+            controllers[i]->update(dt);
+
         GameState *nextState;
         // Process input, checking for new states along the way
-        while ((nextState = state->processInput(joysticks, dt)))
+        while ((nextState = state->processInput(controllers, dt)))
         {
             delete state;
             state = nextState;
@@ -135,7 +139,7 @@ int initJoystick(unsigned numPlayers)
 
     unsigned i;
     for (i = 0; i < numJoysticks && i < numPlayers; i++)
-        joysticks.push_back(SDL_JoystickOpen(i));
+        controllers.push_back(new Controller(i));
 
     if (i != numPlayers)
         return 0;
@@ -159,8 +163,8 @@ int initGraphics()
 void cleanup()
 {
     std::cout << "Cleaning up...\n";
-    for (unsigned i = 0; i < joysticks.size(); i++)
-        SDL_JoystickClose(joysticks[i]);
+    for (unsigned i = 0; i < controllers.size(); i++)
+        delete controllers[i];
 
     std::cout << "Quiting nicely\n";
     SDL_Quit();

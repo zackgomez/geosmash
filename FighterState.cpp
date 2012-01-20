@@ -333,7 +333,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
             0.0f;
         // If they are still "holding down" the jump button now, then full jump
         // otherwise short hop
-        if (controller.jumpbutton || controller.joyy > getParam("input.jumpThresh"))
+        if (controller.buttony || controller.joyy > getParam("input.jumpThresh"))
             fighter_->vel_.y = getParam("jumpSpeed");
         else
             fighter_->vel_.y = getParam("hopSpeed");
@@ -453,7 +453,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         return NULL;
     }
     // Check for smash attacks
-    else if (controller.pressc && !dashing_)
+    else if (controller.pressx && !dashing_)
     {
         glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
         // No movement during smash attacks
@@ -553,7 +553,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     }
 
     // --- Check to see if they want to start a jump ---
-    if (controller.pressjump ||
+    if (controller.pressy ||
             (controller.joyy > getParam("input.jumpThresh")
              && controller.joyyv > getParam("input.velThresh")))
     {
@@ -859,7 +859,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
     }
 
     // --- Check for jump ---
-    if ((controller.pressjump || (controller.joyy > getParam("input.jumpThresh") && 
+    if ((controller.pressy || (controller.joyy > getParam("input.jumpThresh") && 
                     controller.joyyv > getParam("input.velThresh"))) && canSecondJump_)
     {
         jumpTime_ = 0;
@@ -1450,7 +1450,7 @@ FighterState* LedgeGrabState::processInput(controller_state &controller, float d
     if (jumpTime_ <= 0.f)
     {
         fighter_->vel_ = glm::vec2(0.f,
-                controller.jumpbutton ? getParam("jumpSpeed") : getParam("hopSpeed"));
+                controller.buttony ? getParam("jumpSpeed") : getParam("hopSpeed"));
         // Unoccupy
         ledge_->occupied = false;
 
@@ -1464,7 +1464,7 @@ FighterState* LedgeGrabState::processInput(controller_state &controller, float d
     }
 
     // Check for jump input
-    if (controller.pressjump)
+    if (controller.pressy)
     {
         // Start startup time countdown
         jumpTime_ = getParam("jumpStartupTime");

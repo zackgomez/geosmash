@@ -66,14 +66,14 @@ public:
     bool isActive() const;
     bool wantsStart() const;
 
-    void processInput(SDL_Joystick *joystick, float dt);
+    void processInput(Controller *controller, float dt);
     void render(const glm::vec2 &center, const glm::vec2 &size, float dt);
 
-    void getController(int lives, SDL_Joystick *stick, int colorScheme,
-        Fighter **outfighter, Controller **outcntrl) const;
     int getTeamID() const;
     int getProfileID() const;
     int getColorID() const;
+    glm::vec3 getColor(int colorScheme = 0) const;
+    std::string getUsername() const;
 
 private:
     int playerID_;
@@ -87,14 +87,11 @@ private:
 
     int widgetIdx_;
     std::vector<MenuWidget*> widgets_;
+    int colorIdx_;
+
     bool widgetChangePrimed_;
 
-    int colorIdx_;
-    bool colorChangePrimed_;
-
     const bool *teams_;
-
-    glm::vec3 getColor(int colorScheme = 0) const;
 };
 
 class MenuState : public GameState
@@ -103,7 +100,7 @@ public:
     MenuState();
     ~MenuState();
 
-    virtual GameState* processInput(const std::vector<SDL_Joystick*>&, float dt);
+    virtual GameState* processInput(const std::vector<Controller*>&, float dt);
     virtual void update(float dt);
     virtual void render(float dt);
     
@@ -113,12 +110,11 @@ private:
 
     bool teams_;
     int topMenuController_;
-    int topWidgetIdx_;
-    bool topWidgetPrimed_;
-    bool topMenuExitPrimed_;
-    bool topMenuPrimed_[4];
+    size_t topWidgetIdx_;
 
-    GameState* newGame(const std::vector<SDL_Joystick*>&);
-    void handleTopMenu(SDL_Joystick *stick);
+    bool topWidgetChangePrimed_;
+
+    GameState* newGame(const std::vector<Controller*>&);
+    void handleTopMenu(Controller *controller);
 };
 

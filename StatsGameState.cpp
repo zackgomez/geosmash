@@ -9,6 +9,7 @@
 #include "FrameManager.h"
 #include "AudioManager.h"
 #include "MenuState.h"
+#include "Player.h"
 
 fighter_stat::fighter_stat(const std::string &sname, const std::string &dname) :
     stat_name(sname), display_name(dname)
@@ -16,13 +17,11 @@ fighter_stat::fighter_stat(const std::string &sname, const std::string &dname) :
 }
 
 StatsGameState::StatsGameState(
-        const std::vector<Fighter *> fighters,
-        const std::vector<int> joystickIDs,
+        const std::vector<Player *> players,
         int winningTeam) :
-    fighters_(fighters),
+    players_(players),
     winningTeam_(winningTeam),
-    joystickIDs_(joystickIDs),
-    ready_(fighters.size(), false)
+    ready_(players.size(), false)
 {
     backgroundTex_ = make_texture("images/back003.png");
 
@@ -41,10 +40,10 @@ StatsGameState::StatsGameState(
     stats_.push_back(new fighter_stat("kills.team", "Team Kills"));
     stats_.push_back(new fighter_stat("teamDamageGiven", "Team Damage"));
 
-    for (size_t i = 0; i < fighters_.size(); i++)
+    for (size_t i = 0; i < players_.size(); i++)
     {
         std::stringstream ss;
-        ss << "Player" << i;
+        ss << "Player" << players_[i]->getPlayerID();
         stats_.push_back(
                 new fighter_stat("kills." + ss.str(), ss.str() + " KOs"));
     }
@@ -60,29 +59,22 @@ StatsGameState::StatsGameState(
 
 StatsGameState::~StatsGameState()
 {
-    for (size_t i = 0; i < fighters_.size(); i++)
-        delete fighters_[i];
+    for (size_t i = 0; i < players_.size(); i++)
+        delete players_[i];
 
     free_texture(backgroundTex_);
 }
 
-GameState * StatsGameState::processInput(const std::vector<SDL_Joystick*> &joysticks,
+GameState * StatsGameState::processInput(const std::vector<Controller*> &controllers,
         float dt)
 {
-    static const int JOYSTICK_B = 1;
-    static const int JOYSTICK_START = 7;
-    assert(joysticks.size() >= joystickIDs_.back());
-
-    for (size_t i = 0; i < joystickIDs_.size(); i++)
+    for (size_t i = 0; i < players_.size(); i++)
     {
-        SDL_Joystick *joystick = joysticks[joystickIDs_[i]];
-        bool startbutton = SDL_JoystickGetButton(joystick, JOYSTICK_START);
-        bool bbutton = SDL_JoystickGetButton(joystick, JOYSTICK_B);
-
+        controller_state cs = players_[i]->getState();
         // Check if they're ready
-        if (bbutton)
+        if (cs.pressb)
             ready_[i] = false;
-        if (startbutton)
+        if (cs.pressa)
             ready_[i] = true;
     }
 
@@ -139,10 +131,10 @@ void StatsGameState::render(float dt)
     const glm::vec3 stat_color(0.8f, 0.8f, 0.8f);
 
 
-    for (unsigned i = 0; i < fighters_.size(); i++)
+    for (unsigned i = 0; i < players_.size(); i++)
     {
-        glm::vec4 fighter_color = glm::vec4(fighters_[i]->getColor(), 0.f);
-        if (fighters_[i]->getTeamID() == winningTeam_)
+        glm::vec4 fighter_color = glm::vec4(players_[i]->getColor(), 0.f);
+        if (players_[i]->getTeamID() == winningTeam_)
             fighter_color.a = 0.5f;
         glm::mat4 transform;
 
@@ -151,10 +143,10 @@ void StatsGameState::render(float dt)
                 glm::translate(glm::mat4(1.f),
                     glm::vec3(columnCenter(i), name_height, 0.0f)),
                 glm::vec3(name_size, name_size, 1.f));
-        FontManager::get()->renderString(transform, glm::vec3(fighter_color), fighters_[i]->getUsername());
+        FontManager::get()->renderString(transform, glm::vec3(fighter_color), players_[i]->getUsername());
 
         // draw fighter at top of column, only if not ready
-        assert(ready_.size() == fighters_.size());
+        assert(ready_.size() == players_.size());
         if (!ready_[i])
         {
             transform = glm::scale(
@@ -180,7 +172,7 @@ void StatsGameState::render(float dt)
 
             // Now render value
             int value = StatsManager::get()->getStat(
-                    StatsManager::getStatPrefix(fighters_[i]->getPlayerID()) +
+                    StatsManager::getStatPrefix(players_[i]->getPlayerID()) +
                     stat->stat_name);
             xoffset = -stat_size * 0.75f * FontManager::numDigits(value) / 2.f - stat_xmargin;
             transform = glm::scale(

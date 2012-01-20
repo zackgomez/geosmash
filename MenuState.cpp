@@ -12,6 +12,7 @@
 #include "StatsManager.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
+#include "Player.h"
 
 #define JOYSTICK_START 7
 #define MAX_JOYSTICK_VALUE 32767.0f
@@ -196,9 +197,8 @@ PlayerWidget::PlayerWidget(int playerID, const bool *teams) :
     usernameWidget_(NULL),
     teamIDWidget_(NULL),
     widgetIdx_(0),
-    widgetChangePrimed_(false),
     colorIdx_(defstate.colors[playerID]),
-    colorChangePrimed_(false),
+    widgetChangePrimed_(false),
     teams_(teams)
 {
     assert(playerID < 4);
@@ -218,41 +218,30 @@ PlayerWidget::~PlayerWidget()
 bool PlayerWidget::isActive() const { return active_; }
 bool PlayerWidget::wantsStart() const { return wantsStart_; }
 
-void PlayerWidget::processInput(SDL_Joystick *joystick, float dt)
+void PlayerWidget::processInput(Controller *controller, float dt)
 {
     // A to join
-    if (SDL_JoystickGetButton(joystick, 0))
+    if (controller->getState().pressa)
         active_ = true;
 
     if (!active_)
         return;
 
     // B to leave
-    if (SDL_JoystickGetButton(joystick, 1))
+    if (controller->getState().pressb)
         active_ = false;
 
     // Start button
-    if (SDL_JoystickGetButton(joystick, 7) && startPrimed_)
-    {
-        startPrimed_ = false;
+    if (controller->getState().pressstart)
         wantsStart_ = true;
-    }
-    else if (!SDL_JoystickGetButton(joystick, 7))
-        startPrimed_ = true;
 
     // X to change color
-    if (SDL_JoystickGetButton(joystick, 2))
-    {
-        if (colorChangePrimed_)
-            colorIdx_ = (colorIdx_ + 1) % playerColors.size();
-        colorChangePrimed_ = false;
-    }
-    else
-        colorChangePrimed_ = true;
+    if (controller->getState().pressx)
+        colorIdx_ = (colorIdx_ + 1) % playerColors.size();
 
     // Left stick
-    float xval = SDL_JoystickGetAxis(joystick, 0) / MAX_JOYSTICK_VALUE;
-    float yval = SDL_JoystickGetAxis(joystick, 1) / MAX_JOYSTICK_VALUE;
+    float xval = controller->getState().joyx;
+    float yval = controller->getState().joyy;
 
     if (fabs(yval) > getParam("menu.thresh") && widgetChangePrimed_)
     {
@@ -320,22 +309,6 @@ void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float 
     }
 }
 
-void PlayerWidget::getController(int lives, SDL_Joystick *stick, int colorScheme,
-        Fighter **outfighter, Controller **outcntrl) const
-{
-    int teamID = (*teams_) ? teamIDWidget_->value() : playerID_;
-    std::cout << "teamID: " << teamID << " *teams_ = " << *teams_ << '\n';
-    glm::vec3 color = getColor(colorScheme);
-    *outfighter = new Fighter(
-            color,
-            playerID_,
-            teamID,
-            lives,
-            usernameWidget_->strValue());
-
-    *outcntrl = new Controller(*outfighter, stick, playerID_);
-}
-
 int PlayerWidget::getTeamID() const
 {
     return *teams_ ? teamIDWidget_->value() : playerID_;
@@ -346,6 +319,11 @@ int PlayerWidget::getProfileID() const
     return usernameWidget_->value();
 }
 
+std::string PlayerWidget::getUsername() const
+{
+    return usernameWidget_->strValue();
+}
+
 int PlayerWidget::getColorID() const
 {
     return colorIdx_;
@@ -354,7 +332,8 @@ int PlayerWidget::getColorID() const
 MenuState::MenuState() :
     teams_(defstate.teams),
     topMenuController_(-1),
-    topWidgetIdx_(0)
+    topWidgetIdx_(0),
+    topWidgetChangePrimed_(false)
 {
     // Start the menu soundtrack
     AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).ogg");
@@ -372,8 +351,6 @@ MenuState::MenuState() :
     getProjectionMatrixStack().clear();
     getViewMatrixStack().clear();
     getProjectionMatrixStack().current() = glm::ortho(0.f, 1920.f, 1080.f, 0.f, -1.f, 1.f);
-
-    topMenuPrimed_[0] = topMenuPrimed_[1] = topMenuPrimed_[2] = topMenuPrimed_[3] = false;
 }
 
 MenuState::~MenuState()
@@ -417,9 +394,9 @@ void MenuState::render(float dt)
     }
 }
 
-GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float dt)
+GameState* MenuState::processInput(const std::vector<Controller*> &controllers, float dt)
 {
-    assert(stix.size() >= widgets_.size());
+    assert(controllers.size() >= widgets_.size());
 
     bool shouldStart = false;
     int startingPlayer = -1;
@@ -427,24 +404,21 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
     for (size_t i = 0; i < widgets_.size(); i++)
     {
         // Check for y button to transition to top menu
-        if (widgets_[i]->isActive() && SDL_JoystickGetButton(stix[i], 3)
-                && topMenuController_ == -1 && topMenuPrimed_[i])
+        if (widgets_[i]->isActive() && controllers[i]->getState().pressy
+                && topMenuController_ == -1)
         {
             topMenuController_ = i;
             topWidgetIdx_ = 0;
-            topWidgetPrimed_ = false;
-            topMenuExitPrimed_ = false;
-            topMenuPrimed_[i] = false;
+            controllers[i]->clearPresses();
         }
-        topMenuPrimed_[i] = !SDL_JoystickGetButton(stix[i], 3);
 
         if (i == topMenuController_)
         {
-            handleTopMenu(stix[i]);
+            handleTopMenu(controllers[i]);
             continue;
         }
 
-        widgets_[i]->processInput(stix[i], dt);
+        widgets_[i]->processInput(controllers[i], dt);
         shouldStart |= widgets_[i]->wantsStart();
         if (shouldStart && startingPlayer == -1)
             startingPlayer = i;
@@ -457,63 +431,54 @@ GameState* MenuState::processInput(const std::vector<SDL_Joystick*> &stix, float
     if (teams.size() >= 2 && shouldStart)
     {
         std::cout << "Starting a new game by from Player " << startingPlayer+1 << "'s request\n";
-        return newGame(stix);
+        return newGame(controllers);
     }
 
     // No transition
     return NULL;
 }
 
-void MenuState::handleTopMenu(SDL_Joystick *stick)
+void MenuState::handleTopMenu(Controller *controller)
 {
-    float xval = SDL_JoystickGetAxis(stick, 0) / MAX_JOYSTICK_VALUE;
-    float yval = -SDL_JoystickGetAxis(stick, 1) / MAX_JOYSTICK_VALUE;
-
-    std::cout << "Top Menu || stick: " << topMenuController_ << " exitP: " << topMenuExitPrimed_ << '\n';
+    float xval = controller->getState().joyx;
+    float yval = controller->getState().joyy;
 
     // First deal with y button (to leave)
-    if (SDL_JoystickGetButton(stick, 3))
+    if (controller->getState().pressy)
     {
-        if (topMenuExitPrimed_)
-        {
-            topMenuController_ = -1;
-            return;
-        }
+        topMenuController_ = -1;
+        return;
     }
-    else
-        topMenuExitPrimed_ = true;
-
 
     // Now deal with changing widgets
-    if (fabs(xval) > getParam("menu.thresh") && topWidgetPrimed_)
+    if (fabs(xval) > getParam("menu.thresh") && topWidgetChangePrimed_)
     {
         int sign = glm::sign(xval);
         topWidgetIdx_ = std::max(
-                std::min(topWidgetIdx_ + sign, (int)topWidgets_.size() - 1),
+                std::min((int)topWidgetIdx_ + sign, (int)topWidgets_.size() - 1),
                 0);
-        topWidgetPrimed_ = false;
+        topWidgetChangePrimed_ = false;
     }
     else if (fabs(xval) < getParam("menu.thresh"))
     {
-        topWidgetPrimed_ = true;
+        topWidgetChangePrimed_ = true;
     }
 
     // Now deal with change value on widget
     topWidgets_[topWidgetIdx_]->handleInput(yval);
-
 
     // Set teams value accordingly
     teams_ = topWidgets_[1]->value();
 }
 
 
-GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
+GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
 {
     // TODO fix these
     int lives = topWidgets_[0]->value();
     bool hazard = false;
 
-    std::vector<Controller *> controllers;
+    std::vector<Player *> players;
     std::vector<Fighter *> fighters;
 
     int teamCounts[4] = {0, 0, 0, 0};
@@ -522,16 +487,16 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
     {
         if (widgets_[i]->isActive())
         {
-            Controller *controller = 0;
-            Fighter *fighter = 0;
+            int teamID = widgets_[i]->getTeamID();
+            glm::vec3 color = widgets_[i]->getColor(teamCounts[teamID]);
+            std::string username = widgets_[i]->getUsername();
 
-            widgets_[i]->getController(lives, sticks[i], teamCounts[widgets_[i]->getTeamID()],
-                    &fighter, &controller);
-
+            Fighter *fighter = new Fighter(color, i, teamID, lives, username);
+            teamCounts[teamID]++;
             fighters.push_back(fighter);
-            controllers.push_back(controller);
 
-            teamCounts[fighter->getTeamID()]++;
+            Player  *player  = new LocalPlayer(controllers[i], fighter);
+            players.push_back(player);
         }
     }
 
@@ -556,7 +521,7 @@ GameState* MenuState::newGame(const std::vector<SDL_Joystick*> &sticks)
         }
     }
 
-    GameState *gs = new InGameState(controllers, fighters, hazard);
+    GameState *gs = new InGameState(players, fighters, hazard);
     return gs;
 }
 

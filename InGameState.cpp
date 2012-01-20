@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <vector>
+#include <cassert>
 #include "Engine.h"
 #include "Fighter.h"
 #include "AudioManager.h"
@@ -21,20 +22,20 @@
 #include "FontManager.h"
 #include "StageManager.h"
 #include "Controller.h"
-#include <cassert>
 #include "StatsGameState.h"
+#include "Player.h"
 
 std::vector<GameEntity *> getEntitiesToAdd();
 void addEntity(GameEntity *ent);
 
 InGameState *InGameState::instance = NULL;
 
-InGameState::InGameState(const std::vector<Controller *> &controllers,
+InGameState::InGameState(const std::vector<Player *> &players,
         const std::vector<Fighter*> &fighters, bool makeHazard) :
-    controllers_(controllers),
+    players_(players),
     fighters_(fighters),
     paused_(false),
-    pausingController_(-1)
+    pausingPlayer_(-1)
 {
     StageManager::get()->clear();
     ParticleManager::get()->reset();
@@ -86,42 +87,30 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
 
 InGameState::~InGameState()
 {
-    for (size_t i = 0; i < controllers_.size(); i++)
-        delete controllers_[i];
     // Delete all non fighter entities, assume the fighters at front of entities list
     for (size_t i = fighters_.size(); i < entities_.size(); i++)
         delete entities_[i];
-}
-std::vector<int> InGameState::getControllerIDs() const
-{
-    std::vector<int> controllerIDs;
-    for (size_t i = 0; i < controllers_.size(); i++)
-        controllerIDs.push_back(controllers_[i]->getControllerID());
-    return controllerIDs;
+
+    // Fighters/players are passed to StatsGameState
+
+    instance = NULL;
 }
 
-
-GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joysticks, float dt)
+GameState * InGameState::processInput(const std::vector<Controller*> &controllers, float dt)
 {
-    // Check for player one pressing back (id 6) while paused
-    for (size_t i = 0; i < controllers_.size(); i++)
-    {
-        if (paused_ && pausingController_ == i &&
-                SDL_JoystickGetButton(joysticks[controllers_[i]->getControllerID()], 6))
-            return new StatsGameState(fighters_, getControllerIDs(), -1);
-    }
+    // First update players pre frame
+    for (size_t i = 0; i < players_.size(); i++)
+        players_[i]->update(dt);
 
-    // First update controllers / frame
-    for (unsigned i = 0; i < controllers_.size(); i++)
+    // Check for pause toggle from controllers/pause early exit (pause+BACK)
+    for (unsigned i = 0; i < players_.size(); i++)
     {
-        controllers_[i]->update(dt);
-    }
-
-    // Check for pause toggle from controllers
-    for (unsigned i = 0; i < controllers_.size(); i++)
-    {
-        if (controllers_[i]->wantsPauseToggle())
+        if (players_[i]->wantsPauseToggle())
             togglePause(i);
+
+        if (paused_ && pausingPlayer_ == players_[i]->getPlayerID() &&
+                players_[i]->getState().pressback)
+            return new StatsGameState(players_, -1);
     }
 
 
@@ -132,7 +121,7 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
     // Now have the fighters process their input
     for (unsigned i = 0; i < fighters_.size(); i++)
     {
-        controller_state cs = controllers_[i]->nextState();
+        controller_state cs = players_[i]->getState();
         fighters_[i]->processInput(cs, dt);
     }
 
@@ -178,7 +167,7 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
             StatsManager::get()->updateUserStats(fighters_);
             StatsManager::get()->writeUserStats("user_stats.dat");
         }
-        return new StatsGameState(fighters_, getControllerIDs(), winningTeam);
+        return new StatsGameState(players_, winningTeam);
     }
 
     // No state change
@@ -533,19 +522,19 @@ void InGameState::collisionDetection()
     }
 }
 
-void InGameState::togglePause(int controllerID)
+void InGameState::togglePause(int playerID)
 {
     if (!paused_)
     {
         paused_ = true;
-        pausingController_ = controllerID;
+        pausingPlayer_ = playerID;
         AudioManager::get()->pauseSoundtrack();
         AudioManager::get()->playSound("pausein");
     }
-    else if (paused_ && pausingController_ == controllerID)
+    else if (paused_ && pausingPlayer_ == playerID)
     {
         paused_ = false;
-        pausingController_ = -1;
+        pausingPlayer_ = -1;
         AudioManager::get()->startSoundtrack();
         AudioManager::get()->playSound("pauseout");
     }

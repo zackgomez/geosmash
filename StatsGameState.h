@@ -4,6 +4,7 @@
 #include <string>
 
 class Fighter;
+class Player;
 
 struct fighter_stat
 {
@@ -16,21 +17,19 @@ struct fighter_stat
 class StatsGameState : public GameState
 {
 public:
-    StatsGameState(const std::vector<Fighter *> fighters, 
-            const std::vector<int> joystickIDs, int winningTeam);
+    StatsGameState(const std::vector<Player*> players, int winningTeam);
     virtual ~StatsGameState();
 
-    virtual GameState* processInput(const std::vector<SDL_Joystick*> &joysticks,
+    virtual GameState* processInput(const std::vector<Controller*> &controllers,
             float dt);
     virtual void update(float dt);
     virtual void render(float dt);
 
 private:
-    std::vector<Fighter *> fighters_;
+    std::vector<Player *>  players_;
     int winningTeam_;
 
     std::vector<fighter_stat *> stats_;
-    std::vector<int> joystickIDs_;
     std::vector<bool> ready_;
 
     GLuint backgroundTex_;

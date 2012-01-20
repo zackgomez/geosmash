@@ -444,4 +444,4 @@ upThrow.knockbacky       1
 upThrow.kbbase           400
 upThrow.kbscaling        5.00
 upThrow.damage           5
-upThrow.stun             0.15
+upThrow.stun             0.17

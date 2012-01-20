@@ -10,9 +10,11 @@ struct controller_state
     // The velocities of the main analog stick over some time period
     float joyxv, joyyv;
     // nonzero if the button is pressed
-    bool buttona, buttonb, buttonc, jumpbutton, buttonstart;
+    bool buttona, buttonb, buttonx, buttony;
+	bool buttonstart, buttonback;
     // nonzero if the button was pressed this frame
-    bool pressa, pressb, pressc, pressjump, pressstart;
+    bool pressa, pressb, pressx, pressy;
+	bool pressstart, pressback;
 
     float rtrigger, ltrigger;
     bool lbumper, rbumper;
@@ -26,29 +28,25 @@ struct controller_state
 class Controller
 {
 public:
-    Controller(const Fighter *f, SDL_Joystick *joystick, int controllerID);
-    virtual ~Controller();
-
-    // Gets the next state
-    virtual controller_state nextState();
-    virtual controller_state lastState();
-    // Returns true if this controller would like the game to be paused/unpaused
-    virtual bool wantsPauseToggle() const;
+    Controller(int controllerID);
+    ~Controller();
 
     // Does per frame controller updates...
-    virtual void update(float dt);
+    void update(float dt);
+    // Gets the next state
+    controller_state getState() const;
 
-    // For human controllers only - processes an SDL event
-    void processEvent(SDL_Event &e);
+	// Clears all the press variables, useful for transitions
+	void clearPresses();
 
+    // Gets a unique identifier for this controller, roughly the player #
+    // of the controller
     int getControllerID() const;
 
 private:
-    const Fighter *fighter_;
-    SDL_Joystick *joystick_;
-    controller_state state_;
-    controller_state last_;
-
     int controllerID_;
+    SDL_Joystick *joystick_;
+
+    controller_state state_;
 };
 
