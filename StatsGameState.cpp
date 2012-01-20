@@ -69,6 +69,7 @@ StatsGameState::~StatsGameState()
 GameState * StatsGameState::processInput(const std::vector<SDL_Joystick*> &joysticks,
         float dt)
 {
+    static const int JOYSTICK_B = 1;
     static const int JOYSTICK_START = 7;
     assert(joysticks.size() >= joystickIDs_.back());
 
@@ -76,8 +77,11 @@ GameState * StatsGameState::processInput(const std::vector<SDL_Joystick*> &joyst
     {
         SDL_Joystick *joystick = joysticks[joystickIDs_[i]];
         bool startbutton = SDL_JoystickGetButton(joystick, JOYSTICK_START);
+        bool bbutton = SDL_JoystickGetButton(joystick, JOYSTICK_B);
 
         // Check if they're ready
+        if (bbutton)
+            ready_[i] = false;
         if (startbutton)
             ready_[i] = true;
     }
