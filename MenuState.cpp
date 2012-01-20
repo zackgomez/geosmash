@@ -316,11 +316,7 @@ void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float 
             teamIDWidget_->render(center - glm::vec2(size.x * 0.1, 2 * 0.25 + size.y * .1),
                     size * glm::vec2(0.33f, 0.1), widgetIdx_ == 1);
         }
-        if (!*teams_)
-            std::cout << "Color idx: " << colorIdx_ << '\n';
     }
-
-
 }
 
 void PlayerWidget::getController(int lives, SDL_Joystick *stick, int colorScheme,

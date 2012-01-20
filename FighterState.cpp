@@ -294,11 +294,22 @@ GroundState::~GroundState()
 FighterState* GroundState::processInput(controller_state &controller, float dt)
 {
     // 'unduck' every frame
-
     ducking_ = false;
+
+    // XXX: HACK: This is a fix for the undesirable behavior of inputting a
+    // dash during the jump waiting period resulting in the dash not happening
+    // and instead the fighter simply starts walking
+    if (!dashing_ && waitTime_ >= 0 && dashTime_ < 0 &&
+            fabs(controller.joyx)  > getParam("input.dashThresh") &&
+            fabs(controller.joyxv) > getParam("input.velThresh"))
+    {
+        dashTime_ = 0;
+    }
+
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
     if (waitTime_ >= 0) waitTime_ -= dt;
+    // XXX why is this different than the rest?
     if (dashTime_ >= 0) dashTime_ += dt;
     else dashTime_ -= dt;
     // If the fighter is currently attacking, do nothing else
@@ -309,6 +320,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     // Do nothing during dash startup
     if (dashTime_ > 0 && dashTime_ < getParam("dashStartupTime"))
         return NULL;
+    // Do nothing during generic wait time
     if (waitTime_ > 0)
         return NULL;
 
@@ -524,7 +536,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         }
         // --- Check for dashing transition start
         else if (fabs(controller.joyx) > getParam("input.dashThresh")
-                && fabs(controller.joyxv) > getParam("input.velThresh"))
+                && fabs(controller.joyxv) > getParam("input.velThresh") && dashTime_ < 0)
         {
             dashTime_ = 0;
             fighter_->vel_.x = 0;
