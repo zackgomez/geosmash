@@ -4,6 +4,7 @@
 #include <map>
 #include <string>
 #include <glm/glm.hpp>
+#include "Logger.h"
 
 //
 // SFML Notes
@@ -46,6 +47,7 @@ public:
 
     // Mutes all sounds
     void mute();
+    void unmute();
 
     // Called every frame, allows AudioManager to cleanup its state 
     // (free members, etc)
@@ -54,6 +56,7 @@ public:
 private:
     AudioManager();
     ~AudioManager();
+    LoggerPtr logger_;
 
     bool muted_;
 

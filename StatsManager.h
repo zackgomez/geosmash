@@ -1,11 +1,25 @@
 #pragma once
 #include <string>
 #include <map>
+#include <vector>
+#include "Logger.h"
+
+class Fighter;
+
+struct lifetime_stats
+{
+    std::string username;
+    unsigned kills, deaths, suicides, team_kills;
+    unsigned games_played, games_won;
+    unsigned damage_dealt, damage_taken, team_damage;
+};
 
 class StatsManager
 {
 public:
     static StatsManager * get();
+    static const std::string guest_user;
+    static const std::string ai_user;
 
     // Sets the value of the passed state
     void setStat(std::string stat, float val);
@@ -27,11 +41,20 @@ public:
     // Removes all stats
     void clear();
 
+    void readUserFile(const std::string &filename);
+    std::vector<std::string> getUsernames() const;
+    void updateUserStats(const std::vector<Fighter*> fighters);
+    void writeUserStats(const std::string &filename);
+
 private:
     StatsManager();
     StatsManager(const StatsManager &);
 
     std::map<std::string, float> stats_;
+    std::map<std::string, lifetime_stats> user_stats_;
+
+    LoggerPtr logger_;
 };
 
 std::string statPrefix(int playerID);
+

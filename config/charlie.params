@@ -1,69 +1,44 @@
-worldWidth   1500
-worldHeight  800
-resolution.x 1920
-resolution.y 1080
+walkSpeed        133.3
+dashSpeed        400.0
 
-level.x      0
-level.y      -100
-level.w      1024
-level.h      64
-level.d      80
-# level render color
-level.r      0.2
-level.g      0.2
-level.b      0.2
+# force applied when in AirNormal state
+airForce         450.0
+# "gravity"
+airAccel         -1100.0
+# for when the fighter is stunned
+airDI            200.0
 
-killbox.top     800
-killbox.bottom  -600
-killbox.left    -1300
-killbox.right   1300
+# also determines short hop input window
+jumpStartupTime  0.060
+jumpSpeed        600.0
+hopSpeed         275.0
+secondJumpSpeed  500.0
+# Maximum x speed from input
+jumpAirSpeed     200.0
+landingCooldownTime 0.05
 
-hud.x       0
-hud.y       -0.70
-hud.w       1.4
-hud.h       0.125
+dashStartupTime  0.06
+dashChangeTime   0.17
 
-#80
-soundtrack.volume 80 
-sfx.volume 80
-# these alter the volume of individual sfx
-sfx.smashhit.volume 1.0
-sfx.projectile.volume 0.5
-sfx.shieldon.volume 0.5
-sfx.shieldhit.volume 0.6
-sfx.counterhit.volume 0.5
-sfx.damagefloor 25
-sfx.damageceiling 300
-sfx.minvolume 40
-sfx.maxvolume 100
-
-
-input.dashThresh    0.9
-input.dashMin       0.6
-input.velThresh     0.15
-input.jumpThresh    0.9
-input.deadzone      0.2
-input.tiltThresh    0.4
-input.dodgeThresh   0.6
-input.fallThresh    -0.95
-input.dropThresh    -0.6
-input.trigThresh    0.5
-input.duckThresh    -0.85
-input.throwThresh   0.8
-
-menu.deadzone       0.5
-menu.thresh         0.7
-
-debug.drawHitbox    0
+fastFallAccel    -600.0
+fastFallInitialSpeed -250.0
+fastFallMaxInitialSpeed -500
+fastFallMaxSpeed -1000
 
 fighter.w             50
 fighter.h             60
-fighter.lives         4
-fighter.respawnTime   1.0
-fighter.gbThresh      600.0
-fighter.gbVelDamping  0.6
-fighter.gbStunDamping 0.15
 fighter.minDashTime   0.25
+
+
+dodge.duration    0.42
+dodge.invincTime  0.32
+dodge.speed       450
+dodge.cooldown    0.15
+
+stepdodge.invincTime  0.18
+stepdodge.cooldown    0.20
+stepdodge.zoffset     -15
+# ^ aesthetic only
 
 shield.maxHealth 50.0
 shield.regen     8.0
@@ -74,34 +49,6 @@ shield.cooldown  0.18
 shield.dazeTime  3.0
 shield.stunFactor 0.002
 
-walkSpeed        133.3
-dashSpeed        400.0
-airForce         450.0
-airAccel         -1100.0
-airDI            200.0
-jumpStartupTime  0.05
-jumpSpeed        600.0
-hopSpeed         275.0
-jumpAirSpeed     200.0
-secondJumpSpeed  500.0
-dashStartupTime  0.06
-dashChangeTime   0.17
-landingCooldownTime 0.05
-fastFallAccel    -600.0
-fastFallInitialSpeed -250.0
-fastFallMaxInitialSpeed -500
-fastFallMaxSpeed -1000
-
-dodge.duration    0.42
-dodge.invincTime  0.32
-dodge.speed       450
-dodge.cooldown    0.15
-
-stepdodge.invincTime  0.18
-stepdodge.cooldown    0.20
-# aesthetic only
-stepdodge.zoffset     -15
-
 ledgeGrab.grabInvincTime 1.0
 ledgeGrab.hbwidth        40.0
 ledgeGrab.hbheight       60.0
@@ -111,6 +58,10 @@ ledgeGrab.wakeupTime     0.15
 ledgeGrab.attackInvinc   0.40
 ledgeGrab.wakeUpInvinc   0.15
 
+
+# ---------------
+# - DASH ATTACK -
+# ---------------
 dashAttack.startup      0.05
 dashAttack.duration     0.55
 dashAttack.cooldown     0.15
@@ -118,7 +69,8 @@ dashAttack.damage       5
 dashAttack.stun         0.10
 dashAttack.knockbackx   -2
 dashAttack.knockbacky   5
-dashAttack.knockbackpow 80.0
+dashAttack.kbbase       160.0
+dashAttack.kbscaling    4.00
 dashAttack.hitboxx      45
 dashAttack.hitboxy      -15
 dashAttack.hitboxw      40
@@ -127,6 +79,10 @@ dashAttack.priority     1.0
 dashAttack.initialSpeed 550.0
 dashAttack.deceleration -800.0
 
+
+# ----------------
+# - LEDGE ATTACK -
+# ----------------
 ledgeAttack.startup      0.15
 ledgeAttack.duration     0.22
 ledgeAttack.cooldown     0.20
@@ -134,7 +90,8 @@ ledgeAttack.damage       6
 ledgeAttack.stun         0.10
 ledgeAttack.knockbackx   3
 ledgeAttack.knockbacky   5
-ledgeAttack.knockbackpow 120.0
+ledgeAttack.kbbase       180.0
+ledgeAttack.kbscaling    5.00
 ledgeAttack.hitboxx      45
 ledgeAttack.hitboxy      -15
 ledgeAttack.hitboxw      30
@@ -142,6 +99,10 @@ ledgeAttack.hitboxh      25
 ledgeAttack.priority     2.0
 
 
+
+# ----------------
+# - TILT ATTACKS -
+# ----------------
 neutralTiltAttack.startup      0.03
 neutralTiltAttack.duration     0.15
 neutralTiltAttack.cooldown     0.1
@@ -149,7 +110,8 @@ neutralTiltAttack.damage       3
 neutralTiltAttack.stun         0.10
 neutralTiltAttack.knockbackx   1
 neutralTiltAttack.knockbacky   1
-neutralTiltAttack.knockbackpow 60.0
+neutralTiltAttack.kbbase       100.0
+neutralTiltAttack.kbscaling    4.50
 neutralTiltAttack.hitboxx      30
 neutralTiltAttack.hitboxy      0
 neutralTiltAttack.hitboxw      30
@@ -163,7 +125,8 @@ sideTiltAttack.damage       6
 sideTiltAttack.stun         0.10
 sideTiltAttack.knockbackx   3
 sideTiltAttack.knockbacky   2
-sideTiltAttack.knockbackpow 120.0
+sideTiltAttack.kbbase       120.0
+sideTiltAttack.kbscaling    5.00
 sideTiltAttack.hitboxx      50
 sideTiltAttack.hitboxy      5
 sideTiltAttack.hitboxw      50
@@ -177,31 +140,13 @@ downTiltAttack.damage       8
 downTiltAttack.stun         0.16
 downTiltAttack.knockbackx   1
 downTiltAttack.knockbacky   5
-downTiltAttack.knockbackpow 140.0
+downTiltAttack.kbbase       140.0
+downTiltAttack.kbscaling    5.00
 downTiltAttack.hitboxx      60
 downTiltAttack.hitboxy      -30
 downTiltAttack.hitboxw      65
 downTiltAttack.hitboxh      15
 downTiltAttack.priority     1.0
-
-counterAttack.startup      0.0
-counterAttack.duration     0.30
-counterAttack.cooldown     0.25
-counterAttack.damage       8
-counterAttack.stun         0.10
-counterAttack.knockbackx   5
-counterAttack.knockbacky   2
-counterAttack.knockbackpow 120.0
-counterAttack.hitboxx      40
-counterAttack.hitboxy      0
-counterAttack.hitboxw      50
-counterAttack.hitboxh      60
-counterAttack.priority     2.5
-counterAttack.kbscaling    10
-
-counterSpecial.startup      0.15
-counterSpecial.duration     0.25
-counterSpecial.cooldown     0.30
 
 upTiltAttack.startup      0.1
 upTiltAttack.duration     0.22
@@ -210,7 +155,8 @@ upTiltAttack.damage       9
 upTiltAttack.stun         0.14
 upTiltAttack.knockbackx   1
 upTiltAttack.knockbacky   9
-upTiltAttack.knockbackpow 140.0
+upTiltAttack.kbbase       140.0
+upTiltAttack.kbscaling    5.00
 upTiltAttack.hitboxx      25
 upTiltAttack.hitboxy      30
 upTiltAttack.hitboxw      40
@@ -219,6 +165,9 @@ upTiltAttack.priority     1.0
 
 
 
+# ------------------
+# - AERIAL ATTACKS -
+# ------------------
 airNeutralAttack.startup      0.05
 airNeutralAttack.duration     0.36
 airNeutralAttack.cooldown     0.15
@@ -226,7 +175,8 @@ airNeutralAttack.damage       8
 airNeutralAttack.stun         0.09
 airNeutralAttack.knockbackx   3
 airNeutralAttack.knockbacky   2
-airNeutralAttack.knockbackpow 100.0
+airNeutralAttack.kbbase       200.0
+airNeutralAttack.kbscaling    4.00
 airNeutralAttack.hitboxx      25
 airNeutralAttack.hitboxy      -10
 airNeutralAttack.hitboxw      40
@@ -240,7 +190,8 @@ airFrontAttack.damage       8
 airFrontAttack.stun         0.13
 airFrontAttack.knockbackx   5
 airFrontAttack.knockbacky   2
-airFrontAttack.knockbackpow 175.0
+airFrontAttack.kbbase       400.0
+airFrontAttack.kbscaling    7.00
 airFrontAttack.hitboxx      40
 airFrontAttack.hitboxy      -5
 airFrontAttack.hitboxw      35
@@ -254,7 +205,8 @@ airBackAttack.damage       8
 airBackAttack.stun         0.13
 airBackAttack.knockbackx   -5
 airBackAttack.knockbacky   2
-airBackAttack.knockbackpow 140.0
+airBackAttack.kbbase       140.0
+airBackAttack.kbscaling    1.40
 airBackAttack.hitboxx      -40
 airBackAttack.hitboxy      0
 airBackAttack.hitboxw      30
@@ -268,7 +220,8 @@ airDownAttack.damage       8
 airDownAttack.stun         0.18
 airDownAttack.knockbackx   0
 airDownAttack.knockbacky   -1
-airDownAttack.knockbackpow 200.0
+airDownAttack.kbbase       600.0
+airDownAttack.kbscaling    3.00
 airDownAttack.hitboxx      0
 airDownAttack.hitboxy      -40
 airDownAttack.hitboxw      35
@@ -282,7 +235,8 @@ airUpAttack.damage       9
 airUpAttack.stun         0.20
 airUpAttack.knockbackx   0
 airUpAttack.knockbacky   1
-airUpAttack.knockbackpow 180.0
+airUpAttack.kbbase       300
+airUpAttack.kbscaling    7.00
 airUpAttack.hitboxx      0
 airUpAttack.hitboxy      40
 airUpAttack.hitboxw      45
@@ -296,7 +250,8 @@ tauntAttack.damage       0
 tauntAttack.stun         0
 tauntAttack.knockbackx   0
 tauntAttack.knockbacky   1
-tauntAttack.knockbackpow 0
+tauntAttack.kbbase       0
+tauntAttack.kbscaling    0
 tauntAttack.hitboxx      0
 tauntAttack.hitboxy      0
 tauntAttack.hitboxw      0
@@ -305,14 +260,31 @@ tauntAttack.priority     0
 
 
 
+# -------------------
+# - Special Attacks -
+# -------------------
+neutralSpecialAttack.startup      0.30
+neutralSpecialAttack.cooldown     0.15
+neutralSpecialAttack.damage       5
+neutralSpecialAttack.stun         0.06
+neutralSpecialAttack.speed        550.0
+neutralSpecialAttack.sizex        20.0
+neutralSpecialAttack.sizey        20.0
+neutralSpecialAttack.knockbackx   1
+neutralSpecialAttack.knockbacky   1
+neutralSpecialAttack.kbbase       20.0
+neutralSpecialAttack.kbscaling    0.20
+neutralSpecialAttack.lifetime     2.0
+
 upSpecialAttack.startup      0.07
 upSpecialAttack.duration     0.20
 upSpecialAttack.cooldown     0.00
 upSpecialAttack.damage       2
-upSpecialAttack.stun         0.15
+upSpecialAttack.stun         0.11
 upSpecialAttack.knockbackx   1
 upSpecialAttack.knockbacky   3
-upSpecialAttack.knockbackpow 70.0
+upSpecialAttack.kbbase       70.0
+upSpecialAttack.kbscaling    0.70
 upSpecialAttack.hitboxx      25
 upSpecialAttack.hitboxy      30
 upSpecialAttack.hitboxw      40
@@ -322,15 +294,15 @@ upSpecialAttack.repeatInterval  0.04
 upSpecialAttack.xvel            160
 upSpecialAttack.yvel            600
 
-
 dashSpecialAttack.startup      0.18
 dashSpecialAttack.duration     0.30
-dashSpecialAttack.cooldown     0.30
-dashSpecialAttack.damage       9
+dashSpecialAttack.cooldown     0.45
+dashSpecialAttack.damage       7
 dashSpecialAttack.stun         0.10
 dashSpecialAttack.knockbackx   2
 dashSpecialAttack.knockbacky   4 
-dashSpecialAttack.knockbackpow 100.0
+dashSpecialAttack.kbbase       100.0
+dashSpecialAttack.kbscaling    1.00
 dashSpecialAttack.hitboxx      0
 dashSpecialAttack.hitboxy      0
 dashSpecialAttack.hitboxw      50
@@ -338,7 +310,34 @@ dashSpecialAttack.hitboxh      60
 dashSpecialAttack.priority     1.0
 dashSpecialState.yvel         0
 dashSpecialState.xvel         800
+dashSpecialState.endxvel      200
 
+counterSpecial.startup      0.15
+counterSpecial.duration     0.25
+counterSpecial.cooldown     0.30
+# when hit the counterAttack comes out
+counterAttack.startup      0.0
+counterAttack.duration     0.30
+counterAttack.cooldown     0.25
+counterAttack.damage       8
+counterAttack.stun         0.10
+counterAttack.knockbackx   5
+counterAttack.knockbacky   2
+counterAttack.kbbase       120.0
+counterAttack.kbscaling    0
+counterAttack.hitboxx      45
+counterAttack.hitboxy      0
+counterAttack.hitboxw      60
+counterAttack.hitboxh      60
+counterAttack.priority     2.5
+# counter kb = reflectfact * incoming kb
+counterAttack.reflectfact  1
+
+
+
+# -----------------
+# - SMASH ATTACKS -
+# -----------------
 neutralSmashAttack.startup      0.40
 neutralSmashAttack.duration     0.05
 neutralSmashAttack.cooldown     0.20
@@ -346,7 +345,8 @@ neutralSmashAttack.damage       24
 neutralSmashAttack.stun         0.15
 neutralSmashAttack.knockbackx   0
 neutralSmashAttack.knockbacky   0
-neutralSmashAttack.knockbackpow 350.0
+neutralSmashAttack.kbbase       666.0
+neutralSmashAttack.kbscaling    9.00
 neutralSmashAttack.hitboxx      0
 neutralSmashAttack.hitboxy      -20
 neutralSmashAttack.hitboxw      30
@@ -360,7 +360,8 @@ sideSmashAttack.damage       17
 sideSmashAttack.stun         0.13
 sideSmashAttack.knockbackx   3
 sideSmashAttack.knockbacky   2
-sideSmashAttack.knockbackpow 240.0
+sideSmashAttack.kbbase       480.0
+sideSmashAttack.kbscaling    7.00
 sideSmashAttack.hitboxx      50
 sideSmashAttack.hitboxy      15
 sideSmashAttack.hitboxw      50
@@ -374,7 +375,8 @@ downSmashAttack.damage       15
 downSmashAttack.stun         0.13
 downSmashAttack.knockbackx   0
 downSmashAttack.knockbacky   0
-downSmashAttack.knockbackpow 180.0
+downSmashAttack.kbbase       360.0
+downSmashAttack.kbscaling    7.00
 downSmashAttack.hitboxx      0
 downSmashAttack.hitboxy      -20
 downSmashAttack.hitboxw      130
@@ -388,7 +390,8 @@ upSmashAttack.damage       14
 upSmashAttack.stun         0.13
 upSmashAttack.knockbackx   1
 upSmashAttack.knockbacky   4
-upSmashAttack.knockbackpow 220.0
+upSmashAttack.kbbase       440.0
+upSmashAttack.kbscaling    7.00
 upSmashAttack.hitboxw      48
 upSmashAttack.hitboxh      48
 upSmashAttack.priority     1.5
@@ -397,18 +400,11 @@ upSmashAttack.hitboxy      30
 upSmashAttack.hitboxx1     35
 upSmashAttack.hitboxy1     30
 
-neutralSpecialAttack.startup      0.30
-neutralSpecialAttack.cooldown     0.15
-neutralSpecialAttack.damage       5
-neutralSpecialAttack.stun         0.06
-neutralSpecialAttack.speed        550.0
-neutralSpecialAttack.sizex        20.0
-neutralSpecialAttack.sizey        20.0
-neutralSpecialAttack.knockbackx   1
-neutralSpecialAttack.knockbacky   1
-neutralSpecialAttack.knockbackpow 20.0
-neutralSpecialAttack.lifetime     2.0
 
+
+# ----------------------
+# - GRAB/THROW ATTACKS -
+# ----------------------
 grabAttack.startup          0.10
 grabAttack.duration         0.35
 grabAttack.cooldown         0.20
@@ -416,69 +412,36 @@ grabAttack.damage           0
 grabAttack.stun             0
 grabAttack.knockbackx       0
 grabAttack.knockbacky       0
-grabAttack.knockbackpow     0
+grabAttack.kbbase           0
+grabAttack.kbscaling        0
 grabAttack.priority         0
 grabAttack.hitboxx          30
 grabAttack.hitboxy          5
-grabAttack.hitboxw          20
+grabAttack.hitboxw          30
 grabAttack.hitboxh          30
 
 grabState.holdTime          1.5
 grabState.releaseCooldown   0.25
 # accel = velocity * -damping
-grabState.speedDamping      5
+grabState.speedDamping      4
 
-frontThrow.knockbackx       5
+frontThrow.knockbackx       7
 frontThrow.knockbacky       4
-frontThrow.knockbackpow     170
+frontThrow.kbbase           350
+frontThrow.kbscaling        4.00
 frontThrow.damage           8
 frontThrow.stun             0.12
 
-backThrow.knockbackx       -5
+backThrow.knockbackx       -8
 backThrow.knockbacky       4
-backThrow.knockbackpow     170
+backThrow.kbbase           400
+backThrow.kbscaling        4.00
 backThrow.damage           8
 backThrow.stun             0.12
 
 upThrow.knockbackx       0
 upThrow.knockbacky       1
-upThrow.knockbackpow     160
+upThrow.kbbase           400
+upThrow.kbscaling        5.00
 upThrow.damage           5
-upThrow.stun             0.10
-
-
-stageHazardAttack.cooldown     0.50
-stageHazardAttack.damage       15
-stageHazardAttack.stun         0.08
-stageHazardAttack.speed        33.0
-stageHazardAttack.switchRate   100.0
-stageHazardAttack.sizex        60.0
-stageHazardAttack.sizey        40.0
-stageHazardAttack.knockbackx   1
-stageHazardAttack.knockbacky   5
-stageHazardAttack.knockbackpow 100
-stageHazardAttack.priority   0
-stageHazardAttack.lifetime   20
-
-stageHazardAttack.twirlTime    1.5
-stageHazardAttack.xaccel       1500
-stageHazardAttack.twirlHeight  120
-
-camera.maxVx 200 
-camera.maxVy 150
-camera.maxVz 150
-camera.minZoom 500
-camera.maxZoom 300
-camera.maxSpread 800
-camera.yfactor 0.4
-camera.margin 250
-camera.minY -150
-camera.maxY 500
-camera.xrange 1000
-camera.fov 90
-
-backgroundSphere.radius         2000
-backgroundSphere.pulseCount     1000
-backgroundSphere.divisionCount  1000
-backgroundSphere.lineCount      10
-backgroundSphere.meshRes        512
+upThrow.stun             0.17

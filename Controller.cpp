@@ -5,26 +5,24 @@
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 
-Controller::Controller(const Fighter *f, SDL_Joystick *joystick) :
-    fighter_(f), joystick_(joystick)
+Controller::Controller(int controllerID) :
+    controllerID_(controllerID),
+    joystick_(NULL)
 {
     // Clear the state
     memset(&state_, 0, sizeof(controller_state));
     // Get the current state
     update(0);
+
+	joystick_ = SDL_JoystickOpen(controllerID);
 }
 
 Controller::~Controller()
 {
-    // Nothing
+	SDL_JoystickClose(joystick_);
 }
 
-controller_state Controller::nextState()
-{
-    return state_;
-}
-
-controller_state Controller::lastState()
+controller_state Controller::getState() const
 {
     return state_;
 }
@@ -32,13 +30,7 @@ controller_state Controller::lastState()
 void Controller::update(float dt)
 {
     // No presses
-    state_.pressa = false;
-    state_.pressb = false;
-    state_.pressc = false;
-    state_.pressjump = false;
-    state_.pressstart = false;
-    state_.pressrb = false;
-    state_.presslb = false;
+	clearPresses();
 
     // temporary value for computing velocities
     float newval;
@@ -71,18 +63,20 @@ void Controller::update(float dt)
     state_.buttonb = newstate;
     // X button, id 2
     newstate = SDL_JoystickGetButton(joystick_, 2);
-    state_.pressc = newstate && !state_.buttonc;
-    state_.buttonc = newstate;
+    state_.pressx = newstate && !state_.buttonx;
+    state_.buttonx = newstate;
     // Y button, id 3 AKA jump button
     newstate = SDL_JoystickGetButton(joystick_, 3);
-    state_.pressjump = newstate && !state_.jumpbutton;
-    state_.jumpbutton = newstate;
+    state_.pressy = newstate && !state_.buttony;;
+    state_.buttony = newstate;
     // Start button, id 7
     newstate = SDL_JoystickGetButton(joystick_, 7);
     state_.pressstart = newstate && !state_.buttonstart;
     state_.buttonstart = newstate;
-
     // Back button, id 6
+    newstate = SDL_JoystickGetButton(joystick_, 6);
+    state_.pressback = newstate && !state_.buttonback;
+    state_.buttonback = newstate;
 
     // Bumpers
     // left bumper, id 4
@@ -100,9 +94,18 @@ void Controller::update(float dt)
     state_.dpadu = SDL_JoystickGetAxis(joystick_, 7) < 0;
     state_.dpadd = SDL_JoystickGetAxis(joystick_, 7) > 0;
 }
-
-bool Controller::wantsPauseToggle() const
+void Controller::clearPresses()
 {
-    // pause if alive and start pressed
-    return state_.pressstart && fighter_->isAlive();
+    state_.pressa = false;
+    state_.pressb = false;
+    state_.pressx = false;
+    state_.pressy = false;
+    state_.pressstart = false;
+    state_.pressrb = false;
+    state_.presslb = false;
+}
+
+int Controller::getControllerID() const
+{
+    return controllerID_;
 }

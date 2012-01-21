@@ -4,7 +4,7 @@
 #include "GameEntity.h"
 #include "Attack.h"
 #include "Fighter.h"
-#include "glutils.h"
+#include "Engine.h"
 
 struct Ledge
 {
@@ -86,6 +86,14 @@ class LimpFighter;
 class Emitter;
 struct CentripetalForceF;
 
+struct victimData
+{
+    LimpFighter *victim;
+    float t;
+
+    explicit victimData(LimpFighter *f) : victim(f), t(0) { }
+};
+
 class HazardEntity : public GameEntity 
 {
 public:
@@ -110,7 +118,7 @@ public:
     
     // When called disconnects from victim, assuming that LimpFighter interface
     // is no longer valid.
-    virtual void disconnectCallback();
+    virtual void disconnectCallback(LimpFighter *caller);
     
 private:
     float lifetime_;
@@ -122,6 +130,6 @@ private:
     Emitter *emitter;
     CentripetalForceF *emitter_force;
 
-    LimpFighter *victim_;
+    std::vector<victimData> victims_;
 };
 

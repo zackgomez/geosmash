@@ -4,6 +4,7 @@
 #include "ParamReader.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <algorithm>
 #include "Fighter.h"
 #include "FrameManager.h"
 #include "PManager.h"
@@ -123,8 +124,8 @@ void StageManager::renderSphereBackground(float dt)
     GLuint modelViewUniform = glGetUniformLocation(sphereProgram_, "modelViewMatrix");
 
     glUseProgram(sphereProgram_);
-    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrix()));
-    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(getViewMatrix() * transform));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrixStack().current()));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(getViewMatrixStack().current() * transform));
 
     glBindBuffer(GL_ARRAY_BUFFER, meshBuf_);
     glEnableVertexAttribArray(0);
@@ -158,8 +159,7 @@ rectangle StageManager::getGroundRect() const
 // Hazard  
 //////////////////////////////////////////////
 
-HazardEntity::HazardEntity(const std::string &audioID) :
-    victim_(NULL)
+HazardEntity::HazardEntity(const std::string &audioID)
 {
     pre_ = "stageHazardAttack.";
 
@@ -168,14 +168,12 @@ HazardEntity::HazardEntity(const std::string &audioID) :
     lifetime_ = getParam(pre_ + "lifetime");
     dir_ = 1; // initially, we'll go right.
 
+    // All that matters for this attack is simply that it connects,
+    // and thus its size and perhaps audio
     attack_ = new SimpleAttack(
-            getParam(pre_ + "knockbackpow") *
-            glm::normalize(glm::vec2(getParam(pre_ + "knockbackx"),
-                      getParam(pre_ + "knockbacky"))),
-            getParam(pre_ + "damage"),
-            getParam(pre_ + "stun"),
-            getParam(pre_ + "priority"),
-            pos_, size_, -dir_, playerID_, teamID_,
+            glm::vec2(0.f), 0.f, 0.f,
+            0.f, 0.f, 0.f,
+            pos_, size_, 0, playerID_, teamID_,
             audioID);
 
     // Set up particle effects
@@ -210,30 +208,28 @@ bool HazardEntity::isDone() const
 
 void HazardEntity::update(float dt)
 {
-    // If we have a victim currently just continue to hold them
-    if (victim_)
+    for (size_t i = 0; i < victims_.size(); i++)
     {
-        t_ += dt;
-        if (t_ > getParam(pre_ + "twirlTime"))
+        victimData& data = victims_[i];
+        data.t += dt;
+        if (data.t > getParam(pre_ + "twirlTime"))
         {
             // Hit the victim - disconnects them from us
-            victim_->hit(attack_);
-            // Make sure we're disconnected
-            assert(!victim_);
-            // all done for now
-            return;
+            data.victim->hit(attack_);
+            std::cout << "Hit them...  ";
+            // TODO Make sure we're disconnected
+            //assert(std::find(victims_.begin(), victims_.end(), data) == victims_.end());
         }
         else
         {
-            //float side = victim_->getEntity()->getPosition().x > pos_.x ? 1 : -1;
-            //victim_->setAccel(glm::vec2(-side * getParam(pre_ + "xaccel"), 0));
             // Make them spin
             glm::mat4 spintrans = glm::rotate(glm::mat4(1.f), 1000.f*t_, glm::vec3(0, 1, 0));
-            victim_->setPreTransform(spintrans);
+            data.victim->setPreTransform(spintrans);
         }
-        // Don't do other updates
-        return;
     }
+    // Don't move when we have a victim
+    if (victims_.size() > 0)
+        return;
     // Each frame, we only need to do a couple things.
     // First, move a bit randomly
     // then, update our attack to reflect our location.
@@ -268,14 +264,11 @@ void HazardEntity::attackCollision(const Attack*)
 
 bool HazardEntity::hasAttack() const
 {
-    // Don't attack people when we're twirling someone
-    return !victim_;
+    return true;
 }
 
 const Attack *HazardEntity::getAttack() const
 {
-    attack_->setKBDirection(dir_);
-    attack_->setOriginDirection(-dir_);
     return attack_;
 }
 
@@ -292,23 +285,15 @@ void HazardEntity::attackConnected(GameEntity *victim)
     if (victim->getType() != Fighter::type)
         return;
     Fighter *fighter = (Fighter *) victim;
+    LimpFighter *lf = fighter->goLimp(new GenericUnlimpCallback<HazardEntity>(this));
     // Make them go limp and store it
-    victim_ = fighter->goLimp(new GenericUnlimpCallback<HazardEntity>(this));
-
-    // Reset the timer
-    t_ = 0;
+    victims_.push_back(victimData(lf));
 
     // Set initial conditions on the fighter
     float yspeed = getParam(pre_ + "twirlHeight") / getParam(pre_ + "twirlTime");
-    victim_->setPosition(pos_);
-    victim_->setVelocity(glm::vec2(0.f, yspeed));
-    victim_->setAccel(glm::vec2(0.f));
-    /*
-    // TODO don't "jerk" the fighter
-    victim_->setPosition(pos_ + glm::vec2(size_.x, 0));
-    victim_->setVelocity(glm::vec2(0, yspeed));
-    victim_->setAccel(glm::vec2(-getParam(pre_ + "xaccel"), 0));
-    */
+    lf->setPosition(pos_);
+    lf->setVelocity(glm::vec2(0.f, yspeed));
+    lf->setAccel(glm::vec2(0.f));
 }
 
 void HazardEntity::collisionWithGround(const rectangle &ground, bool collision)
@@ -317,13 +302,20 @@ void HazardEntity::collisionWithGround(const rectangle &ground, bool collision)
         dir_ = -dir_;
 }
 
-void HazardEntity::disconnectCallback()
+void HazardEntity::disconnectCallback(LimpFighter *caller)
 {
-    assert(victim_);
-    // Simply forget about the victim
-    victim_ = NULL;
+    for (size_t i = 0; i < victims_.size(); )
+    {
+        if (victims_[i].victim == caller)
+        {
+            std::swap(victims_[i], victims_.back());
+            victims_.pop_back();
+            return;
+        }
+        else
+            i++;
+    }
 
-    // Reset the (now hit reset) timer
-    t_ = 0;
+    assert(false && "Caller not found\n");
 }
 

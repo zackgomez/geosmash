@@ -1,27 +1,30 @@
 #pragma once
 #include "GameState.h"
+#include <cstdlib>
 
-class Controller;
 class GameEntity;
 class Fighter;
+class Player;
 
 class InGameState : public GameState
 {
 public:
-    InGameState(const std::vector<Controller *> &controllers,
+    InGameState(const std::vector<Player *> &players,
             const std::vector<Fighter *> &fighters, bool makeHazard);
     virtual ~InGameState();
 
-    virtual GameState* processInput(const std::vector<SDL_Joystick*> &joysticks,
+    virtual GameState* processInput(const std::vector<Controller*> &joysticks,
             float dt);
     virtual void update(float dt);
     virtual void render(float dt);
 
-    static InGameState *instance;
     bool stealLife(int teamID);
 
+    // XXX: Get rid of this hack
+    static InGameState *instance;
+
 private:
-    std::vector<Controller*> controllers_;
+    std::vector<Player*> players_;
     std::vector<Fighter*> fighters_;
     std::vector<GameEntity *> entities_;
 
@@ -29,7 +32,7 @@ private:
     bool criticalMusic_;
     size_t startTime_;
 
-    int pausingController_;
+    int pausingPlayer_;
 
 
     // Helper functions

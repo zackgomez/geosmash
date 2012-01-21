@@ -4,16 +4,17 @@
 #include <iostream>
 #include <cstdlib>
 #include <vector>
-#include "glutils.h"
+#include "Engine.h"
 #include "AudioManager.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
+#include "StatsManager.h"
 #include "GameState.h"
 #include "MenuState.h"
 
 static const float dt = 1.f / 60.f;
 
-std::vector<SDL_Joystick*> joysticks;
+std::vector<Controller*> controllers;
 bool running;
 GameState *state;
 
@@ -29,7 +30,8 @@ void globalEvents();
 int main(int argc, char *argv[])
 {
     // Init game state
-    ParamReader::get()->loadFile("params.dat");
+    ParamReader::get()->loadFile("config/global.params");
+    ParamReader::get()->loadFile("config/charlie.params");
 
     if (!initLibs())
         exit(1);
@@ -45,6 +47,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    // Read in lifetime stats/usernames
+    StatsManager::get()->readUserFile("user_stats.dat");
 
     mainloop();
 
@@ -64,9 +68,13 @@ void mainloop()
         // Global events like ESC or mute etc
         globalEvents();
 
+        // Update controllers
+        for (size_t i = 0; i < controllers.size(); i++)
+            controllers[i]->update(dt);
+
         GameState *nextState;
         // Process input, checking for new states along the way
-        while ((nextState = state->processInput(joysticks, dt)))
+        while ((nextState = state->processInput(controllers, dt)))
         {
             delete state;
             state = nextState;
@@ -107,8 +115,10 @@ void globalEvents()
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
             if (event.key.keysym.sym == SDLK_m)
+                AudioManager::get()->mute();
                 AudioManager::get()->pauseSoundtrack();
             if (event.key.keysym.sym == SDLK_p)
+                AudioManager::get()->unmute();
                 AudioManager::get()->startSoundtrack();
             break;
         case SDL_QUIT:
@@ -130,7 +140,7 @@ int initJoystick(unsigned numPlayers)
 
     unsigned i;
     for (i = 0; i < numJoysticks && i < numPlayers; i++)
-        joysticks.push_back(SDL_JoystickOpen(i));
+        controllers.push_back(new Controller(i));
 
     return numPlayers;
 }
@@ -143,6 +153,7 @@ int initGraphics()
     initGLUtils(getParam("resolution.x"), getParam("resolution.y"));
 
     FrameManager::get()->loadFile("frames/charlie.frames");
+    FrameManager::get()->loadFile("frames/global.frames");
 
     return 0;
 }
@@ -150,8 +161,8 @@ int initGraphics()
 void cleanup()
 {
     std::cout << "Cleaning up...\n";
-    for (unsigned i = 0; i < joysticks.size(); i++)
-        SDL_JoystickClose(joysticks[i]);
+    for (unsigned i = 0; i < controllers.size(); i++)
+        delete controllers[i];
 
     std::cout << "Quiting nicely\n";
     SDL_Quit();

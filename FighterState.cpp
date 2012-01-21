@@ -5,7 +5,7 @@
 #include "ParamReader.h"
 #include "ExplosionManager.h"
 #include "Projectile.h"
-#include "glutils.h"
+#include "Engine.h"
 #include "AudioManager.h"
 #include "StatsManager.h"
 #include "StageManager.h"
@@ -17,6 +17,12 @@ int getTeamID(int);
 // ----------------------------------------------------------------------------
 // FighterState class methods
 // ----------------------------------------------------------------------------
+
+FighterState::FighterState(Fighter *f) :
+    fighter_(f), frameName_("GroundNeutral"), invincTime_(0.f)
+{
+    logger_ = Logger::getLogger("FighterState");
+}
 
 bool FighterState::canBeHit() const
 {
@@ -55,18 +61,23 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     }
 
     // Take damage
-    float dd = attack->getDamage(fighter_);
+    float dd = attack->getDamage();
     fighter_->damage_ += dd;
     // Record damage given/taken
     StatsManager::get()->addStat(StatsManager::getStatPrefix(fighter_->playerID_) + "damageTaken", dd);
     if (attack->getTeamID() == fighter_->getTeamID())
         StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "teamDamageGiven", dd);
     else
-        StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "damageGiven", dd);
+    {
+        StatsManager::get()->addStat(statPrefix(attack->getPlayerID()) + "damageGiven", dd);
+        StatsManager::get()->addStat(statPrefix(attack->getPlayerID()) + "damageStreak", dd);
+        StatsManager::get()->maxStat(statPrefix(attack->getPlayerID()) + "maxDamageStreak",
+            StatsManager::get()->getStat(statPrefix(attack->getPlayerID()) + "damageStreak"));
+    }
 
 
     // Calculate direction of hit
-    glm::vec2 knockback = attack->getKnockback(fighter_) * fighter_->damageFunc();
+    glm::vec2 knockback = attack->calcKnockback(fighter_, fighter_->damage_);
 
     // Get knocked back
     fighter_->vel_ = knockback;
@@ -85,10 +96,12 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     // Pop up a bit so that we're not overlapping the ground
     fighter_->pos_.y += 4;
 
+
+    float gbmag = glm::length(fighter_->vel_);
     // Go to the stunned state
-    float stunDuration = attack->getStun(fighter_) * fighter_->damageFunc();
+    float stunDuration = attack->calcStun(fighter_, fighter_->damage_);
     std::cout << "StunDuration: " << stunDuration << '\n';
-    return new AirStunnedState(fighter_, stunDuration, fighter_->vel_.y < 0);
+    return new AirStunnedState(fighter_, stunDuration, gbmag > 0 ? gbmag : -HUGE_VAL);
 }
 
 void FighterState::collisionHelper(const rectangle &ground)
@@ -181,8 +194,8 @@ FighterState* FighterState::performBMove(const controller_state &controller, boo
 
 
 //// ---------------------- AIR STUNNED STATE -----------------------
-AirStunnedState::AirStunnedState(Fighter *f, float duration, bool gb) : 
-    FighterState(f), stunDuration_(duration), stunTime_(0), gb_(gb)
+AirStunnedState::AirStunnedState(Fighter *f, float duration, float gbmag) : 
+    FighterState(f), stunDuration_(duration), stunTime_(0), gbMag_(gbmag)
 {
     frameName_ = "AirStunned";
 }
@@ -237,14 +250,17 @@ FighterState* AirStunnedState::collisionWithGround(const rectangle &ground, bool
 
     // Check for ground bounce
     if (fighter_->vel_.y < -getParam("fighter.gbThresh")
-            && gb_)
+            && gbMag_ > 0.f)
     {
-        // reflect and dampen yvel and stun
+        // reflect and set magnitude of knockback to be initial gb speed
+        fighter_->vel_ /= glm::length(fighter_->vel_);
+        fighter_->vel_ *= gbMag_;
         fighter_->vel_.y *= -getParam("fighter.gbVelDamping");
         fighter_->vel_.x *= getParam("fighter.gbVelDamping");
+        // Dampen stun
         stunTime_ *= getParam("fighter.gbStunDamping");
         // Cannot be bounced again unless hit again
-        gb_ = false;
+        gbMag_ = -HUGE_VAL;
     }
     else
     {
@@ -278,11 +294,22 @@ GroundState::~GroundState()
 FighterState* GroundState::processInput(controller_state &controller, float dt)
 {
     // 'unduck' every frame
-
     ducking_ = false;
+
+    // XXX: HACK: This is a fix for the undesirable behavior of inputting a
+    // dash during the jump waiting period resulting in the dash not happening
+    // and instead the fighter simply starts walking
+    if (!dashing_ && waitTime_ >= 0 && dashTime_ < 0 &&
+            fabs(controller.joyx)  > getParam("input.dashThresh") &&
+            fabs(controller.joyxv) > getParam("input.velThresh"))
+    {
+        dashTime_ = 0;
+    }
+
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
     if (waitTime_ >= 0) waitTime_ -= dt;
+    // XXX why is this different than the rest?
     if (dashTime_ >= 0) dashTime_ += dt;
     else dashTime_ -= dt;
     // If the fighter is currently attacking, do nothing else
@@ -293,6 +320,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     // Do nothing during dash startup
     if (dashTime_ > 0 && dashTime_ < getParam("dashStartupTime"))
         return NULL;
+    // Do nothing during generic wait time
     if (waitTime_ > 0)
         return NULL;
 
@@ -305,7 +333,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
             0.0f;
         // If they are still "holding down" the jump button now, then full jump
         // otherwise short hop
-        if (controller.jumpbutton || controller.joyy > getParam("input.jumpThresh"))
+        if (controller.buttony || controller.joyy > getParam("input.jumpThresh"))
             fighter_->vel_.y = getParam("jumpSpeed");
         else
             fighter_->vel_.y = getParam("hopSpeed");
@@ -425,7 +453,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         return NULL;
     }
     // Check for smash attacks
-    else if (controller.pressc && !dashing_)
+    else if (controller.pressx && !dashing_)
     {
         glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
         // No movement during smash attacks
@@ -508,7 +536,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         }
         // --- Check for dashing transition start
         else if (fabs(controller.joyx) > getParam("input.dashThresh")
-                && fabs(controller.joyxv) > getParam("input.velThresh"))
+                && fabs(controller.joyxv) > getParam("input.velThresh") && dashTime_ < 0)
         {
             dashTime_ = 0;
             fighter_->vel_.x = 0;
@@ -525,9 +553,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     }
 
     // --- Check to see if they want to start a jump ---
-    if (controller.pressjump ||
-            (controller.joyy > getParam("input.jumpThresh")
-             && controller.joyyv > getParam("input.velThresh")))
+    if (controller.pressy && jumpTime_ < 0)
     {
         // Start the jump timer
         jumpTime_ = 0.0f;
@@ -733,10 +759,10 @@ FighterState* BlockingState::hitByAttack(const Attack *attack)
     else
     {
         // block it and take shield damage
-        fighter_->shieldHealth_ -= attack->getDamage(fighter_);
+        fighter_->shieldHealth_ -= attack->getDamage();
         // Experience some hit stun
         hitStunTime_ = getParam("shield.stunFactor")
-            * glm::length(attack->getKnockback(fighter_));
+            * glm::length(attack->calcStun(fighter_, fighter_->damage_));
         AudioManager::get()->playSound("shieldhit");
     }
 
@@ -831,8 +857,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
     }
 
     // --- Check for jump ---
-    if ((controller.pressjump || (controller.joyy > getParam("input.jumpThresh") && 
-                    controller.joyyv > getParam("input.velThresh"))) && canSecondJump_)
+    if (controller.pressy && jumpTime_ < 0 && canSecondJump_)
     {
         jumpTime_ = 0;
     }
@@ -994,8 +1019,8 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
         return calculateHitResult(attack);
     }
 
-    float incdamage = attack->getDamage(fighter_);
-    float calcedpow = incdamage * getParam("counterAttack.kbscaling");
+    float calcedpow = getParam("counterAttack.reflectfact") *
+        glm::length(attack->calcKnockback(fighter_, fighter_->getDamage()));
 
     // Now the other player gets screwed over for attacking us at the wrong time.
     // Otherwise create a new Fighter attack helper.
@@ -1003,7 +1028,7 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
     fighter_->attack_->setHitboxFrame("CounterAttackHitbox");
     fighter_->attack_->setFighter(fighter_);
     fighter_->attack_->start();
-    fighter_->attack_->setKnockbackPow(calcedpow);
+    fighter_->attack_->setBaseKnockback(calcedpow);
     fighter_->dir_ = attack->getOriginDirection(fighter_);
 
     return NULL;
@@ -1103,16 +1128,18 @@ FighterState * DashSpecialState::processInput(controller_state &, float dt)
     // Check for transition away
     if (!fighter_->attack_)
     {
-        // Clear x velocity
-        fighter_->vel_.x = 0.f;
 
         if (ground_)
         {
             fighter_->vel_.y = 0.f;
+            // Clear x velocity
+            fighter_->vel_.x = 0.f;
             return new GroundState(fighter_);
         }
         else
+        {
             return new AirNormalState(fighter_);
+        }
     }
 
     // TODO make this ignore the fact that we have an attack
@@ -1141,6 +1168,8 @@ void DashSpecialState::update(float dt)
             fighter_->vel_.y = getParam(pre_ + "yvel");
             */
     }
+    else if (fighter_->attack_ && !ground_)
+        fighter_->vel_.x = getParam(pre_ + "endxvel") * fighter_->dir_;
     else
         fighter_->vel_.x = 0.f;
 
@@ -1177,6 +1206,13 @@ GrabbingState::GrabbingState(Fighter *f) :
     fighter_->attack_ = fighter_->attackMap_["grab"]->clone();
     fighter_->attack_->setFighter(f);
     fighter_->attack_->start();
+}
+
+GrabbingState::~GrabbingState()
+{
+    if (victim_)
+        victim_->release();
+    assert(!victim_);
 }
 
 FighterState * GrabbingState::processInput(controller_state &controller, float dt)
@@ -1224,12 +1260,15 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
         // If we have a throw, create it and do it
         if (shouldThrow)
         {
-            glm::vec2 kb = getParam(throwPrefix + "knockbackpow") *
-                glm::normalize(glm::vec2(getParam(throwPrefix + "knockbackx")
-                            * fighter_->dir_,
-                            getParam(throwPrefix + "knockbacky")));
+            glm::vec2 kbdir = glm::normalize(
+                    glm::vec2(getParam(throwPrefix + "knockbackx"),
+                        getParam(throwPrefix + "knockbacky")));
+            kbdir *= glm::vec2(fighter_->getDirection(), 1.f);
+
             SimpleAttack thrw = SimpleAttack(
-                    kb,
+                    kbdir,
+                    getParam(throwPrefix + "kbbase"),
+                    getParam(throwPrefix + "kbscaling"),
                     getParam(throwPrefix + "damage"),
                     getParam(throwPrefix + "stun"),
                     0.f, // priority doesn't matter
@@ -1315,10 +1354,12 @@ bool GrabbingState::canBeHit() const
     return true;
 }
 
-void GrabbingState::disconnectCallback()
+void GrabbingState::disconnectCallback(LimpFighter *caller)
 {
+    assert(victim_);
+    assert(victim_ == caller);
     // We should have no attack right now
-    assert(!fighter_->attack_);
+    assert(!fighter_->attack_ || fighter_->attack_->isDone());
     // Remove victim
     victim_ = NULL;
 }
@@ -1394,6 +1435,7 @@ LedgeGrabState::LedgeGrabState(Fighter *f) :
     jumpTime_(HUGE_VAL),
     ledge_(NULL)
 {
+    fighter_->lastHitBy_ = -1;
     invincTime_ = getParam("ledgeGrab.grabInvincTime");
 }
 
@@ -1405,7 +1447,7 @@ FighterState* LedgeGrabState::processInput(controller_state &controller, float d
     if (jumpTime_ <= 0.f)
     {
         fighter_->vel_ = glm::vec2(0.f,
-                controller.jumpbutton ? getParam("jumpSpeed") : getParam("hopSpeed"));
+                controller.buttony ? getParam("jumpSpeed") : getParam("hopSpeed"));
         // Unoccupy
         ledge_->occupied = false;
 
@@ -1419,7 +1461,7 @@ FighterState* LedgeGrabState::processInput(controller_state &controller, float d
     }
 
     // Check for jump input
-    if (controller.pressjump)
+    if (controller.pressy && jumpTime_ == HUGE_VAL)
     {
         // Start startup time countdown
         jumpTime_ = getParam("jumpStartupTime");
@@ -1558,7 +1600,7 @@ LimpState::LimpState(Fighter *f, UnlimpCallback *callback) :
 LimpState::~LimpState()
 {
     if (!next_)
-        (*unlimpCallback_)();
+        (*unlimpCallback_)(this);
     delete unlimpCallback_;
 }
 
@@ -1589,9 +1631,10 @@ FighterState* LimpState::hitByAttack(const Attack *attack)
     // XXX: this is probably going to break sometime
     assert(!next_ && "memory leak");
     // On hit first disconnect
-    (*unlimpCallback_)();
+    (*unlimpCallback_)(this);
     // Then do the normal thing
-    return FighterState::calculateHitResult(attack);
+    next_ = FighterState::calculateHitResult(attack);
+    return next_;
 }
 
 bool LimpState::canBeHit() const
@@ -1639,14 +1682,17 @@ void LimpState::hit(const Attack *attack)
 {
     std::cout << "LIMP HIT\n";
     // disconnect, we're no longer limp
-    (*unlimpCallback_)();
+    if (!next_)
+        (*unlimpCallback_)(this);
+    else
+        logger_->warning() << "already next in LimpState::hit()\n";
     next_ = FighterState::calculateHitResult(attack);
 }
 
 void LimpState::release()
 {
     // Just do the callback, and set the next state, always air normal
-    (*unlimpCallback_)();
+    (*unlimpCallback_)(this);
     next_ = new AirNormalState(fighter_);
 }
 

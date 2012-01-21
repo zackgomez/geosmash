@@ -1,6 +1,6 @@
-#include <iostream>
 #include "CameraManager.h"
 #include "ParamReader.h"
+#include "Engine.h"
 
 #define MINY -75.0
 #define MINX (-100.0f)
@@ -17,10 +17,8 @@ void CameraManager::update(float dt, const std::vector<Fighter *> &fighters)
     */
     rectangle rect = getCameraRect_(fighters);
 
-    //std::cout << "Bounding rect - " << rect.x << ' ' << rect.y << ' ' << rect.w << ' ' << rect.h << '\n';
     float z = rect.w / (2 * tanf(fov / 2));
     target_ = glm::vec3(rect.x, rect.y, z);
-    //std::cout << "Cam Target: " << target_.x << ' ' << target_.x << ' ' << target_.z << '\n';
 
     updateCurrent_(dt);
 }
@@ -47,10 +45,6 @@ void CameraManager::updateTarget_(const std::vector<Fighter *> &fighters) {
     totalPos /= fighters.size();
     printf("spread? %f\n", maxX - minX);
 
-    /*
-    std::cout << "x " << totalPos.x
-              << ", y " << totalPos.y << std::endl;
-              */
     if (totalPos.y < MINY) 
         totalPos.y = MINY;
     if (totalPos.x < MINX) 

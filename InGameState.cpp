@@ -8,7 +8,8 @@
 #include <cstdlib>
 #include <cmath>
 #include <vector>
-#include "glutils.h"
+#include <cassert>
+#include "Engine.h"
 #include "Fighter.h"
 #include "AudioManager.h"
 #include "ExplosionManager.h"
@@ -21,20 +22,20 @@
 #include "FontManager.h"
 #include "StageManager.h"
 #include "Controller.h"
-#include <cassert>
 #include "StatsGameState.h"
+#include "Player.h"
 
 std::vector<GameEntity *> getEntitiesToAdd();
 void addEntity(GameEntity *ent);
 
 InGameState *InGameState::instance = NULL;
 
-InGameState::InGameState(const std::vector<Controller *> &controllers,
+InGameState::InGameState(const std::vector<Player *> &players,
         const std::vector<Fighter*> &fighters, bool makeHazard) :
-    controllers_(controllers),
+    players_(players),
     fighters_(fighters),
     paused_(false),
-    pausingController_(-1)
+    pausingPlayer_(-1)
 {
     StageManager::get()->clear();
     ParticleManager::get()->reset();
@@ -86,33 +87,30 @@ InGameState::InGameState(const std::vector<Controller *> &controllers,
 
 InGameState::~InGameState()
 {
-    for (size_t i = 0; i < controllers_.size(); i++)
-        delete controllers_[i];
     // Delete all non fighter entities, assume the fighters at front of entities list
     for (size_t i = fighters_.size(); i < entities_.size(); i++)
         delete entities_[i];
+
+    // Fighters/players are passed to StatsGameState
+
+    instance = NULL;
 }
 
-GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joysticks, float dt)
+GameState * InGameState::processInput(const std::vector<Controller*> &controllers, float dt)
 {
-    // Check for player one pressing back (id 6) while paused
-    if (SDL_JoystickGetButton(joysticks[0], 6)
-            && paused_ && pausingController_ == 0)
-    {
-        return new StatsGameState(fighters_, -1);
-    }
+    // First update players pre frame
+    for (size_t i = 0; i < players_.size(); i++)
+        players_[i]->update(dt);
 
-    // First update controllers / frame
-    for (unsigned i = 0; i < controllers_.size(); i++)
+    // Check for pause toggle from controllers/pause early exit (pause+BACK)
+    for (unsigned i = 0; i < players_.size(); i++)
     {
-        controllers_[i]->update(dt);
-    }
-
-    // Check for pause toggle from controllers
-    for (unsigned i = 0; i < controllers_.size(); i++)
-    {
-        if (controllers_[i]->wantsPauseToggle())
+        if (players_[i]->wantsPauseToggle())
             togglePause(i);
+
+        if (paused_ && pausingPlayer_ == players_[i]->getPlayerID() &&
+                players_[i]->getState().pressback)
+            return new StatsGameState(players_, -1);
     }
 
 
@@ -123,7 +121,7 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
     // Now have the fighters process their input
     for (unsigned i = 0; i < fighters_.size(); i++)
     {
-        controller_state cs = controllers_[i]->nextState();
+        controller_state cs = players_[i]->getState();
         fighters_[i]->processInput(cs, dt);
     }
 
@@ -163,7 +161,13 @@ GameState * InGameState::processInput(const std::vector<SDL_Joystick*> &joystick
                 (SDL_GetTicks() - startTime_) / 1000.0f);
 
         // Transition to end of game state
-        return new StatsGameState(fighters_, winningTeam);
+        StatsManager::get()->setStat("winningTeam", winningTeam);
+        if (getParam("debug.saveStats"))
+        {
+            StatsManager::get()->updateUserStats(fighters_);
+            StatsManager::get()->writeUserStats("user_stats.dat");
+        }
+        return new StatsGameState(players_, winningTeam);
     }
 
     // No state change
@@ -252,10 +256,10 @@ bool InGameState::stealLife(int teamID)
 void InGameState::renderPause()
 {
     glDisable(GL_DEPTH_TEST);
-    glm::mat4 pmat = getProjectionMatrix();
-    glm::mat4 vmat = getViewMatrix();
-    setProjectionMatrix(glm::mat4(1.f));
-    setViewMatrix(glm::mat4(1.f));
+    getProjectionMatrixStack().push();
+    getViewMatrixStack().push();
+    getProjectionMatrixStack().current() = glm::mat4(1.f);
+    getViewMatrixStack().current() = glm::mat4(1.f);
 
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -1.f)),
@@ -265,21 +269,22 @@ void InGameState::renderPause()
     //renderRectangle(transform, glm::vec4(0.1, 0.1, 0.1, 0.0));
 
 
-    setProjectionMatrix(pmat);
-    setViewMatrix(vmat);
+    getProjectionMatrixStack().pop();
+    getViewMatrixStack().pop();
 }
 
 void InGameState::renderHUD()
 {
     // Render the overlay interface (HUD)
     glDisable(GL_DEPTH_TEST);
-    glm::mat4 pmat = getProjectionMatrix();
-    glm::mat4 vmat = getViewMatrix();
-    setProjectionMatrix(glm::mat4(1.f));
-    setViewMatrix(glm::mat4(1.f));
+    getProjectionMatrixStack().push();
+    getViewMatrixStack().push();
+    getProjectionMatrixStack().current() = glm::mat4(1.f);
+    getViewMatrixStack().current() = glm::mat4(1.f);
 
     const glm::vec2 hud_center(0, 1.5f/6 - 1);
     const glm::vec2 lifesize = 0.03f * glm::vec2(1.f, 16.f/9.f);
+    const glm::vec3 danger_color = glm::vec3(0.8, 0.1, 0.1);
     for (unsigned i = 0; i < fighters_.size(); i++)
     {
         const glm::vec2 player_hud_center =
@@ -336,24 +341,30 @@ void InGameState::renderHUD()
             FontManager::get()->renderNumber(transform, color, lives);
         }
 
-        // Draw the damage amount with color scaled towards black as the
-        // player has more damage
+        // Draw the damage amount, if the player is over 150% instead render in dange red
         glm::vec2 damageBarMidpoint = player_hud_center + glm::vec2(0.f, -0.8f/6.f);
         glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(damageBarMidpoint, 0.f)),
             glm::vec3(0.085f, 0.085f, 1.0f));
-        glm::vec3 dmgColor = std::min(1.f, std::max(0.2f, 1.f - damage/200.f)) * color;
-        FontManager::get()->renderNumber(transform, dmgColor, floorf(damage));
+        FontManager::get()->renderNumber(transform,
+                damage > 150.f ? danger_color : color, floorf(damage));
+
+        // Draw the player profile name
+        glm::vec2 profileNameMidpoint = player_hud_center + glm::vec2(0.f, -1.2f/6.f);
+        transform = glm::scale(
+            glm::translate(glm::mat4(1.0f), glm::vec3(profileNameMidpoint, 0.f)),
+            glm::vec3(0.045f, 0.045f, 1.0f));
+        FontManager::get()->renderString(transform, color, fighter->getUsername());
     }
 
-    setProjectionMatrix(pmat);
-    setViewMatrix(vmat);
+    getProjectionMatrixStack().pop();
+    getViewMatrixStack().pop();
 }
 
 void InGameState::renderArrow(const Fighter *f)
 {
     glm::vec4 fpos = glm::vec4(f->getRect().x, f->getRect().y, 0.f, 1.f);
-    glm::vec4 fndc = getProjectionMatrix() * getViewMatrix() * fpos;
+    glm::vec4 fndc = getProjectionMatrixStack().current() * getViewMatrixStack().current() * fpos;
     fndc /= fndc.w;
     if (fabs(fndc.x) > 1 || fabs(fndc.y) > 1)
     {
@@ -389,15 +400,15 @@ void InGameState::renderArrow(const Fighter *f)
                         glm::vec3(scale, scale, 1.f)),
                     rot, glm::vec3(0, 0, 1));
 
-        glm::mat4 pmat = getProjectionMatrix();
-        glm::mat4 vmat = getViewMatrix();
-        setProjectionMatrix(glm::mat4(1.f));
-        setViewMatrix(glm::mat4(1.f));
+        getProjectionMatrixStack().push();
+        getViewMatrixStack().push();
+        getProjectionMatrixStack().current() = glm::mat4(1.f);
+        getViewMatrixStack().current() = glm::mat4(1.f);
 
         FrameManager::get()->renderFrame(transform, glm::vec4(f->getColor(), 0.0f), "OffscreenArrow");
 
-        setProjectionMatrix(pmat);
-        setViewMatrix(vmat);
+        getProjectionMatrixStack().pop();
+        getViewMatrixStack().pop();
     }
 }
 
@@ -494,11 +505,17 @@ void InGameState::collisionDetection()
                 int killerID = fighter->getLastHitBy();
                 std::string killer = StatsManager::getPlayerName(killerID);
                 StatsManager::get()->addStat(killer+ ".kills." + died, 1);
-                StatsManager::get()->addStat(killer+ ".kills.total", 1);
-                // Update kill streak
-                StatsManager::get()->addStat(killer + ".curKillStreak", 1); // cleared in fighter::respawn
-                StatsManager::get()->maxStat(killer + ".maxKillStreak",
-                        StatsManager::get()->getStat(killer + ".curKillStreak"));
+                // check for team kill
+                if (fighter->getTeamID() == fighters_[fighter->getLastHitBy()]->getTeamID())
+                    StatsManager::get()->addStat(killer+ ".kills.team", 1);
+                else
+                {
+                    StatsManager::get()->addStat(killer+ ".kills.total", 1);
+                    // Update kill streak
+                    StatsManager::get()->addStat(killer + ".curKillStreak", 1); // cleared in fighter::respawn
+                    StatsManager::get()->maxStat(killer + ".maxKillStreak",
+                            StatsManager::get()->getStat(killer + ".curKillStreak"));
+                }
             }
             else
                 StatsManager::get()->addStat(died + ".suicides", 1);
@@ -508,19 +525,19 @@ void InGameState::collisionDetection()
     }
 }
 
-void InGameState::togglePause(int controllerID)
+void InGameState::togglePause(int playerID)
 {
     if (!paused_)
     {
         paused_ = true;
-        pausingController_ = controllerID;
+        pausingPlayer_ = playerID;
         AudioManager::get()->pauseSoundtrack();
         AudioManager::get()->playSound("pausein");
     }
-    else if (paused_ && pausingController_ == controllerID)
+    else if (paused_ && pausingPlayer_ == playerID)
     {
         paused_ = false;
-        pausingController_ = -1;
+        pausingPlayer_ = -1;
         AudioManager::get()->startSoundtrack();
         AudioManager::get()->playSound("pauseout");
     }

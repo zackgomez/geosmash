@@ -3,7 +3,7 @@
 #include <cmath>
 #include <cstdio>
 #include <GL/glew.h>
-#include "glutils.h"
+#include "Engine.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include "ExplosionManager.h"
 #include "ParamReader.h"
@@ -17,7 +17,7 @@
 const std::string Fighter::type = "FighterEntity";
 
 Fighter::Fighter(const glm::vec3& color, int playerID,
-        int teamID, int startingLives) :
+        int teamID, int startingLives, const std::string &username) :
     dir_(-1),
     state_(0),
     damage_(0),
@@ -25,6 +25,7 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     lives_(startingLives),
     respawnx_(0), respawny_(0),
     color_(color),
+    username_(username),
     attack_(NULL),
     lastHitBy_(-1)
 {
@@ -77,13 +78,13 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     attackMap_["tauntUp"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
     attackMap_["tauntDown"] = loadAttack<FighterAttack>("tauntAttack", a, "Bong");
 
-    attackMap_["neutralSmash"] = loadAttack<FighterAttack>("neutralSmashAttack", s, "NeutralSmash");
+    attackMap_["neutralSmash"] = loadAttack<VaryingDirectionAttack>("neutralSmashAttack", s, "NeutralSmash");
     attackMap_["neutralSmash"]->setTwinkle(true);
     attackMap_["neutralSmash"]->setHitboxFrame("Null");
     attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
     attackMap_["sideSmash"]->setTwinkle(true);
     attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
-    attackMap_["downSmash"] = loadAttack<FighterAttack>("downSmashAttack", s, "DownSmash");
+    attackMap_["downSmash"] = loadAttack<VaryingDirectionAttack>("downSmashAttack", s, "DownSmash");
     attackMap_["downSmash"]->setTwinkle(true);
     attackMap_["downSmash"]->setHitboxFrame("DownSmashHitbox");
     attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");
@@ -249,8 +250,9 @@ void Fighter::respawn(bool killed)
     accel_ = glm::vec2(0.f);
     damage_ = 0;
     lastHitBy_ = -1;
-    // Clear the kill streak, if exists
+    // Clear the streaks
     StatsManager::get()->setStat(statPrefix(playerID_) + "curKillStreak", 0);
+    StatsManager::get()->setStat(statPrefix(playerID_) + "damageStreak", 0);
     // If we died remove a life and play a sound
     if (killed)
     {
@@ -326,11 +328,6 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
 
     if (attack_)
         attack_->render(dt);
-}
-
-float Fighter::damageFunc() const
-{
-    return 1.2*(damage_) / 33 + 1.5;
 }
 
 template<class AttackClass>

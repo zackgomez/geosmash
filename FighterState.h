@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "Fighter.h"
+#include "Logger.h"
 
 class Fighter;
 class rectangle;
@@ -11,9 +12,7 @@ class Ledge;
 class FighterState
 {
 public:
-    FighterState(Fighter *f) :
-        fighter_(f), frameName_("GroundNeutral"), invincTime_(0.f)
-    {}
+    FighterState(Fighter *f);
     virtual ~FighterState() {}
 
     // State behavior functions
@@ -39,6 +38,7 @@ public:
 
 protected:
     Fighter *fighter_;
+    LoggerPtr logger_;
     std::string frameName_;
     float invincTime_;
 
@@ -124,7 +124,7 @@ private:
 class AirStunnedState : public FighterState
 {
 public:
-    AirStunnedState(Fighter *f, float duration, bool groundBounce = false);
+    AirStunnedState(Fighter *f, float duration, float bounceMag = -HUGE_VAL);
     virtual ~AirStunnedState() { }
 
     virtual FighterState* processInput(controller_state&, float dt);
@@ -135,7 +135,7 @@ public:
 private:
     float stunDuration_;
     float stunTime_;
-    bool gb_;
+    float gbMag_;
 };
 
 // For special moves (b-moves)
@@ -211,7 +211,7 @@ class GrabbingState : public FighterState
 {
 public:
     GrabbingState(Fighter *f);
-    virtual ~GrabbingState() {}
+    virtual ~GrabbingState();
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
@@ -222,7 +222,7 @@ public:
     virtual bool canBeHit() const;
 
     // Called by LimpFighter when disconnect is necessary, or when we release
-    void disconnectCallback();
+    void disconnectCallback(LimpFighter *caller);
 
 private:
     std::string pre_;

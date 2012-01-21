@@ -1,12 +1,12 @@
 #include "AudioManager.h"
-#include <iostream>
 #include <cassert>
 #include "ParamReader.h"
-#include "glutils.h"
+#include "Engine.h"
 
 AudioManager::AudioManager() 
 {
     // TODO: possibly preload small sound files.
+    logger_ = Logger::getLogger("AudioManager");
 }
 
 AudioManager::~AudioManager()
@@ -32,7 +32,7 @@ void AudioManager::playSound(const std::string &fname)
     sf::Sound *s = new sf::Sound();
     s->SetBuffer(*getBuffer(fname));
     float volume = getParam("sfx.volume");
-    std::cout << "Looking for param: " << "sfx." + fname + ".volume\n";
+    logger_->debug() << "Looking for param: " << "sfx." + fname + ".volume\n";
     if (ParamReader::get()->hasParam("sfx." + fname + ".volume"))
         volume *= getParam("sfx." + fname + ".volume");
     s->SetVolume(volume);
@@ -80,7 +80,7 @@ void AudioManager::playSound(const std::string &fname,
     // TODO: MAKE THIS ASSERTION VALID! (stage hazard hits)
     //assert(vol >= V1 && vol <= V2);
     float volume = getParam("sfx.volume");
-    std::cout << "Looking for param: " << "sfx." + fname + ".volume\n";
+    logger_->debug() << "Looking for param: " << "sfx." + fname + ".volume\n";
     if (ParamReader::get()->hasParam("sfx." + fname + ".volume"))
         volume *= getParam("sfx." + fname + ".volume");
     s->SetVolume(volume * vol/100.f);
@@ -107,7 +107,8 @@ sf::SoundBuffer* AudioManager::getBuffer(const std::string &fname)
 
 float AudioManager::getPanningFactor(const glm::vec2 &worldPos)
 {
-    glm::vec4 screenPos = getProjectionMatrix() * getViewMatrix() * glm::vec4(worldPos, 0.f, 1.f);
+    glm::vec4 screenPos = getProjectionMatrixStack().current() *
+        getViewMatrixStack().current() * glm::vec4(worldPos, 0.f, 1.f);
     screenPos /= screenPos.w;
 
     // if the player is hit off the screen, we need to clip this val to be in
@@ -161,3 +162,12 @@ void AudioManager::update(float dt)
     }
 }
 
+void AudioManager::mute()
+{
+    muted_ = true;
+}
+
+void AudioManager::unmute()
+{
+    muted_ = false;
+}

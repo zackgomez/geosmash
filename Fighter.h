@@ -28,7 +28,7 @@ class Fighter : public GameEntity
 {
 public:
     Fighter(const glm::vec3 &color, int playerID,
-            int teamID, int startingLives);
+            int teamID, int startingLives, const std::string &username);
     ~Fighter();
 
     void setRespawnLocation(float x, float y);
@@ -47,6 +47,7 @@ public:
     float getDamage() const;
     float getDirection() const; // returns -1 or 1
     const glm::vec3& getColor() const { return color_; }
+    const std::string& getUsername() const { return username_; }
     // Returns the id of the player that last hit this fighter, or -1 if there
     // is none
     int getLastHitBy() const;
@@ -93,6 +94,7 @@ private:
     // Fighter ID members
     float respawnx_, respawny_;
     glm::vec3 color_;
+    std::string username_;
 
     // Current attack members
     FighterAttack* attack_;
@@ -105,7 +107,6 @@ private:
 
     // ---- Helper functions ----
     void stateWrapper(FighterState *fs);
-    float damageFunc() const; // Returns a scaling factor based on damage
     void renderHelper(float dt, const std::string &frameName, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
     // Loads an attack from the params using the attackName.param syntax
     template<class AttackClass>
@@ -169,7 +170,7 @@ struct UnlimpCallback
 {
 public:
     virtual ~UnlimpCallback() { }
-    virtual void operator() () = 0;
+    virtual void operator() (LimpFighter *caller) = 0;
 };
 
 template<class T>
@@ -179,9 +180,9 @@ struct GenericUnlimpCallback : public UnlimpCallback
         target_(target)
     { }
 
-    virtual void operator() ()
+    virtual void operator() (LimpFighter *caller)
     {
-        target_->disconnectCallback();
+        target_->disconnectCallback(caller);
     }
 
 private:
