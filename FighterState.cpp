@@ -553,9 +553,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     }
 
     // --- Check to see if they want to start a jump ---
-    if (controller.pressy ||
-            (controller.joyy > getParam("input.jumpThresh")
-             && controller.joyyv > getParam("input.velThresh")))
+    if (controller.pressy && jumpTime_ < 0)
     {
         // Start the jump timer
         jumpTime_ = 0.0f;
@@ -859,8 +857,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
     }
 
     // --- Check for jump ---
-    if ((controller.pressy || (controller.joyy > getParam("input.jumpThresh") && 
-                    controller.joyyv > getParam("input.velThresh"))) && canSecondJump_)
+    if (controller.pressy && jumpTime_ < 0 && canSecondJump_)
     {
         jumpTime_ = 0;
     }
@@ -1464,7 +1461,7 @@ FighterState* LedgeGrabState::processInput(controller_state &controller, float d
     }
 
     // Check for jump input
-    if (controller.pressy)
+    if (controller.pressy && jumpTime_ == HUGE_VAL)
     {
         // Start startup time countdown
         jumpTime_ = getParam("jumpStartupTime");

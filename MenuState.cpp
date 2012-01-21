@@ -495,7 +495,15 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
             teamCounts[teamID]++;
             fighters.push_back(fighter);
 
-            Player  *player  = new LocalPlayer(controllers[i], fighter);
+            Player  *player = NULL;
+            if (username == StatsManager::ai_user)
+            {
+                player = new AIPlayer(fighter);
+            }
+            else 
+            {
+                player = new LocalPlayer(controllers[i], fighter);
+            }
             players.push_back(player);
         }
     }

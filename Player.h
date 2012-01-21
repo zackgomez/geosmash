@@ -1,15 +1,17 @@
 #pragma once
 #include <string>
 #include <glm/glm.hpp>
+#include "Controller.h"
 
 class Controller;
-struct controller_state;
 class Fighter;
 
 class Player
 {
 public:
-    virtual ~Player() { }
+    virtual ~Player();
+
+    explicit Player(const Fighter *);
 
     // Gets the next state
     virtual controller_state getState() const = 0;
@@ -20,10 +22,26 @@ public:
     // Does per frame player updates
     virtual void update(float dt) = 0;
 
-    virtual int getPlayerID() const = 0;
-    virtual int getTeamID() const = 0;
-    virtual std::string getUsername() const = 0;
-    virtual glm::vec3 getColor() const = 0;
+    virtual int getPlayerID() const;
+    virtual int getTeamID() const;
+    virtual std::string getUsername() const;
+    virtual glm::vec3 getColor() const;
+protected:
+    const Fighter *fighter_;
+
+};
+
+class AIPlayer : public Player 
+{
+public:
+    AIPlayer(const Fighter *f);
+
+    virtual controller_state getState() const;
+    virtual bool wantsPauseToggle() const { return false; }
+    virtual void update(float);
+private:
+    controller_state cs_;
+
 };
 
 class LocalPlayer : public Player
@@ -41,13 +59,7 @@ public:
     // Returns true if this player would like the game to be paused/unpaused
     virtual bool wantsPauseToggle() const;
 
-    virtual int getPlayerID() const;
-    virtual int getTeamID() const;
-    virtual std::string getUsername() const;
-    virtual glm::vec3 getColor() const;
-
 private:
     Controller *controller_;
-    const Fighter *fighter_;
 };
 
