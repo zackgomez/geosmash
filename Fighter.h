@@ -46,6 +46,9 @@ public:
     int getLives() const;
     float getDamage() const;
     float getDirection() const; // returns -1 or 1
+    // Fighters are allowed to get the name of the current animation frame
+    // (Useful for AI)
+    std::string getFrameName() const;
     const glm::vec3& getColor() const { return color_; }
     const std::string& getUsername() const { return username_; }
     // Returns the id of the player that last hit this fighter, or -1 if there
@@ -95,6 +98,8 @@ private:
     float respawnx_, respawny_;
     glm::vec3 color_;
     std::string username_;
+
+    std::string lastFrameName_;
 
     // Current attack members
     FighterAttack* attack_;

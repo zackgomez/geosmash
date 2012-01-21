@@ -142,6 +142,11 @@ rectangle Fighter::getRect() const
     return state_->getRect();
 }
 
+std::string Fighter::getFrameName() const 
+{
+    return lastFrameName_;
+}
+
 void Fighter::processInput(controller_state &controller, float dt)
 {
     // TODO move this to update? frame vs realtime issue then
@@ -309,6 +314,9 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
     printf("ID: %d  Damage: %.1f  Pos: [%.2f, %.2f]  Vel: [%.2f, %.2f]  Accel: [%.2f, %.2f]  Attack: %d  Dir: %.1f\n",
             id_, damage_, pos_.x, pos_.y, vel_.x, vel_.y, accel_.x, accel_.y, attack_ != 0, dir_);
 
+    // Cache the frame name, so AI (or anybody) can request the name of the
+    // last drawn frame
+    lastFrameName_ = frameName;
     // Draw body
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(pos_.x, pos_.y, 0.0)),

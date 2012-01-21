@@ -2,6 +2,7 @@
 #include "Controller.h"
 #include "Fighter.h"
 #include "StageManager.h"
+#include "ParamReader.h"
 
 Player::~Player()
 {
@@ -76,9 +77,39 @@ void AIPlayer::update(float)
 
     rectangle r = StageManager::get()->getGroundRect();
     cs_.joyx = glm::sign(r.x - fighter_->getPosition().x);
+    if (fighter_->getFrameName() == "LedgeGrab") 
+    {
+        cs_.joyxv = cs_.joyx * (getParam("input.velThresh") + 1);
+    }
     if (fighter_->getPosition().y < r.y)
     {
         cs_.pressy = true;
+    }
+
+    // Attempt to side B when we're off the edge and yvel < 0
+    if (fighter_->getFrameName() == "AirNormal") 
+    {
+        if (fighter_->getVelocity().y < 0 && 
+            fabs(fighter_->getPosition().x - r.x) > r.w / 2 + 300)
+        {
+            cs_.pressb = true;
+        }
+        glm::vec2 upb_delta;
+        float x = fighter_->getPosition().x;
+        float dist = fabs(x - r.x);
+        float ledgeDist = getParam("ledgeGrab.dist");
+        upb_delta.x = getParam("upSpecialAttack.xvel") * 
+            getParam("upSpecialAttack.duration");
+        upb_delta.y = getParam("upSpecialAttack.yvel") *
+            getParam("upSpecialAttack.duration");
+        if (dist > r.w / 2 && dist < r.w / 2 + ledgeDist + upb_delta.x)
+        {
+            // Pretty good condition for Up-B
+            cs_.joyy = 1;
+            cs_.joyx *= 0.99;
+            cs_.pressb = 1;
+        }
+
     }
 
 }

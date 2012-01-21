@@ -38,7 +38,9 @@ public:
 
     virtual controller_state getState() const;
     virtual bool wantsPauseToggle() const { return false; }
+    
     virtual void update(float);
+
 private:
     controller_state cs_;
 
