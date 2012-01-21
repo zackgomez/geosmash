@@ -144,8 +144,7 @@ void StatsManager::updateUserStats(const std::vector<Fighter*> fighters)
         cur.damage_dealt += getStat(prefix + "damageGiven");
         cur.damage_taken += getStat(prefix + "damageTaken");
         cur.team_damage += getStat(prefix + "teamDamageGiven");
-        // TODO get team kills here
-        cur.team_kills += 0;
+        cur.team_kills += getStat(prefix + "kills.team");
     }
 }
 

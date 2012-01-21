@@ -70,8 +70,8 @@ killbox.right   1300
 # -------------------
 # - GRAPHICS PARAMS -
 # -------------------
-resolution.x 1920
-resolution.y 1080
+resolution.x 2560
+resolution.y 1600
 
 camera.maxVx 200 
 camera.maxVy 150
@@ -101,10 +101,10 @@ hud.h       0.125
 # ----------------
 # - AUDIO PARAMS -
 # ----------------
-#soundtrack.volume 80 
-#sfx.volume 80
-soundtrack.volume 0
-sfx.volume 0
+soundtrack.volume 80 
+sfx.volume 80
+#soundtrack.volume 0
+#sfx.volume 0
 # controls volume/damage scaling relation
 sfx.damagefloor 25
 sfx.damageceiling 300

@@ -245,7 +245,7 @@ void PlayerWidget::processInput(Controller *controller, float dt)
 
     if (fabs(yval) > getParam("menu.thresh") && widgetChangePrimed_)
     {
-        widgetIdx_ += glm::sign(yval);
+        widgetIdx_ -= glm::sign(yval);
         widgetIdx_ = std::max(std::min(widgetIdx_, (int)widgets_.size() - 1), 0);
     }
     else if (fabs(yval) <= getParam("menu.thresh"))
