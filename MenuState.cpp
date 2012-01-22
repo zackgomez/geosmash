@@ -14,9 +14,6 @@
 #include "FrameManager.h"
 #include "Player.h"
 
-#define JOYSTICK_START 7
-#define MAX_JOYSTICK_VALUE 32767.0f
-
 static const glm::vec3 playerColors__[] =
 {
     glm::vec3(0.0, 0.2, 1.0), // blue
@@ -53,24 +50,32 @@ static const std::string teamStrs_[] = {"A", "B", "C", "D"};
 static const std::string *teamStrs__ = teamStrs_;
 static const std::vector<std::string> teamStrs(teamStrs__, teamStrs__ + 4);
 
+static const glm::vec3 widgetSelColor      = glm::vec3(.9, .9, .9);
+static const glm::vec3 widgetEnabledColor  = glm::vec3(.3, .3, .3);
+static const glm::vec3 widgetDisabledColor = glm::vec3(.1, .1, .1);
+
 static struct
 {
     int lives;
     bool teams;
     bool recordStats;
+    bool handicap;
     int profileID[4];
     int teamID[4];
     bool active[4];
     int colors[4];
+    int handicaps[4];
 } defstate =
 {
     4,
     false,
     true,
+    false,
     {0, 0, 0, 0},
     {0, 1, 2, 3},
     {false, false, false, false},
     {0, 1, 2, 3},
+    {0, 0, 0, 0},
 };
 
 NumberSelectWidget::NumberSelectWidget(const std::string &name, int min, int max, int defval) :
@@ -101,9 +106,11 @@ void NumberSelectWidget::handleInput(float val)
 void NumberSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
         bool selected) const
 {
-    static const float charsize = size.y;
-    glm::vec3 color = selected ? glm::vec3(.9, .9, .9) : glm::vec3(.3, .3, .3);
+    //if (selected) assert(enabled_);
+    const float charsize = size.y;
     glm::mat4 transform;
+    glm::vec3 color = selected ? widgetSelColor : widgetEnabledColor;
+    color = enabled_ ? color : widgetDisabledColor;
 
     // Render name
     glm::vec2 strcenter = center - glm::vec2(0.75f * charsize * name_.length()/2, 0.f);
@@ -168,9 +175,11 @@ void StringSelectWidget::handleInput(float val)
 void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
         bool selected) const
 {
-    static const float charsize = size.y;
-    glm::vec3 color = selected ? glm::vec3(.9, .9, .9) : glm::vec3(.3, .3, .3);
+    if (selected) assert(enabled_);
+    const float charsize = size.y;
     glm::mat4 transform;
+    glm::vec3 color = selected ? widgetSelColor : widgetEnabledColor;
+    color = enabled_ ? color : widgetDisabledColor;
 
     // Render name
     glm::vec2 strcenter = center - glm::vec2(0.75f * charsize * name_.length()/2, 0.f);
@@ -193,7 +202,7 @@ void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
             values_[idx_]);
 }
 
-PlayerWidget::PlayerWidget(int playerID, const bool *teams) :
+PlayerWidget::PlayerWidget(int playerID, const bool *teams, const bool *handicap) :
     playerID_(playerID),
     active_(defstate.active[playerID]), startPrimed_(false), wantsStart_(false),
     usernameWidget_(NULL),
@@ -201,20 +210,23 @@ PlayerWidget::PlayerWidget(int playerID, const bool *teams) :
     widgetIdx_(0),
     colorIdx_(defstate.colors[playerID]),
     widgetChangePrimed_(false),
-    teams_(teams)
+    teams_(teams), handicap_(handicap)
 {
     assert(playerID < 4);
     usernameWidget_ = new StringSelectWidget("Profile ", StatsManager::get()->getUsernames(),
             defstate.profileID[playerID]);
     teamIDWidget_ = new StringSelectWidget("Team ", teamStrs, defstate.teamID[playerID]);
+    handicapWidget_ = new NumberSelectWidget("Handicap ", 0, 9, defstate.handicaps[playerID]);
     widgets_.push_back(usernameWidget_);
     widgets_.push_back(teamIDWidget_);
+    widgets_.push_back(handicapWidget_);
 }
 
 PlayerWidget::~PlayerWidget()
 {
     delete usernameWidget_;
     delete teamIDWidget_;
+    delete handicapWidget_;
 }
 
 bool PlayerWidget::isActive() const { return active_; }
@@ -244,18 +256,41 @@ void PlayerWidget::processInput(Controller *controller, float dt)
     // Left stick
     float xval = controller->getState().joyx;
     float yval = controller->getState().joyy;
+    float dir = 1;
 
     if (fabs(yval) > getParam("menu.thresh") && widgetChangePrimed_)
     {
-        widgetIdx_ -= glm::sign(yval);
+        dir = -glm::sign(yval);
+        widgetIdx_ += dir;
         widgetIdx_ = std::max(std::min(widgetIdx_, (int)widgets_.size() - 1), 0);
+
+        widgetChangePrimed_ = false;
     }
     else if (fabs(yval) <= getParam("menu.thresh"))
         widgetChangePrimed_ = true;
 
-    // only allow teamID selection if teams is true
-    if (!*teams_)
-        widgetIdx_ = std::min(widgetIdx_, (int)widgets_.size() - 2);
+    // ----------------
+    // Look for an enabled widget in the sign direction
+    for (; widgetIdx_ > 0 && widgetIdx_ < widgets_.size()
+            && !widgets_[widgetIdx_]->enabled();
+            widgetIdx_ += dir)
+    {
+        if (widgets_[widgetIdx_]->enabled())
+            break;
+    }
+    widgetIdx_ = std::max(std::min(widgetIdx_, (int)widgets_.size() - 1), 0);
+    // Look for an enabled widget in the other direction
+    dir = -dir;
+    for (; widgetIdx_ > 0 && widgetIdx_ < widgets_.size()
+            && !widgets_[widgetIdx_]->enabled();
+            widgetIdx_ += dir)
+    {
+        if (widgets_[widgetIdx_]->enabled())
+            break;
+    }
+    widgetIdx_ = std::max(std::min(widgetIdx_, (int)widgets_.size() - 1), 0);
+    assert(widgets_[widgetIdx_]->enabled());
+    // ----------------
 
     widgets_[widgetIdx_]->handleInput(xval);
 }
@@ -283,6 +318,9 @@ void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float 
     glm::mat4 trans;
     const glm::vec3 color = getColor();
 
+    // Update widget enabled status
+    teamIDWidget_->setEnabled(*teams_);
+    handicapWidget_->setEnabled(*handicap_);
 
     if (!active_)
     {
@@ -300,13 +338,13 @@ void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float 
                 glm::vec3(5.f, -5.f, 0.f));
         FrameManager::get()->renderFrame(trans, glm::vec4(color, 0.15f), "GroundNormal");
 
-        // XXX: use loop here over widgets_ instead
-        usernameWidget_->render(center - glm::vec2(size.x * 0.1, size.y * 0.25),
-                size * glm::vec2(0.33f, 0.1), widgetIdx_ == 0);
-        if (*teams_)
+        glm::vec2 widgetStart = center - glm::vec2(size.x *0.1f, size.y * 0.25f);
+        glm::vec2 widgetSize = glm::vec2(0.33f, 0.1f) * size;
+        glm::vec2 widgetDelta = glm::vec2(0.f, 1.5f*widgetSize.y);
+        for (size_t i = 0; i < widgets_.size(); i++)
         {
-            teamIDWidget_->render(center - glm::vec2(size.x * 0.1, 2 * 0.25 + size.y * .1),
-                    size * glm::vec2(0.33f, 0.1), widgetIdx_ == 1);
+            widgets_[i]->render(widgetStart + (float)i * widgetDelta,
+                    widgetSize, widgetIdx_ == i);
         }
     }
 }
@@ -331,8 +369,17 @@ int PlayerWidget::getColorID() const
     return colorIdx_;
 }
 
+int PlayerWidget::getHandicapLives() const
+{
+    // Only return handicap lives if handicap is enabled
+    if (*handicap_)
+        return handicapWidget_->value();
+    return 0;
+}
+
 MenuState::MenuState() :
     teams_(defstate.teams),
+    handicap_(defstate.handicap),
     topMenuController_(-1),
     topWidgetIdx_(0),
     topWidgetChangePrimed_(false)
@@ -345,11 +392,12 @@ MenuState::MenuState() :
     boolstrs.push_back("no"); boolstrs.push_back("yes");
 
     for (int i = 0; i < 4; i++)
-        widgets_.push_back(new PlayerWidget(i, &teams_));
+        widgets_.push_back(new PlayerWidget(i, &teams_, &handicap_));
 
     topWidgets_.push_back(new NumberSelectWidget("Lives", 1, 99, defstate.lives));
     topWidgets_.push_back(new NumberSelectWidget("Teams", 0, 1, defstate.teams));
     topWidgets_.push_back(new NumberSelectWidget("Keep Stats", 0, 1, defstate.recordStats));
+    topWidgets_.push_back(new NumberSelectWidget("Handicap", 0, 1, defstate.handicap));
 
     getProjectionMatrixStack().clear();
     getViewMatrixStack().clear();
@@ -472,15 +520,17 @@ void MenuState::handleTopMenu(Controller *controller)
 
     // Set teams value accordingly
     teams_ = topWidgets_[1]->value();
+    // Set handicap value accordingly
+    handicap_ = topWidgets_[3]->value();
 }
 
 
 GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
 {
-    // TODO fix these
     int lives = topWidgets_[0]->value();
     bool hazard = false;
     bool recordStats = topWidgets_[2]->value();
+    bool handicap = topWidgets_[3]->value();
 
     std::vector<Player *> players;
     std::vector<Fighter *> fighters;
@@ -495,7 +545,10 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
             glm::vec3 color = widgets_[i]->getColor(teamCounts[teamID]);
             std::string username = widgets_[i]->getUsername();
 
-            Fighter *fighter = new Fighter(color, i, teamID, lives, username);
+            int handicapLives = widgets_[i]->getHandicapLives();
+
+            Fighter *fighter = new Fighter(color, i, teamID,
+                    lives + handicapLives, username);
             teamCounts[teamID]++;
             fighters.push_back(fighter);
 
@@ -517,6 +570,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
     defstate.lives = lives;
     defstate.teams = teams_;
     defstate.recordStats = recordStats;
+    defstate.handicap = handicap;
     for (size_t i = 0; i < widgets_.size(); i++)
     {
         if (widgets_[i]->isActive())
@@ -525,6 +579,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
             defstate.teamID[i] = widgets_[i]->getTeamID();
             defstate.profileID[i]  = widgets_[i]->getProfileID();
             defstate.colors[i] = widgets_[i]->getColorID();
+            defstate.handicaps[i] = widgets_[i]->getHandicapLives();
         }
         else
         {
@@ -532,6 +587,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
             defstate.teamID[i] = i;
             defstate.profileID[i] = 0;
             defstate.colors[i] = i;
+            defstate.handicaps[i] = 0;
         }
     }
 
