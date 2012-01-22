@@ -37,10 +37,14 @@ public:
 
     rectangle getGroundRect() const;
 
+    std::vector<rectangle> getPlatforms() const;
+
 private:
     StageManager();
 
     std::vector<Ledge*> ledges_;
+    rectangle ground_;
+    std::vector<rectangle> platforms_;
 
     int meshRes_;
     GLuint meshBuf_;
@@ -50,7 +54,6 @@ private:
 
     void initBackground();
 
-    rectangle ground_;
     glm::vec3 ground_color_;
     mesh level_mesh_;
 };

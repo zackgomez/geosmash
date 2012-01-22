@@ -204,7 +204,7 @@ void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
 
 PlayerWidget::PlayerWidget(int playerID, const bool *teams, const bool *handicap) :
     playerID_(playerID),
-    active_(defstate.active[playerID]), startPrimed_(false), wantsStart_(false),
+    active_(defstate.active[playerID]), wantsStart_(false),
     usernameWidget_(NULL),
     teamIDWidget_(NULL),
     widgetIdx_(0),
@@ -246,8 +246,7 @@ void PlayerWidget::processInput(Controller *controller, float dt)
         active_ = false;
 
     // Start button
-    if (controller->getState().pressstart)
-        wantsStart_ = true;
+    wantsStart_ = controller->getState().pressstart;
 
     // X to change color
     if (controller->getState().pressx)

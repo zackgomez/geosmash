@@ -84,7 +84,6 @@ private:
     int playerID_;
 
     bool active_;
-    bool startPrimed_;
     bool wantsStart_;
 
     StringSelectWidget *usernameWidget_;
