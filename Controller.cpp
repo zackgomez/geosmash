@@ -19,7 +19,13 @@ Controller::Controller(int controllerID) :
     // Get the current state
     update(0);
 
+    std::string joystickName = SDL_JoystickName(controllerID);
+    std::cout << "Opening joystick: " << joystickName << '\n';
 	joystick_ = SDL_JoystickOpen(controllerID);
+
+    // TODO some config based on joystickName
+    // Xbox Gamepad (userspace driver) [#i where i>1]
+    // Xbox 360 Wireless Receiver (need to change some axis here)
 }
 
 Controller::~Controller()
