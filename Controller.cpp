@@ -23,9 +23,16 @@ Controller::Controller(int controllerID) :
     std::cout << "Opening joystick: " << joystickName << '\n';
 	joystick_ = SDL_JoystickOpen(controllerID);
 
-    // TODO some config based on joystickName
-    // Xbox Gamepad (userspace driver) [#i where i>1]
+    // Switch trigger axis based on driver
+    // Xbox Gamepad (userspace driver) [#i where i>1] (xboxdrv) (hydralisk only)
+    ltrigAxis_ = 5;
+    rtrigAxis_ = 4;
     // Xbox 360 Wireless Receiver (need to change some axis here)
+    if (joystickName == "Xbox 360 Wireless Receiver")
+    {
+        ltrigAxis_ = 5;
+        rtrigAxis_ = 2;
+    }
 }
 
 Controller::~Controller()
@@ -60,11 +67,9 @@ void Controller::update(float dt)
     // right trigger id 4
     // NOTE: this value differs depending on the controller driver.  For xboxdrv it is 4.
     // for xpad it is 2, for windows it is ????
-    state_.rtrigger = -SDL_JoystickGetAxis(joystick_, 4) / MAX_JOYSTICK_VALUE;
+    state_.rtrigger = -SDL_JoystickGetAxis(joystick_, rtrigAxis_) / MAX_JOYSTICK_VALUE;
     // left trigger id 5
-    state_.ltrigger = -SDL_JoystickGetAxis(joystick_, 5) / MAX_JOYSTICK_VALUE;
-
-    std::cout << "Triggers (L,R): " << state_.ltrigger << ' ' << state_.rtrigger << '\n';
+    state_.ltrigger = -SDL_JoystickGetAxis(joystick_, ltrigAxis_) / MAX_JOYSTICK_VALUE;
 
     // Buttons
     bool newstate;

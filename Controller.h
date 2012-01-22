@@ -50,5 +50,7 @@ private:
     SDL_Joystick *joystick_;
 
     controller_state state_;
+
+    int ltrigAxis_, rtrigAxis_;
 };
 
