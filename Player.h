@@ -42,7 +42,14 @@ public:
     virtual bool wantsStatsContinue() const { return true; }
     
     virtual void update(float);
-
+protected:
+    void performGetBack();
+    glm::vec2 pos;
+    bool danger;
+    void senseDanger();
+    void setTargetPos();
+    void performAttack();
+    glm::vec2 targetPos;
 private:
     controller_state cs_;
 
