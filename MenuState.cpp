@@ -527,7 +527,6 @@ void MenuState::handleTopMenu(Controller *controller)
 GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
 {
     int lives = topWidgets_[0]->value();
-    bool hazard = false;
     bool recordStats = topWidgets_[2]->value();
     bool handicap = topWidgets_[3]->value();
 
@@ -590,7 +589,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
         }
     }
 
-    GameState *gs = new InGameState(players, fighters, hazard, recordStats);
+    GameState *gs = new InGameState(players, fighters, recordStats);
     return gs;
 }
 

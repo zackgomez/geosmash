@@ -60,7 +60,7 @@ public:
     virtual bool isDone() const { return false; }
 
     // collision is true if there is a collision with ground this frame, false otherwise
-    void collisionWithGround(const rectangle &ground, bool collision);
+    void collisionWithGround(const rectangle &ground, bool collision, bool platform);
     virtual void attackCollision(const Attack *other);
     virtual void hitByAttack(const Attack* attack);
     virtual void attackConnected(GameEntity *victim);

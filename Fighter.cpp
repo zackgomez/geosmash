@@ -186,9 +186,9 @@ void Fighter::update(float dt)
     state_->update(dt);
 }
 
-void Fighter::collisionWithGround(const rectangle &ground, bool collision)
+void Fighter::collisionWithGround(const rectangle &ground, bool collision, bool platform)
 {
-    stateWrapper(state_->collisionWithGround(ground, collision));
+    stateWrapper(state_->collisionWithGround(ground, collision, platform));
 }
 
 void Fighter::attackCollision(const Attack *inAttack)

@@ -10,8 +10,7 @@ class InGameState : public GameState
 {
 public:
     InGameState(const std::vector<Player *> &players,
-            const std::vector<Fighter *> &fighters, bool makeHazard,
-            bool keepStats);
+            const std::vector<Fighter *> &fighters, bool keepStats);
     virtual ~InGameState();
 
     virtual GameState* processInput(const std::vector<Controller*> &joysticks,
@@ -41,7 +40,7 @@ private:
 
     // Helper functions
     void integrate(float dt);
-    void collisionDetection();
+    void collisionDetection(float dt);
     void renderHUD();
     void renderPause();
     void renderArrow(const Fighter *fighter);

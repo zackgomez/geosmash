@@ -114,9 +114,11 @@ void Projectile::attackConnected(GameEntity *other)
     hit_ = true;
 }
 
-void Projectile::collisionWithGround(const rectangle &rect, bool collision)
+void Projectile::collisionWithGround(const rectangle &rect, bool collision,
+        bool platform)
 {
-    // XXX Ignore it for now..
+    // Just kill the projectile
+    hit_ = true;
 }
 
 void Projectile::update(float dt)

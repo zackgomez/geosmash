@@ -37,8 +37,7 @@ const std::vector<const Fighter*> InGameState::getFighters() const
 }
 
 InGameState::InGameState(const std::vector<Player *> &players,
-        const std::vector<Fighter*> &fighters, bool makeHazard,
-        bool keepStats) :
+        const std::vector<Fighter*> &fighters, bool keepStats) :
     players_(players),
     fighters_(fighters),
     paused_(false),
@@ -64,12 +63,8 @@ InGameState::InGameState(const std::vector<Player *> &players,
     // Need this assertion for destructor
     assert(entities_.size() == fighters_.size());
 
-    if (makeHazard)
-    {
-        HazardEntity *h = new HazardEntity("groundhit");
-        entities_.push_back(h);
-    }
-
+    // Set up the level
+    StageManager::get()->initLevel();
     // Clear the stats
     StatsManager::get()->clear();
 
@@ -207,7 +202,7 @@ void InGameState::update(float dt)
     // TODO: something fancy (or not so fancy) to make this dt smaller,
     // if necessary (if a velocity is over some threshold)
     integrate(dt);
-    collisionDetection();
+    collisionDetection(dt);
 
     AudioManager::get()->update(dt);
     CameraManager::get()->update(dt, fighters_);
@@ -428,7 +423,7 @@ void InGameState::integrate(float dt)
     }
 }
 
-void InGameState::collisionDetection()
+void InGameState::collisionDetection(float dt)
 {
     // First check for hitbox collisions
     for (unsigned i = 0; i < entities_.size(); i++)
@@ -486,14 +481,45 @@ void InGameState::collisionDetection()
         }
     }
 
-    // Now check for ground hits
+    // Now check for ground and platform hits
     rectangle ground = StageManager::get()->getGroundRect();
+    std::vector<rectangle> platforms = StageManager::get()->getPlatforms();
+    assert(platforms.size() == 1);
+    // For each entity, go until you find a collision, if not, tell them no
+    // collision with ground
     for (unsigned i = 0; i < entities_.size(); i++)
     {
         GameEntity *entity = entities_[i];
-        entity->collisionWithGround(ground,
-                entity->getRect().overlaps(ground));
+        if (entity->getRect().overlaps(ground))
+        {
+            entity->collisionWithGround(ground, true, false);
+            continue;
+        }
+
+        size_t j;
+        for (j = 0; j < platforms.size(); j++)
+        {
+            rectangle pf = platforms[j];
+            glm::vec2 pos = entity->getPosition();
+            glm::vec2 size = entity->getSize();
+            glm::vec2 vel = entity->getVelocity();
+            // Overlap, moving down, and was above the platform on the previous frame
+            if (entity->getRect().overlaps(pf) &&
+                vel.y <= 0 &&
+                ((pos.y - vel.y * dt - size.y/2 > pf.y + pf.h/2) ||
+                 (pos.y == pf.y + pf.h/2 + size.y/2 - 1)))
+            {
+                entity->collisionWithGround(pf, true, true);
+                goto next_entity;
+            }
+        }
+        // No collisions
+        entity->collisionWithGround(ground, false, false);
+
+next_entity:
+        continue;
     }
+
 
     // Figher specific checks here
     // Check for fighter death
