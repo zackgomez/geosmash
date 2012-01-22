@@ -18,6 +18,11 @@ public:
 
     // Returns true if this player would like the game to be paused/unpaused
     virtual bool wantsPauseToggle() const = 0;
+    // This function bypasses the controller in StatsGameState
+    // It's mainly used for non local players, as they have a controller
+    // Eventually this function could be removed by the players knowing what 
+    // the game state current is, so they returned controller_state shows
+    // that the (non local) player wants to continue.
     virtual bool wantsStatsContinue() const = 0;
 
     // Does per frame player updates
