@@ -30,6 +30,12 @@ void addEntity(GameEntity *ent);
 
 InGameState *InGameState::instance = NULL;
 
+const std::vector<const Fighter*> InGameState::getFighters() const
+{
+    std::vector<const Fighter*>ans(fighters_.begin(), fighters_.end());
+    return ans;
+}
+
 InGameState::InGameState(const std::vector<Player *> &players,
         const std::vector<Fighter*> &fighters, bool makeHazard) :
     players_(players),

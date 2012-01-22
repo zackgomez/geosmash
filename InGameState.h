@@ -23,6 +23,8 @@ public:
     // XXX: Get rid of this hack
     static InGameState *instance;
 
+    const std::vector<const Fighter*> getFighters() const;
+
 private:
     std::vector<Player*> players_;
     std::vector<Fighter*> fighters_;

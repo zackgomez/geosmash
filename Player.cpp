@@ -2,6 +2,7 @@
 #include "Controller.h"
 #include "Fighter.h"
 #include "StageManager.h"
+#include "InGameState.h"
 #include "ParamReader.h"
 
 Player::~Player()
@@ -86,22 +87,55 @@ void AIPlayer::update(float)
         cs_.pressy = true;
     }
 
+    // We want to spend as little time as possible in the ground state
+    if (fighter_->getFrameName() == "GroundNormal")
+    {
+        // short hop
+        cs_.pressy = true;
+    }
+
     // Attempt to side B when we're off the edge and yvel < 0
     if (fighter_->getFrameName() == "AirNormal") 
     {
-        if (fighter_->getVelocity().y < 0 && 
-            fabs(fighter_->getPosition().x - r.x) > r.w / 2 + 300)
-        {
-            cs_.pressb = true;
-        }
         glm::vec2 upb_delta;
         float x = fighter_->getPosition().x;
+        // How far from the center of the stage are we?
         float dist = fabs(x - r.x);
         float ledgeDist = getParam("ledgeGrab.dist");
         upb_delta.x = getParam("upSpecialAttack.xvel") * 
             getParam("upSpecialAttack.duration");
         upb_delta.y = getParam("upSpecialAttack.yvel") *
             getParam("upSpecialAttack.duration");
+        
+        // if we're not in danger of falling off and someone is near us,
+        // just attack
+        std::vector<const Fighter*> fs = InGameState::instance->getFighters();
+        bool danger = false;
+        for (int i = 0; i < fs.size(); i++) 
+        {
+            if (fighter_ == fs[i]) continue;
+            if (fabs(x - fs[i]->getPosition().x) < 200)
+            {
+                danger = true;
+            }
+        }
+        if (dist < r.w / 2)
+        {
+            if (danger) {
+                cs_.joyx = 0;
+                cs_.pressa = true;
+            }
+            else {
+                cs_.pressb = true;
+                cs_.joyx = 0;
+            }
+        }
+   
+        if (fighter_->getVelocity().y < 0 && 
+            fabs(fighter_->getPosition().x - r.x) > r.w / 2 + 300)
+        {
+            cs_.pressb = true;
+        }
         if (dist > r.w / 2 && dist < r.w / 2 + ledgeDist + upb_delta.x)
         {
             // Pretty good condition for Up-B
