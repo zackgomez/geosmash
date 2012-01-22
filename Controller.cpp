@@ -3,6 +3,11 @@
 #include <iostream>
 #include "Fighter.h"
 
+void controller_state::clear()
+{
+    memset(this, 0, sizeof(controller_state));
+}
+
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 
 Controller::Controller(int controllerID) :
@@ -10,7 +15,7 @@ Controller::Controller(int controllerID) :
     joystick_(NULL)
 {
     // Clear the state
-    memset(&state_, 0, sizeof(controller_state));
+    state_.clear();
     // Get the current state
     update(0);
 

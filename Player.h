@@ -18,6 +18,7 @@ public:
 
     // Returns true if this player would like the game to be paused/unpaused
     virtual bool wantsPauseToggle() const = 0;
+    virtual bool wantsStatsContinue() const = 0;
 
     // Does per frame player updates
     virtual void update(float dt) = 0;
@@ -38,6 +39,7 @@ public:
 
     virtual controller_state getState() const;
     virtual bool wantsPauseToggle() const { return false; }
+    virtual bool wantsStatsContinue() const { return true; }
     
     virtual void update(float);
 
@@ -60,6 +62,7 @@ public:
 
     // Returns true if this player would like the game to be paused/unpaused
     virtual bool wantsPauseToggle() const;
+    virtual bool wantsStatsContinue() const { return false; }
 
 private:
     Controller *controller_;

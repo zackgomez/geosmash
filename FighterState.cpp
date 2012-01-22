@@ -1437,10 +1437,13 @@ LedgeGrabState::LedgeGrabState(Fighter *f) :
 {
     fighter_->lastHitBy_ = -1;
     invincTime_ = getParam("ledgeGrab.grabInvincTime");
+    waitTime_ = getParam("ledgeGrab.inputDelay");
 }
 
 FighterState* LedgeGrabState::processInput(controller_state &controller, float dt)
 {
+    waitTime_ -= dt;
+    if (waitTime_ > 0) return NULL;
     if (jumpTime_ > 0 && jumpTime_ != HUGE_VAL) return NULL;
 
     // Check for jump transition

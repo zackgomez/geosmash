@@ -71,6 +71,11 @@ GameState * StatsGameState::processInput(const std::vector<Controller*> &control
     for (size_t i = 0; i < players_.size(); i++)
     {
         controller_state cs = players_[i]->getState();
+        if (players_[i]->wantsStatsContinue())
+        {
+            ready_[i] = true;
+            continue;
+        }
         // Check if they're ready
         if (cs.pressb)
             ready_[i] = false;
