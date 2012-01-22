@@ -78,6 +78,7 @@ void AIPlayer::update(float)
 
     rectangle r = StageManager::get()->getGroundRect();
     cs_.joyx = glm::sign(r.x - fighter_->getPosition().x);
+    float x = fighter_->getPosition().x;
     if (fighter_->getFrameName() == "LedgeGrab") 
     {
         cs_.joyxv = cs_.joyx * (getParam("input.velThresh") + 1);
@@ -94,11 +95,30 @@ void AIPlayer::update(float)
         cs_.pressy = true;
     }
 
+    // if we're not in danger of falling off and someone is near us,
+    // just attack
+    std::vector<const Fighter*> fs = InGameState::instance->getFighters();
+    bool danger = false;
+    float targetx = 0;
+    for (int i = 0; i < fs.size(); i++) 
+    {
+        if (fighter_ == fs[i]) continue;
+        if (fabs(x - fs[i]->getPosition().x) < 200)
+        {
+            danger = true;
+            targetx = fs[i]->getPosition().x;
+        }
+    }
+
+    // have the guy follow you around, if the target is on the platform
+    if (fabs(targetx - x) < r.w / 2) 
+    {
+        cs_.joyx = glm::sign(targetx - fighter_->getPosition().x);
+    }
     // Attempt to side B when we're off the edge and yvel < 0
     if (fighter_->getFrameName() == "AirNormal") 
     {
         glm::vec2 upb_delta;
-        float x = fighter_->getPosition().x;
         // How far from the center of the stage are we?
         float dist = fabs(x - r.x);
         float ledgeDist = getParam("ledgeGrab.dist");
@@ -107,18 +127,7 @@ void AIPlayer::update(float)
         upb_delta.y = getParam("upSpecialAttack.yvel") *
             getParam("upSpecialAttack.duration");
         
-        // if we're not in danger of falling off and someone is near us,
-        // just attack
-        std::vector<const Fighter*> fs = InGameState::instance->getFighters();
-        bool danger = false;
-        for (int i = 0; i < fs.size(); i++) 
-        {
-            if (fighter_ == fs[i]) continue;
-            if (fabs(x - fs[i]->getPosition().x) < 200)
-            {
-                danger = true;
-            }
-        }
+
         if (dist < r.w / 2)
         {
             if (danger) {

@@ -47,9 +47,13 @@ void Controller::update(float dt)
 
     // Triggers
     // right trigger id 4
+    // NOTE: this value differs depending on the controller driver.  For xboxdrv it is 4.
+    // for xpad it is 2, for windows it is ????
     state_.rtrigger = -SDL_JoystickGetAxis(joystick_, 4) / MAX_JOYSTICK_VALUE;
     // left trigger id 5
     state_.ltrigger = -SDL_JoystickGetAxis(joystick_, 5) / MAX_JOYSTICK_VALUE;
+
+    std::cout << "Triggers (L,R): " << state_.ltrigger << ' ' << state_.rtrigger << '\n';
 
     // Buttons
     bool newstate;
