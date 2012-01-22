@@ -37,11 +37,13 @@ const std::vector<const Fighter*> InGameState::getFighters() const
 }
 
 InGameState::InGameState(const std::vector<Player *> &players,
-        const std::vector<Fighter*> &fighters, bool makeHazard) :
+        const std::vector<Fighter*> &fighters, bool makeHazard,
+        bool keepStats) :
     players_(players),
     fighters_(fighters),
     paused_(false),
-    pausingPlayer_(-1)
+    pausingPlayer_(-1),
+    keepStats_(keepStats)
 {
     StageManager::get()->clear();
     ParticleManager::get()->reset();
@@ -168,7 +170,7 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
 
         // Transition to end of game state
         StatsManager::get()->setStat("winningTeam", winningTeam);
-        if (getParam("debug.saveStats"))
+        if (keepStats_)
         {
             StatsManager::get()->updateUserStats(fighters_);
             StatsManager::get()->writeUserStats("user_stats.dat");

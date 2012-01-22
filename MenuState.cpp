@@ -57,6 +57,7 @@ static struct
 {
     int lives;
     bool teams;
+    bool recordStats;
     int profileID[4];
     int teamID[4];
     bool active[4];
@@ -65,6 +66,7 @@ static struct
 {
     4,
     false,
+    true,
     {0, 0, 0, 0},
     {0, 1, 2, 3},
     {false, false, false, false},
@@ -347,6 +349,7 @@ MenuState::MenuState() :
 
     topWidgets_.push_back(new NumberSelectWidget("Lives", 1, 99, defstate.lives));
     topWidgets_.push_back(new NumberSelectWidget("Teams", 0, 1, defstate.teams));
+    topWidgets_.push_back(new NumberSelectWidget("Keep Stats", 0, 1, defstate.recordStats));
 
     getProjectionMatrixStack().clear();
     getViewMatrixStack().clear();
@@ -477,6 +480,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
     // TODO fix these
     int lives = topWidgets_[0]->value();
     bool hazard = false;
+    bool recordStats = topWidgets_[2]->value();
 
     std::vector<Player *> players;
     std::vector<Fighter *> fighters;
@@ -512,6 +516,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
     // Save the state for next time
     defstate.lives = lives;
     defstate.teams = teams_;
+    defstate.recordStats = recordStats;
     for (size_t i = 0; i < widgets_.size(); i++)
     {
         if (widgets_[i]->isActive())
@@ -530,7 +535,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
         }
     }
 
-    GameState *gs = new InGameState(players, fighters, hazard);
+    GameState *gs = new InGameState(players, fighters, hazard, recordStats);
     return gs;
 }
 
