@@ -35,8 +35,6 @@ ExplosionManager* ExplosionManager::get()
 
 void ExplosionManager::addExplosion(float x, float y, float t)
 {
-    // XXX:
-    return;
     glm::vec4 pcolors_raw[] =
     {
         glm::vec4(0.9, 0.1, 0.0, 0.9),
@@ -63,8 +61,6 @@ void ExplosionManager::addExplosion(float x, float y, float t)
 
 void ExplosionManager::addPuff(float x, float y, float t)
 {
-    // XXX
-    return;
     Emitter *em = ParticleManager::get()->newEmitter();
     em->setLocation(glm::vec3(x, y, 0.f))
         ->setTimeRemaining(t/2)

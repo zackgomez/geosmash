@@ -14,6 +14,7 @@
 #include "FrameManager.h"
 #include "ParamReader.h"
 #include "stb_image.c"
+#include "PManager.h"
 
 static struct 
 {
@@ -28,6 +29,9 @@ static struct
 
     GLuint hblurprogram, vblurprogram;
     GLuint meshprogram;
+
+    GLuint particleprogram;
+    GLuint part_buffer;
 
     GLuint fbo;
     GLuint depthbuf;
@@ -269,6 +273,7 @@ bool initGLUtils(int screenw, int screenh)
 
     resources.vertex_buffer = make_buffer(GL_ARRAY_BUFFER, vertex_buffer_data, sizeof(vertex_buffer_data));
     resources.element_buffer = make_buffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_data, sizeof(element_buffer_data));
+    glGenBuffers(1, &resources.part_buffer);
 
     resources.vertex_shader = make_shader(GL_VERTEX_SHADER, "shaders/bbox.v.glsl");
     if (resources.vertex_shader == 0)
@@ -309,6 +314,12 @@ bool initGLUtils(int screenw, int screenh)
     if (!meshvert || !meshfrag)
         return false;
     resources.meshprogram = make_program(meshvert, meshfrag);
+
+    GLuint partfrag = make_shader(GL_VERTEX_SHADER, "shaders/particle.v.glsl");
+    GLuint partvert = make_shader(GL_FRAGMENT_SHADER, "shaders/particle.f.glsl");
+    if (!partfrag || !partvert)
+        return false;
+    resources.particleprogram = make_program(partvert, partfrag);
 
     glGenFramebuffers(1, &resources.fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo);
@@ -683,11 +694,28 @@ MatrixStack & getViewMatrixStack()
     return viewMatrixStack;
 }
 
-void renderParticle(const glm::vec3 &loc, const glm::vec3 &size,
-        const glm::vec4 &color)
+void renderParticles(const std::vector<particleData> &data)
 {
-    glm::mat4 trans = glm::scale(
-            glm::translate(glm::mat4(1.f), loc),
-            size);
-    renderRectangle(trans, color);
+    GLuint modelViewUniform = glGetUniformLocation(resources.particleprogram, "modelViewMatrix");
+    GLuint projectionUniform = glGetUniformLocation(resources.particleprogram, "projectionMatrix");
+
+    glUseProgram(resources.particleprogram);
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current()));
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrixStack.current()));
+
+    glBindBuffer(GL_ARRAY_BUFFER, resources.part_buffer);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(particleData), &data.front(), GL_STREAM_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(particleData), 0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(particleData), (void *)(3 * sizeof(float)));
+
+    glDrawArrays(GL_POINTS, 0, data.size());
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glUseProgram(0);
 }
+

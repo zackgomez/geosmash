@@ -210,6 +210,7 @@ void InGameState::render(float dt)
     // Make dt 0 if paused
     dt = dt * !paused_;
 
+
     // Draw the background
     StageManager::get()->renderSphereBackground(dt);
     StageManager::get()->renderStage(dt);
@@ -227,6 +228,8 @@ void InGameState::render(float dt)
 
     // Draw any explosions
     ExplosionManager::get()->render(dt);
+    ParticleManager::get()->startUpdate(dt);
+    ParticleManager::get()->update();
     ParticleManager::get()->render(dt);
 
     renderHUD();
