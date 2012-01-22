@@ -120,6 +120,8 @@ private:
     float jumpTime_;
     // True if this player has begun fastfalling
     bool fastFalling_;
+    // True if this play should fall through platforms this frame
+    bool fallThroughPlatforms_;
 
     // when >0 cannot ledge grab
     float noGrabTime_;

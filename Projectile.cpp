@@ -117,8 +117,9 @@ void Projectile::attackConnected(GameEntity *other)
 void Projectile::collisionWithGround(const rectangle &rect, bool collision,
         bool platform)
 {
-    // Just kill the projectile
-    hit_ = true;
+    // Just kill the projectile on true ground hit
+    if (collision && !platform)
+        hit_ = true;
 }
 
 void Projectile::update(float dt)

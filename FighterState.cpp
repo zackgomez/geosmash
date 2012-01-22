@@ -604,6 +604,9 @@ FighterState* GroundState::collisionWithGround(const rectangle &ground, bool col
         }
     }
 
+    if (collision && platform && ducking_)
+        return new AirNormalState(fighter_);
+
     // If there is a collision, we don't need to do anything, because we're
     // already in the GroundState
     return NULL;
@@ -778,7 +781,9 @@ FighterState* BlockingState::hitByAttack(const Attack *attack)
 
 //// -------------------- AIR NORMAL STATE -----------------------------
 AirNormalState::AirNormalState(Fighter *f) :
-    FighterState(f), canSecondJump_(true), jumpTime_(-1), noGrabTime_(0)
+    FighterState(f), canSecondJump_(true), jumpTime_(-1),
+    fastFalling_(false), fallThroughPlatforms_(false),
+    noGrabTime_(0)
 {
     frameName_ = "AirNormal";
 }
@@ -790,6 +795,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
 {
     // Gravity
     fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
+    fallThroughPlatforms_ = false;
 
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
@@ -814,6 +820,9 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
             fighter_->accel_ += glm::vec2(0.f, getParam("fastFallAccel"));
         fastFalling_ = true;
     }
+
+    if (controller.joyy < getParam("input.fallThresh"))
+        fallThroughPlatforms_ = true;
 
     // --- Check for attack ---
     if (controller.pressa)
@@ -913,10 +922,14 @@ FighterState* AirNormalState::collisionWithGround(const rectangle &ground, bool 
     // If no collision, we don't care
     if (!collision)
         return NULL;
+    // If we should fall through platforms and we hit one, ignore it
+    if (collision && platform && fallThroughPlatforms_)
+        return NULL;;
     FighterState::collisionHelper(ground, platform);
     // If we're not overlapping the ground anymore, no collision
     if (!ground.overlaps(fighter_->getRect()))
         return NULL;
+
 
     // Reset vel/accel
     fighter_->vel_ = glm::vec2(0.f, 0.f);
