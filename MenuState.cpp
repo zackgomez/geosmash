@@ -503,6 +503,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
             else 
             {
                 player = new LocalPlayer(controllers[i], fighter);
+                controllers[i]->clearPresses();
             }
             players.push_back(player);
         }

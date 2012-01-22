@@ -267,6 +267,7 @@ public:
 private:
     glm::vec2 hbsize_;
     float jumpTime_;
+    float waitTime_;
     Ledge *ledge_;
 };
 

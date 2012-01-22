@@ -57,6 +57,7 @@ ledgeGrab.dropTime       0.30
 ledgeGrab.wakeupTime     0.15
 ledgeGrab.attackInvinc   0.40
 ledgeGrab.wakeUpInvinc   0.15
+ledgeGrab.inputDelay     0.20
 
 
 # ---------------
