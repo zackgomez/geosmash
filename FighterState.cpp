@@ -589,14 +589,16 @@ void GroundState::render(float dt)
 FighterState* GroundState::collisionWithGround(const rectangle &ground, bool collision,
         bool platform)
 {
+    if (collision)
+        lastGround_ = ground;
     if (!collision)
     {
         if (fighter_->attack_)
         {
             fighter_->attack_->cancel();
             dashing_ = false;
-            float dir = (ground.x - fighter_->pos_.x) > 0 ? 1 : -1;
-            fighter_->pos_.x += dir * (fabs(ground.x - fighter_->pos_.x) - ground.w/2 - fighter_->size_.x/2 + 2);
+            float dir = (lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
+            fighter_->pos_.x += dir * (fabs(lastGround_.x - fighter_->pos_.x) - lastGround_.w/2 - fighter_->size_.x/2 + 2);
         }
         else
         {
@@ -1441,10 +1443,12 @@ FighterState* DodgeState::hitByAttack(const Attack *attack)
 
 FighterState* DodgeState::collisionWithGround(const rectangle &ground, bool collision, bool platform)
 {
+    if (collision)
+        lastGround_ = ground;
     if (!collision)
     {
-        float dir = (ground.x - fighter_->pos_.x) > 0 ? 1 : -1;
-        fighter_->pos_.x += dir * (fabs(ground.x - fighter_->pos_.x) - ground.w/2 - fighter_->size_.x/2 + 2);
+        float dir = (lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
+        fighter_->pos_.x += dir * (fabs(lastGround_.x - fighter_->pos_.x) - lastGround_.w/2 - fighter_->size_.x/2 + 2);
         fighter_->vel_.x = 0.0f;
         t_ = std::max(t_, invincTime_);
     }

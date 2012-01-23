@@ -49,6 +49,8 @@ static const glm::vec3 teamColorsB[] =
 static const std::string teamStrs_[] = {"A", "B", "C", "D"};
 static const std::string *teamStrs__ = teamStrs_;
 static const std::vector<std::string> teamStrs(teamStrs__, teamStrs__ + 4);
+static const std::string boolStrs_[] = {"OFF", "ON"};
+static const std::vector<std::string> boolStrs(boolStrs_, boolStrs_+2);
 
 static const glm::vec3 widgetSelColor      = glm::vec3(.9, .9, .9);
 static const glm::vec3 widgetEnabledColor  = glm::vec3(.3, .3, .3);
@@ -60,6 +62,7 @@ static struct
     bool teams;
     bool recordStats;
     bool handicap;
+    int stage;
     int profileID[4];
     int teamID[4];
     bool active[4];
@@ -71,6 +74,7 @@ static struct
     false,
     true,
     false,
+    0,
     {0, 0, 0, 0},
     {0, 1, 2, 3},
     {false, false, false, false},
@@ -394,9 +398,10 @@ MenuState::MenuState() :
         widgets_.push_back(new PlayerWidget(i, &teams_, &handicap_));
 
     topWidgets_.push_back(new NumberSelectWidget("Lives", 1, 99, defstate.lives));
-    topWidgets_.push_back(new NumberSelectWidget("Teams", 0, 1, defstate.teams));
-    topWidgets_.push_back(new NumberSelectWidget("Keep Stats", 0, 1, defstate.recordStats));
-    topWidgets_.push_back(new NumberSelectWidget("Handicap", 0, 1, defstate.handicap));
+    topWidgets_.push_back(new StringSelectWidget("Teams", boolStrs, defstate.teams));
+    topWidgets_.push_back(new StringSelectWidget("Stats", boolStrs, defstate.recordStats));
+    topWidgets_.push_back(new StringSelectWidget("Handicap", boolStrs, defstate.handicap));
+    topWidgets_.push_back(new NumberSelectWidget("Stage", 0, 1, defstate.stage));
 
     getProjectionMatrixStack().clear();
     getViewMatrixStack().clear();
@@ -529,6 +534,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
     int lives = topWidgets_[0]->value();
     bool recordStats = topWidgets_[2]->value();
     bool handicap = topWidgets_[3]->value();
+    int stage = topWidgets_[4]->value();
 
     std::vector<Player *> players;
     std::vector<Fighter *> fighters;
@@ -569,6 +575,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
     defstate.teams = teams_;
     defstate.recordStats = recordStats;
     defstate.handicap = handicap;
+    defstate.stage = stage;
     for (size_t i = 0; i < widgets_.size(); i++)
     {
         if (widgets_[i]->isActive())
@@ -589,7 +596,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
         }
     }
 
-    GameState *gs = new InGameState(players, fighters, recordStats);
+    GameState *gs = new InGameState(players, fighters, recordStats, stage);
     return gs;
 }
 

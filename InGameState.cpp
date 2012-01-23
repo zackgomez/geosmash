@@ -37,7 +37,8 @@ const std::vector<const Fighter*> InGameState::getFighters() const
 }
 
 InGameState::InGameState(const std::vector<Player *> &players,
-        const std::vector<Fighter*> &fighters, bool keepStats) :
+        const std::vector<Fighter*> &fighters, bool keepStats,
+        int stage) :
     players_(players),
     fighters_(fighters),
     paused_(false),
@@ -64,7 +65,7 @@ InGameState::InGameState(const std::vector<Player *> &players,
     assert(entities_.size() == fighters_.size());
 
     // Set up the level
-    StageManager::get()->initLevel();
+    StageManager::get()->initLevel(stage);
     // Clear the stats
     StatsManager::get()->clear();
 
@@ -484,7 +485,6 @@ void InGameState::collisionDetection(float dt)
     // Now check for ground and platform hits
     rectangle ground = StageManager::get()->getGroundRect();
     std::vector<rectangle> platforms = StageManager::get()->getPlatforms();
-    assert(platforms.size() == 1);
     // For each entity, go until you find a collision, if not, tell them no
     // collision with ground
     for (unsigned i = 0; i < entities_.size(); i++)

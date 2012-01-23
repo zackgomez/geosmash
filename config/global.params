@@ -69,8 +69,8 @@ killbox.right   1300
 # -------------------
 # - GRAPHICS PARAMS -
 # -------------------
-resolution.x 1920
-resolution.y 1080
+resolution.x 2560
+resolution.y 1600
 
 camera.maxVx 200 
 camera.maxVy 150

@@ -20,7 +20,7 @@ public:
     // Return the singleton instance
     static StageManager* get();
 
-    void initLevel();
+    void initLevel(int stage);
 
     // Called every frame.
     // For now, just put out a stage hazard (maybe)

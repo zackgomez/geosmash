@@ -10,7 +10,8 @@ class InGameState : public GameState
 {
 public:
     InGameState(const std::vector<Player *> &players,
-            const std::vector<Fighter *> &fighters, bool keepStats);
+            const std::vector<Fighter *> &fighters, bool keepStats,
+            int stage);
     virtual ~InGameState();
 
     virtual GameState* processInput(const std::vector<Controller*> &joysticks,

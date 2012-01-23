@@ -76,6 +76,7 @@ private:
     float waitTime_;
     bool dashing_;
     bool ducking_;
+    rectangle lastGround_;
 };
 
 class BlockingState : public FighterState
@@ -259,6 +260,7 @@ private:
     float t_;
     float dodgeTime_;
     float cooldown_;
+    rectangle lastGround_;
 };
 
 class LedgeGrabState : public FighterState

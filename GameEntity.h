@@ -56,7 +56,8 @@ public:
     // Called every frame with the ground rect and a boolean on whether or 
     // not this game entity hit the ground, if platform is true, the message
     // can be ignored
-    virtual void collisionWithGround(const rectangle &ground, bool collision, bool platform) = 0;
+    virtual void collisionWithGround(const rectangle &ground, bool collision,
+            bool platform) = 0;
 
     /*
      * This function performs some sort of integration to update this

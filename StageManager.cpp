@@ -19,39 +19,37 @@ StageManager::StageManager() :
     platform_mesh_ = createMesh("models/cube.obj");
 }
 
-void StageManager::initLevel()
+void StageManager::initLevel(int stage)
 {
     glm::vec2 groundpos(getParam("level.x"), getParam("level.y"));
     glm::vec2 groundsize(getParam("level.w"), getParam("level.h"));
-    Ledge l;
+
+    ground_ = rectangle(groundpos.x, groundpos.y, groundsize.x, groundsize.y);
+    ground_color_ = glm::vec3(getParam("level.r"),
+            getParam("level.g"), getParam("level.b"));
+
+    if (stage == 1)
+    {
+        platforms_.push_back(rectangle(-200, 40, 220, 10));
+        platforms_.push_back(rectangle(0, 140, 220, 10));
+        platforms_.push_back(rectangle(200, 40, 220, 10));
+
+        ground_.w *= 0.80f;
+    }
+
     // Left side ledge
-    l.pos = glm::vec2(groundpos.x - groundsize.x / 2, groundpos.y + groundsize.y/2);
+    Ledge l;
+    l.pos = glm::vec2(ground_.x - ground_.w / 2, ground_.y + ground_.h/2);
     l.occupied = false;
     l.dir = -1;
     ledges_.push_back(new Ledge(l));
 
     // Right side ledge
-    l.pos = glm::vec2(groundpos.x + groundsize.x / 2, groundpos.y + groundsize.y/2);
+    l.pos = glm::vec2(ground_.x + ground_.w / 2, ground_.y + ground_.h/2);
     l.occupied = false;
     l.dir = 1;
     ledges_.push_back(new Ledge(l));
 
-    ground_ = rectangle(
-            getParam("level.x"), getParam("level.y"),
-            getParam("level.w"), getParam("level.h"));
-    ground_color_ = glm::vec3(getParam("level.r"),
-            getParam("level.g"), getParam("level.b"));
-
-
-    // Platforms
-    platforms_.push_back(rectangle(0, 50, 250, 15));
-
-    for (size_t i = 0; i < platforms_.size(); i++)
-    {
-        rectangle pf = platforms_[i]; 
-        std::cout << "Platform " << i << " [" << pf.x << ' ' << pf.y
-            << "] <" << pf.w << ' ' << pf.h << ">\n";
-    }
 }
 
 void StageManager::clear()
@@ -128,7 +126,6 @@ Ledge * StageManager::getPossibleLedge(const glm::vec2 &pos)
 
 std::vector<rectangle> StageManager::getPlatforms() const
 {
-    assert(platforms_.size() == 1);
     return platforms_;
 }
 
@@ -176,7 +173,7 @@ void StageManager::renderStage(float dt)
         rectangle pf = platforms_[i];
         transform = glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(pf.x, pf.y, 0.0)),
-                glm::vec3(pf.w, pf.h, getParam("level.d")/2));
+                glm::vec3(pf.w, pf.h, getParam("level.d")/3));
         renderMesh(platform_mesh_, transform, ground_color_);
     }
 }
