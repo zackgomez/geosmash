@@ -696,6 +696,8 @@ MatrixStack & getViewMatrixStack()
 
 void renderParticles(const std::vector<particleData> &data)
 {
+	if (data.size() == 0)
+		return;
     GLuint modelViewUniform = glGetUniformLocation(resources.particleprogram, "modelViewMatrix");
     GLuint projectionUniform = glGetUniformLocation(resources.particleprogram, "projectionMatrix");
 

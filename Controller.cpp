@@ -33,6 +33,11 @@ Controller::Controller(int controllerID) :
         ltrigAxis_ = 5;
         rtrigAxis_ = 2;
     }
+	if (joystickName == "Controller (Xbox 360 Wireless Receiver for Windows)")
+	{
+		rtrigAxis_ = 2;
+		ltrigAxis_ = 5;
+	}
 }
 
 Controller::~Controller()
@@ -70,6 +75,12 @@ void Controller::update(float dt)
     state_.rtrigger = -SDL_JoystickGetAxis(joystick_, rtrigAxis_) / MAX_JOYSTICK_VALUE;
     // left trigger id 5
     state_.ltrigger = -SDL_JoystickGetAxis(joystick_, ltrigAxis_) / MAX_JOYSTICK_VALUE;
+
+#ifdef _MSC_VER
+	state_.ltrigger = SDL_JoystickGetAxis(joystick_, rtrigAxis_) / MAX_JOYSTICK_VALUE;
+#endif
+
+	std::cout << "Ltrig " << state_.ltrigger << " rtrig: " << state_.rtrigger << '\n';
 
     // Buttons
     bool newstate;
