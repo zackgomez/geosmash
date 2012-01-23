@@ -23,7 +23,8 @@ public:
     // TODO description
     virtual void render(float dt) = 0;
     // This function is called once every call to Fighter::collisionWithGround
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision) = 0;
+    virtual FighterState* collisionWithGround(const rectangle &ground,
+            bool collision, bool platform) = 0;
     // This function is called when Fighter::hitByAttack is called, before any
     // other work is done
     virtual FighterState* hitByAttack(const Attack *attack) = 0;
@@ -43,7 +44,7 @@ protected:
     float invincTime_;
 
     FighterState* calculateHitResult(const Attack *attack);
-    void collisionHelper(const rectangle &ground);
+    void collisionHelper(const rectangle &ground, bool platform);
     FighterState* checkForLedgeGrab(bool attackOK = false);
     // Helper for dealing with all B moves.
     FighterState* performBMove(const controller_state &, bool ground = true);
@@ -61,7 +62,8 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual rectangle getRect() const;
 
@@ -74,6 +76,7 @@ private:
     float waitTime_;
     bool dashing_;
     bool ducking_;
+    rectangle lastGround_;
 };
 
 class BlockingState : public FighterState
@@ -84,7 +87,8 @@ public:
 
     virtual FighterState* processInput(controller_state &, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
 
 private:
@@ -104,7 +108,8 @@ public:
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void update(float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
 
     AirNormalState * setNoGrabTime(float t);
@@ -116,6 +121,8 @@ private:
     float jumpTime_;
     // True if this player has begun fastfalling
     bool fastFalling_;
+    // True if this play should fall through platforms this frame
+    bool fallThroughPlatforms_;
 
     // when >0 cannot ledge grab
     float noGrabTime_;
@@ -129,7 +136,8 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
 
 private:
@@ -147,7 +155,8 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt) = 0;
     virtual void render(float dt) = 0;
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack) = 0;
 
 protected:
@@ -162,7 +171,8 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
 
 private:
@@ -180,7 +190,8 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual FighterState* attackConnected(GameEntity *victim);
 
@@ -196,7 +207,8 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual FighterState* attackConnected(GameEntity *victim);
 
@@ -215,7 +227,8 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual FighterState* attackConnected(GameEntity *victim);
     // Override to control invincibility frames during throws
@@ -239,13 +252,15 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
 
 private:
     float t_;
     float dodgeTime_;
     float cooldown_;
+    rectangle lastGround_;
 };
 
 class LedgeGrabState : public FighterState
@@ -257,7 +272,8 @@ public:
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void update(float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
     virtual rectangle getRect() const;
@@ -267,6 +283,7 @@ public:
 private:
     glm::vec2 hbsize_;
     float jumpTime_;
+    float waitTime_;
     Ledge *ledge_;
 };
 
@@ -278,7 +295,8 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
 
@@ -311,7 +329,8 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
 
@@ -327,7 +346,8 @@ public:
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt) { };
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual bool canBeHit() const;
 };

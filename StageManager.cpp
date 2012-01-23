@@ -12,37 +12,50 @@
 StageManager::StageManager() :
     t_(0)
 {
+    initBackground();
+
+    // Load the ground mesh
+    level_mesh_ = createMesh("models/level.obj");
+    platform_mesh_ = createMesh("models/cube.obj");
+}
+
+void StageManager::initLevel(int stage)
+{
     glm::vec2 groundpos(getParam("level.x"), getParam("level.y"));
     glm::vec2 groundsize(getParam("level.w"), getParam("level.h"));
-    Ledge l;
+
+    ground_ = rectangle(groundpos.x, groundpos.y, groundsize.x, groundsize.y);
+    ground_color_ = glm::vec3(getParam("level.r"),
+            getParam("level.g"), getParam("level.b"));
+
+    if (stage == 1)
+    {
+        platforms_.push_back(rectangle(-200, 40, 220, 10));
+        platforms_.push_back(rectangle(0, 140, 220, 10));
+        platforms_.push_back(rectangle(200, 40, 220, 10));
+
+        ground_.w *= 0.80f;
+    }
+
     // Left side ledge
-    l.pos = glm::vec2(groundpos.x - groundsize.x / 2, groundpos.y + groundsize.y/2);
+    Ledge l;
+    l.pos = glm::vec2(ground_.x - ground_.w / 2, ground_.y + ground_.h/2);
     l.occupied = false;
     l.dir = -1;
     ledges_.push_back(new Ledge(l));
 
     // Right side ledge
-    l.pos = glm::vec2(groundpos.x + groundsize.x / 2, groundpos.y + groundsize.y/2);
+    l.pos = glm::vec2(ground_.x + ground_.w / 2, ground_.y + ground_.h/2);
     l.occupied = false;
     l.dir = 1;
     ledges_.push_back(new Ledge(l));
 
-    initBackground();
-
-    ground_ = rectangle(
-            getParam("level.x"), getParam("level.y"),
-            getParam("level.w"), getParam("level.h"));
-    ground_color_ = glm::vec3(getParam("level.r"),
-            getParam("level.g"), getParam("level.b"));
-
-    // Load the ground mesh
-    level_mesh_ = createMesh("models/level.obj");
 }
 
 void StageManager::clear()
 {
-    for (size_t i = 0; i < ledges_.size(); i++)
-        ledges_[i]->occupied = false;
+    ledges_.clear();
+    platforms_.clear();
 }
 
 void StageManager::initBackground()
@@ -111,6 +124,11 @@ Ledge * StageManager::getPossibleLedge(const glm::vec2 &pos)
     return ret;
 }
 
+std::vector<rectangle> StageManager::getPlatforms() const
+{
+    return platforms_;
+}
+
 void StageManager::renderSphereBackground(float dt)
 {
     t_ += 3*dt;
@@ -148,6 +166,16 @@ void StageManager::renderStage(float dt)
             glm::translate(glm::mat4(1.0f), glm::vec3(ground_.x, ground_.y, 0.1)),
             glm::vec3(ground_.w/2, ground_.h/2, getParam("level.d")/2));
     renderMesh(level_mesh_, transform, ground_color_);
+
+    // Draw the platforms
+    for (size_t i = 0; i < platforms_.size(); i++)
+    {
+        rectangle pf = platforms_[i];
+        transform = glm::scale(
+                glm::translate(glm::mat4(1.0f), glm::vec3(pf.x, pf.y, 0.0)),
+                glm::vec3(pf.w, pf.h, getParam("level.d")/3));
+        renderMesh(platform_mesh_, transform, ground_color_);
+    }
 }
 
 rectangle StageManager::getGroundRect() const
@@ -159,6 +187,7 @@ rectangle StageManager::getGroundRect() const
 // Hazard  
 //////////////////////////////////////////////
 
+/*
 HazardEntity::HazardEntity(const std::string &audioID)
 {
     pre_ = "stageHazardAttack.";
@@ -318,4 +347,4 @@ void HazardEntity::disconnectCallback(LimpFighter *caller)
 
     assert(false && "Caller not found\n");
 }
-
+*/

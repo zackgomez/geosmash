@@ -104,11 +104,14 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     return new AirStunnedState(fighter_, stunDuration, gbmag > 0 ? gbmag : -HUGE_VAL);
 }
 
-void FighterState::collisionHelper(const rectangle &ground)
+void FighterState::collisionHelper(const rectangle &ground, bool platform)
 {
+    // If it's a platform, just be on top, minus one unit
+    if (platform)
+        fighter_->pos_.y = ground.y + ground.h/2 + fighter_->size_.y/2 - 1;
     // If the player is entirely inside of the rectangle
     // just move them on top of it, minus 1 pixel
-    if (ground.contains(fighter_->getRect()))
+    else if (ground.contains(fighter_->getRect()))
         fighter_->pos_.y = ground.y + ground.h/2 + fighter_->size_.y/2 - 1;
     // If the character's center is above the ground then move them on top
     // minus one pixel to ensure they continue to be in the GroundState
@@ -237,13 +240,14 @@ void AirStunnedState::render(float dt)
     fighter_->renderHelper(dt, fname, color);
 }
 
-FighterState* AirStunnedState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* AirStunnedState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
     // If no collision, we don't care
     if (!collision)
         return NULL;
 
-    FighterState::collisionHelper(ground);
+    FighterState::collisionHelper(ground, platform);
     // If we're not overlapping the ground anymore, no collision
     if (!ground.overlaps(fighter_->getRect()))
         return NULL;
@@ -582,22 +586,28 @@ void GroundState::render(float dt)
     fighter_->renderHelper(dt, fname, color);
 }
 
-FighterState* GroundState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* GroundState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
+    if (collision)
+        lastGround_ = ground;
     if (!collision)
     {
         if (fighter_->attack_)
         {
             fighter_->attack_->cancel();
             dashing_ = false;
-            float dir = (ground.x - fighter_->pos_.x) > 0 ? 1 : -1;
-            fighter_->pos_.x += dir * (fabs(ground.x - fighter_->pos_.x) - ground.w/2 - fighter_->size_.x/2 + 2);
+            float dir = (lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
+            fighter_->pos_.x += dir * (fabs(lastGround_.x - fighter_->pos_.x) - lastGround_.w/2 - fighter_->size_.x/2 + 2);
         }
         else
         {
             return new AirNormalState(fighter_);
         }
     }
+
+    if (collision && platform && ducking_)
+        return new AirNormalState(fighter_);
 
     // If there is a collision, we don't need to do anything, because we're
     // already in the GroundState
@@ -734,7 +744,8 @@ T FighterState::muxByTime(const T& color, float t)
 }
 
 
-FighterState* BlockingState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* BlockingState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
     return NULL;
 }
@@ -772,7 +783,9 @@ FighterState* BlockingState::hitByAttack(const Attack *attack)
 
 //// -------------------- AIR NORMAL STATE -----------------------------
 AirNormalState::AirNormalState(Fighter *f) :
-    FighterState(f), canSecondJump_(true), jumpTime_(-1), noGrabTime_(0)
+    FighterState(f), canSecondJump_(true), jumpTime_(-1),
+    fastFalling_(false), fallThroughPlatforms_(false),
+    noGrabTime_(0)
 {
     frameName_ = "AirNormal";
 }
@@ -784,6 +797,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
 {
     // Gravity
     fighter_->accel_ = glm::vec2(0.f, getParam("airAccel"));
+    fallThroughPlatforms_ = false;
 
     // Update running timers
     if (jumpTime_ >= 0) jumpTime_ += dt;
@@ -808,6 +822,9 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
             fighter_->accel_ += glm::vec2(0.f, getParam("fastFallAccel"));
         fastFalling_ = true;
     }
+
+    if (controller.joyy < getParam("input.fallThresh"))
+        fallThroughPlatforms_ = true;
 
     // --- Check for attack ---
     if (controller.pressa)
@@ -901,15 +918,20 @@ void AirNormalState::render(float dt)
     fighter_->renderHelper(dt, fname, fighter_->color_);
 }
 
-FighterState* AirNormalState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* AirNormalState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
     // If no collision, we don't care
     if (!collision)
         return NULL;
-    FighterState::collisionHelper(ground);
+    // If we should fall through platforms and we hit one, ignore it
+    if (collision && platform && fallThroughPlatforms_)
+        return NULL;;
+    FighterState::collisionHelper(ground, platform);
     // If we're not overlapping the ground anymore, no collision
     if (!ground.overlaps(fighter_->getRect()))
         return NULL;
+
 
     // Reset vel/accel
     fighter_->vel_ = glm::vec2(0.f, 0.f);
@@ -929,6 +951,7 @@ FighterState* AirNormalState::collisionWithGround(const rectangle &ground, bool 
             fighter_->pos_.y - fighter_->size_.y * 0.45f,
             0.3f);
 
+    std::cout << "TRANSITION TO GROUND\n";
     // Transition to the ground state, with a small delay for landing
     return new GroundState(fighter_, getParam("landingCooldownTime"));
 }
@@ -952,11 +975,12 @@ SpecialState::SpecialState(Fighter *f, bool ground) :
 {
 }
 
-FighterState* SpecialState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* SpecialState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
     if (collision)
     {
-        collisionHelper(ground);
+        collisionHelper(ground, platform);
         fighter_->vel_ = glm::vec2(0.f);
         fighter_->accel_ = glm::vec2(0.f);
         ground_ = true;
@@ -1034,9 +1058,10 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
     return NULL;
 }
 
-FighterState* CounterState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* CounterState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
-    return SpecialState::collisionWithGround(ground, collision);
+    return SpecialState::collisionWithGround(ground, collision, platform);
 }
 
 void CounterState::render(float dt)
@@ -1095,7 +1120,8 @@ void UpSpecialState::render(float dt)
     fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
 }
 
-FighterState* UpSpecialState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* UpSpecialState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
     // XXX not sure if this is right
     return NULL;
@@ -1176,10 +1202,11 @@ void DashSpecialState::update(float dt)
     SpecialState::update(dt);
 }
 
-FighterState* DashSpecialState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* DashSpecialState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
     float xvel = fighter_->vel_.x;
-    FighterState *ret = SpecialState::collisionWithGround(ground, collision);
+    FighterState *ret = SpecialState::collisionWithGround(ground, collision, platform);
     fighter_->vel_.x = xvel;
     return ret;
 }
@@ -1291,7 +1318,8 @@ void GrabbingState::render(float dt)
     fighter_->renderHelper(dt, frameName_, fighter_->getColor());
 }
 
-FighterState* GrabbingState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* GrabbingState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
     // TODO just make sure we're still on the ground
     //assert(collision);
@@ -1413,12 +1441,14 @@ FighterState* DodgeState::hitByAttack(const Attack *attack)
     return FighterState::calculateHitResult(attack);
 }
 
-FighterState* DodgeState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* DodgeState::collisionWithGround(const rectangle &ground, bool collision, bool platform)
 {
+    if (collision)
+        lastGround_ = ground;
     if (!collision)
     {
-        float dir = (ground.x - fighter_->pos_.x) > 0 ? 1 : -1;
-        fighter_->pos_.x += dir * (fabs(ground.x - fighter_->pos_.x) - ground.w/2 - fighter_->size_.x/2 + 2);
+        float dir = (lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
+        fighter_->pos_.x += dir * (fabs(lastGround_.x - fighter_->pos_.x) - lastGround_.w/2 - fighter_->size_.x/2 + 2);
         fighter_->vel_.x = 0.0f;
         t_ = std::max(t_, invincTime_);
     }
@@ -1437,10 +1467,13 @@ LedgeGrabState::LedgeGrabState(Fighter *f) :
 {
     fighter_->lastHitBy_ = -1;
     invincTime_ = getParam("ledgeGrab.grabInvincTime");
+    waitTime_ = getParam("ledgeGrab.inputDelay");
 }
 
 FighterState* LedgeGrabState::processInput(controller_state &controller, float dt)
 {
+    waitTime_ -= dt;
+    if (waitTime_ > 0) return NULL;
     if (jumpTime_ > 0 && jumpTime_ != HUGE_VAL) return NULL;
 
     // Check for jump transition
@@ -1541,7 +1574,8 @@ void LedgeGrabState::render(float dt)
     fighter_->renderHelper(dt, "LedgeGrab", color);
 }
 
-FighterState* LedgeGrabState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* LedgeGrabState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
     // Empty
     return NULL;
@@ -1619,7 +1653,8 @@ void LimpState::render(float dt)
     fighter_->renderHelper(dt, frameName_, fighter_->getColor(), pretrans_);
 }
 
-FighterState* LimpState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* LimpState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
     // Ignore this, assume the puppet master knows what they're doing
     // Just return new state if it exists
@@ -1734,7 +1769,8 @@ bool RespawnState::canBeHit() const
     return false;
 }
 
-FighterState* RespawnState::collisionWithGround(const rectangle &ground, bool collision)
+FighterState* RespawnState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
 {
     assert(!collision);
     return NULL;
@@ -1748,7 +1784,7 @@ DeadState::DeadState(Fighter *f) :
     f->pos_.y = HUGE_VAL;
 }
 
-FighterState* DeadState::collisionWithGround(const rectangle &, bool)
+FighterState* DeadState::collisionWithGround(const rectangle &, bool, bool)
 {
     return NULL;
 }

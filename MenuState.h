@@ -8,14 +8,18 @@
 class MenuWidget
 {
 public:
+    MenuWidget() : enabled_(true) { }
     virtual ~MenuWidget() { }
 
     virtual int value() const = 0;
     virtual void handleInput(float val) = 0;
     virtual void render(const glm::vec2 &center,
             const glm::vec2 &size, bool highlight) const = 0;
+    bool enabled() const { return enabled_; }
+    void setEnabled(bool enabled) { enabled_ = enabled; }
 
-private:
+protected:
+    bool enabled_;
 };
 
 class NumberSelectWidget : public MenuWidget
@@ -60,7 +64,7 @@ private:
 class PlayerWidget
 {
 public:
-    explicit PlayerWidget(int playerID, const bool *teams);
+    explicit PlayerWidget(int playerID, const bool *teams, const bool *handicap);
     ~PlayerWidget();
 
     bool isActive() const;
@@ -74,16 +78,17 @@ public:
     int getColorID() const;
     glm::vec3 getColor(int colorScheme = 0) const;
     std::string getUsername() const;
+    int getHandicapLives() const;
 
 private:
     int playerID_;
 
     bool active_;
-    bool startPrimed_;
     bool wantsStart_;
 
     StringSelectWidget *usernameWidget_;
     StringSelectWidget *teamIDWidget_;
+    NumberSelectWidget *handicapWidget_;
 
     int widgetIdx_;
     std::vector<MenuWidget*> widgets_;
@@ -91,7 +96,7 @@ private:
 
     bool widgetChangePrimed_;
 
-    const bool *teams_;
+    const bool *teams_, *handicap_;
 };
 
 class MenuState : public GameState
@@ -108,7 +113,7 @@ private:
     std::vector<PlayerWidget*> widgets_;
     std::vector<MenuWidget*> topWidgets_;
 
-    bool teams_;
+    bool teams_, handicap_;
     int topMenuController_;
     size_t topWidgetIdx_;
 

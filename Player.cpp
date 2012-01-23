@@ -2,6 +2,8 @@
 #include "Controller.h"
 #include "Fighter.h"
 #include "StageManager.h"
+#include "InGameState.h"
+#include "ParamReader.h"
 
 Player::~Player()
 {
@@ -66,6 +68,83 @@ controller_state AIPlayer::getState() const
     return cs_;
 }
 
+void AIPlayer::performGetBack()
+{
+    
+    rectangle r = StageManager::get()->getGroundRect();
+    cs_.joyx = glm::sign(r.x - pos.x); 
+    // Attempt to side B when we're off the edge and yvel < 0
+    if (fighter_->getFrameName() == "AirNormal") 
+    {
+        glm::vec2 upb_delta;
+        // How far from the center of the stage are we?
+        float dist = fabs(pos.x - r.x);
+        float ledgeDist = getParam("ledgeGrab.dist");
+        upb_delta.x = getParam("upSpecialAttack.xvel") * 
+            getParam("upSpecialAttack.duration");
+        upb_delta.y = getParam("upSpecialAttack.yvel") *
+            getParam("upSpecialAttack.duration");
+        
+   
+        if (fighter_->getVelocity().y < 0 && dist > r.w / 2 + 400)
+        {
+            cs_.pressb = true;
+        }
+        if (dist > r.w / 2 && dist < r.w / 2 + ledgeDist + upb_delta.x)
+        {
+            // Pretty good condition for Up-B
+            cs_.joyy = 1;
+            cs_.joyx *= 0.99;
+            cs_.pressb = 1;
+        }
+
+    }
+}
+
+void AIPlayer::performAttack()
+{
+    rectangle r = StageManager::get()->getGroundRect();
+    cs_.joyx = glm::sign(targetPos.x - pos.x); 
+    float dist = fabs(pos.x - r.x);
+    if (dist < r.w / 2)
+    {
+        if (danger) {
+            cs_.joyx = 0;
+            cs_.pressa = true;
+        }
+        else {
+            cs_.pressb = true;
+            cs_.joyx = 0;
+        }
+    }
+
+}
+
+void AIPlayer::senseDanger()
+{
+    std::vector<const Fighter*> fs = InGameState::instance->getFighters();
+    danger = false;
+    for (unsigned int i = 0; i < fs.size(); i++) 
+    {
+        if (fighter_ == fs[i]) continue;
+        if (fabs(pos.x - fs[i]->getPosition().x) < 200)
+        {
+            danger = true;
+        }
+    }
+}
+
+void AIPlayer::setTargetPos()
+{
+    std::vector<const Fighter*> fs = InGameState::instance->getFighters();
+    for (unsigned int i = 0; i < fs.size(); i++) 
+    {
+        if (fighter_ == fs[i]) continue;
+        float dist = fabs(pos.x - fs[i]->getPosition().x);
+        targetPos = fs[i]->getPosition();
+    }
+}
+
 void AIPlayer::update(float)
 {
     // Try to perform _both_ of these two actions
@@ -74,11 +153,45 @@ void AIPlayer::update(float)
 
     memset(&cs_, 0 , sizeof(controller_state));
 
-    rectangle r = StageManager::get()->getGroundRect();
-    cs_.joyx = glm::sign(r.x - fighter_->getPosition().x);
+    // First, update some variables. Nothing here should modify cs_.
+    pos = fighter_->getPosition();
+    setTargetPos();
+    senseDanger();
+    rectangle r = StageManager::get()->getGroundRect(); 
+    float dist = fabs(pos.x - r.x);
+
+    // If we're flying off, do nothing except get back.
+    if (dist > r.w / 2) 
+    {
+        performGetBack();
+        return;
+    }
+    if (fighter_->getFrameName() == "LedgeGrab") 
+    {
+        cs_.joyxv = cs_.joyx * (getParam("input.velThresh") + 1);
+    }
+    // have the guy follow you around, if the target is on the platform
+    if (fabs(targetPos.x - pos.x) < r.w / 2) 
+    {
+        cs_.joyx = glm::sign(targetPos.x - fighter_->getPosition().x);
+    }
     if (fighter_->getPosition().y < r.y)
     {
         cs_.pressy = true;
+    }
+
+    // We want to spend as little time as possible in the ground state
+    if (fighter_->getFrameName() == "GroundNormal")
+    {
+        // short hop
+        cs_.pressy = true;
+        return;
+    }
+    // if we're not in danger of falling off and someone is near us,
+    // just attack
+    if (fighter_->getFrameName() == "AirNormal")
+    {
+        performAttack();
     }
 
 }

@@ -10,7 +10,8 @@ class InGameState : public GameState
 {
 public:
     InGameState(const std::vector<Player *> &players,
-            const std::vector<Fighter *> &fighters, bool makeHazard);
+            const std::vector<Fighter *> &fighters, bool keepStats,
+            int stage);
     virtual ~InGameState();
 
     virtual GameState* processInput(const std::vector<Controller*> &joysticks,
@@ -23,6 +24,8 @@ public:
     // XXX: Get rid of this hack
     static InGameState *instance;
 
+    const std::vector<const Fighter*> getFighters() const;
+
 private:
     std::vector<Player*> players_;
     std::vector<Fighter*> fighters_;
@@ -33,11 +36,12 @@ private:
     size_t startTime_;
 
     int pausingPlayer_;
+    bool keepStats_;
 
 
     // Helper functions
     void integrate(float dt);
-    void collisionDetection();
+    void collisionDetection(float dt);
     void renderHUD();
     void renderPause();
     void renderArrow(const Fighter *fighter);

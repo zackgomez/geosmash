@@ -20,6 +20,8 @@ public:
     // Return the singleton instance
     static StageManager* get();
 
+    void initLevel(int stage);
+
     // Called every frame.
     // For now, just put out a stage hazard (maybe)
     void update(float dt);
@@ -37,10 +39,14 @@ public:
 
     rectangle getGroundRect() const;
 
+    std::vector<rectangle> getPlatforms() const;
+
 private:
     StageManager();
 
     std::vector<Ledge*> ledges_;
+    rectangle ground_;
+    std::vector<rectangle> platforms_;
 
     int meshRes_;
     GLuint meshBuf_;
@@ -50,9 +56,9 @@ private:
 
     void initBackground();
 
-    rectangle ground_;
     glm::vec3 ground_color_;
     mesh level_mesh_;
+    mesh platform_mesh_;
 };
 
 // Renders a shiny sphere.
@@ -82,6 +88,8 @@ private:
     void updateLitSegments(void);
 };
 
+
+/*
 class LimpFighter;
 class Emitter;
 struct CentripetalForceF;
@@ -132,4 +140,4 @@ private:
 
     std::vector<victimData> victims_;
 };
-
+*/

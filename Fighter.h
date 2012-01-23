@@ -46,6 +46,9 @@ public:
     int getLives() const;
     float getDamage() const;
     float getDirection() const; // returns -1 or 1
+    // Fighters are allowed to get the name of the current animation frame
+    // (Useful for AI)
+    std::string getFrameName() const;
     const glm::vec3& getColor() const { return color_; }
     const std::string& getUsername() const { return username_; }
     // Returns the id of the player that last hit this fighter, or -1 if there
@@ -57,7 +60,7 @@ public:
     virtual bool isDone() const { return false; }
 
     // collision is true if there is a collision with ground this frame, false otherwise
-    void collisionWithGround(const rectangle &ground, bool collision);
+    void collisionWithGround(const rectangle &ground, bool collision, bool platform);
     virtual void attackCollision(const Attack *other);
     virtual void hitByAttack(const Attack* attack);
     virtual void attackConnected(GameEntity *victim);
@@ -95,6 +98,8 @@ private:
     float respawnx_, respawny_;
     glm::vec3 color_;
     std::string username_;
+
+    std::string lastFrameName_;
 
     // Current attack members
     FighterAttack* attack_;

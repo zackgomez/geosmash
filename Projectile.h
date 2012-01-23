@@ -25,7 +25,7 @@ public:
     virtual void hitByAttack(const Attack *attack);
     virtual void attackConnected(GameEntity *other);
 
-    virtual void collisionWithGround(const rectangle &ground, bool collision);
+    virtual void collisionWithGround(const rectangle &ground, bool collision, bool platform);
 
     virtual void update(float dt);
     virtual void render(float dt);

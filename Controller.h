@@ -22,6 +22,8 @@ struct controller_state
 
     // Dpad directions, true if they're press currently
     bool dpadl, dpadr, dpadu, dpadd;
+
+    void clear();
 };
 
 
@@ -48,5 +50,7 @@ private:
     SDL_Joystick *joystick_;
 
     controller_state state_;
+
+    int ltrigAxis_, rtrigAxis_;
 };
 
