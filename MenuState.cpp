@@ -208,7 +208,7 @@ void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
 
 PlayerWidget::PlayerWidget(int playerID, const bool *teams, const bool *handicap) :
     playerID_(playerID),
-    active_(defstate.active[playerID]), wantsStart_(false),
+    active_(defstate.active[playerID]),
     usernameWidget_(NULL),
     teamIDWidget_(NULL),
     widgetIdx_(0),
@@ -234,7 +234,6 @@ PlayerWidget::~PlayerWidget()
 }
 
 bool PlayerWidget::isActive() const { return active_; }
-bool PlayerWidget::wantsStart() const { return wantsStart_; }
 
 void PlayerWidget::processInput(Controller *controller, float dt)
 {
@@ -248,9 +247,6 @@ void PlayerWidget::processInput(Controller *controller, float dt)
     // B to leave
     if (controller->getState().pressb)
         active_ = false;
-
-    // Start button
-    wantsStart_ = controller->getState().pressstart;
 
     // X to change color
     if (controller->getState().pressx)
@@ -458,6 +454,15 @@ GameState* MenuState::processInput(const std::vector<Controller*> &controllers, 
     std::set<int> teams;
     for (size_t i = 0; i < widgets_.size(); i++)
     {
+        // Check for start
+        shouldStart |= controllers[i]->getState().pressstart;
+        if (shouldStart && startingPlayer == -1)
+            startingPlayer = i;
+
+        // Keep track of teams selected
+        if (widgets_[i]->isActive())
+            teams.insert(widgets_[i]->getTeamID());
+
         // Check for y button to transition to top menu
         if (widgets_[i]->isActive() && controllers[i]->getState().pressy
                 && topMenuController_ == -1)
@@ -473,13 +478,8 @@ GameState* MenuState::processInput(const std::vector<Controller*> &controllers, 
             continue;
         }
 
+        // Finally, if no top menu, process input normally
         widgets_[i]->processInput(controllers[i], dt);
-        shouldStart |= widgets_[i]->wantsStart();
-        if (shouldStart && startingPlayer == -1)
-            startingPlayer = i;
-        // Keep track of teams selected
-        if (widgets_[i]->isActive())
-            teams.insert(widgets_[i]->getTeamID());
     }
 
 

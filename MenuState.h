@@ -68,7 +68,6 @@ public:
     ~PlayerWidget();
 
     bool isActive() const;
-    bool wantsStart() const;
 
     void processInput(Controller *controller, float dt);
     void render(const glm::vec2 &center, const glm::vec2 &size, float dt);
@@ -84,7 +83,6 @@ private:
     int playerID_;
 
     bool active_;
-    bool wantsStart_;
 
     StringSelectWidget *usernameWidget_;
     StringSelectWidget *teamIDWidget_;
