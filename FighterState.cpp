@@ -589,16 +589,14 @@ void GroundState::render(float dt)
 FighterState* GroundState::collisionWithGround(const rectangle &ground, bool collision,
         bool platform)
 {
-    if (collision)
-        lastGround_ = ground;
     if (!collision)
     {
         if (fighter_->attack_)
         {
             fighter_->attack_->cancel();
             dashing_ = false;
-            float dir = (lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
-            fighter_->pos_.x += dir * (fabs(lastGround_.x - fighter_->pos_.x) - lastGround_.w/2 - fighter_->size_.x/2 + 2);
+            float dir = (fighter_->lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
+            fighter_->pos_.x += dir * (fabs(fighter_->lastGround_.x - fighter_->pos_.x) - fighter_->lastGround_.w/2 - fighter_->size_.x/2 + 2);
         }
         else
         {
@@ -1253,13 +1251,17 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
     // If the "grab attack" has expired and we have no victim, back to ground
     // normal.  grab attack cooldown should take care of grab cooldown
     if (!fighter_->attack_ && !victim_)
+    {
+        fighter_->accel_ = glm::vec2();
         return new GroundState(fighter_);
+    }
 
     // If we're grabbing someone, and we've run out of "hold time" then
     // release them and transition back to the ground state
     if (victim_ && holdTimeLeft_ < 0)
     {
         victim_->release();
+        fighter_->accel_ = glm::vec2();
         // A bit of cooldown time here
         return new GroundState(fighter_, getParam(pre_ + "releaseCooldown"));
     }
@@ -1321,8 +1323,17 @@ void GrabbingState::render(float dt)
 FighterState* GrabbingState::collisionWithGround(const rectangle &ground, bool collision,
         bool platform)
 {
-    // TODO just make sure we're still on the ground
-    //assert(collision);
+    if (!collision)
+    {
+        if (fighter_->attack_)
+        {
+            fighter_->attack_->cancel();
+            float dir = (fighter_->lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
+            fighter_->pos_.x += dir * (fabs(fighter_->lastGround_.x - fighter_->pos_.x) - fighter_->lastGround_.w/2 - fighter_->size_.x/2 + 2);
+        }
+        else
+            return new AirNormalState(fighter_);
+    }
     return NULL;
 }
 
@@ -1443,12 +1454,10 @@ FighterState* DodgeState::hitByAttack(const Attack *attack)
 
 FighterState* DodgeState::collisionWithGround(const rectangle &ground, bool collision, bool platform)
 {
-    if (collision)
-        lastGround_ = ground;
     if (!collision)
     {
-        float dir = (lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
-        fighter_->pos_.x += dir * (fabs(lastGround_.x - fighter_->pos_.x) - lastGround_.w/2 - fighter_->size_.x/2 + 2);
+        float dir = (fighter_->lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
+        fighter_->pos_.x += dir * (fabs(fighter_->lastGround_.x - fighter_->pos_.x) - fighter_->lastGround_.w/2 - fighter_->size_.x/2 + 2);
         fighter_->vel_.x = 0.0f;
         t_ = std::max(t_, invincTime_);
     }

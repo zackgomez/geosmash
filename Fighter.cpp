@@ -188,6 +188,9 @@ void Fighter::update(float dt)
 
 void Fighter::collisionWithGround(const rectangle &ground, bool collision, bool platform)
 {
+    if (collision)
+        lastGround_ = ground;
+
     stateWrapper(state_->collisionWithGround(ground, collision, platform));
 }
 

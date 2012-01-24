@@ -93,6 +93,8 @@ private:
     float damage_;
     float shieldHealth_;
     int lives_;
+    // The last ground/platform that the fighter stepped on
+    rectangle lastGround_;
 
     // Fighter ID members
     float respawnx_, respawny_;
