@@ -103,23 +103,6 @@ void AudioManager::playSound(const std::string &audioID,
 	sound->setIsPaused(false);
 }
 
-sf::SoundBuffer* AudioManager::getBuffer(const std::string &fname)
-{
-	return NULL;
-    sf::SoundBuffer* result = NULL;
-    // check if the file has already been loaded in
-    if (buffers_.count(fname) != 1)
-    {
-        sf::SoundBuffer *sb = new sf::SoundBuffer();
-        assert(sb);
-        sb->LoadFromFile("sfx/" + fname + ".aif");
-        buffers_[fname] = sb;
-    }
-    result = buffers_[fname];
-    // We should really panic if we haven't retrieved this value by now.
-    assert(result);
-    return result;
-}
 
 float AudioManager::getPanningFactor(const glm::vec2 &worldPos)
 {
@@ -173,18 +156,7 @@ AudioManager* AudioManager::get()
 
 void AudioManager::update(float dt) 
 {
-    std::vector<sf::Sound *>::iterator it;
-    for (it = currentSounds_.begin(); it != currentSounds_.end(); )
-    {
-        bool notplaying = (*it)->GetStatus() == sf::Sound::Stopped;
-        if (notplaying) 
-        {
-            delete *it;
-            it = currentSounds_.erase(it);
-        }
-        else
-            it++;
-    }
+    // Much ado about nothing
 }
 
 void AudioManager::mute()
