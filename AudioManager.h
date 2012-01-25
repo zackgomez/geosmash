@@ -5,6 +5,7 @@
 #include <string>
 #include <glm/glm.hpp>
 #include "Logger.h"
+#include "irrKlang.h"
 
 //
 // SFML Notes
@@ -52,11 +53,13 @@ public:
     // Called every frame, allows AudioManager to cleanup its state 
     // (free members, etc)
     void update(float dt);
-
+	
 private:
-    AudioManager();
+    static AudioManager *am;
+	AudioManager();
     ~AudioManager();
     LoggerPtr logger_;
+	irrklang::ISoundEngine *engine;
 
     bool muted_;
 
@@ -69,7 +72,7 @@ private:
     // Each sound will point to a buffer in soundBuffers_.
     std::vector<sf::Sound *> currentSounds_;
 
-    sf::Music soundtrack_;
+    irrklang::ISound *soundtrack_;
 
     // Helper functions
     float getPanningFactor(const glm::vec2 &worldPos);
