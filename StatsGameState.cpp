@@ -61,6 +61,8 @@ StatsGameState::~StatsGameState()
 {
     for (size_t i = 0; i < players_.size(); i++)
         delete players_[i];
+    for (size_t i = 0; i < stats_.size(); i++)
+        delete stats_[i];
 
     free_texture(backgroundTex_);
 }

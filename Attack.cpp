@@ -141,6 +141,7 @@ FighterAttack::FighterAttack(const std::string &paramPrefix, const std::string &
     audioID_ = audioID;
     frameName_ = frameName;
     paramPrefix_ = pp;
+    t_ = 0.0f;
 
     twinkle_ = false;
 }
