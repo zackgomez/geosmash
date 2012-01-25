@@ -1,8 +1,8 @@
 #pragma once
 
-#include <SFML/Audio.hpp>
 #include <map>
 #include <string>
+#include <vector>
 #include <glm/glm.hpp>
 #include "Logger.h"
 #include "irrKlang.h"
@@ -63,14 +63,9 @@ private:
 
     bool muted_;
 
-    // List of all buffers representing small sounds, like attack noises
-    std::map<std::string, sf::SoundBuffer *>buffers_;
-
-    sf::SoundBuffer *getBuffer(const std::string &fname);
-
     // List of small sounds playing 
     // Each sound will point to a buffer in soundBuffers_.
-    std::vector<sf::Sound *> currentSounds_;
+    std::vector<irrklang::ISound *> currentSounds_;
 
     irrklang::ISound *soundtrack_;
 
