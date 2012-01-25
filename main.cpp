@@ -163,6 +163,8 @@ void cleanup()
     for (unsigned i = 0; i < controllers.size(); i++)
         delete controllers[i];
 
+    delete state;
+
     std::cout << "Quiting nicely\n";
     SDL_Quit();
 }

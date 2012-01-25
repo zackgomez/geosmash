@@ -3,57 +3,75 @@
 #include "ParamReader.h"
 #include "Engine.h"
 
-AudioManager::AudioManager() 
+AudioManager *AudioManager::am = NULL;
+
+AudioManager::AudioManager() : muted_(false), soundtrack_(NULL)
 {
     // TODO: possibly preload small sound files.
     logger_ = Logger::getLogger("AudioManager");
+	engine = irrklang::createIrrKlangDevice();
+	assert(engine);
 }
 
 AudioManager::~AudioManager()
 {
-    for (unsigned i = 0; i < currentSounds_.size(); i++)
-        delete currentSounds_[i];
-    currentSounds_.clear();
-
-    for (std::map<std::string, sf::SoundBuffer *>::iterator it = buffers_.begin();
-            it != buffers_.end(); it++)
-        delete it->second;
-    buffers_.clear();
+	engine->drop();
 }
 
-void AudioManager::playSound(const std::string &fname)
+void AudioManager::playSound(const std::string &soundIdentifier)
 {
-    if (muted_)
+    if (muted_) 
+	{
         return;
-    // Now that the data is loaded into a buffer, add the data to a Sound obj
-    // object that has a location in 3D space, volume, etc.
-    sf::Sound *s = new sf::Sound();
-    s->SetBuffer(*getBuffer(fname));
+	}
+
+	std::string fname = "sfx/" + soundIdentifier + ".aif";
+	
+	// Grab volume (optionally scaled) from params
     float volume = getParam("sfx.volume");
     logger_->debug() << "Looking for param: " << "sfx." + fname + ".volume\n";
-    if (ParamReader::get()->hasParam("sfx." + fname + ".volume"))
+    if (ParamReader::get()->hasParam("sfx." + fname + ".volume")) 
+	{
         volume *= getParam("sfx." + fname + ".volume");
-    s->SetVolume(volume);
-    s->Play();
-    currentSounds_.push_back(s);
-
+	}
+	volume /= 100.0f; // Scale it to be between 0 and 1
+	irrklang::ISound *sound = engine->play2D(fname.c_str(), false, true, true);
+	if (!sound)
+	{
+		return;
+	}
+	sound->setVolume(volume / 100.0f);
+	sound->setIsPaused(false);
+    
 }
-void AudioManager::playSound(const std::string &fname, 
+
+void AudioManager::playSound(const std::string &audioID, 
         glm::vec2 pos,
         double damage)
 {
+	if (audioID.empty()) 
+	{
+		return;
+	}
     if (muted_)
+	{
         return;
+	}
     double vol;
     double D1 = getParam("sfx.damagefloor");
     double D2 = getParam("sfx.damageceiling");
     double V1 = getParam("sfx.minvolume");
     double V2 = getParam("sfx.maxvolume");
     double panningFactor = getPanningFactor(pos);
-    sf::Sound *s = new sf::Sound();
-    s->SetBuffer(*getBuffer(fname));
-    s->SetPosition(panningFactor, 0, 0);
-
+	std::string fname = "sfx/" + audioID + ".ogg";
+	irrklang::ISound *sound = engine->play2D(fname.c_str(), false, true, true);
+	if (!sound)
+	{
+		// Don't crash if this happens. But freak the fuck out!
+		return;
+	}
+	sound->setPan(panningFactor);
+    
     if (damage == -1) {
         // No damage was specified. Play the sound at max volume
         vol = 100;
@@ -77,15 +95,17 @@ void AudioManager::playSound(const std::string &fname,
     //assert(vol >= V1 && vol <= V2);
     float volume = getParam("sfx.volume");
     logger_->debug() << "Looking for param: " << "sfx." + fname + ".volume\n";
-    if (ParamReader::get()->hasParam("sfx." + fname + ".volume"))
+    if (ParamReader::get()->hasParam("sfx." + fname + ".volume")) 
+	{
         volume *= getParam("sfx." + fname + ".volume");
-    s->SetVolume(volume * vol/100.f);
-    s->Play();
-    currentSounds_.push_back(s);
+	}
+	sound->setVolume((volume * vol/100.f) / 100);
+	sound->setIsPaused(false);
 }
 
 sf::SoundBuffer* AudioManager::getBuffer(const std::string &fname)
 {
+	return NULL;
     sf::SoundBuffer* result = NULL;
     // check if the file has already been loaded in
     if (buffers_.count(fname) != 1)
@@ -118,28 +138,37 @@ float AudioManager::getPanningFactor(const glm::vec2 &worldPos)
 
 void AudioManager::setSoundtrack(const std::string &file)
 {
-    soundtrack_.Stop();
-    soundtrack_.OpenFromFile(file);
-    soundtrack_.SetLoop(true);
-    soundtrack_.SetVolume(getParam("soundtrack.volume"));
+	if (soundtrack_) 
+	{
+		soundtrack_->stop();
+	}
+	soundtrack_ = engine->play2D(file.c_str(), true, true, true);
 }
 
 void AudioManager::startSoundtrack()
 {
-    if (muted_)
+    if (muted_) 
+	{
         return;
-    soundtrack_.Play();
+	}
+	if (soundtrack_) 
+	{
+		soundtrack_->setIsPaused(false);
+	}
 }
 
 void AudioManager::pauseSoundtrack()
 {
-    soundtrack_.Pause();
+	soundtrack_->setIsPaused();
 }
 
 AudioManager* AudioManager::get() 
 {
-    static AudioManager am;
-    return &am;
+	if (am == NULL) 
+	{
+		am = new AudioManager;
+	}
+    return am;
 }
 
 void AudioManager::update(float dt) 
