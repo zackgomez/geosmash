@@ -141,9 +141,6 @@ int initJoystick(unsigned numPlayers)
     for (i = 0; i < numJoysticks && i < numPlayers; i++)
         controllers.push_back(new Controller(i));
 
-    if (i != numPlayers)
-        return 0;
-
     return numPlayers;
 }
 

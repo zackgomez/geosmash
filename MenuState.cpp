@@ -447,12 +447,10 @@ void MenuState::render(float dt)
 
 GameState* MenuState::processInput(const std::vector<Controller*> &controllers, float dt)
 {
-    assert(controllers.size() >= widgets_.size());
-
     bool shouldStart = false;
     int startingPlayer = -1;
     std::set<int> teams;
-    for (size_t i = 0; i < widgets_.size(); i++)
+    for (size_t i = 0; i < widgets_.size() && i < controllers.size(); i++)
     {
         // Check for start
         shouldStart |= controllers[i]->getState().pressstart;
