@@ -168,7 +168,7 @@ void StatsGameState::render(float dt)
 
             // Render the display name
             float xoffset = stat_size * 0.75f * stat->display_name.length() / 2.f + stat_xmargin;
-            float yoffset = -j * stat_size * 1.5f;
+            float yoffset = -static_cast<int>(j) * stat_size * 1.5f;
             transform = glm::scale(
                     glm::translate(glm::mat4(1.f),
                         glm::vec3(columnLeft(i) + xoffset, stat_height + yoffset, 0.0f)),
