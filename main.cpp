@@ -3,6 +3,7 @@
 #include <SDL/SDL.h>
 #include <iostream>
 #include <cstdlib>
+#include <ctime>
 #include <vector>
 #include "Engine.h"
 #include "AudioManager.h"
@@ -38,7 +39,7 @@ int main(int argc, char *argv[])
     if ((initJoystick(4)) == 0)
     {
         std::cerr << "Unable to initialize Joystick(s)\n";
-        exit(1);
+        assert(false && "No joysticks were found.");
     }
     if (initGraphics())
     {
