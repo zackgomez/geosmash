@@ -1,7 +1,7 @@
 KISS_PARTICLES=kiss-particles
 
-CXXFLAGS=-g -O0 -Wall -Iglm-0.9.2.7 -I$(KISS_PARTICLES) 
-LDFLAGS=-lSDL -lGL -lGLEW  -lsfml-audio
+CXXFLAGS=-g -O0 -Wall -Iglm-0.9.2.7 -I$(KISS_PARTICLES) -IirrKlang-1.3.0/include -m32
+LDFLAGS=-lSDL -lGL -lGLEW -lIrrKlang -LirrKlang-1.3.0/bin/linux-gcc -lpthread
 
 all: ssb
 
