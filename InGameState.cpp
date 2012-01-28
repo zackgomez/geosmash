@@ -63,11 +63,15 @@ InGameState::InGameState(const std::vector<Player *> &players,
     }
     // Need this assertion for destructor
     assert(entities_.size() == fighters_.size());
+    assert(fighters_.size() == players_.size());
 
     // Set up the level
     StageManager::get()->initLevel(stage);
     // Clear the stats
     StatsManager::get()->clear();
+    
+    // Set per game stats
+    StatsManager::get()->setStat("numPlayers", players_.size());
 
     // Choose random song
     std::vector<std::string> songs;

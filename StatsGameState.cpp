@@ -145,10 +145,19 @@ void StatsGameState::render(float dt)
             fighter_color.a = 0.5f;
         glm::mat4 transform;
 
+        // Fighter place
+        transform = glm::scale(
+                glm::translate(glm::mat4(1.f),
+                    glm::vec3(columnCenter(i) - stat_size * (players_[i]->getUsername().length()/2 + 1.5),
+                        name_height, 0.0f)),
+                glm::vec3(name_size, name_size, 1.f));
+        FontManager::get()->renderNumber(transform, glm::vec3(fighter_color),
+                StatsManager::get()->getStat(statPrefix(players_[i]->getPlayerID()) + "place"));
+
         // Profile name
         transform = glm::scale(
                 glm::translate(glm::mat4(1.f),
-                    glm::vec3(columnCenter(i), name_height, 0.0f)),
+                    glm::vec3(columnCenter(i) + stat_size, name_height, 0.0f)),
                 glm::vec3(name_size, name_size, 1.f));
         FontManager::get()->renderString(transform, glm::vec3(fighter_color), players_[i]->getUsername());
 

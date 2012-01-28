@@ -267,6 +267,18 @@ void Fighter::respawn(bool killed)
         --lives_;
         AudioManager::get()->playSound("ko");
         StatsManager::get()->addStat(statPrefix(playerID_) + "deaths", 1);
+
+        // If player is dead and doesn't already have a place, set place
+        if (lives_ == 0 &&
+            StatsManager::get()->getStat(statPrefix(playerID_) + "place") == 0)
+        {
+            // Get, then update, next place stat
+            int nextPlace = StatsManager::get()->getStat("numPlayers")
+                - StatsManager::get()->getStat("tmp.playersOut");
+            StatsManager::get()->addStat("numPlayers", 1);
+
+            StatsManager::get()->setStat(statPrefix(playerID_) + "place", nextPlace);
+        }
     }
     delete state_;
     // Set the new state, either respawn or dead
