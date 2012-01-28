@@ -20,7 +20,8 @@ public:
     // Return the singleton instance
     static StageManager* get();
 
-    void initLevel(int stage);
+    std::vector<std::string> getStageNames() const;
+    void initLevel(const std::string &stageName);
 
     // Called every frame.
     // For now, just put out a stage hazard (maybe)

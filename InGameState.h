@@ -1,6 +1,7 @@
 #pragma once
 #include "GameState.h"
 #include <cstdlib>
+#include <string>
 
 class GameEntity;
 class Fighter;
@@ -11,7 +12,7 @@ class InGameState : public GameState
 public:
     InGameState(const std::vector<Player *> &players,
             const std::vector<Fighter *> &fighters, bool keepStats,
-            int stage);
+            const std::string &stage);
     virtual ~InGameState();
 
     virtual GameState* processInput(const std::vector<Controller*> &joysticks,

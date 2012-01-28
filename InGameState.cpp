@@ -38,7 +38,7 @@ const std::vector<const Fighter*> InGameState::getFighters() const
 
 InGameState::InGameState(const std::vector<Player *> &players,
         const std::vector<Fighter*> &fighters, bool keepStats,
-        int stage) :
+        const std::string &stage) :
     players_(players),
     fighters_(fighters),
     paused_(false),

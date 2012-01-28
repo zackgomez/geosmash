@@ -10,6 +10,7 @@
 #include "FontManager.h"
 #include "AudioManager.h"
 #include "StatsManager.h"
+#include "StageManager.h"
 #include "ParamReader.h"
 #include "FrameManager.h"
 #include "Player.h"
@@ -62,7 +63,7 @@ static struct
     bool teams;
     bool recordStats;
     bool handicap;
-    int stage;
+    int stageIdx;
     int profileID[4];
     int teamID[4];
     bool active[4];
@@ -397,7 +398,7 @@ MenuState::MenuState() :
     topWidgets_.push_back(new StringSelectWidget("Teams", boolStrs, defstate.teams));
     topWidgets_.push_back(new StringSelectWidget("Stats", boolStrs, defstate.recordStats));
     topWidgets_.push_back(new StringSelectWidget("Handicap", boolStrs, defstate.handicap));
-    topWidgets_.push_back(new NumberSelectWidget("Stage", 0, 1, defstate.stage));
+    topWidgets_.push_back(new StringSelectWidget("Stage", StageManager::get()->getStageNames(), defstate.stageIdx));
 
     getProjectionMatrixStack().clear();
     getViewMatrixStack().clear();
@@ -532,7 +533,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
     int lives = topWidgets_[0]->value();
     bool recordStats = topWidgets_[2]->value();
     bool handicap = topWidgets_[3]->value();
-    int stage = topWidgets_[4]->value();
+    std::string stage = ((StringSelectWidget*)topWidgets_[4])->strValue();
 
     std::vector<Player *> players;
     std::vector<Fighter *> fighters;
@@ -573,7 +574,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
     defstate.teams = teams_;
     defstate.recordStats = recordStats;
     defstate.handicap = handicap;
-    defstate.stage = stage;
+    defstate.stageIdx = topWidgets_[4]->value();
     for (size_t i = 0; i < widgets_.size(); i++)
     {
         if (widgets_[i]->isActive())

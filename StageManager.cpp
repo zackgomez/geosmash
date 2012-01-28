@@ -19,7 +19,16 @@ StageManager::StageManager() :
     platform_mesh_ = createMesh("models/cube.obj");
 }
 
-void StageManager::initLevel(int stage)
+std::vector<std::string> StageManager::getStageNames() const
+{
+    std::vector<std::string> ret;
+    ret.push_back("default");
+    ret.push_back("platforms");
+
+    return ret;
+}
+
+void StageManager::initLevel(const std::string &stage)
 {
     glm::vec2 groundpos(getParam("level.x"), getParam("level.y"));
     glm::vec2 groundsize(getParam("level.w"), getParam("level.h"));
@@ -28,7 +37,8 @@ void StageManager::initLevel(int stage)
     ground_color_ = glm::vec3(getParam("level.r"),
             getParam("level.g"), getParam("level.b"));
 
-    if (stage == 1)
+    // XXX: hardcoded
+    if (stage == "platforms")
     {
         platforms_.push_back(rectangle(-200, 40, 220, 10));
         platforms_.push_back(rectangle(0, 140, 220, 10));
