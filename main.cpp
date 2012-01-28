@@ -214,6 +214,12 @@ int initLibs()
 
     SDL_WM_SetCaption("Geometry Smash 0.6", "geosmash");
 
+    // Get AudioManager singleton to call constructor
+    AudioManager::get();
+    // Mute on debug by default
+    if (debug)
+        AudioManager::get()->mute();
+
     // Seed random number generator
     srand(time(NULL));
 
