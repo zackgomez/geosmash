@@ -15,6 +15,8 @@
 
 static const float dt = 1.f / 60.f;
 
+bool debug;
+
 std::vector<Controller*> controllers;
 bool running;
 GameState *state;
@@ -32,6 +34,12 @@ int main(int argc, char *argv[])
     // Init game state
     ParamReader::get()->loadFile("config/global.params");
     ParamReader::get()->loadFile("config/charlie.params");
+
+    for (int i = 1; i < argc; i++)
+    {
+        if (strcmp(argv[i], "--debug") == 0)
+            debug = true;
+    }
 
     if (!initLibs())
         exit(1);
@@ -147,10 +155,14 @@ int initJoystick(unsigned numPlayers)
 
 int initGraphics()
 {
-    // Set the viewport
-    glViewport(0, 0, getParam("resolution.x"), getParam("resolution.y"));
+    // XXX: this is duplicated in initLibs
+    float xres = debug ? getParam("debug.resolution.x") : getParam("resolution.x");
+    float yres = debug ? getParam("debug.resolution.y") : getParam("resolution.y");
 
-    initGLUtils(getParam("resolution.x"), getParam("resolution.y"));
+    // Set the viewport
+    glViewport(0, 0, xres, yres);
+
+    initGLUtils(xres, yres);
 
     FrameManager::get()->loadFile("frames/charlie.frames");
     FrameManager::get()->loadFile("frames/global.frames");
@@ -178,9 +190,16 @@ int initLibs()
         return 0;
     }
 
+    // XXX: this is duplicated in initGraphics
+    float xres = debug ? getParam("debug.resolution.x") : getParam("resolution.x");
+    float yres = debug ? getParam("debug.resolution.y") : getParam("resolution.y");
+
+    int flags = SDL_OPENGL;
+    if (!debug)
+        flags |= SDL_FULLSCREEN;
+
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_Surface *screen = SDL_SetVideoMode(getParam("resolution.x"),
-            getParam("resolution.y"), 32, SDL_OPENGL);
+    SDL_Surface *screen = SDL_SetVideoMode(xres, yres, 32, flags);
     if ( screen == NULL ) {
         fprintf(stderr, "Couldn't set video mode: %s\n",
                 SDL_GetError());
