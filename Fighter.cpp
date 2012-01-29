@@ -275,7 +275,7 @@ void Fighter::respawn(bool killed)
             // Get, then update, next place stat
             int nextPlace = StatsManager::get()->getStat("numPlayers")
                 - StatsManager::get()->getStat("tmp.playersOut");
-            StatsManager::get()->addStat("numPlayers", 1);
+            StatsManager::get()->addStat("numPlayers", -1.f);
 
             StatsManager::get()->setStat(statPrefix(playerID_) + "place", nextPlace);
         }
