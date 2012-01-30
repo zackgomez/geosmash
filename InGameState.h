@@ -57,6 +57,12 @@ class GameListener
 public:
     virtual ~GameListener() { }
 
-    virtual void update(const std::vector<Fighter *> &fighters) = 0;
+    // Memory managment function
+    // This should return true if the listener should be deleted at the end of
+    // the match
+    virtual bool removeOnCompletion() const = 0;
+
+    // Called at the start of each frame
+    virtual void updateListener(const std::vector<Fighter *> &fighters) = 0;
 };
 

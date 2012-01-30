@@ -105,10 +105,10 @@ InGameState::~InGameState()
 
     // Fighters/players are passed to StatsGameState
 
-    // XXX remove this, someone else should do this
-    // Clean up the listeners
+    // Clean up the listeners that want to be cleaned up
     for (size_t i = 0; i < listeners_.size(); i++)
-        delete listeners_[i];
+        if (listeners_[i]->removeOnCompletion())
+            delete listeners_[i];
 
     instance = NULL;
 }
@@ -117,7 +117,7 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
 {
     // Before we do anything, call preframe listener functions
     for (size_t i = 0; i < listeners_.size(); i++)
-        listeners_[i]->update(fighters_);
+        listeners_[i]->updateListener(fighters_);
 
     // First update players pre frame
     for (size_t i = 0; i < players_.size(); i++)

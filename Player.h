@@ -2,11 +2,12 @@
 #include <string>
 #include <glm/glm.hpp>
 #include "Controller.h"
+#include "InGameState.h"
 
 class Controller;
 class Fighter;
 
-class Player
+class Player : public GameListener
 {
 public:
     virtual ~Player();
@@ -28,6 +29,11 @@ public:
     // Does per frame player updates
     virtual void update(float dt) = 0;
 
+    // Inherited from GameListener
+    virtual void updateListener(const std::vector<Fighter *> &fighters) = 0;
+    virtual bool removeOnCompletion() const { return false; }
+
+    // Accessors for fighter variables
     virtual int getPlayerID() const;
     virtual int getTeamID() const;
     virtual std::string getUsername() const;
@@ -47,6 +53,8 @@ public:
     virtual bool wantsStatsContinue() const { return true; }
     
     virtual void update(float);
+    virtual void updateListener(const std::vector<Fighter *> &fighters);
+
 protected:
     void performGetBack();
     glm::vec2 pos;
@@ -75,6 +83,8 @@ public:
     // Returns true if this player would like the game to be paused/unpaused
     virtual bool wantsPauseToggle() const;
     virtual bool wantsStatsContinue() const { return false; }
+
+    virtual void updateListener(const std::vector<Fighter *> &fighters);
 
 private:
     Controller *controller_;

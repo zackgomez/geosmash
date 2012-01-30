@@ -59,6 +59,11 @@ bool LocalPlayer::wantsPauseToggle() const
     return fighter_->isAlive() && controller_->getState().pressstart;
 }
 
+void LocalPlayer::updateListener(const std::vector<Fighter *> &fighters)
+{
+    // Do nothing
+}
+
 //----------------------------
 // AI Player
 
@@ -122,6 +127,7 @@ void AIPlayer::performAttack()
 
 void AIPlayer::senseDanger()
 {
+    // XXX NOOOOOO
     std::vector<const Fighter*> fs = InGameState::instance->getFighters();
     danger = false;
     for (unsigned int i = 0; i < fs.size(); i++) 
@@ -136,6 +142,7 @@ void AIPlayer::senseDanger()
 
 void AIPlayer::setTargetPos()
 {
+    // XXX NOOOOOO
     std::vector<const Fighter*> fs = InGameState::instance->getFighters();
     for (unsigned int i = 0; i < fs.size(); i++) 
     {
@@ -193,6 +200,10 @@ void AIPlayer::update(float)
     {
         performAttack();
     }
-
 }
 
+
+void AIPlayer::updateListener(const std::vector<Fighter *> &fighters)
+{
+    // TODO a lot of work here, or maybe just cache some shit?
+}

@@ -5,15 +5,15 @@
 
 class Fighter;
 
-// TODO: make this a game listener
-
 class GhostAIRecorder : public GameListener
 {
 public:
     explicit GhostAIRecorder();
     ~GhostAIRecorder();
 
-    void update(const std::vector<Fighter*> &fighters);
+    void updateListener(const std::vector<Fighter*> &fighters);
+
+    bool removeOnCompletion() const { return true; }
 
 private:
     std::ofstream file_;

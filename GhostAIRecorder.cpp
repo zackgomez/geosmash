@@ -23,7 +23,7 @@ GhostAIRecorder::~GhostAIRecorder()
     file_.close();
 }
 
-void GhostAIRecorder::update(const std::vector<Fighter*> &fighters)
+void GhostAIRecorder::updateListener(const std::vector<Fighter*> &fighters)
 {
     for (size_t i = 0; i < fighters.size(); i++)
     {
