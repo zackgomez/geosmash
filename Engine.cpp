@@ -383,6 +383,7 @@ void renderRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color)
     GLuint projectionUniform = glGetUniformLocation(resources.program, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(resources.program, "modelViewMatrix");
     GLuint colorUniform = glGetUniformLocation(resources.program, "color");
+    GLuint positionAttrib = glGetAttribLocation(resources.program, "position");
 
     // Enable program and set up values
     glUseProgram(resources.program);
@@ -391,15 +392,15 @@ void renderRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color)
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionAttrib);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
 }
 
