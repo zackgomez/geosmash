@@ -326,8 +326,10 @@ void Fighter::stealLife()
 void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color,
         const glm::mat4 &postTrans)
 {
+    /*
     printf("ID: %d  Damage: %.1f  Pos: [%.2f, %.2f]  Vel: [%.2f, %.2f]  Accel: [%.2f, %.2f]  Attack: %d  Dir: %.1f\n",
             id_, damage_, pos_.x, pos_.y, vel_.x, vel_.y, accel_.x, accel_.y, attack_ != 0, dir_);
+            */
 
     // Cache the frame name, so AI (or anybody) can request the name of the
     // last drawn frame

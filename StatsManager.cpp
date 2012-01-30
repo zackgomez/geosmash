@@ -51,6 +51,7 @@ float StatsManager::getStat(std::string stat)
 
 void StatsManager::printStats() const
 {
+    // Write the stats to the console
     std::cout << " =========\n"
               << " = STATS =\n"
               << " =========\n";

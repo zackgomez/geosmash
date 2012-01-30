@@ -1,6 +1,11 @@
 #include "ParamReader.h"
 #include <cassert>
 
+ParamReader::ParamReader()
+{
+    logger_ = Logger::getLogger("ParamReader");
+}
+
 ParamReader * ParamReader::get()
 {
     static ParamReader pr;
@@ -12,8 +17,8 @@ void ParamReader::loadFile(const char *filename)
     std::ifstream file(filename);
     if (!file)
     {
-        std::cerr << "UNABLE TO OPEN " << filename << " to read params\n";
-        return;
+        logger_->fatal() << "UNABLE TO OPEN " << filename << " to read params\n";
+        assert(false);
     }
 
     std::string key;
@@ -32,7 +37,7 @@ void ParamReader::loadFile(const char *filename)
         // Fail on double key read
         if (params_.find(key) != params_.end())
         {
-            std::cerr << "FATAL ERROR: Overwritting param " << key << '\n';
+            logger_->fatal() << "Overwritting param " << key << '\n';
             assert(false);
         }
         params_[key] = val;
@@ -44,7 +49,7 @@ float ParamReader::get(const std::string &key) const
     std::map<std::string, float>::const_iterator it = params_.find(key);
     if (it == params_.end())
     {
-        std::cerr << "Unable to find key " << key << '\n';
+        logger_->fatal() << "Unable to find key " << key << '\n';
         assert(false && "Key not found in params");
     }
     else
@@ -58,11 +63,11 @@ bool ParamReader::hasParam(const std::string &key) const
 
 void ParamReader::printParams() const
 {
-    std::cout << "Params:\n";
+    logger_->info() << "Params:\n";
     std::map<std::string, float>::const_iterator it;
     for (it = params_.begin(); it != params_.end(); it++)
     {
-        std::cout << it->first << ' ' << it->second << '\n';
+        logger_->info() << it->first << ' ' << it->second << '\n';
     }
 }
 

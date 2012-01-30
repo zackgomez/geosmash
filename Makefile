@@ -20,6 +20,9 @@ clean:
 	rm -f ssb *.o *.a
 	cd $(KISS_PARTICLES) && make clean
 
+debug: ssb
+	./ssb --debug
+
 force_look:
 	true
 

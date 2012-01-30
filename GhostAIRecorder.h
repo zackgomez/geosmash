@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include "InGameState.h"
+#include "Logger.h"
 
 class Fighter;
 
@@ -17,5 +18,7 @@ public:
 
 private:
     std::ofstream file_;
+
+    LoggerPtr logger_;
 };
 

@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 #include "Controller.h"
 #include <set>
+#include "Logger.h"
 
 class MenuWidget
 {
@@ -117,6 +118,8 @@ private:
     size_t topWidgetIdx_;
 
     bool topWidgetChangePrimed_;
+
+    LoggerPtr logger_;
 
     GameState* newGame(const std::vector<Controller*>&);
     void handleTopMenu(Controller *controller);

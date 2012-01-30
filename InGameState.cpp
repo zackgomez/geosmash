@@ -389,8 +389,6 @@ void InGameState::renderArrow(const Fighter *f)
     fndc /= fndc.w;
     if (fabs(fndc.x) > 1 || fabs(fndc.y) > 1)
     {
-        std::cout << "DRAWING ARROW\n";
-
         glm::vec2 dir = glm::vec2(fndc);
         float dist = glm::length(dir);
         dir /= dist;
@@ -415,6 +413,7 @@ void InGameState::renderArrow(const Fighter *f)
         float rot = theta * 180.f / M_PI;
 
         //std::cout << "Arrow pos: " << arrowPos.x << ' ' << arrowPos.y << '\n';
+        //
         glm::mat4 transform =
             glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f),
                             glm::vec3(arrowPos, 0.0f)), 

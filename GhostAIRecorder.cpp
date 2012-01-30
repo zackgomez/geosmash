@@ -6,16 +6,19 @@
 
 GhostAIRecorder::GhostAIRecorder()
 {
+    logger_ = Logger::getLogger("GhostAIRecorder");
+
     // Create a string "ghostdata.timestamp"
     char buf[100];
     std::stringstream ss;
     time_t curtime = time(NULL);
     strftime(buf, sizeof(buf), "%Y%m%d%M%S", localtime(&curtime));
-    ss << "ghostdata." << buf;
+    ss << "ghostdata/run." << buf;
 
-    std::cout << "Recording ghost data to " << ss.str() << '\n';
+    logger_->info() << "Recording ghost data to " << ss.str() << '\n';
 
     file_.open(ss.str().c_str());
+
 }
 
 GhostAIRecorder::~GhostAIRecorder()
@@ -30,12 +33,12 @@ void GhostAIRecorder::updateListener(const std::vector<Fighter*> &fighters)
         Fighter *f = fighters[i];
 
         file_ << "PID: " << f->getPlayerID() 
-            << "  Pos: " << f->getPosition().x << ' ' << f->getPosition().y
-            << "  Vel: "  << f->getVelocity().x << ' ' << f->getVelocity().y
-            << "  FName: " << f->getFrameName()
-            << "  Dmg: " << f->getDamage()
-            << "  hbox: " << f->hasAttack()
-            << "  dir: " << f->getDirection()
+            << " Pos: " << f->getPosition().x << ' ' << f->getPosition().y
+            << " Vel: "  << f->getVelocity().x << ' ' << f->getVelocity().y
+            << " FName: " << f->getFrameName()
+            << " Dmg: " << f->getDamage()
+            << " hbox: " << f->hasAttack()
+            << " dir: " << f->getDirection()
             << '\n';
     }
 }

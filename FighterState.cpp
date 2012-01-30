@@ -100,7 +100,6 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     float gbmag = glm::length(fighter_->vel_);
     // Go to the stunned state
     float stunDuration = attack->calcStun(fighter_, fighter_->damage_);
-    std::cout << "StunDuration: " << stunDuration << '\n';
     return new AirStunnedState(fighter_, stunDuration, gbmag > 0 ? gbmag : -HUGE_VAL);
 }
 
@@ -229,8 +228,10 @@ FighterState* AirStunnedState::processInput(controller_state &controller, float 
 
 void AirStunnedState::render(float dt)
 {
+    /*
     printf("AIR STUNNED | StunTime: %.3f  StunDuration: %.3f || ",
             stunTime_, stunDuration_);
+            */
     // flash the player 
     glm::vec3 color = muxByTime(fighter_->color_, stunTime_);
 
@@ -569,8 +570,10 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
 
 void GroundState::render(float dt)
 {
+    /*
     printf("GROUND | JumpT: %.3f  DashT: %.3f  WaitT: %.3f Duck: %d || ",
             jumpTime_, dashTime_, waitTime_, ducking_);
+            */
 
     std::string fname = frameName_;
     if (dashing_)
@@ -705,8 +708,10 @@ FighterState* BlockingState::processInput(controller_state &controller, float dt
 
 void BlockingState::render(float dt)
 {
+    /*
     printf("BLOCKING | waitT: %.3f dazeT: %.3f health: %.3f || ",
             waitTime_, dazeTime_, fighter_->shieldHealth_);
+            */
 
     glm::mat4 trans(1.f);
     glm::vec3 color = fighter_->color_;
@@ -917,8 +922,10 @@ void AirNormalState::update(float dt)
 
 void AirNormalState::render(float dt)
 {
+    /*
     printf("AIR NORMAL | JumpT: %.3f  Can2ndJump: %d || ",
             jumpTime_, canSecondJump_);
+            */
     std::string fname = frameName_;
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
@@ -958,7 +965,6 @@ FighterState* AirNormalState::collisionWithGround(const rectangle &ground, bool 
             fighter_->pos_.y - fighter_->size_.y * 0.45f,
             0.3f);
 
-    std::cout << "TRANSITION TO GROUND\n";
     // Transition to the ground state, with a small delay for landing
     return new GroundState(fighter_, getParam("landingCooldownTime"));
 }
@@ -1073,8 +1079,10 @@ FighterState* CounterState::collisionWithGround(const rectangle &ground, bool co
 
 void CounterState::render(float dt)
 {
+    /*
     printf("COUNTER | t: %.3f  ground: %d || ",
             t_, ground_);
+            */
 
     std::string fname = frameName_;
     if (fighter_->attack_)
@@ -1122,7 +1130,9 @@ FighterState * UpSpecialState::processInput(controller_state &, float dt)
 
 void UpSpecialState::render(float dt)
 {
+    /*
     printf("UP SPECIAL | || ");
+    */
     assert(fighter_->attack_);
     fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
 }
@@ -1182,8 +1192,10 @@ FighterState * DashSpecialState::processInput(controller_state &, float dt)
 
 void DashSpecialState::render(float dt)
 {
+    /*
     printf("DASH SPECIAL | ground: %d || ",
             ground_);
+            */
     assert(fighter_->attack_);
     fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
 }
@@ -1326,8 +1338,10 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
 
 void GrabbingState::render(float dt)
 {
+    /*
     printf("GRABBING | Victim: %d  holdTimeLeft: %f || ",
             victim_ != NULL, holdTimeLeft_);
+            */
     fighter_->renderHelper(dt, frameName_, fighter_->getColor());
 }
 
@@ -1450,8 +1464,11 @@ void DodgeState::render(float dt)
     if (invincTime_ > 0.f)
         color = muxByTime(fighter_->color_, t_);
 
+
+    /*
     printf("DODGE | t: %.3f  invincT: %.3f  dodgeT: %.3f || ",
             t_, invincTime_, dodgeTime_);
+            */
     // Just render the fighter, but flashing
     fighter_->renderHelper(dt, frameName_, color,
             glm::rotate(glm::mat4(1.f), -angle, glm::vec3(0,0,1)));
@@ -1583,8 +1600,10 @@ void LedgeGrabState::update(float dt)
 
 void LedgeGrabState::render(float dt)
 {
+    /*
     printf("LEDGE | jumpT: %.3f invincT: %.3f || ",
             jumpTime_, invincTime_);
+            */
     glm::vec3 color = fighter_->color_;
 
     // flash when invincible
@@ -1633,10 +1652,6 @@ void LedgeGrabState::grabLedge(Ledge *l)
     fighter_->accel_ = glm::vec2(0.f);
 
     fighter_->dir_ = xdir;
-
-    std::cout << "Pos: " << fighter_->pos_.x << ' ' << fighter_->pos_.y
-        << " Size: " << hbsize_.x << ' ' << hbsize_.y
-        << " LedgePos: " << l->pos.x << ' ' << l->pos.y << '\n';
 }
 
 //// ------------------------- LIMP STATE ---------------------------------
@@ -1668,8 +1683,10 @@ FighterState* LimpState::processInput(controller_state&, float dt)
 
 void LimpState::render(float dt)
 {
+    /*
     printf("LIMP | Next: %d || ",
             next_ != NULL);
+            */
     // Just render the frame
     fighter_->renderHelper(dt, frameName_, fighter_->getColor(), pretrans_);
 }
@@ -1736,7 +1753,6 @@ void LimpState::setPreTransform(const glm::mat4 &pretrans)
 
 void LimpState::hit(const Attack *attack)
 {
-    std::cout << "LIMP HIT\n";
     // disconnect, we're no longer limp
     if (!next_)
         (*unlimpCallback_)(this);
@@ -1775,7 +1791,9 @@ FighterState* RespawnState::processInput(controller_state &controller, float dt)
 
 void RespawnState::render(float dt)
 {
+    /*
     printf("RESPAWN | t: %f || ", t_);
+    */
     // Just render the fighter, but slightly lighter
     fighter_->renderHelper(dt, frameName_, 1.6f * fighter_->color_);
 }

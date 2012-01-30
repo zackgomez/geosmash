@@ -15,6 +15,7 @@
 #include "ParamReader.h"
 #include "stb_image.c"
 #include "PManager.h"
+#include "Logger.h"
 
 static struct 
 {
@@ -37,6 +38,8 @@ static struct
     GLuint depthbuf;
     GLuint rendertex[3];
 } resources;
+
+static LoggerPtr logger;
 
 static glm::vec2 screensize;
 static MatrixStack projectionMatrixStack;
@@ -63,7 +66,7 @@ void show_info_log(
     glGet__iv(object, GL_INFO_LOG_LENGTH, &log_length);
     log = (char*) malloc(log_length);
     glGet__InfoLog(object, log_length, NULL, log);
-    fprintf(stderr, "%s", log);
+    logger->fatal() << log << '\n';
     free(log);
 }
 
@@ -74,25 +77,25 @@ bool checkFramebufferStatus() {
     case GL_FRAMEBUFFER_COMPLETE_EXT:
         return true;
     case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
-        printf("Framebuffer incomplete, incomplete attachment\n");
+        logger->warning() << "Framebuffer incomplete, incomplete attachment\n";
         return false;
     case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-        printf("Unsupported framebuffer format\n");
+        logger->warning() << "Unsupported framebuffer format\n";
         return false;
     case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
-        printf("Framebuffer incomplete, missing attachment\n");
+        logger->warning() << "Framebuffer incomplete, missing attachment\n";
         return false;
     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-        printf("Framebuffer incomplete,  attachments must have same dimensions\n");
+        logger->warning() << "Framebuffer incomplete,  attachments must have same dimensions\n";
         return false;
     case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-        printf("Framebuffer incomplete, attached images must have same format\n");
+        logger->warning() << "Framebuffer incomplete, attached images must have same format\n";
         return false;
     case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
-        printf("Framebuffer incomplete, missing draw buffer\n");
+        logger->warning() << "Framebuffer incomplete, missing draw buffer\n";
         return false;
     case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
-        printf("Framebuffer incomplete, missing read buffer\n");
+        logger->warning() << "Framebuffer incomplete, missing read buffer\n";
         return false;
     }
     return false;
@@ -116,7 +119,7 @@ GLuint make_shader(GLenum type, const char *filename)
 
     glGetShaderiv(shader, GL_COMPILE_STATUS, &shader_ok);
     if (!shader_ok) {
-        fprintf(stderr, "Failed to compile %s:\n", filename);
+        logger->fatal() << "Failed to compile " << filename << ":\n";
         show_info_log(shader, glGetShaderiv, glGetShaderInfoLog);
         glDeleteShader(shader);
         return 0;
@@ -136,7 +139,7 @@ GLuint make_program(GLuint vertex_shader, GLuint fragment_shader)
 
     glGetProgramiv(program, GL_LINK_STATUS, &program_ok);
     if (!program_ok) {
-        fprintf(stderr, "Failed to link shader program:\n");
+        logger->fatal() << "Failed to link shader program:\n";
         show_info_log(program, glGetProgramiv, glGetProgramInfoLog);
         glDeleteProgram(program);
         return 0;
@@ -152,7 +155,7 @@ GLuint make_texture(const char *filename)
 
     if (!pixels)
     {
-        std::cerr << "Unable to load texture from " << filename << "\n";
+        logger->warning() << "Unable to load texture from " << filename << "\n";
         return 0;
     }
 
@@ -268,6 +271,8 @@ bool initGLUtils(int screenw, int screenh)
         0.5f,  0.5f, 0.0f, 1.0f
     };
     const GLushort element_buffer_data[] = { 0, 1, 2, 3 };
+
+    logger = Logger::getLogger("Engine");
 
     screensize = glm::vec2(screenw, screenh);
 
@@ -509,12 +514,6 @@ void addVert(std::vector<vert> &verts, const std::vector<glm::vec4> &positions,
     glm::vec4 norm = norms.at(fv.n - 1);
     glm::vec2 texcoord = texcoords.at(fv.t - 1);
 
-    /*
-    std::cout << "v t n: " << fv.v << ' ' << fv.t << ' ' << fv.n << '\t'
-        << "norm: " << norm.x << ' ' << norm.y << ' ' << norm.z << '\t'
-        << "uv: " << texcoord.x << ' ' << texcoord.y << '\n';
-        */
-        
     vert v;
     v.pos[0] = pos[0]; v.pos[1] = pos[1]; v.pos[2] = pos[2]; v.pos[3] = pos[3];
     v.norm[0] = norm[0]; v.norm[1] = norm[1]; v.norm[2] = norm[2]; v.norm[3] = norm[3];
@@ -528,7 +527,7 @@ mesh createMesh(std::string objfile)
     std::ifstream file(objfile.c_str());
     if (!file)
     {
-        std::cerr << "Unable to open mesh file " << objfile << '\n';
+        logger->fatal() << "Unable to open mesh file " << objfile << '\n';
         exit(1);
     }
 
@@ -556,13 +555,13 @@ mesh createMesh(std::string objfile)
             continue;
         }
         else if (cmd == "g")
-            std::cout << "Ignoring 'g' command: " << buf << '\n';
+            logger->debug() << "Ignoring 'g' command: " << buf << '\n';
         else if (cmd == "s")
-            std::cout << "Ignoring 's' command: " << buf << '\n';
+            logger->debug() << "Ignoring 's' command: " << buf << '\n';
         else if (cmd == "o")
-            std::cout << "Ignoring 'o' command: " << buf << '\n';
+            logger->debug() << "Ignoring 'o' command: " << buf << '\n';
         else if (cmd == "usemtl")
-            std::cout << "Ignoring 'usemtl' command: " << buf << '\n';
+            logger->debug() << "Ignoring 'usemtl' command: " << buf << '\n';
         else if (cmd == "v")
         {
             ss >> a >> b >> c;
@@ -596,7 +595,7 @@ mesh createMesh(std::string objfile)
                 facevert f;
                 if (sscanf(facestr.c_str(), "%d/%d/%d", &f.v, &f.t, &f.n) != 3)
                 {
-                    std::cerr << "Error reading " << objfile << '\n';
+                    logger->fatal() << "Error reading " << objfile << '\n';
                     exit(1);
                 }
                 fc.fvs.push_back(f);
@@ -606,7 +605,7 @@ mesh createMesh(std::string objfile)
         }
         else
         {
-            std::cerr << "Unknown .obj definition: " << cmd << '\n';
+            logger->fatal() << "Unknown .obj definition: " << cmd << '\n';
             exit(1);
         }
     }
@@ -628,8 +627,6 @@ mesh createMesh(std::string objfile)
             addVert(verts, positions, norms, texcoords, b);
         }
     }
-
-    std::cout << "Loaded verts: " << verts.size() << '\n';
 
     mesh ret;
     // Now create a buffer to hold the data

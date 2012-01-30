@@ -384,6 +384,8 @@ MenuState::MenuState() :
     topWidgetIdx_(0),
     topWidgetChangePrimed_(false)
 {
+    logger_ = Logger::getLogger("MenuState");
+
     // Start the menu soundtrack
     AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).ogg");
     AudioManager::get()->startSoundtrack();
@@ -484,7 +486,7 @@ GameState* MenuState::processInput(const std::vector<Controller*> &controllers, 
 
     if (teams.size() >= 2 && shouldStart)
     {
-        std::cout << "Starting a new game by from Player " << startingPlayer+1 << "'s request\n";
+        logger_->debug() << "Starting a new game by from Player " << startingPlayer+1 << "'s request\n";
         return newGame(controllers);
     }
 
