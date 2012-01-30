@@ -408,6 +408,7 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix, GLuint program)
 {
     GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
+    GLuint positionAttrib = glGetAttribLocation(program, "position");
 
     // Enable program and set up values
     glUseProgram(program);
@@ -415,15 +416,15 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix, GLuint program)
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionAttrib);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
 }
 
@@ -432,6 +433,7 @@ void renderTexturedRectangle(const glm::mat4 &modelMatrix, GLuint texture)
     GLuint projectionUniform = glGetUniformLocation(resources.texprogram, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(resources.texprogram, "modelViewMatrix");
     GLuint textureUniform = glGetUniformLocation(resources.texprogram, "texture");
+    GLuint positionAttrib = glGetAttribLocation(resources.texprogram, "position");
 
     // Enable program and set up values
     glUseProgram(resources.texprogram);
@@ -444,15 +446,15 @@ void renderTexturedRectangle(const glm::mat4 &modelMatrix, GLuint texture)
     glBindTexture(GL_TEXTURE_2D, texture);
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionAttrib);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
 }
 
@@ -464,6 +466,7 @@ void renderMaskedRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color,
     GLuint textureUniform = glGetUniformLocation(resources.maskprogram, "texture");
     GLuint colorUniform = glGetUniformLocation(resources.maskprogram, "color");
     GLuint texsizeUniform = glGetUniformLocation(resources.maskprogram, "texsize");
+    GLuint positionAttrib = glGetAttribLocation(resources.maskprogram, "position");
 
     // Enable program and set up values
     glUseProgram(resources.maskprogram);
@@ -478,15 +481,15 @@ void renderMaskedRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color,
     glBindTexture(GL_TEXTURE_2D, frame->mask_tex);
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionAttrib);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
 }
 
