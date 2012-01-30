@@ -1,10 +1,10 @@
-#version 330
+#version 120
 const float pi = 3.1415926535;
 const float r = 0.5;
 
-layout(location = 0) in vec4 position;
+attribute vec4 position;
 uniform mat4 projectionMatrix, modelViewMatrix;
-centroid out vec2 coord;
+varying vec2 coord;
 
 void main()
 {

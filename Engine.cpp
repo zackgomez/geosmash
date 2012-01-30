@@ -186,6 +186,7 @@ void blurTexture(GLuint texture, bool horiz)
     GLuint program = horiz ? resources.hblurprogram : resources.vblurprogram;
     GLuint textureUniform = glGetUniformLocation(program, "tex");
     GLuint sizeUniform = glGetUniformLocation(program, "texsize");
+    GLuint positionAttrib = glGetAttribLocation(program, "position");
 
     // Enable program and set up values
     glUseProgram(program);
@@ -197,14 +198,14 @@ void blurTexture(GLuint texture, bool horiz)
     glBindTexture(GL_TEXTURE_2D, texture);
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionAttrib);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
 
 }
@@ -650,6 +651,10 @@ void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &co
     GLuint normalUniform = glGetUniformLocation(resources.meshprogram, "normalMatrix");
     GLuint colorUniform = glGetUniformLocation(resources.meshprogram, "color");
     GLuint lightPosUniform = glGetUniformLocation(resources.meshprogram, "lightpos");
+    // Attributes
+    GLuint positionAttrib = glGetAttribLocation(resources.meshprogram, "position");
+    GLuint normalAttrib   = glGetAttribLocation(resources.meshprogram, "normal");
+    GLuint texcoordAttrib = glGetAttribLocation(resources.meshprogram, "texcoord");
     // Enable program and set up values
     glUseProgram(resources.meshprogram);
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
@@ -660,20 +665,20 @@ void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &co
 
     // Bind data
     glBindBuffer(GL_ARRAY_BUFFER, m.data_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)(4 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)(8 * sizeof(float)));
+    glEnableVertexAttribArray(positionAttrib);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)0);
+    glEnableVertexAttribArray(normalAttrib);
+    glVertexAttribPointer(normalAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)(4 * sizeof(float)));
+    glEnableVertexAttribArray(texcoordAttrib);
+    glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)(8 * sizeof(float)));
 
     // Draw
     glDrawArrays(GL_TRIANGLES, 0, m.nverts);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(texcoordAttrib);
     glUseProgram(0);
 }
 
@@ -701,6 +706,8 @@ void renderParticles(const std::vector<particleData> &data)
 
     GLuint modelViewUniform = glGetUniformLocation(resources.particleprogram, "modelViewMatrix");
     GLuint projectionUniform = glGetUniformLocation(resources.particleprogram, "projectionMatrix");
+    GLuint positionAttrib = glGetAttribLocation(resources.particleprogram, "position");
+    GLuint colorAttrib = glGetAttribLocation(resources.particleprogram, "color");
 
     glUseProgram(resources.particleprogram);
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current()));
@@ -709,15 +716,15 @@ void renderParticles(const std::vector<particleData> &data)
     glBindBuffer(GL_ARRAY_BUFFER, resources.part_buffer);
     glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(particleData), &data.front(), GL_STREAM_DRAW);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(particleData), 0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(particleData), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(positionAttrib);
+    glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(particleData), 0);
+    glEnableVertexAttribArray(colorAttrib);
+    glVertexAttribPointer(colorAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(particleData), (void *)(3 * sizeof(float)));
 
     glDrawArrays(GL_POINTS, 0, data.size());
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(positionAttrib);
+    glDisableVertexAttribArray(colorAttrib);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
 }
