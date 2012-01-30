@@ -215,7 +215,7 @@ int initLibs()
         return 0;
     }
 
-    SDL_WM_SetCaption("Geometry Smash 0.6", "geosmash");
+    SDL_WM_SetCaption("Geometry Smash 0.7", "geosmash");
 
     // Get AudioManager singleton to call constructor
     AudioManager::get();
