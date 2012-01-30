@@ -2,7 +2,9 @@
 
 layout(location = 0) out vec4 outputColor;
 layout(location = 1) out vec4 glowColor;
+
 uniform vec4 color;
+
 centroid in vec2 frag_texcoord;
 
 void main()

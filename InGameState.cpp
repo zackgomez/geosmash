@@ -24,6 +24,7 @@
 #include "Controller.h"
 #include "StatsGameState.h"
 #include "Player.h"
+#include "GhostAIRecorder.h"
 
 std::vector<GameEntity *> getEntitiesToAdd();
 void addEntity(GameEntity *ent);
@@ -91,6 +92,9 @@ InGameState::InGameState(const std::vector<Player *> &players,
     startTime_ = SDL_GetTicks();
 
     instance = this;
+
+    // Add a ghost ai learning listener
+    listeners_.push_back(new GhostAIRecorder("test.ghostdat"));
 }
 
 InGameState::~InGameState()
@@ -101,11 +105,19 @@ InGameState::~InGameState()
 
     // Fighters/players are passed to StatsGameState
 
+    // TODO deal with this
+    for (size_t i = 0; i < listeners_.size(); i++)
+        delete listeners_[i];
+
     instance = NULL;
 }
 
 GameState * InGameState::processInput(const std::vector<Controller*> &controllers, float dt)
 {
+    // Before we do anything, call preframe listener functions
+    for (size_t i = 0; i < listeners_.size(); i++)
+        listeners_[i]->update(fighters_);
+
     // First update players pre frame
     for (size_t i = 0; i < players_.size(); i++)
         players_[i]->update(dt);
@@ -186,6 +198,7 @@ void InGameState::update(float dt)
 {
     if (paused_)
         return;
+
 
     // Add new GameEntities
     std::vector<GameEntity *> newEntities = getEntitiesToAdd();

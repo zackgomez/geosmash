@@ -6,6 +6,7 @@
 class GameEntity;
 class Fighter;
 class Player;
+class GameListener;
 
 class InGameState : public GameState
 {
@@ -39,6 +40,7 @@ private:
     int pausingPlayer_;
     bool keepStats_;
 
+    std::vector<GameListener *> listeners_;
 
     // Helper functions
     void integrate(float dt);
@@ -49,3 +51,12 @@ private:
 
     void togglePause(int controllerID);
 };
+
+class GameListener
+{
+public:
+    virtual ~GameListener() { }
+
+    virtual void update(const std::vector<Fighter *> &fighters) = 0;
+};
+
