@@ -43,7 +43,11 @@ if __name__ == "__main__":
         curr1 = l1[l1.find("FName:"):].split()[1]
         i += 1
 
-        startFrames = ["GroundNormal", "AirNormal", "Grabbing", "GroundRunning"]
+        # Frames we care about transitioning away from
+        startFrames = ["GroundNormal", "GroundRunning", "GroundWalking",
+                "AirNormal", "AirNormalHop", "AirNormalFastFall",
+                "Grabbing"]
+        # Frames we don't care about transitioning into
         ignoreFrames = ["AirStunned", "GroundNormal", "Grabbed"]
 
         #if (curr0 != prev0 or curr1 != prev1):
@@ -52,6 +56,7 @@ if __name__ == "__main__":
             print prevl1
             print prev0, " -> ", curr0
             print
+
         prevl0 = l0
         prevl1 = l1
         prev0 = curr0

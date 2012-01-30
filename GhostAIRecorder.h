@@ -10,7 +10,7 @@ class Fighter;
 class GhostAIRecorder : public GameListener
 {
 public:
-    explicit GhostAIRecorder(const std::string &filename);
+    explicit GhostAIRecorder();
     ~GhostAIRecorder();
 
     void update(const std::vector<Fighter*> &fighters);

@@ -337,17 +337,18 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
             0.0f;
         // If they are still "holding down" the jump button now, then full jump
         // otherwise short hop
-        if (controller.buttony || controller.joyy > getParam("input.jumpThresh"))
-            fighter_->vel_.y = getParam("jumpSpeed");
-        else
+        bool shortHop = !controller.buttony;
+        if (shortHop)
             fighter_->vel_.y = getParam("hopSpeed");
+        else
+            fighter_->vel_.y = getParam("jumpSpeed");
         // Draw a little puff
         ExplosionManager::get()->addPuff(
                 fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
                 fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
         // Jump; transition to Air Normal
-        return new AirNormalState(fighter_);
+        return new AirNormalState(fighter_, shortHop);
     }
 
 
@@ -576,10 +577,17 @@ void GroundState::render(float dt)
         fname = "GroundRunning";
     if (dashing_ && waitTime_ > 0.f)
         fname = "DashChange";
+
     if (ducking_)
         fname = "Ducking";
+    // if not ducking and moving, then walking
+    else if (fabs(fighter_->vel_.x) > 0)
+        fname = "GroundWalking";
+
+    // If attacking then attack frame
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
+
     glm::vec3 color = fighter_->color_;
     if (invincTime_ > 0.f)
         color = muxByTime(color, invincTime_);
@@ -780,12 +788,12 @@ FighterState* BlockingState::hitByAttack(const Attack *attack)
 
 
 //// -------------------- AIR NORMAL STATE -----------------------------
-AirNormalState::AirNormalState(Fighter *f) :
+AirNormalState::AirNormalState(Fighter *f, bool shortHop) :
     FighterState(f), canSecondJump_(true), jumpTime_(-1),
     fastFalling_(false), fallThroughPlatforms_(false),
     noGrabTime_(0)
 {
-    frameName_ = "AirNormal";
+    frameName_ = shortHop ? "AirNormalHop" : "AirNormal";
 }
 
 AirNormalState::~AirNormalState()
@@ -819,6 +827,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
         else
             fighter_->accel_ += glm::vec2(0.f, getParam("fastFallAccel"));
         fastFalling_ = true;
+        frameName_ = "AirNormalFastFall";
     }
 
     if (controller.joyy < getParam("input.fallThresh"))
@@ -1224,9 +1233,9 @@ GrabbingState::GrabbingState(Fighter *f) :
     FighterState(f),
     pre_("grabState."),
     victim_(NULL),
-    frameName_("GrabAttempt"),
     holdTimeLeft_(-1)
 {
+    frameName_ = "GrabAttempt";
     // Set up attack for collision detection
     fighter_->attack_ = fighter_->attackMap_["grab"]->clone();
     fighter_->attack_->setFighter(f);
@@ -1276,8 +1285,9 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
             && controller.joyxv * controller.joyx >= 0)
         {
             shouldThrow = true;
-            throwPrefix = controller.joyx * fighter_->dir_ >= 0 ?
-                "frontThrow." : "backThrow.";
+            bool frontThrow = controller.joyx * fighter_->dir_ >= 0;
+            throwPrefix = frontThrow ? "frontThrow." : "backThrow.";
+            frameName_ = frontThrow ? "FrontThrow" : "BackThrow";
         }
         // Up throw
         else if (controller.joyy > getParam("input.throwThresh")
@@ -1285,6 +1295,7 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
         {
             shouldThrow = true;
             throwPrefix = "upThrow.";
+            frameName_ = "UpThrow";
         }
         // If we have a throw, create it and do it
         if (shouldThrow)
@@ -1633,11 +1644,12 @@ void LedgeGrabState::grabLedge(Ledge *l)
 LimpState::LimpState(Fighter *f, UnlimpCallback *callback) :
     FighterState(f),
     unlimpCallback_(callback),
-    frameName_("Grabbed"), // XXX: needs it's own frame
     pretrans_(glm::mat4(1.f)), // default to identity matrix, no trans
     next_(NULL),
     hitable_(false)
 {
+    // The limper MUST set a frame
+    frameName_ = "INVALIDINVALID";
 }
 
 LimpState::~LimpState()
@@ -1750,6 +1762,7 @@ const GameEntity * LimpState::getEntity() const
 RespawnState::RespawnState(Fighter *f) :
     FighterState(f), t_(0.f)
 {
+    frameName_ = "Respawn";
 }
 
 FighterState* RespawnState::processInput(controller_state &controller, float dt)

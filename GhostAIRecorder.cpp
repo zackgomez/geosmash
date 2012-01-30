@@ -4,11 +4,14 @@
 #include <sstream>
 #include <iostream>
 
-GhostAIRecorder::GhostAIRecorder(const std::string &filename)
+GhostAIRecorder::GhostAIRecorder()
 {
+    // Create a string "ghostdata.timestamp"
+    char buf[100];
     std::stringstream ss;
-
-    ss << filename << time(NULL);
+    time_t curtime = time(NULL);
+    strftime(buf, sizeof(buf), "%Y%m%d%M%S", localtime(&curtime));
+    ss << "ghostdata." << buf;
 
     std::cout << "Recording ghost data to " << ss.str() << '\n';
 
@@ -32,6 +35,7 @@ void GhostAIRecorder::update(const std::vector<Fighter*> &fighters)
             << "  FName: " << f->getFrameName()
             << "  Dmg: " << f->getDamage()
             << "  hbox: " << f->hasAttack()
+            << "  dir: " << f->getDirection()
             << '\n';
     }
 }

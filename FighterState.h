@@ -101,7 +101,7 @@ private:
 class AirNormalState : public FighterState
 {
 public:
-    AirNormalState(Fighter *f);
+    AirNormalState(Fighter *f, bool shortHop = false);
     virtual ~AirNormalState();
 
     virtual FighterState* processInput(controller_state&, float dt);
@@ -239,7 +239,6 @@ public:
 private:
     std::string pre_;
     LimpFighter *victim_;
-    std::string frameName_;
     float holdTimeLeft_;
 };
 
@@ -313,7 +312,6 @@ public:
 
 private:
     UnlimpCallback *unlimpCallback_;
-    std::string frameName_;
     glm::mat4 pretrans_;
     FighterState *next_;
     bool hitable_;

@@ -94,7 +94,7 @@ InGameState::InGameState(const std::vector<Player *> &players,
     instance = this;
 
     // Add a ghost ai learning listener
-    listeners_.push_back(new GhostAIRecorder("test.ghostdat"));
+    listeners_.push_back(new GhostAIRecorder());
 }
 
 InGameState::~InGameState()
@@ -105,7 +105,8 @@ InGameState::~InGameState()
 
     // Fighters/players are passed to StatsGameState
 
-    // TODO deal with this
+    // XXX remove this, someone else should do this
+    // Clean up the listeners
     for (size_t i = 0; i < listeners_.size(); i++)
         delete listeners_[i];
 
@@ -198,7 +199,6 @@ void InGameState::update(float dt)
 {
     if (paused_)
         return;
-
 
     // Add new GameEntities
     std::vector<GameEntity *> newEntities = getEntitiesToAdd();
