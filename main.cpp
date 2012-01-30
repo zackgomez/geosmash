@@ -1,7 +1,6 @@
 #define _USE_MATH_DEFINES
 #include <GL/glew.h>
 #include <SDL/SDL.h>
-#include <iostream>
 #include <cstdlib>
 #include <ctime>
 #include <vector>
@@ -12,10 +11,12 @@
 #include "StatsManager.h"
 #include "GameState.h"
 #include "MenuState.h"
+#include "Logger.h"
 
 static const float dt = 1.f / 60.f;
 
 bool debug;
+LoggerPtr logger;
 
 std::vector<Controller*> controllers;
 bool running;
@@ -31,6 +32,8 @@ void globalEvents();
 
 int main(int argc, char *argv[])
 {
+    logger = Logger::getLogger("Main");
+
     // Init game state
     ParamReader::get()->loadFile("config/global.params");
     ParamReader::get()->loadFile("config/charlie.params");
@@ -46,12 +49,12 @@ int main(int argc, char *argv[])
 
     if ((initJoystick(4)) == 0)
     {
-        std::cerr << "Unable to initialize Joystick(s)\n";
+        logger->fatal() << "Unable to initialize Joystick(s)\n";
         assert(false && "No joysticks were found.");
     }
     if (initGraphics())
     {
-        std::cerr << "Unable to initialize graphics resources\n";
+        logger->fatal() << "Unable to initialize graphics resources\n";
         exit(1);
     }
 
@@ -105,7 +108,7 @@ void mainloop()
         int endms = SDL_GetTicks();
         int delay = 16 - std::min(16, std::max(0, endms - startms));
         /*
-        std::cout << "Frame time (ms): " << endms - startms << 
+        logger_->debug() << "Frame time (ms): " << endms - startms << 
             "   Delay time (ms): " << delay << '\n';
             */
         SDL_Delay(delay);
@@ -139,9 +142,9 @@ void globalEvents()
 int initJoystick(unsigned numPlayers)
 {
     unsigned numJoysticks = SDL_NumJoysticks();
-    std::cout << "Available joysticks: " << numJoysticks << '\n';
+    logger->info() << "Available joysticks: " << numJoysticks << '\n';
     for (unsigned i = 0; i < numJoysticks; i++)
-        std::cout << "Joystick: " << SDL_JoystickName(i) << '\n';
+        logger->info() << "Joystick: " << SDL_JoystickName(i) << '\n';
 
     if (numJoysticks == 0)
         return 0;
@@ -172,13 +175,13 @@ int initGraphics()
 
 void cleanup()
 {
-    std::cout << "Cleaning up...\n";
+    logger->info() << "Cleaning up...\n";
     for (unsigned i = 0; i < controllers.size(); i++)
         delete controllers[i];
 
     delete state;
 
-    std::cout << "Quiting nicely\n";
+    logger->info() << "Quiting nicely\n";
     SDL_Quit();
 }
 
@@ -186,7 +189,7 @@ int initLibs()
 {
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
     {
-        std::cerr << "Couldn't initialize SDL: " << SDL_GetError() << '\n';
+        logger->fatal() << "Couldn't initialize SDL: " << SDL_GetError() << '\n';
         return 0;
     }
 
@@ -200,15 +203,15 @@ int initLibs()
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_Surface *screen = SDL_SetVideoMode(xres, yres, 32, flags);
-    if ( screen == NULL ) {
-        fprintf(stderr, "Couldn't set video mode: %s\n",
-                SDL_GetError());
+    if (screen == NULL)
+    {
+        logger->fatal() << "Couldn't set video mode: " << SDL_GetError() << '\n';
         return 0;
     }
     GLenum err = glewInit();
     if (err != GLEW_OK)
     {
-        fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+        logger->fatal() <<  "Error: " << glewGetErrorString(err) << '\n';
         return 0;
     }
 

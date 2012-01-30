@@ -14,13 +14,14 @@ Controller::Controller(int controllerID) :
     controllerID_(controllerID),
     joystick_(NULL)
 {
+    logger_ = Logger::getLogger("Controller");
     // Clear the state
     state_.clear();
     // Get the current state
     update(0);
 
     std::string joystickName = SDL_JoystickName(controllerID);
-    std::cout << "Opening joystick: " << joystickName << '\n';
+    logger_->info() << "Opening joystick: " << joystickName << '\n';
 	joystick_ = SDL_JoystickOpen(controllerID);
 
     // Switch trigger axis based on driver
