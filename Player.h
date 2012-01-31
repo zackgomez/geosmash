@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include "Controller.h"
 #include "InGameState.h"
+#include "Logger.h"
 
 class Controller;
 class Fighter;
@@ -49,7 +50,7 @@ protected:
 class AIPlayer : public Player 
 {
 public:
-    AIPlayer(const Fighter *f);
+    explicit AIPlayer(const Fighter *f);
 
     virtual controller_state getState() const;
     virtual bool wantsPauseToggle() const { return false; }
@@ -75,7 +76,7 @@ private:
 class LocalPlayer : public Player
 {
 public:
-    LocalPlayer(Controller *controller, const Fighter *f);
+    explicit LocalPlayer(Controller *controller, const Fighter *f);
     virtual ~LocalPlayer();
 
     // Does per frame player updates
@@ -95,3 +96,23 @@ private:
     Controller *controller_;
 };
 
+
+class GhostAIPlayer : public Player
+{
+public:
+    explicit GhostAIPlayer(const Fighter *f);
+    virtual ~GhostAIPlayer();
+
+    virtual controller_state getState() const;
+    virtual bool wantsPauseToggle() const { return false; }
+    virtual bool wantsStatsContinue() const { return true; }
+    virtual bool wantsLifeSteal() const { return false; }
+    
+    virtual void update(float);
+    virtual void updateListener(const std::vector<Fighter *> &fighters);
+
+private:
+    controller_state cs_;
+
+    LoggerPtr logger_;
+};

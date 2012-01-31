@@ -63,7 +63,6 @@ int main(int argc, char *argv[])
 
     mainloop();
 
-    cleanup();
     return 0;
 }
 
@@ -159,10 +158,28 @@ int initJoystick(unsigned numPlayers)
 
 int initGraphics()
 {
-    // XXX: this is duplicated in initLibs
     float xres = debug ? getParam("debug.resolution.x") : getParam("resolution.x");
     float yres = debug ? getParam("debug.resolution.y") : getParam("resolution.y");
 
+    int flags = SDL_OPENGL;
+    if (!debug)
+        flags |= SDL_FULLSCREEN;
+
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_Surface *screen = SDL_SetVideoMode(xres, yres, 32, flags);
+    if (screen == NULL)
+    {
+        logger->fatal() << "Couldn't set video mode: " << SDL_GetError() << '\n';
+        return 0;
+    }
+    GLenum err = glewInit();
+    if (err != GLEW_OK)
+    {
+        logger->fatal() <<  "Error: " << glewGetErrorString(err) << '\n';
+        return 0;
+    }
+
+    SDL_WM_SetCaption("Geometry Smash 0.7", "geosmash");
     // Set the viewport
     glViewport(0, 0, xres, yres);
 
@@ -194,29 +211,7 @@ int initLibs()
         return 0;
     }
 
-    // XXX: this is duplicated in initGraphics
-    float xres = debug ? getParam("debug.resolution.x") : getParam("resolution.x");
-    float yres = debug ? getParam("debug.resolution.y") : getParam("resolution.y");
-
-    int flags = SDL_OPENGL;
-    if (!debug)
-        flags |= SDL_FULLSCREEN;
-
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_Surface *screen = SDL_SetVideoMode(xres, yres, 32, flags);
-    if (screen == NULL)
-    {
-        logger->fatal() << "Couldn't set video mode: " << SDL_GetError() << '\n';
-        return 0;
-    }
-    GLenum err = glewInit();
-    if (err != GLEW_OK)
-    {
-        logger->fatal() <<  "Error: " << glewGetErrorString(err) << '\n';
-        return 0;
-    }
-
-    SDL_WM_SetCaption("Geometry Smash 0.7", "geosmash");
+    atexit(cleanup);
 
     // Get AudioManager singleton to call constructor
     AudioManager::get();

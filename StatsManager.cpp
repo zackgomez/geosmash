@@ -17,6 +17,7 @@ StatsManager * StatsManager::get()
 
 const std::string StatsManager::guest_user = "GUEST";
 const std::string StatsManager::ai_user = "AI";
+const std::string StatsManager::ghost_ai_user = "GHOST";
 
 void StatsManager::setStat(std::string stat, float val)
 {
@@ -118,6 +119,7 @@ std::vector<std::string> StatsManager::getUsernames() const
     std::vector<std::string> names;
     names.push_back(guest_user);
     names.push_back(ai_user);
+    names.push_back(ghost_ai_user);
     std::map<std::string, lifetime_stats>::const_iterator it;
     for (it = user_stats_.begin(); it != user_stats_.end(); it++)
         names.push_back(it->first);
@@ -131,7 +133,7 @@ void StatsManager::updateUserStats(const std::vector<Fighter*> fighters)
     {
         std::string username = fighters[i]->getUsername();
         // Don't keep stats for the guest/ai users
-        if (username == guest_user || username == ai_user)
+        if (username == guest_user || username == ai_user || username == ghost_ai_user)
             continue;
         assert(user_stats_.find(username) != user_stats_.end());
 

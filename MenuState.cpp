@@ -562,6 +562,10 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
             {
                 player = new AIPlayer(fighter);
             }
+            else if (username == StatsManager::ghost_ai_user)
+            {
+                player = new GhostAIPlayer(fighter);
+            }
             else 
             {
                 player = new LocalPlayer(controllers[i], fighter);

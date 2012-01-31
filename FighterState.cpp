@@ -890,7 +890,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
     {
         jumpTime_ = 0;
     }
-    // 
+    // jump transition
     if (jumpTime_ > getParam("jumpStartupTime"))
     {
         fighter_->vel_.x = fabs(controller.joyx) > getParam("input.deadzone") ?
@@ -899,6 +899,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
         fighter_->vel_.y = getParam("secondJumpSpeed");
         jumpTime_ = -1;
         canSecondJump_ = false;
+        frameName_ = "AirNormalSecondJump";
         // Draw a puff
         ExplosionManager::get()->addPuff(
                 fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 

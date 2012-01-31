@@ -71,6 +71,7 @@ void LocalPlayer::updateListener(const std::vector<Fighter *> &fighters)
 
 //----------------------------
 // AI Player
+//----------------------------
 
 AIPlayer::AIPlayer(const Fighter *f) : Player(f) { }
 controller_state AIPlayer::getState() const
@@ -198,3 +199,33 @@ void AIPlayer::updateListener(const std::vector<Fighter *> &fs)
         targetPos = fs[i]->getPosition();
     }
 }
+
+//----------------------------
+// Ghost AI Player
+//----------------------------
+GhostAIPlayer::GhostAIPlayer(const Fighter *f) :
+    Player(f)
+{
+    logger_ = Logger::getLogger("GhostAIPlayer");
+    cs_.clear();
+}
+
+GhostAIPlayer::~GhostAIPlayer()
+{
+}
+
+controller_state GhostAIPlayer::getState() const
+{
+    return cs_;
+}
+
+void GhostAIPlayer::update(float dt)
+{
+    cs_.clear();
+}
+
+void GhostAIPlayer::updateListener(const std::vector<Fighter *> &fighters)
+{
+    // calculate state
+}
+
