@@ -69,6 +69,7 @@ int main(int argc, char *argv[])
 
 void mainloop()
 {
+    int count = 0;
     running = true;
     state = new MenuState();
     while (running)
