@@ -322,6 +322,16 @@ void Fighter::stealLife()
     lives_--;
 }
 
+void Fighter::addLives(int delta)
+{
+    assert(delta > 0);
+    lives_ += delta;
+    
+    // If they had zero lives before, respawn them
+    if (lives_ == delta)
+        respawn(false);
+}
+
 
 void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color,
         const glm::mat4 &postTrans)

@@ -19,6 +19,9 @@ public:
 
     // Returns true if this player would like the game to be paused/unpaused
     virtual bool wantsPauseToggle() const = 0;
+    // Returns true if this player would like to steal a life from the teammate
+    // with the most lives remaining.
+    virtual bool wantsLifeSteal() const = 0;
     // This function bypasses the controller in StatsGameState
     // It's mainly used for non local players, as they have a controller
     // Eventually this function could be removed by the players knowing what 
@@ -51,6 +54,7 @@ public:
     virtual controller_state getState() const;
     virtual bool wantsPauseToggle() const { return false; }
     virtual bool wantsStatsContinue() const { return true; }
+    virtual bool wantsLifeSteal() const { return false; }
     
     virtual void update(float);
     virtual void updateListener(const std::vector<Fighter *> &fighters);
@@ -83,6 +87,7 @@ public:
     // Returns true if this player would like the game to be paused/unpaused
     virtual bool wantsPauseToggle() const;
     virtual bool wantsStatsContinue() const { return false; }
+    virtual bool wantsLifeSteal() const;
 
     virtual void updateListener(const std::vector<Fighter *> &fighters);
 

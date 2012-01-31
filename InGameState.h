@@ -21,11 +21,6 @@ public:
     virtual void update(float dt);
     virtual void render(float dt);
 
-    bool stealLife(int teamID);
-
-    // XXX: Get rid of this hack
-    static InGameState *instance;
-
     const std::vector<const Fighter*> getFighters() const;
 
 private:
@@ -50,6 +45,8 @@ private:
     void renderArrow(const Fighter *fighter);
 
     void togglePause(int controllerID);
+
+    bool stealLife(int teamID);
 };
 
 class GameListener

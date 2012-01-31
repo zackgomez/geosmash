@@ -1822,6 +1822,8 @@ DeadState::DeadState(Fighter *f) :
 {
     f->pos_.x = HUGE_VAL;
     f->pos_.y = HUGE_VAL;
+
+    frameName_ = "NULL";
 }
 
 FighterState* DeadState::collisionWithGround(const rectangle &, bool, bool)
@@ -1842,13 +1844,6 @@ bool DeadState::canBeHit() const
 
 FighterState* DeadState::processInput(controller_state &controller, float dt)
 {
-    // check for life steal
-    if (controller.pressstart && InGameState::instance->stealLife(fighter_->getTeamID()))
-    {
-        fighter_->lives_++;
-        fighter_->respawn(false);
-    }
-
     return NULL;
 }
 

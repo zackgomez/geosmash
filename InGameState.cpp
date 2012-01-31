@@ -29,8 +29,6 @@
 std::vector<GameEntity *> getEntitiesToAdd();
 void addEntity(GameEntity *ent);
 
-InGameState *InGameState::instance = NULL;
-
 const std::vector<const Fighter*> InGameState::getFighters() const
 {
     std::vector<const Fighter*>ans(fighters_.begin(), fighters_.end());
@@ -91,8 +89,6 @@ InGameState::InGameState(const std::vector<Player *> &players,
     // Start of match time
     startTime_ = SDL_GetTicks();
 
-    instance = this;
-
     // Add a ghost ai learning listener
     listeners_.push_back(new GhostAIRecorder());
 }
@@ -109,8 +105,6 @@ InGameState::~InGameState()
     for (size_t i = 0; i < listeners_.size(); i++)
         if (listeners_[i]->removeOnCompletion())
             delete listeners_[i];
-
-    instance = NULL;
 }
 
 GameState * InGameState::processInput(const std::vector<Controller*> &controllers, float dt)
@@ -138,6 +132,14 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
     // If paused, don't update fighters or ask for next state
     if (paused_)
         return NULL;
+
+    // Check for life steal action
+    for (size_t i = 0; i < players_.size(); i++)
+    {
+        if (players_[i]->wantsLifeSteal())
+            if (stealLife(players_[i]->getTeamID()))
+                fighters_[i]->addLives(1);
+    }
 
     // Now have the fighters process their input
     for (unsigned i = 0; i < fighters_.size(); i++)

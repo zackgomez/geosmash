@@ -59,6 +59,11 @@ bool LocalPlayer::wantsPauseToggle() const
     return fighter_->isAlive() && controller_->getState().pressstart;
 }
 
+bool LocalPlayer::wantsLifeSteal() const
+{
+    return !fighter_->isAlive() && controller_->getState().pressstart;
+}
+
 void LocalPlayer::updateListener(const std::vector<Fighter *> &fighters)
 {
     // Do nothing
@@ -125,33 +130,6 @@ void AIPlayer::performAttack()
 
 }
 
-void AIPlayer::senseDanger()
-{
-    // XXX NOOOOOO
-    std::vector<const Fighter*> fs = InGameState::instance->getFighters();
-    danger = false;
-    for (unsigned int i = 0; i < fs.size(); i++) 
-    {
-        if (fighter_ == fs[i]) continue;
-        if (fabs(pos.x - fs[i]->getPosition().x) < 200)
-        {
-            danger = true;
-        }
-    }
-}
-
-void AIPlayer::setTargetPos()
-{
-    // XXX NOOOOOO
-    std::vector<const Fighter*> fs = InGameState::instance->getFighters();
-    for (unsigned int i = 0; i < fs.size(); i++) 
-    {
-        if (fighter_ == fs[i]) continue;
-        float dist = fabs(pos.x - fs[i]->getPosition().x);
-        targetPos = fs[i]->getPosition();
-    }
-}
-
 void AIPlayer::update(float)
 {
     // Try to perform _both_ of these two actions
@@ -162,8 +140,6 @@ void AIPlayer::update(float)
 
     // First, update some variables. Nothing here should modify cs_.
     pos = fighter_->getPosition();
-    setTargetPos();
-    senseDanger();
     rectangle r = StageManager::get()->getGroundRect(); 
     float dist = fabs(pos.x - r.x);
 
@@ -203,7 +179,22 @@ void AIPlayer::update(float)
 }
 
 
-void AIPlayer::updateListener(const std::vector<Fighter *> &fighters)
+void AIPlayer::updateListener(const std::vector<Fighter *> &fs)
 {
-    // TODO a lot of work here, or maybe just cache some shit?
+    danger = false;
+    for (unsigned int i = 0; i < fs.size(); i++) 
+    {
+        if (fighter_ == fs[i]) continue;
+        if (fabs(pos.x - fs[i]->getPosition().x) < 200)
+        {
+            danger = true;
+        }
+    }
+
+    for (unsigned int i = 0; i < fs.size(); i++) 
+    {
+        if (fighter_ == fs[i]) continue;
+        float dist = fabs(pos.x - fs[i]->getPosition().x);
+        targetPos = fs[i]->getPosition();
+    }
 }
