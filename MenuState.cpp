@@ -15,6 +15,8 @@
 #include "FrameManager.h"
 #include "Player.h"
 
+void checkForJoysticks(unsigned maxPlayers);
+
 static const glm::vec3 playerColors__[] =
 {
     glm::vec3(0.0, 0.2, 1.0), // blue

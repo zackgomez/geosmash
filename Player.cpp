@@ -226,6 +226,8 @@ void GhostAIPlayer::update(float dt)
 
 void GhostAIPlayer::updateListener(const std::vector<Fighter *> &fighters)
 {
+    assert(fighters.size() == 2);
+
     // calculate state
 }
 

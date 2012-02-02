@@ -1,3 +1,4 @@
+#!/usr/bin/python2
 """
 Geosmash Ghost script processing
     Goal: pare down the amount of data output by GhostAiRecorder

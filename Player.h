@@ -96,6 +96,25 @@ private:
     Controller *controller_;
 };
 
+struct CasePlayerState
+{
+    glm::vec2 pos, vel;
+    std::string frame;
+    float damage;
+    float dir;
+    bool hitbox;
+};
+
+struct CaseGameState
+{
+    glm::vec2 relpos, relvel;
+    std::string myframe;
+    bool facing;
+
+    float enemydamage;
+    bool enemyhitbox;
+    bool enemyvulnerable;
+};
 
 class GhostAIPlayer : public Player
 {

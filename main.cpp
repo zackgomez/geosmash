@@ -14,6 +14,7 @@
 #include "Logger.h"
 
 static const float dt = 1.f / 60.f;
+static const int MAX_PLAYERS = 4;
 
 bool debug;
 LoggerPtr logger;
@@ -22,7 +23,7 @@ std::vector<Controller*> controllers;
 bool running;
 GameState *state;
 
-int initJoystick(unsigned numPlayers);
+void checkForJoysticks(unsigned maxPlayers);
 int initGraphics();
 int initLibs();
 void cleanup();
@@ -47,11 +48,6 @@ int main(int argc, char *argv[])
     if (!initLibs())
         exit(1);
 
-    if ((initJoystick(4)) == 0)
-    {
-        logger->fatal() << "Unable to initialize Joystick(s)\n";
-        assert(false && "No joysticks were found.");
-    }
     if (initGraphics())
     {
         logger->fatal() << "Unable to initialize graphics resources\n";
@@ -79,6 +75,11 @@ void mainloop()
         // Global events like ESC or mute etc
         globalEvents();
 
+
+        // TODO call state->preframe()
+        // TODO move this to menu state
+        checkForJoysticks(MAX_PLAYERS);
+
         // Update controllers
         for (size_t i = 0; i < controllers.size(); i++)
             controllers[i]->update(dt);
@@ -101,6 +102,8 @@ void mainloop()
 
         state->render(dt);
 
+        // TODO call state->postframe()
+        
         postRender();
         SDL_GL_SwapBuffers();
 
@@ -139,21 +142,19 @@ void globalEvents()
     }
 }
 
-int initJoystick(unsigned numPlayers)
+void checkForJoysticks(unsigned maxPlayers)
 {
     unsigned numJoysticks = SDL_NumJoysticks();
-    logger->info() << "Available joysticks: " << numJoysticks << '\n';
-    for (unsigned i = 0; i < numJoysticks; i++)
-        logger->info() << "Joystick: " << SDL_JoystickName(i) << '\n';
-
-    if (numJoysticks == 0)
-        return 0;
-
-    unsigned i;
-    for (i = 0; i < numJoysticks && i < numPlayers; i++)
-        controllers.push_back(new Controller(i));
-
-    return numPlayers;
+    // Are there new joysticks?
+    if (numJoysticks > controllers.size())
+    {
+        // Add some joysticks
+        for (unsigned i = controllers.size(); i < numJoysticks && i < maxPlayers; i++)
+        {
+            logger->info() << "Adding joystick: " << SDL_JoystickName(i) << '\n';
+            controllers.push_back(new Controller(i));
+        }
+    }
 }
 
 int initGraphics()
