@@ -59,8 +59,19 @@ bool LocalPlayer::wantsPauseToggle() const
     return fighter_->isAlive() && controller_->getState().pressstart;
 }
 
+bool LocalPlayer::wantsLifeSteal() const
+{
+    return !fighter_->isAlive() && controller_->getState().pressstart;
+}
+
+void LocalPlayer::updateListener(const std::vector<Fighter *> &fighters)
+{
+    // Do nothing
+}
+
 //----------------------------
 // AI Player
+//----------------------------
 
 AIPlayer::AIPlayer(const Fighter *f) : Player(f) { }
 controller_state AIPlayer::getState() const
@@ -120,31 +131,6 @@ void AIPlayer::performAttack()
 
 }
 
-void AIPlayer::senseDanger()
-{
-    std::vector<const Fighter*> fs = InGameState::instance->getFighters();
-    danger = false;
-    for (unsigned int i = 0; i < fs.size(); i++) 
-    {
-        if (fighter_ == fs[i]) continue;
-        if (fabs(pos.x - fs[i]->getPosition().x) < 200)
-        {
-            danger = true;
-        }
-    }
-}
-
-void AIPlayer::setTargetPos()
-{
-    std::vector<const Fighter*> fs = InGameState::instance->getFighters();
-    for (unsigned int i = 0; i < fs.size(); i++) 
-    {
-        if (fighter_ == fs[i]) continue;
-        float dist = fabs(pos.x - fs[i]->getPosition().x);
-        targetPos = fs[i]->getPosition();
-    }
-}
-
 void AIPlayer::update(float)
 {
     // Try to perform _both_ of these two actions
@@ -155,8 +141,6 @@ void AIPlayer::update(float)
 
     // First, update some variables. Nothing here should modify cs_.
     pos = fighter_->getPosition();
-    setTargetPos();
-    senseDanger();
     rectangle r = StageManager::get()->getGroundRect(); 
     float dist = fabs(pos.x - r.x);
 
@@ -193,6 +177,57 @@ void AIPlayer::update(float)
     {
         performAttack();
     }
+}
 
+
+void AIPlayer::updateListener(const std::vector<Fighter *> &fs)
+{
+    danger = false;
+    for (unsigned int i = 0; i < fs.size(); i++) 
+    {
+        if (fighter_ == fs[i]) continue;
+        if (fabs(pos.x - fs[i]->getPosition().x) < 200)
+        {
+            danger = true;
+        }
+    }
+
+    for (unsigned int i = 0; i < fs.size(); i++) 
+    {
+        if (fighter_ == fs[i]) continue;
+        float dist = fabs(pos.x - fs[i]->getPosition().x);
+        targetPos = fs[i]->getPosition();
+    }
+}
+
+//----------------------------
+// Ghost AI Player
+//----------------------------
+GhostAIPlayer::GhostAIPlayer(const Fighter *f) :
+    Player(f)
+{
+    logger_ = Logger::getLogger("GhostAIPlayer");
+    cs_.clear();
+}
+
+GhostAIPlayer::~GhostAIPlayer()
+{
+}
+
+controller_state GhostAIPlayer::getState() const
+{
+    return cs_;
+}
+
+void GhostAIPlayer::update(float dt)
+{
+    cs_.clear();
+}
+
+void GhostAIPlayer::updateListener(const std::vector<Fighter *> &fighters)
+{
+    assert(fighters.size() == 2);
+
+    // calculate state
 }
 

@@ -79,6 +79,7 @@ public:
 
 
     void stealLife();
+    void addLives(int lives);
 
     // Puts the fighter into a limp state, they have no control and can be
     // controlled by the caller.  Passed function object is called when the

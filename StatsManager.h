@@ -20,6 +20,7 @@ public:
     static StatsManager * get();
     static const std::string guest_user;
     static const std::string ai_user;
+    static const std::string ghost_ai_user;
 
     // Sets the value of the passed state
     void setStat(std::string stat, float val);

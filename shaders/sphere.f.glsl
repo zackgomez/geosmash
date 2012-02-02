@@ -1,8 +1,6 @@
-#version 330 
+#version 120 
 
-layout(location = 0) out vec4 outputColor;
-layout(location = 1) out vec4 glowColor;
-centroid in vec2 coord;
+varying vec2 coord;
 
 const float thresh = 0.9;
 const float c = 100.;
@@ -24,7 +22,7 @@ void main()
     if (fact == 0)
         discard;
 
-    outputColor = fact * linecol;
-    glowColor = vec4(linecol.rgb, 0.0f);
+    gl_FragData[0] = fact * linecol;
+    gl_FragData[1] = vec4(linecol.rgb, 0.0f);
 }
 

@@ -27,13 +27,19 @@ public:
     }
     std::ostream& warning()
     {
-        std::cout << "WARNING - " << prefix_ << ": ";
-        return std::cout;
+        std::cerr << "WARNING - " << prefix_ << ": ";
+        return std::cerr;
     }
     std::ostream& error()
     {
-        std::cout << "ERROR - " << prefix_ << ": ";
-        return std::cout;
+        std::cerr << "ERROR - " << prefix_ << ": ";
+        return std::cerr;
+    }
+
+    std::ostream& fatal()
+    {
+        std::cerr << "ERROR - " << prefix_ << ": ";
+        return std::cerr;
     }
 
 private:

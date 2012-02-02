@@ -24,11 +24,10 @@
 #include "Controller.h"
 #include "StatsGameState.h"
 #include "Player.h"
+#include "GhostAIRecorder.h"
 
 std::vector<GameEntity *> getEntitiesToAdd();
 void addEntity(GameEntity *ent);
-
-InGameState *InGameState::instance = NULL;
 
 const std::vector<const Fighter*> InGameState::getFighters() const
 {
@@ -90,7 +89,8 @@ InGameState::InGameState(const std::vector<Player *> &players,
     // Start of match time
     startTime_ = SDL_GetTicks();
 
-    instance = this;
+    // Add a ghost ai learning listener
+    listeners_.push_back(new GhostAIRecorder());
 }
 
 InGameState::~InGameState()
@@ -101,11 +101,18 @@ InGameState::~InGameState()
 
     // Fighters/players are passed to StatsGameState
 
-    instance = NULL;
+    // Clean up the listeners that want to be cleaned up
+    for (size_t i = 0; i < listeners_.size(); i++)
+        if (listeners_[i]->removeOnCompletion())
+            delete listeners_[i];
 }
 
 GameState * InGameState::processInput(const std::vector<Controller*> &controllers, float dt)
 {
+    // Before we do anything, call preframe listener functions
+    for (size_t i = 0; i < listeners_.size(); i++)
+        listeners_[i]->updateListener(fighters_);
+
     // First update players pre frame
     for (size_t i = 0; i < players_.size(); i++)
         players_[i]->update(dt);
@@ -125,6 +132,14 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
     // If paused, don't update fighters or ask for next state
     if (paused_)
         return NULL;
+
+    // Check for life steal action
+    for (size_t i = 0; i < players_.size(); i++)
+    {
+        if (players_[i]->wantsLifeSteal())
+            if (stealLife(players_[i]->getTeamID()))
+                fighters_[i]->addLives(1);
+    }
 
     // Now have the fighters process their input
     for (unsigned i = 0; i < fighters_.size(); i++)
@@ -376,8 +391,6 @@ void InGameState::renderArrow(const Fighter *f)
     fndc /= fndc.w;
     if (fabs(fndc.x) > 1 || fabs(fndc.y) > 1)
     {
-        std::cout << "DRAWING ARROW\n";
-
         glm::vec2 dir = glm::vec2(fndc);
         float dist = glm::length(dir);
         dir /= dist;
@@ -402,6 +415,7 @@ void InGameState::renderArrow(const Fighter *f)
         float rot = theta * 180.f / M_PI;
 
         //std::cout << "Arrow pos: " << arrowPos.x << ' ' << arrowPos.y << '\n';
+        //
         glm::mat4 transform =
             glm::rotate(glm::scale(glm::translate(glm::mat4(1.0f),
                             glm::vec3(arrowPos, 0.0f)), 
@@ -430,7 +444,45 @@ void InGameState::integrate(float dt)
 
 void InGameState::collisionDetection(float dt)
 {
-    // First check for hitbox collisions
+    // First check for ground and platform hits
+    rectangle ground = StageManager::get()->getGroundRect();
+    std::vector<rectangle> platforms = StageManager::get()->getPlatforms();
+    // For each entity, go until you find a collision, if not, tell them no
+    // collision with ground
+    for (unsigned i = 0; i < entities_.size(); i++)
+    {
+        GameEntity *entity = entities_[i];
+        if (entity->getRect().overlaps(ground))
+        {
+            entity->collisionWithGround(ground, true, false);
+            continue;
+        }
+
+        size_t j;
+        for (j = 0; j < platforms.size(); j++)
+        {
+            rectangle pf = platforms[j];
+            glm::vec2 pos = entity->getPosition();
+            glm::vec2 size = entity->getSize();
+            glm::vec2 vel = entity->getVelocity();
+            // Overlap, moving down, and was above the platform on the previous frame
+            if (entity->getRect().overlaps(pf) &&
+                vel.y <= 0 &&
+                ((pos.y - vel.y * dt - size.y/2 > pf.y + pf.h/2) ||
+                 (pos.y == pf.y + pf.h/2 + size.y/2 - 1)))
+            {
+                entity->collisionWithGround(pf, true, true);
+                goto next_entity;
+            }
+        }
+        // No collisions
+        entity->collisionWithGround(ground, false, false);
+
+next_entity:
+        continue;
+    }
+
+    // Then check for hitbox-hitbox collisions
     for (unsigned i = 0; i < entities_.size(); i++)
     {
         GameEntity *entityi = entities_[i];
@@ -485,45 +537,6 @@ void InGameState::collisionDetection(float dt)
             }
         }
     }
-
-    // Now check for ground and platform hits
-    rectangle ground = StageManager::get()->getGroundRect();
-    std::vector<rectangle> platforms = StageManager::get()->getPlatforms();
-    // For each entity, go until you find a collision, if not, tell them no
-    // collision with ground
-    for (unsigned i = 0; i < entities_.size(); i++)
-    {
-        GameEntity *entity = entities_[i];
-        if (entity->getRect().overlaps(ground))
-        {
-            entity->collisionWithGround(ground, true, false);
-            continue;
-        }
-
-        size_t j;
-        for (j = 0; j < platforms.size(); j++)
-        {
-            rectangle pf = platforms[j];
-            glm::vec2 pos = entity->getPosition();
-            glm::vec2 size = entity->getSize();
-            glm::vec2 vel = entity->getVelocity();
-            // Overlap, moving down, and was above the platform on the previous frame
-            if (entity->getRect().overlaps(pf) &&
-                vel.y <= 0 &&
-                ((pos.y - vel.y * dt - size.y/2 > pf.y + pf.h/2) ||
-                 (pos.y == pf.y + pf.h/2 + size.y/2 - 1)))
-            {
-                entity->collisionWithGround(pf, true, true);
-                goto next_entity;
-            }
-        }
-        // No collisions
-        entity->collisionWithGround(ground, false, false);
-
-next_entity:
-        continue;
-    }
-
 
     // Figher specific checks here
     // Check for fighter death

@@ -6,6 +6,7 @@
 class GameEntity;
 class Fighter;
 class Player;
+class GameListener;
 
 class InGameState : public GameState
 {
@@ -19,11 +20,6 @@ public:
             float dt);
     virtual void update(float dt);
     virtual void render(float dt);
-
-    bool stealLife(int teamID);
-
-    // XXX: Get rid of this hack
-    static InGameState *instance;
 
     const std::vector<const Fighter*> getFighters() const;
 
@@ -39,6 +35,7 @@ private:
     int pausingPlayer_;
     bool keepStats_;
 
+    std::vector<GameListener *> listeners_;
 
     // Helper functions
     void integrate(float dt);
@@ -48,4 +45,21 @@ private:
     void renderArrow(const Fighter *fighter);
 
     void togglePause(int controllerID);
+
+    bool stealLife(int teamID);
 };
+
+class GameListener
+{
+public:
+    virtual ~GameListener() { }
+
+    // Memory managment function
+    // This should return true if the listener should be deleted at the end of
+    // the match
+    virtual bool removeOnCompletion() const = 0;
+
+    // Called at the start of each frame
+    virtual void updateListener(const std::vector<Fighter *> &fighters) = 0;
+};
+

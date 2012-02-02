@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "Logger.h"
 
 class ParamReader
 {
@@ -18,9 +19,10 @@ public:
     void printParams() const;
 
 private:
-    ParamReader() {}
+    ParamReader();
 
     std::map<std::string, float> params_;
+    LoggerPtr logger_;
 };
 
 float getParam(const std::string &param);

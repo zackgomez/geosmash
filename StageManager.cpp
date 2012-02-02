@@ -150,21 +150,22 @@ void StageManager::renderSphereBackground(float dt)
     
     GLuint projectionUniform = glGetUniformLocation(sphereProgram_, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(sphereProgram_, "modelViewMatrix");
+    GLuint positionAttrib = glGetAttribLocation(sphereProgram_, "position");
 
     glUseProgram(sphereProgram_);
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrixStack().current()));
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(getViewMatrixStack().current() * transform));
 
     glBindBuffer(GL_ARRAY_BUFFER, meshBuf_);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, (void*)0);
+    glEnableVertexAttribArray(positionAttrib);
+    glVertexAttribPointer(positionAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, (void*)0);
 
     for (int i = 0; i < meshRes_ - 1; i++)
     {
         glDrawElements(GL_TRIANGLE_STRIP, meshRes_*2, GL_UNSIGNED_INT, indicies_[i]);
     }
 
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
     glDisable(GL_CULL_FACE);
 }

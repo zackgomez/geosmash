@@ -100,7 +100,6 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     float gbmag = glm::length(fighter_->vel_);
     // Go to the stunned state
     float stunDuration = attack->calcStun(fighter_, fighter_->damage_);
-    std::cout << "StunDuration: " << stunDuration << '\n';
     return new AirStunnedState(fighter_, stunDuration, gbmag > 0 ? gbmag : -HUGE_VAL);
 }
 
@@ -229,8 +228,10 @@ FighterState* AirStunnedState::processInput(controller_state &controller, float 
 
 void AirStunnedState::render(float dt)
 {
+    /*
     printf("AIR STUNNED | StunTime: %.3f  StunDuration: %.3f || ",
             stunTime_, stunDuration_);
+            */
     // flash the player 
     glm::vec3 color = muxByTime(fighter_->color_, stunTime_);
 
@@ -337,17 +338,18 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
             0.0f;
         // If they are still "holding down" the jump button now, then full jump
         // otherwise short hop
-        if (controller.buttony || controller.joyy > getParam("input.jumpThresh"))
-            fighter_->vel_.y = getParam("jumpSpeed");
-        else
+        bool shortHop = !controller.buttony;
+        if (shortHop)
             fighter_->vel_.y = getParam("hopSpeed");
+        else
+            fighter_->vel_.y = getParam("jumpSpeed");
         // Draw a little puff
         ExplosionManager::get()->addPuff(
                 fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
                 fighter_->pos_.y - fighter_->size_.y * 0.45f,
                 0.3f);
         // Jump; transition to Air Normal
-        return new AirNormalState(fighter_);
+        return new AirNormalState(fighter_, shortHop);
     }
 
 
@@ -568,18 +570,27 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
 
 void GroundState::render(float dt)
 {
+    /*
     printf("GROUND | JumpT: %.3f  DashT: %.3f  WaitT: %.3f Duck: %d || ",
             jumpTime_, dashTime_, waitTime_, ducking_);
+            */
 
     std::string fname = frameName_;
     if (dashing_)
         fname = "GroundRunning";
     if (dashing_ && waitTime_ > 0.f)
         fname = "DashChange";
+
     if (ducking_)
         fname = "Ducking";
+    // if not ducking and moving, then walking
+    else if (fabs(fighter_->vel_.x) > 0)
+        fname = "GroundWalking";
+
+    // If attacking then attack frame
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
+
     glm::vec3 color = fighter_->color_;
     if (invincTime_ > 0.f)
         color = muxByTime(color, invincTime_);
@@ -697,8 +708,10 @@ FighterState* BlockingState::processInput(controller_state &controller, float dt
 
 void BlockingState::render(float dt)
 {
+    /*
     printf("BLOCKING | waitT: %.3f dazeT: %.3f health: %.3f || ",
             waitTime_, dazeTime_, fighter_->shieldHealth_);
+            */
 
     glm::mat4 trans(1.f);
     glm::vec3 color = fighter_->color_;
@@ -780,12 +793,12 @@ FighterState* BlockingState::hitByAttack(const Attack *attack)
 
 
 //// -------------------- AIR NORMAL STATE -----------------------------
-AirNormalState::AirNormalState(Fighter *f) :
+AirNormalState::AirNormalState(Fighter *f, bool shortHop) :
     FighterState(f), canSecondJump_(true), jumpTime_(-1),
     fastFalling_(false), fallThroughPlatforms_(false),
     noGrabTime_(0)
 {
-    frameName_ = "AirNormal";
+    frameName_ = shortHop ? "AirNormalHop" : "AirNormal";
 }
 
 AirNormalState::~AirNormalState()
@@ -819,6 +832,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
         else
             fighter_->accel_ += glm::vec2(0.f, getParam("fastFallAccel"));
         fastFalling_ = true;
+        frameName_ = "AirNormalFastFall";
     }
 
     if (controller.joyy < getParam("input.fallThresh"))
@@ -876,7 +890,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
     {
         jumpTime_ = 0;
     }
-    // 
+    // jump transition
     if (jumpTime_ > getParam("jumpStartupTime"))
     {
         fighter_->vel_.x = fabs(controller.joyx) > getParam("input.deadzone") ?
@@ -885,6 +899,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
         fighter_->vel_.y = getParam("secondJumpSpeed");
         jumpTime_ = -1;
         canSecondJump_ = false;
+        frameName_ = "AirNormalSecondJump";
         // Draw a puff
         ExplosionManager::get()->addPuff(
                 fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
@@ -908,8 +923,10 @@ void AirNormalState::update(float dt)
 
 void AirNormalState::render(float dt)
 {
+    /*
     printf("AIR NORMAL | JumpT: %.3f  Can2ndJump: %d || ",
             jumpTime_, canSecondJump_);
+            */
     std::string fname = frameName_;
     if (fighter_->attack_)
         fname = fighter_->attack_->getFrameName();
@@ -949,7 +966,6 @@ FighterState* AirNormalState::collisionWithGround(const rectangle &ground, bool 
             fighter_->pos_.y - fighter_->size_.y * 0.45f,
             0.3f);
 
-    std::cout << "TRANSITION TO GROUND\n";
     // Transition to the ground state, with a small delay for landing
     return new GroundState(fighter_, getParam("landingCooldownTime"));
 }
@@ -1064,8 +1080,10 @@ FighterState* CounterState::collisionWithGround(const rectangle &ground, bool co
 
 void CounterState::render(float dt)
 {
+    /*
     printf("COUNTER | t: %.3f  ground: %d || ",
             t_, ground_);
+            */
 
     std::string fname = frameName_;
     if (fighter_->attack_)
@@ -1113,7 +1131,9 @@ FighterState * UpSpecialState::processInput(controller_state &, float dt)
 
 void UpSpecialState::render(float dt)
 {
+    /*
     printf("UP SPECIAL | || ");
+    */
     assert(fighter_->attack_);
     fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
 }
@@ -1173,8 +1193,10 @@ FighterState * DashSpecialState::processInput(controller_state &, float dt)
 
 void DashSpecialState::render(float dt)
 {
+    /*
     printf("DASH SPECIAL | ground: %d || ",
             ground_);
+            */
     assert(fighter_->attack_);
     fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
 }
@@ -1224,9 +1246,9 @@ GrabbingState::GrabbingState(Fighter *f) :
     FighterState(f),
     pre_("grabState."),
     victim_(NULL),
-    frameName_("GrabAttempt"),
     holdTimeLeft_(-1)
 {
+    frameName_ = "GrabAttempt";
     // Set up attack for collision detection
     fighter_->attack_ = fighter_->attackMap_["grab"]->clone();
     fighter_->attack_->setFighter(f);
@@ -1276,8 +1298,9 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
             && controller.joyxv * controller.joyx >= 0)
         {
             shouldThrow = true;
-            throwPrefix = controller.joyx * fighter_->dir_ >= 0 ?
-                "frontThrow." : "backThrow.";
+            bool frontThrow = controller.joyx * fighter_->dir_ >= 0;
+            throwPrefix = frontThrow ? "frontThrow." : "backThrow.";
+            frameName_ = frontThrow ? "FrontThrow" : "BackThrow";
         }
         // Up throw
         else if (controller.joyy > getParam("input.throwThresh")
@@ -1285,6 +1308,7 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
         {
             shouldThrow = true;
             throwPrefix = "upThrow.";
+            frameName_ = "UpThrow";
         }
         // If we have a throw, create it and do it
         if (shouldThrow)
@@ -1315,8 +1339,10 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
 
 void GrabbingState::render(float dt)
 {
+    /*
     printf("GRABBING | Victim: %d  holdTimeLeft: %f || ",
             victim_ != NULL, holdTimeLeft_);
+            */
     fighter_->renderHelper(dt, frameName_, fighter_->getColor());
 }
 
@@ -1439,8 +1465,11 @@ void DodgeState::render(float dt)
     if (invincTime_ > 0.f)
         color = muxByTime(fighter_->color_, t_);
 
+
+    /*
     printf("DODGE | t: %.3f  invincT: %.3f  dodgeT: %.3f || ",
             t_, invincTime_, dodgeTime_);
+            */
     // Just render the fighter, but flashing
     fighter_->renderHelper(dt, frameName_, color,
             glm::rotate(glm::mat4(1.f), -angle, glm::vec3(0,0,1)));
@@ -1572,8 +1601,10 @@ void LedgeGrabState::update(float dt)
 
 void LedgeGrabState::render(float dt)
 {
+    /*
     printf("LEDGE | jumpT: %.3f invincT: %.3f || ",
             jumpTime_, invincTime_);
+            */
     glm::vec3 color = fighter_->color_;
 
     // flash when invincible
@@ -1622,10 +1653,6 @@ void LedgeGrabState::grabLedge(Ledge *l)
     fighter_->accel_ = glm::vec2(0.f);
 
     fighter_->dir_ = xdir;
-
-    std::cout << "Pos: " << fighter_->pos_.x << ' ' << fighter_->pos_.y
-        << " Size: " << hbsize_.x << ' ' << hbsize_.y
-        << " LedgePos: " << l->pos.x << ' ' << l->pos.y << '\n';
 }
 
 //// ------------------------- LIMP STATE ---------------------------------
@@ -1633,11 +1660,12 @@ void LedgeGrabState::grabLedge(Ledge *l)
 LimpState::LimpState(Fighter *f, UnlimpCallback *callback) :
     FighterState(f),
     unlimpCallback_(callback),
-    frameName_("Grabbed"), // XXX: needs it's own frame
     pretrans_(glm::mat4(1.f)), // default to identity matrix, no trans
     next_(NULL),
     hitable_(false)
 {
+    // The limper MUST set a frame
+    frameName_ = "INVALIDINVALID";
 }
 
 LimpState::~LimpState()
@@ -1656,8 +1684,10 @@ FighterState* LimpState::processInput(controller_state&, float dt)
 
 void LimpState::render(float dt)
 {
+    /*
     printf("LIMP | Next: %d || ",
             next_ != NULL);
+            */
     // Just render the frame
     fighter_->renderHelper(dt, frameName_, fighter_->getColor(), pretrans_);
 }
@@ -1724,7 +1754,6 @@ void LimpState::setPreTransform(const glm::mat4 &pretrans)
 
 void LimpState::hit(const Attack *attack)
 {
-    std::cout << "LIMP HIT\n";
     // disconnect, we're no longer limp
     if (!next_)
         (*unlimpCallback_)(this);
@@ -1750,6 +1779,7 @@ const GameEntity * LimpState::getEntity() const
 RespawnState::RespawnState(Fighter *f) :
     FighterState(f), t_(0.f)
 {
+    frameName_ = "Respawn";
 }
 
 FighterState* RespawnState::processInput(controller_state &controller, float dt)
@@ -1762,7 +1792,9 @@ FighterState* RespawnState::processInput(controller_state &controller, float dt)
 
 void RespawnState::render(float dt)
 {
+    /*
     printf("RESPAWN | t: %f || ", t_);
+    */
     // Just render the fighter, but slightly lighter
     fighter_->renderHelper(dt, frameName_, 1.6f * fighter_->color_);
 }
@@ -1791,6 +1823,8 @@ DeadState::DeadState(Fighter *f) :
 {
     f->pos_.x = HUGE_VAL;
     f->pos_.y = HUGE_VAL;
+
+    frameName_ = "NULL";
 }
 
 FighterState* DeadState::collisionWithGround(const rectangle &, bool, bool)
@@ -1811,13 +1845,6 @@ bool DeadState::canBeHit() const
 
 FighterState* DeadState::processInput(controller_state &controller, float dt)
 {
-    // check for life steal
-    if (controller.pressstart && InGameState::instance->stealLife(fighter_->getTeamID()))
-    {
-        fighter_->lives_++;
-        fighter_->respawn(false);
-    }
-
     return NULL;
 }
 

@@ -1,12 +1,9 @@
-#version 330
+#version 120
 
-layout(location = 0) out vec4 outputColor;
-layout(location = 1) out vec4 glowColor;
-
-in vec4 pcolor;
+varying vec4 pcolor;
 
 void main()
 {
-    outputColor = vec4(pcolor.xyz, 1);
-    glowColor = vec4(pcolor.xyz, 1) * pcolor.a;
+    gl_FragData[0] = vec4(pcolor.xyz, 1);
+    gl_FragData[1] = vec4(pcolor.xyz, 1) * pcolor.a;
 }

@@ -129,21 +129,15 @@ void Projectile::update(float dt)
 
     if (t_ > getParam(paramPrefix_ + "lifetime"))
         hit_ = true;
-
-    printf("PROJECTILE | t: %f  Pos: [%f %f]  Vel: [%f %f]\n",
-            t_, pos_.x, pos_.y, vel_.x, vel_.y);
 }
 
 void Projectile::render(float dt)
 {
-    emitter_->setLocation(glm::vec3(pos_, 0.0f));
     /*
-    glm::mat4 transform = glm::scale(
-            glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
-            glm::vec3(1.f));
-
-    FrameManager::get()->renderFrame(transform, glm::vec4(glm::vec4(1, 1, 1, 0.3)),
-            frameName_);
+    printf("PROJECTILE | t: %f  Pos: [%f %f]  Vel: [%f %f]\n",
+            t_, pos_.x, pos_.y, vel_.x, vel_.y);
             */
+
+    emitter_->setLocation(glm::vec3(pos_, 0.0f));
 }
 

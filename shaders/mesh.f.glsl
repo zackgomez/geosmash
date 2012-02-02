@@ -1,14 +1,11 @@
-#version 330
+#version 120
 
-layout(location = 0) out vec4 outputColor;
-layout(location = 1) out vec4 glowColor;
-centroid in vec2 frag_texcoord;
-centroid in vec4 frag_normal;
-centroid in vec4 frag_pos;
+varying vec2 frag_texcoord;
+varying vec4 frag_normal;
+varying vec4 frag_pos;
 
 uniform vec4 color;
 uniform vec4 lightpos;
-
 
 void main()
 {
@@ -17,6 +14,6 @@ void main()
     float ndotl = dot(normal, lightdir);
     ndotl = min(max(ndotl, 0) + 0.3, 1);
 
-    outputColor = vec4(ndotl * vec3(color), 1.0f);
-    glowColor = vec4(0.0f, 0.0f, 0.0f, 1.f);
+    gl_FragData[0] = vec4(ndotl * vec3(color), 1.0f);
+    gl_FragData[1] = vec4(0.0f, 0.0f, 0.0f, 1.f);
 }

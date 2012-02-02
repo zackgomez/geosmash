@@ -15,6 +15,7 @@
 #include "ParamReader.h"
 #include "stb_image.c"
 #include "PManager.h"
+#include "Logger.h"
 
 static struct 
 {
@@ -37,6 +38,8 @@ static struct
     GLuint depthbuf;
     GLuint rendertex[3];
 } resources;
+
+static LoggerPtr logger;
 
 static glm::vec2 screensize;
 static MatrixStack projectionMatrixStack;
@@ -63,7 +66,7 @@ void show_info_log(
     glGet__iv(object, GL_INFO_LOG_LENGTH, &log_length);
     log = (char*) malloc(log_length);
     glGet__InfoLog(object, log_length, NULL, log);
-    fprintf(stderr, "%s", log);
+    logger->fatal() << log << '\n';
     free(log);
 }
 
@@ -74,25 +77,25 @@ bool checkFramebufferStatus() {
     case GL_FRAMEBUFFER_COMPLETE_EXT:
         return true;
     case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
-        printf("Framebuffer incomplete, incomplete attachment\n");
+        logger->warning() << "Framebuffer incomplete, incomplete attachment\n";
         return false;
     case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
-        printf("Unsupported framebuffer format\n");
+        logger->warning() << "Unsupported framebuffer format\n";
         return false;
     case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
-        printf("Framebuffer incomplete, missing attachment\n");
+        logger->warning() << "Framebuffer incomplete, missing attachment\n";
         return false;
     case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
-        printf("Framebuffer incomplete,  attachments must have same dimensions\n");
+        logger->warning() << "Framebuffer incomplete,  attachments must have same dimensions\n";
         return false;
     case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
-        printf("Framebuffer incomplete, attached images must have same format\n");
+        logger->warning() << "Framebuffer incomplete, attached images must have same format\n";
         return false;
     case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
-        printf("Framebuffer incomplete, missing draw buffer\n");
+        logger->warning() << "Framebuffer incomplete, missing draw buffer\n";
         return false;
     case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
-        printf("Framebuffer incomplete, missing read buffer\n");
+        logger->warning() << "Framebuffer incomplete, missing read buffer\n";
         return false;
     }
     return false;
@@ -116,7 +119,7 @@ GLuint make_shader(GLenum type, const char *filename)
 
     glGetShaderiv(shader, GL_COMPILE_STATUS, &shader_ok);
     if (!shader_ok) {
-        fprintf(stderr, "Failed to compile %s:\n", filename);
+        logger->fatal() << "Failed to compile " << filename << ":\n";
         show_info_log(shader, glGetShaderiv, glGetShaderInfoLog);
         glDeleteShader(shader);
         return 0;
@@ -136,7 +139,7 @@ GLuint make_program(GLuint vertex_shader, GLuint fragment_shader)
 
     glGetProgramiv(program, GL_LINK_STATUS, &program_ok);
     if (!program_ok) {
-        fprintf(stderr, "Failed to link shader program:\n");
+        logger->fatal() << "Failed to link shader program:\n";
         show_info_log(program, glGetProgramiv, glGetProgramInfoLog);
         glDeleteProgram(program);
         return 0;
@@ -152,7 +155,7 @@ GLuint make_texture(const char *filename)
 
     if (!pixels)
     {
-        std::cerr << "Unable to load texture from " << filename << "\n";
+        logger->warning() << "Unable to load texture from " << filename << "\n";
         return 0;
     }
 
@@ -183,6 +186,7 @@ void blurTexture(GLuint texture, bool horiz)
     GLuint program = horiz ? resources.hblurprogram : resources.vblurprogram;
     GLuint textureUniform = glGetUniformLocation(program, "tex");
     GLuint sizeUniform = glGetUniformLocation(program, "texsize");
+    GLuint positionAttrib = glGetAttribLocation(program, "position");
 
     // Enable program and set up values
     glUseProgram(program);
@@ -194,14 +198,14 @@ void blurTexture(GLuint texture, bool horiz)
     glBindTexture(GL_TEXTURE_2D, texture);
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionAttrib);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
 
 }
@@ -268,6 +272,8 @@ bool initGLUtils(int screenw, int screenh)
         0.5f,  0.5f, 0.0f, 1.0f
     };
     const GLushort element_buffer_data[] = { 0, 1, 2, 3 };
+
+    logger = Logger::getLogger("Engine");
 
     screensize = glm::vec2(screenw, screenh);
 
@@ -378,6 +384,7 @@ void renderRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color)
     GLuint projectionUniform = glGetUniformLocation(resources.program, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(resources.program, "modelViewMatrix");
     GLuint colorUniform = glGetUniformLocation(resources.program, "color");
+    GLuint positionAttrib = glGetAttribLocation(resources.program, "position");
 
     // Enable program and set up values
     glUseProgram(resources.program);
@@ -386,15 +393,15 @@ void renderRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color)
     glUniform4fv(colorUniform, 1, glm::value_ptr(color));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionAttrib);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
 }
 
@@ -402,6 +409,7 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix, GLuint program)
 {
     GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
+    GLuint positionAttrib = glGetAttribLocation(program, "position");
 
     // Enable program and set up values
     glUseProgram(program);
@@ -409,15 +417,15 @@ void renderRectangleProgram(const glm::mat4 &modelMatrix, GLuint program)
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionAttrib);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
 }
 
@@ -426,6 +434,7 @@ void renderTexturedRectangle(const glm::mat4 &modelMatrix, GLuint texture)
     GLuint projectionUniform = glGetUniformLocation(resources.texprogram, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(resources.texprogram, "modelViewMatrix");
     GLuint textureUniform = glGetUniformLocation(resources.texprogram, "texture");
+    GLuint positionAttrib = glGetAttribLocation(resources.texprogram, "position");
 
     // Enable program and set up values
     glUseProgram(resources.texprogram);
@@ -438,15 +447,15 @@ void renderTexturedRectangle(const glm::mat4 &modelMatrix, GLuint texture)
     glBindTexture(GL_TEXTURE_2D, texture);
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionAttrib);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
 }
 
@@ -458,6 +467,7 @@ void renderMaskedRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color,
     GLuint textureUniform = glGetUniformLocation(resources.maskprogram, "texture");
     GLuint colorUniform = glGetUniformLocation(resources.maskprogram, "color");
     GLuint texsizeUniform = glGetUniformLocation(resources.maskprogram, "texsize");
+    GLuint positionAttrib = glGetAttribLocation(resources.maskprogram, "position");
 
     // Enable program and set up values
     glUseProgram(resources.maskprogram);
@@ -472,15 +482,15 @@ void renderMaskedRectangle(const glm::mat4 &modelMatrix, const glm::vec4 &color,
     glBindTexture(GL_TEXTURE_2D, frame->mask_tex);
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.vertex_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glEnableVertexAttribArray(positionAttrib);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, resources.element_buffer);
     glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
 }
 
@@ -509,12 +519,6 @@ void addVert(std::vector<vert> &verts, const std::vector<glm::vec4> &positions,
     glm::vec4 norm = norms.at(fv.n - 1);
     glm::vec2 texcoord = texcoords.at(fv.t - 1);
 
-    /*
-    std::cout << "v t n: " << fv.v << ' ' << fv.t << ' ' << fv.n << '\t'
-        << "norm: " << norm.x << ' ' << norm.y << ' ' << norm.z << '\t'
-        << "uv: " << texcoord.x << ' ' << texcoord.y << '\n';
-        */
-        
     vert v;
     v.pos[0] = pos[0]; v.pos[1] = pos[1]; v.pos[2] = pos[2]; v.pos[3] = pos[3];
     v.norm[0] = norm[0]; v.norm[1] = norm[1]; v.norm[2] = norm[2]; v.norm[3] = norm[3];
@@ -528,7 +532,7 @@ mesh createMesh(std::string objfile)
     std::ifstream file(objfile.c_str());
     if (!file)
     {
-        std::cerr << "Unable to open mesh file " << objfile << '\n';
+        logger->fatal() << "Unable to open mesh file " << objfile << '\n';
         exit(1);
     }
 
@@ -556,13 +560,13 @@ mesh createMesh(std::string objfile)
             continue;
         }
         else if (cmd == "g")
-            std::cout << "Ignoring 'g' command: " << buf << '\n';
+            logger->debug() << "Ignoring 'g' command: " << buf << '\n';
         else if (cmd == "s")
-            std::cout << "Ignoring 's' command: " << buf << '\n';
+            logger->debug() << "Ignoring 's' command: " << buf << '\n';
         else if (cmd == "o")
-            std::cout << "Ignoring 'o' command: " << buf << '\n';
+            logger->debug() << "Ignoring 'o' command: " << buf << '\n';
         else if (cmd == "usemtl")
-            std::cout << "Ignoring 'usemtl' command: " << buf << '\n';
+            logger->debug() << "Ignoring 'usemtl' command: " << buf << '\n';
         else if (cmd == "v")
         {
             ss >> a >> b >> c;
@@ -596,7 +600,7 @@ mesh createMesh(std::string objfile)
                 facevert f;
                 if (sscanf(facestr.c_str(), "%d/%d/%d", &f.v, &f.t, &f.n) != 3)
                 {
-                    std::cerr << "Error reading " << objfile << '\n';
+                    logger->fatal() << "Error reading " << objfile << '\n';
                     exit(1);
                 }
                 fc.fvs.push_back(f);
@@ -606,7 +610,7 @@ mesh createMesh(std::string objfile)
         }
         else
         {
-            std::cerr << "Unknown .obj definition: " << cmd << '\n';
+            logger->fatal() << "Unknown .obj definition: " << cmd << '\n';
             exit(1);
         }
     }
@@ -629,8 +633,6 @@ mesh createMesh(std::string objfile)
         }
     }
 
-    std::cout << "Loaded verts: " << verts.size() << '\n';
-
     mesh ret;
     // Now create a buffer to hold the data
     ret.data_buffer = make_buffer(GL_ARRAY_BUFFER, &verts.front(), sizeof(vert) * verts.size());
@@ -649,6 +651,10 @@ void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &co
     GLuint normalUniform = glGetUniformLocation(resources.meshprogram, "normalMatrix");
     GLuint colorUniform = glGetUniformLocation(resources.meshprogram, "color");
     GLuint lightPosUniform = glGetUniformLocation(resources.meshprogram, "lightpos");
+    // Attributes
+    GLuint positionAttrib = glGetAttribLocation(resources.meshprogram, "position");
+    GLuint normalAttrib   = glGetAttribLocation(resources.meshprogram, "normal");
+    GLuint texcoordAttrib = glGetAttribLocation(resources.meshprogram, "texcoord");
     // Enable program and set up values
     glUseProgram(resources.meshprogram);
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
@@ -659,20 +665,20 @@ void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &co
 
     // Bind data
     glBindBuffer(GL_ARRAY_BUFFER, m.data_buffer);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)(4 * sizeof(float)));
-    glEnableVertexAttribArray(2);
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)(8 * sizeof(float)));
+    glEnableVertexAttribArray(positionAttrib);
+    glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)0);
+    glEnableVertexAttribArray(normalAttrib);
+    glVertexAttribPointer(normalAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)(4 * sizeof(float)));
+    glEnableVertexAttribArray(texcoordAttrib);
+    glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)(8 * sizeof(float)));
 
     // Draw
     glDrawArrays(GL_TRIANGLES, 0, m.nverts);
 
     // Clean up
-    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(positionAttrib);
     glDisableVertexAttribArray(1);
-    glDisableVertexAttribArray(2);
+    glDisableVertexAttribArray(texcoordAttrib);
     glUseProgram(0);
 }
 
@@ -700,6 +706,8 @@ void renderParticles(const std::vector<particleData> &data)
 
     GLuint modelViewUniform = glGetUniformLocation(resources.particleprogram, "modelViewMatrix");
     GLuint projectionUniform = glGetUniformLocation(resources.particleprogram, "projectionMatrix");
+    GLuint positionAttrib = glGetAttribLocation(resources.particleprogram, "position");
+    GLuint colorAttrib = glGetAttribLocation(resources.particleprogram, "color");
 
     glUseProgram(resources.particleprogram);
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current()));
@@ -708,15 +716,15 @@ void renderParticles(const std::vector<particleData> &data)
     glBindBuffer(GL_ARRAY_BUFFER, resources.part_buffer);
     glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(particleData), &data.front(), GL_STREAM_DRAW);
 
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(particleData), 0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(particleData), (void *)(3 * sizeof(float)));
+    glEnableVertexAttribArray(positionAttrib);
+    glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(particleData), 0);
+    glEnableVertexAttribArray(colorAttrib);
+    glVertexAttribPointer(colorAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(particleData), (void *)(3 * sizeof(float)));
 
     glDrawArrays(GL_POINTS, 0, data.size());
 
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(positionAttrib);
+    glDisableVertexAttribArray(colorAttrib);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
 }

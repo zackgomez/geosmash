@@ -1,5 +1,6 @@
 #pragma once
 #include <SDL/SDL.h>
+#include "Logger.h"
 
 class Fighter;
 
@@ -52,5 +53,7 @@ private:
     controller_state state_;
 
     int ltrigAxis_, rtrigAxis_;
+
+    LoggerPtr logger_;
 };
 
