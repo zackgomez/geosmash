@@ -28,16 +28,22 @@ Controller::Controller(int controllerID) :
     // Xbox Gamepad (userspace driver) [#i where i>1] (xboxdrv) (hydralisk only)
     ltrigAxis_ = 5;
     rtrigAxis_ = 4;
+    dpadweAxis_ = 6;
+    dpadnsAxis_ = 7;
     // Xbox 360 Wireless Receiver (need to change some axis here)
     if (joystickName == "Xbox 360 Wireless Receiver")
     {
         ltrigAxis_ = 5;
         rtrigAxis_ = 2;
     }
+	// windows, set only rtrig axis, as both l and r trig are on this axis,
+	// just the +/-
 	if (joystickName == "Controller (Xbox 360 Wireless Receiver for Windows)")
 	{
 		rtrigAxis_ = 2;
+		dpadnsAxis_ = 5;
 	}
+
 }
 
 Controller::~Controller()
@@ -118,10 +124,17 @@ void Controller::update(float dt)
     state_.rbumper = newstate;
 
     // DPad
-    state_.dpadr = SDL_JoystickGetAxis(joystick_, 6) > 0;
-    state_.dpadl = SDL_JoystickGetAxis(joystick_, 6) < 0;
-    state_.dpadu = SDL_JoystickGetAxis(joystick_, 7) < 0;
-    state_.dpadd = SDL_JoystickGetAxis(joystick_, 7) > 0;
+#ifdef _MSC_VER
+    state_.dpadr = SDL_JoystickGetHat(joystick_, 0) == SDL_HAT_RIGHT;
+    state_.dpadl = SDL_JoystickGetHat(joystick_, 0) == SDL_HAT_LEFT;
+    state_.dpadu = SDL_JoystickGetHat(joystick_, 0) == SDL_HAT_UP;
+    state_.dpadd = SDL_JoystickGetHat(joystick_, 0) == SDL_HAT_DOWN;
+#else
+    state_.dpadr = SDL_JoystickGetAxis(joystick_, dpadweAxis_) > 0;
+    state_.dpadl = SDL_JoystickGetAxis(joystick_, dpadweAxis_) < 0;
+    state_.dpadu = SDL_JoystickGetAxis(joystick_, dpadnsAxis_) < 0;
+    state_.dpadd = SDL_JoystickGetAxis(joystick_, dpadnsAxis_) > 0;
+#endif
 }
 void Controller::clearPresses()
 {

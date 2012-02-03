@@ -157,6 +157,7 @@ AudioManager* AudioManager::get()
 void AudioManager::update(float dt) 
 {
     // Much ado about nothing
+	// TODO: need to drop finished sounds
 }
 
 void AudioManager::mute()

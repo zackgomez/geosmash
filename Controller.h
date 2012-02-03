@@ -53,6 +53,7 @@ private:
     controller_state state_;
 
     int ltrigAxis_, rtrigAxis_;
+	int dpadnsAxis_, dpadweAxis_;
 
     LoggerPtr logger_;
 };
