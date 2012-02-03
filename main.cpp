@@ -182,7 +182,7 @@ int initGraphics()
 
     if (!debug)
         SDL_ShowCursor(SDL_DISABLE);
-    SDL_WM_SetCaption("Geometry Smash 0.7", "geosmash");
+    SDL_WM_SetCaption("Geometry Smash 0.7 BUILT " __DATE__ " " __TIME__, "geosmash");
     // Set the viewport
     glViewport(0, 0, xres, yres);
 
