@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL/SDL.h>
 #include "Logger.h"
+#include <vector>
 
 class Fighter;
 
@@ -27,11 +28,15 @@ struct controller_state
     void clear();
 };
 
-
+//
+// Controller abstraction. Encapsulates details about the controller struct.
+// NOTE: controllerID_ must be in the range (0, max controllers]
+// If not, MenuState might not determine who presses start.
+// 
 class Controller
 {
 public:
-    Controller(int controllerID);
+    Controller(int controllerID, bool isKeyboard = false);
     ~Controller();
 
     // Does per frame controller updates...
@@ -48,8 +53,11 @@ public:
     // of the controller
     int getControllerID() const;
 
+	static bool keyboardPlayerExists(const std::vector<Controller*>);
+
 private:
     int controllerID_;
+	bool isKeyboard_;
     SDL_Joystick *joystick_;
 
     controller_state state_;
@@ -59,4 +67,3 @@ private:
 
     LoggerPtr logger_;
 };
-
