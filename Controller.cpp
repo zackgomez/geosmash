@@ -10,16 +10,23 @@ void controller_state::clear()
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 
-Controller::Controller(int controllerID) :
+Controller::Controller(int controllerID, bool isKeyboard) :
     controllerID_(controllerID),
-    joystick_(NULL)
+    joystick_(NULL),
+	isKeyboard_(isKeyboard)
 {
     logger_ = Logger::getLogger("Controller");
     // Clear the state
     state_.clear();
     // Get the current state
     update(0);
-
+	if (isKeyboard_) 
+	{
+		// No further setup is required
+		logger_->info() << "Opening joystick: Keyboard Controller\n";
+		return;
+	}
+	assert(controllerID > 0 && "attempted to ask SDL For a negative joystick!");
     std::string joystickName = SDL_JoystickName(controllerID);
     logger_->info() << "Opening joystick: " << joystickName << '\n';
 	joystick_ = SDL_JoystickOpen(controllerID);
@@ -60,6 +67,51 @@ void Controller::update(float dt)
 {
     // No presses
 	clearPresses();
+
+	if (isKeyboard_)
+	{
+		// Ask SDL for keyboard state we care about 
+		Uint8 *keystate = SDL_GetKeyState(NULL);
+		if ( keystate[SDLK_a] )
+		{
+			state_.buttona = true;
+			state_.pressa = true;
+		}
+		if ( keystate[SDLK_b] )
+		{
+			state_.buttonb = true;
+			state_.pressb = true;
+		}
+		if ( keystate[SDLK_y] )
+		{
+			state_.buttony = true;
+			state_.pressy = true;
+		}
+		if (keystate[SDLK_RETURN]) 
+		{
+			state_.pressstart = true;
+			state_.buttonstart = true;
+		}
+
+		// set controller direction
+		if (keystate[SDLK_LEFT])
+		{
+			state_.joyx = -1;
+		}
+		else if (keystate[SDLK_RIGHT])
+		{
+			state_.joyx = 1;
+		}
+		else if (keystate[SDLK_UP])
+		{
+			state_.joyy = 1;
+		}
+		else if (keystate[SDLK_DOWN])
+		{
+			state_.joyy = -1;
+		}
+		return;
+	}
 
     // temporary value for computing velocities
     float newval;
@@ -150,4 +202,14 @@ void Controller::clearPresses()
 int Controller::getControllerID() const
 {
     return controllerID_;
+}
+
+bool Controller::keyboardPlayerExists(const std::vector<Controller*> ctrls)
+{
+	for (size_t i = 0; i < ctrls.size(); i++) 
+	{
+		if (ctrls[i]->isKeyboard_) 
+			return true;
+	}
+	return false;
 }

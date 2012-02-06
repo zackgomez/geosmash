@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     if (!initLibs())
         exit(1);
 
-    if (initGraphics())
+    if (!initGraphics())
     {
         logger->fatal() << "Unable to initialize graphics resources\n";
         exit(1);
@@ -118,6 +118,19 @@ void mainloop()
     }
 }
 
+void addKeyboardController() 
+{
+	// Make sure to tell this controller that it's a keyboard ctrl
+	if (controllers.size() == MAX_PLAYERS)
+	{
+		return;
+	}
+	Controller *c = new Controller(controllers.size(), true);
+	controllers.push_back(c);
+}
+
+// Check for global mute, keyboard pause or exit, or if a keyboard player
+// is requested.
 void globalEvents()
 {
     SDL_Event event;
@@ -128,6 +141,11 @@ void globalEvents()
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
+            if (event.key.keysym.sym == SDLK_a)
+			{
+				// A developer requested a keyboard controller
+				addKeyboardController();
+			}
             if (event.key.keysym.sym == SDLK_m)
                 AudioManager::get()->mute();
                 AudioManager::get()->pauseSoundtrack();
@@ -191,7 +209,7 @@ int initGraphics()
     FrameManager::get()->loadFile("frames/charlie.frames");
     FrameManager::get()->loadFile("frames/global.frames");
 
-    return 0;
+    return 1;
 }
 
 void cleanup()
