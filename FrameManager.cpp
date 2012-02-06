@@ -10,14 +10,14 @@ FrameManager * FrameManager::get()
 }
 
 void FrameManager::renderFrame(const glm::mat4 &trans, const glm::vec4 &col,
-        const std::string &name)
+        const std::string &name) const
 {
     if (frames_.find(name) == frames_.end())
     {
         logger_->error() << "Unable to find frame " << name << '\n';
         assert(false);
     }
-    const anim_frame *frame = frames_[name];
+    const anim_frame *frame = frames_.find(name)->second;
 
     glm::mat4 finalTransform = glm::translate(
             glm::scale(trans, glm::vec3(frame->w*5, frame->h*5, 1.0f)),
@@ -43,6 +43,12 @@ void FrameManager::loadFile(const std::string &filename)
         logger_->info() << "Loaded frame " << frm->id << '\n';
         addFrame(frm);
     }
+}
+
+Keyframe FrameManager::getPose(const std::string &poseName) const
+{
+    // TODO
+    return Keyframe();
 }
 
 void FrameManager::addFrame(const anim_frame *frame)

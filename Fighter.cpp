@@ -55,12 +55,12 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     attackMap_["upTilt"] = loadAttack<FighterAttack>("upTiltAttack", g, "GroundUptilt");
     attackMap_["upTilt"]->setHitboxFrame("UpTiltHitbox");
 
-    // Load air attack special as it uses a different class
     attackMap_["airNeutral"] = loadAttack<FighterAttack>("airNeutralAttack", a, "AirNeutral");
     attackMap_["airNeutral"]->setHitboxFrame("AirNeutralHitbox");
     attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
     attackMap_["airFront"]->setHitboxFrame("AirFronttiltHitbox");
-    attackMap_["airBack"] = loadAttack<FighterAttack>("airBackAttack", a, "AirBacktilt");
+    attackMap_["airFront"]->setTwinkle(true);
+    //attackMap_["airBack"] = loadAttack<FighterAttack>("airBackAttack", a, "AirBacktilt");
     attackMap_["airDown"] = loadAttack<FighterAttack>("airDownAttack", a, "AirDowntilt");
     attackMap_["airDown"]->setHitboxFrame("AirDowntiltHitbox");
     attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
@@ -95,10 +95,10 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     attackMap_["grab"] = loadAttack<FighterAttack>("grabAttack", "", "GrabAttempt");
     attackMap_["grab"]->setStartSound("grabattempt");
     //attackMap_["grab"]->setHitboxFrame("GrabbingHitbox");
+    
 
-
-    // Set up the twinkle moves
-    attackMap_["airFront"]->setTwinkle(true);
+    // Create the renderer
+    renderer_ = new BixelFighterRenderer();
 
     state_ = 0;
 }
@@ -112,6 +112,7 @@ void Fighter::setRespawnLocation(float x, float y)
 Fighter::~Fighter()
 {
     delete state_;
+    delete renderer_;
     // Clean up attacks
     std::map<std::string, FighterAttack *>::iterator it;
     for (it = attackMap_.begin(); it != attackMap_.end(); it++)
@@ -334,7 +335,7 @@ void Fighter::addLives(int delta)
 }
 
 
-void Fighter::renderHelper(float dt, const std::string &frameName, const glm::vec3 &color,
+void Fighter::renderHelper(float dt, const glm::vec3 &color,
         const glm::mat4 &postTrans)
 {
     /*
@@ -342,15 +343,21 @@ void Fighter::renderHelper(float dt, const std::string &frameName, const glm::ve
             id_, damage_, pos_.x, pos_.y, vel_.x, vel_.y, accel_.x, accel_.y, attack_ != 0, dir_);
             */
 
+    std::string frameName = state_->getFrameName();
+    if (attack_)
+        frameName = attack_->getFrameName();
+
     // Cache the frame name, so AI (or anybody) can request the name of the
     // last drawn frame
     lastFrameName_ = frameName;
+
     // Draw body
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(pos_.x, pos_.y, 0.0)),
             glm::vec3(dir_, 1.0f, 1.0f));
 
-    FrameManager::get()->renderFrame(transform * postTrans, glm::vec4(color, 0.25f), frameName);
+    renderer_->render(transform * postTrans, glm::vec4(color, 0.25f), frameName, dt);
+    //FrameManager::get()->renderFrame(transform * postTrans, glm::vec4(color, 0.25f), frameName);
 
     // Check for rendering hitbox
     if (getParam("debug.drawHitbox") != 0.f)
@@ -376,6 +383,16 @@ AttackClass* Fighter::loadAttack(std::string attackName, const std::string &audi
 
 }
 
+// ----------------------------------------------------------------------------
+// BixelFighterRenderer
+// ----------------------------------------------------------------------------
+
+void BixelFighterRenderer::render(const glm::mat4 &transform, const glm::vec4 &color,
+        const std::string &frameName, float dt) const
+{
+    // Frame manager draws frames a specific size, so we don't need to scale
+    FrameManager::get()->renderFrame(transform, color, frameName);
+}
 
 
 // ----------------------------------------------------------------------------

@@ -23,6 +23,7 @@ public:
 
 class LimpFighter;
 struct UnlimpCallback;
+class FighterRenderer;
 
 class Fighter : public GameEntity
 {
@@ -103,6 +104,7 @@ private:
     std::string username_;
 
     std::string lastFrameName_;
+    FighterRenderer *renderer_;
 
     // Current attack members
     FighterAttack* attack_;
@@ -115,7 +117,7 @@ private:
 
     // ---- Helper functions ----
     void stateWrapper(FighterState *fs);
-    void renderHelper(float dt, const std::string &frameName, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
+    void renderHelper(float dt, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
     // Loads an attack from the params using the attackName.param syntax
     template<class AttackClass>
     AttackClass* loadAttack(std::string attackName, const std::string &audioID,
@@ -140,6 +142,26 @@ private:
 
     friend class MovingAttack;
     friend class DashAttack;
+};
+
+// Interface for rendering a fighter in various states
+class FighterRenderer
+{
+public:
+    virtual ~FighterRenderer() { }
+
+    virtual void render(const glm::mat4 &transform, const glm::vec4 &color,
+            const std::string &frameName, float dt) const = 0;
+};
+
+class BixelFighterRenderer : public FighterRenderer
+{
+public:
+    BixelFighterRenderer() { }
+    virtual ~BixelFighterRenderer() { }
+
+    virtual void render(const glm::mat4 &transform, const glm::vec4 &color,
+            const std::string &frameName, float dt) const;
 };
 
 // Interface exposed when a fighter goes limp.  Allows direct control of the

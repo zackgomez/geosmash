@@ -50,6 +50,11 @@ void FighterState::update(float dt)
     invincTime_ -= dt;
 }
 
+std::string FighterState::getFrameName() const
+{
+    return frameName_;
+}
+
 FighterState* FighterState::calculateHitResult(const Attack *attack)
 {
     // Cancel any current attack
@@ -239,10 +244,7 @@ void AirStunnedState::render(float dt)
     // flash the player 
     glm::vec3 color = muxByTime(fighter_->color_, stunTime_);
 
-    std::string fname = frameName_;
-    if (fighter_->attack_)
-        fname = fighter_->attack_->getFrameName();
-    fighter_->renderHelper(dt, fname, color);
+    fighter_->renderHelper(dt, color);
 }
 
 FighterState* AirStunnedState::collisionWithGround(const rectangle &ground, bool collision,
@@ -579,26 +581,21 @@ void GroundState::render(float dt)
             jumpTime_, dashTime_, waitTime_, ducking_);
             */
 
-    std::string fname = frameName_;
     if (dashing_)
-        fname = "GroundRunning";
+        frameName_ = "GroundRunning";
     if (dashing_ && waitTime_ > 0.f)
-        fname = "DashChange";
+        frameName_ = "DashChange";
 
     if (ducking_)
-        fname = "Ducking";
+        frameName_ = "Ducking";
     // if not ducking and moving, then walking
     else if (fabs(fighter_->vel_.x) > 0)
-        fname = "GroundWalking";
-
-    // If attacking then attack frame
-    if (fighter_->attack_)
-        fname = fighter_->attack_->getFrameName();
+        frameName_ = "GroundWalking";
 
     glm::vec3 color = fighter_->color_;
     if (invincTime_ > 0.f)
         color = muxByTime(color, invincTime_);
-    fighter_->renderHelper(dt, fname, color);
+    fighter_->renderHelper(dt, color);
 }
 
 FighterState* GroundState::collisionWithGround(const rectangle &ground, bool collision,
@@ -719,19 +716,18 @@ void BlockingState::render(float dt)
 
     glm::mat4 trans(1.f);
     glm::vec3 color = fighter_->color_;
-    std::string fname = frameName_;
     if (dazeTime_ > 0.f)
     {
-        fname = "Dazed";
+        frameName_ = "Dazed";
         color = muxByTime(color, dazeTime_);
     }
     if (stepTime_ > getParam("stepdodge.cooldown"))
     {
-        fname = "StepDodge";
+        frameName_ = "StepDodge";
         color = muxByTime(color, stepTime_);
         trans = glm::translate(trans, glm::vec3(0, 0, getParam("stepdodge.zoffset")));
     }
-    fighter_->renderHelper(dt, fname, color, trans);
+    fighter_->renderHelper(dt, color, trans);
 
 
     // Draw shield
@@ -932,10 +928,7 @@ void AirNormalState::render(float dt)
     printf("AIR NORMAL | JumpT: %.3f  Can2ndJump: %d || ",
             jumpTime_, canSecondJump_);
             */
-    std::string fname = frameName_;
-    if (fighter_->attack_)
-        fname = fighter_->attack_->getFrameName();
-    fighter_->renderHelper(dt, fname, fighter_->color_);
+    fighter_->renderHelper(dt, fighter_->color_);
 }
 
 FighterState* AirNormalState::collisionWithGround(const rectangle &ground, bool collision,
@@ -1090,10 +1083,6 @@ void CounterState::render(float dt)
             t_, ground_);
             */
 
-    std::string fname = frameName_;
-    if (fighter_->attack_)
-        fname = fighter_->attack_->getFrameName();
-
     glm::vec3 color = fighter_->color_;
     if (t_ > getParam(pre_ + "startup")
             && t_ < getParam(pre_ + "startup")
@@ -1104,7 +1093,7 @@ void CounterState::render(float dt)
         color = glm::vec3(0.8f, 0.8f, 0.8f);
     }
 
-    fighter_->renderHelper(dt, fname, color);
+    fighter_->renderHelper(dt, color);
 }
 
 //// -------------------- UP SPECIAL STATE ------------------------------
@@ -1140,7 +1129,7 @@ void UpSpecialState::render(float dt)
     printf("UP SPECIAL | || ");
     */
     assert(fighter_->attack_);
-    fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
+    fighter_->renderHelper(dt, fighter_->getColor());
 }
 
 FighterState* UpSpecialState::collisionWithGround(const rectangle &ground, bool collision,
@@ -1203,7 +1192,7 @@ void DashSpecialState::render(float dt)
             ground_);
             */
     assert(fighter_->attack_);
-    fighter_->renderHelper(dt, fighter_->attack_->getFrameName(), fighter_->getColor());
+    fighter_->renderHelper(dt, fighter_->getColor());
 }
 
 void DashSpecialState::update(float dt)
@@ -1352,7 +1341,7 @@ void GrabbingState::render(float dt)
     printf("GRABBING | Victim: %d  holdTimeLeft: %f || ",
             victim_ != NULL, holdTimeLeft_);
             */
-    fighter_->renderHelper(dt, frameName_, fighter_->getColor());
+    fighter_->renderHelper(dt, fighter_->getColor());
 }
 
 FighterState* GrabbingState::collisionWithGround(const rectangle &ground, bool collision,
@@ -1480,7 +1469,7 @@ void DodgeState::render(float dt)
             t_, invincTime_, dodgeTime_);
             */
     // Just render the fighter, but flashing
-    fighter_->renderHelper(dt, frameName_, color,
+    fighter_->renderHelper(dt, color,
             glm::rotate(glm::mat4(1.f), -angle, glm::vec3(0,0,1)));
 }
 
@@ -1515,6 +1504,7 @@ LedgeGrabState::LedgeGrabState(Fighter *f) :
     fighter_->lastHitBy_ = -1;
     invincTime_ = getParam("ledgeGrab.grabInvincTime");
     waitTime_ = getParam("ledgeGrab.inputDelay");
+    frameName_ = "LedgeGrab";
 }
 
 FighterState* LedgeGrabState::processInput(controller_state &controller, float dt)
@@ -1620,7 +1610,7 @@ void LedgeGrabState::render(float dt)
     if (invincTime_ > 0)
         color = muxByTime(color, invincTime_);
 
-    fighter_->renderHelper(dt, "LedgeGrab", color);
+    fighter_->renderHelper(dt, color);
 }
 
 FighterState* LedgeGrabState::collisionWithGround(const rectangle &ground, bool collision,
@@ -1698,7 +1688,7 @@ void LimpState::render(float dt)
             next_ != NULL);
             */
     // Just render the frame
-    fighter_->renderHelper(dt, frameName_, fighter_->getColor(), pretrans_);
+    fighter_->renderHelper(dt, fighter_->getColor(), pretrans_);
 }
 
 FighterState* LimpState::collisionWithGround(const rectangle &ground, bool collision,
@@ -1805,7 +1795,7 @@ void RespawnState::render(float dt)
     printf("RESPAWN | t: %f || ", t_);
     */
     // Just render the fighter, but slightly lighter
-    fighter_->renderHelper(dt, frameName_, 1.6f * fighter_->color_);
+    fighter_->renderHelper(dt, 1.6f * fighter_->color_);
 }
 
 FighterState* RespawnState::hitByAttack(const Attack *)

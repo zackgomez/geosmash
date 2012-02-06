@@ -37,6 +37,8 @@ public:
     // This function is the value returned from fighter::canBeHit
     virtual bool canBeHit() const;
 
+    virtual std::string getFrameName() const;
+
 protected:
     Fighter *fighter_;
     LoggerPtr logger_;
