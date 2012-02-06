@@ -42,6 +42,8 @@ public:
 	// Clears all the press variables, useful for transitions
 	void clearPresses();
 
+
+
     // Gets a unique identifier for this controller, roughly the player #
     // of the controller
     int getControllerID() const;

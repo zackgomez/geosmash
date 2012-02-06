@@ -41,7 +41,6 @@ Controller::Controller(int controllerID) :
 	if (joystickName == "Controller (Xbox 360 Wireless Receiver for Windows)")
 	{
 		rtrigAxis_ = 2;
-		dpadnsAxis_ = 5;
 	}
 
 }
