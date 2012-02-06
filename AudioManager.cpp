@@ -25,14 +25,14 @@ void AudioManager::playSound(const std::string &soundIdentifier)
         return;
 	}
 
-	std::string fname = "sfx/" + soundIdentifier + ".aif";
+	std::string fname = "sfx/" + soundIdentifier + ".ogg";
 	
 	// Grab volume (optionally scaled) from params
     float volume = getParam("sfx.volume");
-    logger_->debug() << "Looking for param: " << "sfx." + fname + ".volume\n";
-    if (ParamReader::get()->hasParam("sfx." + fname + ".volume")) 
+    logger_->debug() << "Looking for param: " << "sfx." + soundIdentifier + ".volume\n";
+    if (ParamReader::get()->hasParam("sfx." + soundIdentifier + ".volume")) 
 	{
-        volume *= getParam("sfx." + fname + ".volume");
+        volume *= getParam("sfx." + soundIdentifier + ".volume");
 	}
 	volume /= 100.0f; // Scale it to be between 0 and 1
 	irrklang::ISound *sound = engine->play2D(fname.c_str(), false, true, true);
@@ -40,7 +40,7 @@ void AudioManager::playSound(const std::string &soundIdentifier)
 	{
 		return;
 	}
-	sound->setVolume(volume / 100.0f);
+	sound->setVolume(volume);
 	sound->setIsPaused(false);
     
 }
@@ -94,10 +94,10 @@ void AudioManager::playSound(const std::string &audioID,
     // TODO: MAKE THIS ASSERTION VALID! (stage hazard hits)
     //assert(vol >= V1 && vol <= V2);
     float volume = getParam("sfx.volume");
-    logger_->debug() << "Looking for param: " << "sfx." + fname + ".volume\n";
-    if (ParamReader::get()->hasParam("sfx." + fname + ".volume")) 
+    logger_->debug() << "Looking for param: " << "sfx." + audioID + ".volume\n";
+    if (ParamReader::get()->hasParam("sfx." + audioID + ".volume")) 
 	{
-        volume *= getParam("sfx." + fname + ".volume");
+        volume *= getParam("sfx." + audioID + ".volume");
 	}
 	sound->setVolume((volume * vol/100.f) / 100);
 	sound->setIsPaused(false);

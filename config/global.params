@@ -117,5 +117,7 @@ sfx.projectile.volume 0.5
 sfx.shieldon.volume 0.5
 sfx.shieldhit.volume 0.6
 sfx.counterhit.volume 0.5
+sfx.grabattempt.volume 0.25
+sfx.throw.volume 0.25
 worldWidth   1500
 worldHeight  800
