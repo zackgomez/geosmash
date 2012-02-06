@@ -191,6 +191,10 @@ FighterState* FighterState::performBMove(const controller_state &controller, boo
         fighter_->attack_->start();
     }
 
+    // Make sure we're facing the right direction
+    if (fabs(controller.joyx) > getParam("input.deadzone"))
+        fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+
     return next;
 }
 
@@ -822,6 +826,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
         // Don't let the player increase the velocity past a certain speed
         if (fighter_->vel_.x * controller.joyx <= 0 || fabs(fighter_->vel_.x) < getParam("jumpAirSpeed"))
             fighter_->vel_.x += controller.joyx * getParam("airForce") * dt;
+        // Set the direction
         fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
     }
     // Fast falling
@@ -1249,6 +1254,7 @@ GrabbingState::GrabbingState(Fighter *f) :
     holdTimeLeft_(-1)
 {
     frameName_ = "GrabAttempt";
+    assert(!fighter_->attack_);
     // Set up attack for collision detection
     fighter_->attack_ = fighter_->attackMap_["grab"]->clone();
     fighter_->attack_->setFighter(f);
@@ -1331,6 +1337,9 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
                     fighter_->getPlayerID(), fighter_->getTeamID(),
                     ""); // FIXME: No audio id for now
             victim_->hit(&thrw);
+
+            // Play the throw sound
+            AudioManager::get()->playSound("throw");
         }
     }
 

@@ -91,8 +91,9 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     attackMap_["upSmash"]->setTwinkle(true);
     attackMap_["upSmash"]->setHitboxFrame("UpSmashHitbox");
 
-    // FIXME No noise for grab hit, or hitbox frame
+    // FIXME no hitbox frame
     attackMap_["grab"] = loadAttack<FighterAttack>("grabAttack", "", "GrabAttempt");
+    attackMap_["grab"]->setStartSound("grabattempt");
     //attackMap_["grab"]->setHitboxFrame("GrabbingHitbox");
 
 
