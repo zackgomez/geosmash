@@ -220,9 +220,12 @@ GhostAIPlayer::GhostAIPlayer(const Fighter *f) :
         actionFrames_.insert(line);
     }
 
-    // TODO load the Case Base
+    // load the Case Base
     std::fstream casefile("casebase");
     readCaseBase(casefile);
+
+    // fill in the action -> controller state map
+    fillActionMap();
 }
 
 GhostAIPlayer::~GhostAIPlayer()
@@ -237,14 +240,27 @@ controller_state GhostAIPlayer::getState() const
 void GhostAIPlayer::update(float dt)
 {
     const std::string curframe = fighter_->getFrameName();
+    cs_.clear();
+
     // Only do updates when we're in an state to perform an action
     if (actionFrames_.count(curframe))
     {
         logger_->debug() << "Looking for state similar to: " << cgs_ << '\n';
         // Search for the closest game state we've seen before
+        const std::string action = getNextAction();
 
-        // Set controller state according to action
-        cs_.clear();
+        if (actionMap_.find(action) == actionMap_.end())
+        {
+            logger_->warning() << "Didn't find controller state for action: '" << action << "'\n";
+            cs_.clear();
+        }
+        else
+        {
+            cs_ = actionMap_.find(action)->second;
+            // Set the appropriate x direction
+            cs_.joyx *= glm::sign(cgs_.relpos.x);
+            cs_.joyxv *= glm::sign(cgs_.relpos.x);
+        }
     }
 }
 
@@ -297,7 +313,48 @@ void GhostAIPlayer::readCaseBase(std::istream &is)
                 assert(false && "playerid not recognized");
         }
     }
-};
+}
+
+void GhostAIPlayer::fillActionMap()
+{
+    controller_state cs;
+
+#define _INSERT_STATE(fname, ba, pa, bb, pb, by, py, bx, px, jx, jy) \
+    cs.clear(); \
+    cs.buttona = ba; \
+    cs.pressa = pa; \
+    cs.buttony = by; \
+    cs.pressy  = py; \
+    cs.pressb = pb; \
+    cs.buttonb = bb; \
+    cs.buttonx = bx; \
+    cs.pressx = px; \
+    cs.joyx = jx; \
+    cs.joyy = jy; \
+    actionMap_[fname] = cs;
+
+    // TODO add duration
+    _INSERT_STATE("AirNormalSecondJump", 0, 0, 0, 0, 1, 1, 0, 0, 0, 0);
+    _INSERT_STATE("AirNormal", 0, 0, 0, 0, 1, 1, 0, 0, 0, 0);
+    _INSERT_STATE("AirNormalHop", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
+    _INSERT_STATE("AirNormalFastFall", 0, 0, 0, 0, 0, 0, 0, 0, 0, -1);
+
+    _INSERT_STATE("GroundNeutral", 1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+    _INSERT_STATE("GroundSidetilt", 1, 1, 0, 0, 0, 0, 0, 0, 1, 0);
+    _INSERT_STATE("GroundDowntilt", 1, 1, 0, 0, 0, 0, 0, 0, 0, -1);
+    _INSERT_STATE("GroundUptilt", 1, 1, 0, 0, 0, 0, 0, 0, 0, 1);
+
+    _INSERT_STATE("AirNeutral", 1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+    _INSERT_STATE("AirFronttilt", 1, 1, 0, 0, 0, 0, 0, 0, 1, 0);
+    _INSERT_STATE("AirDowntilt", 1, 1, 0, 0, 0, 0, 0, 0, 0, -1);
+    _INSERT_STATE("AirUptilt", 1, 1, 0, 0, 0, 0, 0, 0, 0, 1);
+
+    _INSERT_STATE("UpSpecial", 0, 0, 1, 1, 0, 0, 0, 0, 0, 1);
+    _INSERT_STATE("DashSpecial", 0, 0, 1, 1, 0, 0, 0, 0, 1, 0);
+
+    // Blank state, blank controller
+    _INSERT_STATE("", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+}
 
 CasePlayerState GhostAIPlayer::fighter2cps(const Fighter *f)
 {
@@ -346,11 +403,69 @@ CaseGameState GhostAIPlayer::cps2cgs(const CasePlayerState &me,
     cgs.enemydamage = enemy.damage;
     cgs.enemyhitbox = enemy.hasAttack;
 
+    // TODO read from file for these vulnerable states
     const std::string enemyFrame = enemy.fname;
     cgs.enemyvulnerable = enemyFrame != "Blocking" && enemyFrame != "GroundRoll"
         && enemyFrame != "StepDodge";
 
     return cgs;
+}
+
+std::string GhostAIPlayer::getNextAction() const
+{
+    std::string action = "";
+    CaseGameState best;
+    float bestScore = -HUGE_VAL;
+    const float scoreThresh = -HUGE_VAL;
+
+    std::map<CaseGameState, std::string>::const_iterator it;
+    for (it = caseBase_.begin(); it != caseBase_.end(); it++)
+    {
+        float curScore = caseHeuristic(cgs_, it->first);
+        if (curScore > bestScore && curScore > scoreThresh)
+        {
+            best = it->first;
+            action = it->second;
+            bestScore = curScore;
+        }
+    }
+
+    logger_->debug() << "Found best matching case (" << bestScore << "): " << best << '\n';
+    logger_->debug() << "Calculated action: '" << action << "'\n";
+    
+    return action;
+}
+
+float GhostAIPlayer::caseHeuristic(const CaseGameState &cur, const CaseGameState &ref)
+{
+    const float posWeight = 1.0f;
+    const float velWeight = 0.03f;
+    const float damageWeight = 1.0f;
+    const float vulnerableWeight = 200.f;
+    const float hitboxWeight = 100.f;
+
+    float score = 0.f;
+
+    // If not the same frame, do not pick
+    if (cur.myframe != ref.myframe) return -HUGE_VAL;
+
+    float relXDist = fabs(cur.relpos.x - ref.relpos.x);
+    float relYDist = fabs(cur.relpos.y - ref.relpos.y);
+
+    float relXVel  = fabs(cur.relvel.x - ref.relvel.x);
+    float relYVel  = fabs(cur.relvel.y - ref.relvel.y);
+
+    float damageDiff = fabs(cur.enemydamage - ref.enemydamage);
+    bool vulnerable = cur.enemyvulnerable == ref.enemyvulnerable;
+    bool hitbox = cur.enemyhitbox == ref.enemyhitbox;
+
+    score -= posWeight * (relXDist + relYDist);
+    score -= velWeight * (relXVel + relYVel);
+    score -= damageWeight * damageDiff;
+    score -= vulnerableWeight * vulnerable;
+    score -= hitboxWeight * hitbox;
+
+    return score;
 }
 
 std::ostream & operator<<(std::ostream &os, const glm::vec2 &vec)

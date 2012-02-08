@@ -140,16 +140,23 @@ public:
 private:
     // Helper functions
     void readCaseBase(std::istream &is);
+    static CasePlayerState readCPS(const std::string &line);
+    void fillActionMap();
 
     static CasePlayerState fighter2cps(const Fighter *f);
-    static CasePlayerState readCPS(const std::string &line);
     static CaseGameState cps2cgs(const CasePlayerState &me, const CasePlayerState &enemy);
+
+    // Returns an empty string if the player should do nothing/continue doing
+    // what they're doing
+    std::string getNextAction() const;
+    static float caseHeuristic(const CaseGameState &cur, const CaseGameState &ref);
 
     // Data Members
     controller_state cs_;
 
     std::set<std::string> actionFrames_;
     std::map<CaseGameState, std::string> caseBase_;
+    std::map<std::string, controller_state> actionMap_;
     CaseGameState cgs_;
 
     LoggerPtr logger_;
