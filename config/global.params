@@ -1,6 +1,7 @@
 debug.drawHitbox    0
 debug.resolution.x  1280
 debug.resolution.y  720
+debug.saveghost     0
 
 # -------------------
 # - GAMEPLAY PARAMS -

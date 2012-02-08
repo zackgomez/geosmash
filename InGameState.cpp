@@ -89,9 +89,9 @@ InGameState::InGameState(const std::vector<Player *> &players,
     // Start of match time
     startTime_ = SDL_GetTicks();
 
-    // TODO make this based on some sort of flag/param
-    // Add a ghost ai learning listener
-    listeners_.push_back(new GhostAIRecorder());
+    // Add a ghost ai learning listener if specified
+    if (getParam("debug.saveghost"))
+        listeners_.push_back(new GhostAIRecorder());
     // Add players as listeners
     for (size_t i = 0; i < players_.size(); i++)
         listeners_.push_back(players_[i]);
