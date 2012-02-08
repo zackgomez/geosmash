@@ -26,7 +26,7 @@ Controller::Controller(int controllerID, bool isKeyboard) :
 		logger_->info() << "Opening joystick: Keyboard Controller\n";
 		return;
 	}
-	assert(controllerID > 0 && "attempted to ask SDL For a negative joystick!");
+	assert(controllerID >= 0 && "attempted to ask SDL For a negative joystick!");
     std::string joystickName = SDL_JoystickName(controllerID);
     logger_->info() << "Opening joystick: " << joystickName << '\n';
 	joystick_ = SDL_JoystickOpen(controllerID);
@@ -67,49 +67,11 @@ void Controller::update(float dt)
     // No presses
 	clearPresses();
 
+    // Deal with keyboard
 	if (isKeyboard_)
 	{
-		// Ask SDL for keyboard state we care about 
-		Uint8 *keystate = SDL_GetKeyState(NULL);
-		if ( keystate[SDLK_a] )
-		{
-			state_.buttona = true;
-			state_.pressa = true;
-		}
-		if ( keystate[SDLK_b] )
-		{
-			state_.buttonb = true;
-			state_.pressb = true;
-		}
-		if ( keystate[SDLK_y] )
-		{
-			state_.buttony = true;
-			state_.pressy = true;
-		}
-		if (keystate[SDLK_RETURN]) 
-		{
-			state_.pressstart = true;
-			state_.buttonstart = true;
-		}
-
-		// set controller direction
-		if (keystate[SDLK_LEFT])
-		{
-			state_.joyx = -1;
-		}
-		else if (keystate[SDLK_RIGHT])
-		{
-			state_.joyx = 1;
-		}
-		else if (keystate[SDLK_UP])
-		{
-			state_.joyy = 1;
-		}
-		else if (keystate[SDLK_DOWN])
-		{
-			state_.joyy = -1;
-		}
-		return;
+        keyboardUpdate();
+        return;
 	}
 
     // temporary value for computing velocities
@@ -201,6 +163,50 @@ void Controller::clearPresses()
 int Controller::getControllerID() const
 {
     return controllerID_;
+}
+
+void Controller::keyboardUpdate()
+{
+    // Ask SDL for keyboard state we care about 
+    Uint8 *keystate = SDL_GetKeyState(NULL);
+    if ( keystate[SDLK_a] )
+    {
+        state_.buttona = true;
+        state_.pressa = true;
+    }
+    if ( keystate[SDLK_b] )
+    {
+        state_.buttonb = true;
+        state_.pressb = true;
+    }
+    if ( keystate[SDLK_y] )
+    {
+        state_.buttony = true;
+        state_.pressy = true;
+    }
+    if (keystate[SDLK_RETURN]) 
+    {
+        state_.pressstart = true;
+        state_.buttonstart = true;
+    }
+
+    // set controller direction
+    if (keystate[SDLK_LEFT])
+    {
+        state_.joyx = -1;
+    }
+    else if (keystate[SDLK_RIGHT])
+    {
+        state_.joyx = 1;
+    }
+    else if (keystate[SDLK_UP])
+    {
+        state_.joyy = 1;
+    }
+    else if (keystate[SDLK_DOWN])
+    {
+        state_.joyy = -1;
+    }
 }
 
 bool Controller::keyboardPlayerExists(const std::vector<Controller*> ctrls)

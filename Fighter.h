@@ -164,6 +164,19 @@ public:
             const std::string &frameName, float dt) const;
 };
 
+class Skeleton;
+class SkeletonFighterRenderer : public FighterRenderer
+{
+public:
+    SkeletonFighterRenderer();
+    virtual ~SkeletonFighterRenderer();
+
+    virtual void render(const glm::mat4 &transform, const glm::vec4 &color,
+            const std::string &frameName, float dt) const;
+private:
+    Skeleton *skeleton_;
+};
+
 // Interface exposed when a fighter goes limp.  Allows direct control of the
 // fighter.
 class LimpFighter

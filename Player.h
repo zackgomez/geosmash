@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <glm/glm.hpp>
+#include <set>
 #include "Controller.h"
 #include "InGameState.h"
 #include "Logger.h"
@@ -96,18 +97,9 @@ private:
     Controller *controller_;
 };
 
-struct CasePlayerState
-{
-    glm::vec2 pos, vel;
-    std::string frame;
-    float damage;
-    float dir;
-    bool hitbox;
-};
-
 struct CaseGameState
 {
-    glm::vec2 relpos, relvel;
+    glm::vec2 abspos, relpos, relvel;
     std::string myframe;
     bool facing;
 
@@ -115,6 +107,8 @@ struct CaseGameState
     bool enemyhitbox;
     bool enemyvulnerable;
 };
+
+std::ostream& operator<<(std::ostream &os, const CaseGameState &cgs);
 
 class GhostAIPlayer : public Player
 {
@@ -132,6 +126,9 @@ public:
 
 private:
     controller_state cs_;
+
+    std::set<std::string> actionFrames_;
+    CaseGameState cgs_;
 
     LoggerPtr logger_;
 };

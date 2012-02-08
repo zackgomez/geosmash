@@ -203,11 +203,24 @@ void AIPlayer::updateListener(const std::vector<Fighter *> &fs)
 //----------------------------
 // Ghost AI Player
 //----------------------------
+
 GhostAIPlayer::GhostAIPlayer(const Fighter *f) :
     Player(f)
 {
     logger_ = Logger::getLogger("GhostAIPlayer");
     cs_.clear();
+
+    // Load the action frames
+    std::fstream actionfile("trainingdata/actionframes.txt");
+    assert(actionfile);
+    std::string line;
+    while (std::getline(actionfile, line))
+    {
+        logger_->debug() << "Adding " << line << " as an action state.\n";
+        actionFrames_.insert(line);
+    }
+
+    // TODO load the Case Base
 }
 
 GhostAIPlayer::~GhostAIPlayer()
@@ -221,13 +234,50 @@ controller_state GhostAIPlayer::getState() const
 
 void GhostAIPlayer::update(float dt)
 {
-    cs_.clear();
+    const std::string curframe = fighter_->getFrameName();
+    // Only do updates when we're in an state to perform an action
+    if (actionFrames_.count(curframe))
+    {
+        // TODO
+        // Search for the closest game state we've seen before
+
+        logger_->debug() << "Looking for state similar to: " << cgs_ << '\n';
+
+        cs_.clear();
+    }
 }
 
 void GhostAIPlayer::updateListener(const std::vector<Fighter *> &fighters)
 {
     assert(fighters.size() == 2);
 
+    Fighter *other = fighters[!fighter_->getPlayerID()];
+
     // calculate state
+    cgs_.abspos = fighter_->getPosition();
+    cgs_.relpos = other->getPosition() - fighter_->getPosition();
+    cgs_.relvel = other->getVelocity() - fighter_->getVelocity();
+    cgs_.myframe = fighter_->getFrameName();
+    cgs_.facing = glm::sign(cgs_.relpos.x) == fighter_->getDirection();
+    cgs_.enemydamage = other->getDamage();
+    cgs_.enemyhitbox = other->hasAttack();
+
+    const std::string enemyFrame = other->getFrameName();
+    cgs_.enemyvulnerable = enemyFrame != "Blocking" && enemyFrame != "GroundRoll"
+        && enemyFrame != "StepDodge";
 }
 
+std::ostream & operator<<(std::ostream &os, const glm::vec2 &vec)
+{
+    os << '[' << vec.x << ' ' << vec.y << ']';
+    return os;
+}
+
+std::ostream & operator<<(std::ostream &os, const CaseGameState &cgs)
+{
+    os  << cgs.abspos << ' ' << cgs.relpos << ' ' << cgs.relvel << ' '
+        << cgs.myframe << ' ' << cgs.facing << ' ' << cgs.enemydamage << ' '
+        << cgs.enemyhitbox << ' ' << cgs.enemyvulnerable;
+
+    return os;
+}

@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include "MatrixStack.h"
+#include "kiss-skeleton.h"
 
 struct anim_frame;
 
@@ -46,3 +47,9 @@ void setCamera(const glm::vec3 &pos);
 // The model matrix is passed in to the render call
 
 
+class GeosmashBoneRenderer : public BoneRenderer
+{
+public:
+    virtual void operator() (const glm::mat4 &transform, const Bone* b);
+private:
+};

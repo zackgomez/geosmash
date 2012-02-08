@@ -99,6 +99,7 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
 
     // Create the renderer
     renderer_ = new BixelFighterRenderer();
+    //renderer_ = new SkeletonFighterRenderer();
 
     state_ = 0;
 }
@@ -394,6 +395,29 @@ void BixelFighterRenderer::render(const glm::mat4 &transform, const glm::vec4 &c
     FrameManager::get()->renderFrame(transform, color, frameName);
 }
 
+// ----------------------------------------------------------------------------
+// SkeletonFighterRenderer
+// ----------------------------------------------------------------------------
+
+SkeletonFighterRenderer::SkeletonFighterRenderer()
+{
+    skeleton_ = new Skeleton();
+
+    skeleton_->readSkeleton("models/test.bones");
+    skeleton_->setBoneRenderer(new GeosmashBoneRenderer());
+}
+
+SkeletonFighterRenderer::~SkeletonFighterRenderer()
+{
+    delete skeleton_;
+}
+
+void SkeletonFighterRenderer::render(const glm::mat4 &transform, const glm::vec4 &color,
+        const std::string &frameName, float dt) const
+{
+    glm::mat4 scaledTransform = glm::scale(transform, glm::vec3(60, 50, 60));
+    skeleton_->render(scaledTransform);
+}
 
 // ----------------------------------------------------------------------------
 // Rectangle class methods

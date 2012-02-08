@@ -30,7 +30,7 @@ struct controller_state
 
 //
 // Controller abstraction. Encapsulates details about the controller struct.
-// NOTE: controllerID_ must be in the range (0, max controllers]
+// NOTE: controllerID_ must be in the range [0, max controllers)
 // If not, MenuState might not determine who presses start.
 // 
 class Controller
@@ -66,4 +66,6 @@ private:
 	int dpadnsAxis_, dpadweAxis_;
 
     LoggerPtr logger_;
+
+    void keyboardUpdate();
 };

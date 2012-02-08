@@ -729,3 +729,11 @@ void renderParticles(const std::vector<particleData> &data)
     glUseProgram(0);
 }
 
+
+void GeosmashBoneRenderer::operator() (const glm::mat4 &transform, const Bone* b)
+{
+    glm::mat4 fullTransform = glm::scale(transform, glm::vec3(b->length, 0.02, 0.02));
+    fullTransform = glm::translate(fullTransform, glm::vec3(0.5f, 0.f, 0.f));
+
+    renderRectangle(fullTransform, glm::vec4(1,1,1,0));
+}

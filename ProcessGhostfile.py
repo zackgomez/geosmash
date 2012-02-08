@@ -30,6 +30,11 @@ if __name__ == "__main__":
  
     f = open(sys.argv[1])
     lines = [i.strip() for i in f.readlines()]
+
+    # Read the frames that actions can begin from
+    actionf = open("trainingdata/actionframes.txt")
+    startFrames = [i.strip() for i in actionf.readlines()]
+
     i = 0
     prevl0 = ""
     prevl1 = ""
@@ -44,10 +49,6 @@ if __name__ == "__main__":
         curr1 = l1[l1.find("FName:"):].split()[1]
         i += 1
 
-        # Frames we care about transitioning away from
-        startFrames = ["GroundNormal", "GroundRunning", "GroundWalking",
-                "AirNormal", "AirNormalHop", "AirNormalFastFall",
-                "Grabbing"]
         # Frames we don't care about transitioning into
         ignoreFrames = ["AirStunned", "GroundNormal", "Grabbed"]
 

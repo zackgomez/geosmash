@@ -1,0 +1,9 @@
+GroundNormal
+GroundRunning
+GroundWalking
+AirNormal
+AirNormalHop
+AirNormalFastFall
+AirNormalSecondJump
+Grabbing
+LedgeGrab
