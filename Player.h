@@ -2,6 +2,7 @@
 #include <string>
 #include <glm/glm.hpp>
 #include <set>
+#include <map>
 #include "Controller.h"
 #include "InGameState.h"
 #include "Logger.h"
@@ -106,6 +107,18 @@ struct CaseGameState
     float enemydamage;
     bool enemyhitbox;
     bool enemyvulnerable;
+
+    bool operator<(const CaseGameState &rhs) const;
+};
+
+struct CasePlayerState
+{
+    int playerid;
+    glm::vec2 pos, vel;
+    std::string fname;
+    float damage;
+    bool hasAttack;
+    float dir;
 };
 
 std::ostream& operator<<(std::ostream &os, const CaseGameState &cgs);
@@ -125,9 +138,18 @@ public:
     virtual void updateListener(const std::vector<Fighter *> &fighters);
 
 private:
+    // Helper functions
+    void readCaseBase(std::istream &is);
+
+    static CasePlayerState fighter2cps(const Fighter *f);
+    static CasePlayerState readCPS(const std::string &line);
+    static CaseGameState cps2cgs(const CasePlayerState &me, const CasePlayerState &enemy);
+
+    // Data Members
     controller_state cs_;
 
     std::set<std::string> actionFrames_;
+    std::map<CaseGameState, std::string> caseBase_;
     CaseGameState cgs_;
 
     LoggerPtr logger_;

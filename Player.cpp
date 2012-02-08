@@ -221,6 +221,8 @@ GhostAIPlayer::GhostAIPlayer(const Fighter *f) :
     }
 
     // TODO load the Case Base
+    std::fstream casefile("casebase");
+    readCaseBase(casefile);
 }
 
 GhostAIPlayer::~GhostAIPlayer()
@@ -238,11 +240,10 @@ void GhostAIPlayer::update(float dt)
     // Only do updates when we're in an state to perform an action
     if (actionFrames_.count(curframe))
     {
-        // TODO
+        logger_->debug() << "Looking for state similar to: " << cgs_ << '\n';
         // Search for the closest game state we've seen before
 
-        logger_->debug() << "Looking for state similar to: " << cgs_ << '\n';
-
+        // Set controller state according to action
         cs_.clear();
     }
 }
@@ -253,18 +254,103 @@ void GhostAIPlayer::updateListener(const std::vector<Fighter *> &fighters)
 
     Fighter *other = fighters[!fighter_->getPlayerID()];
 
-    // calculate state
-    cgs_.abspos = fighter_->getPosition();
-    cgs_.relpos = other->getPosition() - fighter_->getPosition();
-    cgs_.relvel = other->getVelocity() - fighter_->getVelocity();
-    cgs_.myframe = fighter_->getFrameName();
-    cgs_.facing = glm::sign(cgs_.relpos.x) == fighter_->getDirection();
-    cgs_.enemydamage = other->getDamage();
-    cgs_.enemyhitbox = other->hasAttack();
+    CasePlayerState me = fighter2cps(fighter_);
+    CasePlayerState enemy = fighter2cps(other);
 
-    const std::string enemyFrame = other->getFrameName();
-    cgs_.enemyvulnerable = enemyFrame != "Blocking" && enemyFrame != "GroundRoll"
+    cgs_ = cps2cgs(me, enemy);
+}
+
+void GhostAIPlayer::readCaseBase(std::istream &is)
+{
+    CasePlayerState me, enemy;
+    CaseGameState cgs;
+
+    std::string line;
+    while (std::getline(is, line))
+    {
+        if (line.empty())
+            continue;
+
+        // Then it is an action
+        if (line.find("->") != std::string::npos)
+        {
+            std::stringstream ss(line);
+            std::string prevState, nextState, crap;
+            ss >> prevState >> crap >> nextState; assert(crap == "->");
+            assert(prevState == me.fname);
+
+            // Compute CaseGameState from player states
+            CaseGameState cgs = cps2cgs(me, enemy);
+            caseBase_[cgs] = nextState;
+
+            logger_->debug() << "Recorded case/action: " << cgs << " // " << nextState << '\n';
+        }
+        // Some sort of state
+        else
+        {
+            CasePlayerState cps = readCPS(line);
+            if (cps.playerid == 0)
+                me = cps;
+            else if (cps.playerid == 1)
+                enemy = cps;
+            else
+                assert(false && "playerid not recognized");
+        }
+    }
+};
+
+CasePlayerState GhostAIPlayer::fighter2cps(const Fighter *f)
+{
+    CasePlayerState cps;
+
+    cps.playerid = f->getPlayerID();
+    cps.pos = f->getPosition();
+    cps.vel = f->getVelocity();
+    cps.fname = f->getFrameName();
+    cps.damage = f->getDamage();
+    cps.hasAttack = f->hasAttack();
+    cps.dir = f->getDirection();
+
+    return cps;
+}
+
+CasePlayerState GhostAIPlayer::readCPS(const std::string &line)
+{
+    CasePlayerState cps;
+    std::stringstream ss(line);
+    std::string header;
+
+    ss >> header >> cps.playerid; assert(header == "PID:");
+    ss >> header >> cps.pos.x >> cps.pos.y; assert(header == "Pos:");
+    ss >> header >> cps.vel.x >> cps.vel.y; assert(header == "Vel:");
+    ss >> header >> cps.fname; assert(header == "FName:");
+    ss >> header >> cps.damage; assert(header == "Dmg:");
+    ss >> header >> cps.hasAttack; assert(header == "hbox:");
+    ss >> header >> cps.dir; assert(header == "dir:");
+
+    assert(ss);
+
+    return cps;
+}
+
+CaseGameState GhostAIPlayer::cps2cgs(const CasePlayerState &me,
+        const CasePlayerState &enemy)
+{
+    CaseGameState cgs;
+
+    cgs.abspos = me.pos;
+    cgs.relpos = enemy.pos - me.pos;
+    cgs.relvel = enemy.vel - me.vel;
+    cgs.myframe = me.fname;
+    cgs.facing = glm::sign(cgs.relpos.x) == me.dir;
+    cgs.enemydamage = enemy.damage;
+    cgs.enemyhitbox = enemy.hasAttack;
+
+    const std::string enemyFrame = enemy.fname;
+    cgs.enemyvulnerable = enemyFrame != "Blocking" && enemyFrame != "GroundRoll"
         && enemyFrame != "StepDodge";
+
+    return cgs;
 }
 
 std::ostream & operator<<(std::ostream &os, const glm::vec2 &vec)
@@ -280,4 +366,9 @@ std::ostream & operator<<(std::ostream &os, const CaseGameState &cgs)
         << cgs.enemyhitbox << ' ' << cgs.enemyvulnerable;
 
     return os;
+}
+
+bool CaseGameState::operator<(const CaseGameState &rhs) const
+{
+    return abspos.x < rhs.abspos.x;
 }
