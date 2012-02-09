@@ -13,7 +13,7 @@ all: ssb
 ssb: $(OBJECTS) obj/libkiss_particles.a
 	$(CXX) $(CXXFLAGS)  -o $@ $^ $(LDFLAGS)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp obj
 	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
 
 obj/libkiss_particles.a: force_look
@@ -22,6 +22,7 @@ obj/libkiss_particles.a: force_look
 
 clean:
 	rm -f ssb obj/*
+	rmdir obj
 	cd $(KISS_PARTICLES) && make clean
 
 debug: ssb
@@ -29,5 +30,8 @@ debug: ssb
 
 force_look:
 	true
+
+obj:
+	mkdir obj
 
 .PHONY: clean force_look
