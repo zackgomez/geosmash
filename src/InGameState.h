@@ -2,6 +2,8 @@
 #include "GameState.h"
 #include <cstdlib>
 #include <string>
+#include <fstream>
+#include "Logger.h"
 
 class GameEntity;
 class Fighter;
@@ -36,6 +38,9 @@ private:
     bool keepStats_;
 
     std::vector<GameListener *> listeners_;
+    std::fstream replayStream_;
+
+    LoggerPtr logger_;
 
     // Helper functions
     void integrate(float dt);
