@@ -50,13 +50,19 @@ if __name__ == "__main__":
         i += 1
 
         # Frames we don't care about transitioning into
-        ignoreFrames = ["AirStunned", "GroundNormal", "Grabbed"]
+        ignoreFrames = ["AirStunned", "GroundNormal", "Grabbed", "GroundWalking"]
 
         #if (curr0 != prev0 or curr1 != prev1):
         if (curr0 != prev0 and (prev0 in startFrames) and curr0 not in ignoreFrames):
+            mposx = float(l0[l0.find("Pos:"):].split()[1])
+            eposx = float(l1[l1.find("Pos:"):].split()[1])
+            reldir = (eposx - mposx) / abs(eposx - mposx)
+            mdir = float(l0[l0.find("dir:"):].split()[1])
+
+            # output case
             print prevl0
             print prevl1
-            print prev0, " -> ", curr0
+            print prev0, " -> ", curr0, " ", reldir * mdir
             print
 
         prevl0 = l0

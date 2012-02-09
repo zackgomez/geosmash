@@ -247,19 +247,21 @@ void GhostAIPlayer::update(float dt)
     {
         logger_->debug() << "Looking for state similar to: " << cgs_ << '\n';
         // Search for the closest game state we've seen before
-        const std::string action = getNextAction();
+        const CaseAction action = getNextAction();
 
-        if (actionMap_.find(action) == actionMap_.end())
+        if (actionMap_.find(action.target) == actionMap_.end())
         {
-            logger_->warning() << "Didn't find controller state for action: '" << action << "'\n";
+            logger_->warning() << "Didn't find controller state for action: '" << action.target << "'\n";
             cs_.clear();
         }
         else
         {
-            cs_ = actionMap_.find(action)->second;
+            cs_ = actionMap_.find(action.target)->second;
             // Set the appropriate x direction
-            cs_.joyx *= glm::sign(cgs_.relpos.x);
-            cs_.joyxv *= glm::sign(cgs_.relpos.x);
+            cs_.joyx *= glm::sign(cgs_.relpos.x * action.dir);
+            cs_.joyxv *= glm::sign(cgs_.relpos.x * action.dir);
+            logger_->debug() << "reldir " << fabs(cgs_.relpos.x) << " adir " << action.dir
+                << " setdir " << cs_.joyx << '\n';
         }
     }
 }
@@ -290,16 +292,17 @@ void GhostAIPlayer::readCaseBase(std::istream &is)
         // Then it is an action
         if (line.find("->") != std::string::npos)
         {
+            CaseAction action;
             std::stringstream ss(line);
             std::string prevState, nextState, crap;
-            ss >> prevState >> crap >> nextState; assert(crap == "->");
+            ss >> prevState >> crap >> action.target >> action.dir; assert(crap == "->");
             assert(prevState == me.fname);
 
             // Compute CaseGameState from player states
             CaseGameState cgs = cps2cgs(me, enemy);
-            caseBase_[cgs] = nextState;
+            caseBase_[cgs] = action;
 
-            logger_->debug() << "Recorded case/action: " << cgs << " // " << nextState << '\n';
+            logger_->debug() << "Recorded case/action: " << cgs << " // " << action.target << '\n';
         }
         // Some sort of state
         else
@@ -330,7 +333,9 @@ void GhostAIPlayer::fillActionMap()
     cs.buttonx = bx; \
     cs.pressx = px; \
     cs.joyx = jx; \
+    cs.joyxv = jx; \
     cs.joyy = jy; \
+    cs.joyyv = jy; \
     actionMap_[fname] = cs;
 
     // TODO add duration
@@ -339,18 +344,35 @@ void GhostAIPlayer::fillActionMap()
     _INSERT_STATE("AirNormalHop", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
     _INSERT_STATE("AirNormalFastFall", 0, 0, 0, 0, 0, 0, 0, 0, 0, -1);
 
-    _INSERT_STATE("GroundNeutral", 1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+    _INSERT_STATE("GroundNeutral", 1, 1, 0, 0, 0, 0, 0, 0, .21, 0);
     _INSERT_STATE("GroundSidetilt", 1, 1, 0, 0, 0, 0, 0, 0, 1, 0);
-    _INSERT_STATE("GroundDowntilt", 1, 1, 0, 0, 0, 0, 0, 0, 0, -1);
+    _INSERT_STATE("GroundDowntilt", 1, 1, 0, 0, 0, 0, 0, 0, .21, -1);
     _INSERT_STATE("GroundUptilt", 1, 1, 0, 0, 0, 0, 0, 0, 0, 1);
 
-    _INSERT_STATE("AirNeutral", 1, 1, 0, 0, 0, 0, 0, 0, 0, 0);
+    _INSERT_STATE("AirNeutral", 1, 1, 0, 0, 0, 0, 0, 0, .21, 0);
     _INSERT_STATE("AirFronttilt", 1, 1, 0, 0, 0, 0, 0, 0, 1, 0);
-    _INSERT_STATE("AirDowntilt", 1, 1, 0, 0, 0, 0, 0, 0, 0, -1);
+    _INSERT_STATE("AirDowntilt", 1, 1, 0, 0, 0, 0, 0, 0, .21, -1);
     _INSERT_STATE("AirUptilt", 1, 1, 0, 0, 0, 0, 0, 0, 0, 1);
 
-    _INSERT_STATE("UpSpecial", 0, 0, 1, 1, 0, 0, 0, 0, 0, 1);
+    _INSERT_STATE("NeutralSpecial", 0, 0, 1, 1, 0, 0, 0, 0, .21, 0);
     _INSERT_STATE("DashSpecial", 0, 0, 1, 1, 0, 0, 0, 0, 1, 0);
+    _INSERT_STATE("UpSpecial", 0, 0, 1, 1, 0, 0, 0, 0, .21, 1);
+    _INSERT_STATE("Counter", 0, 0, 1, 1, 0, 0, 0, 0, .21, -1);
+
+    _INSERT_STATE("NeutralSmash", 0, 0, 0, 0, 0, 0, 1, 1, .21, 0);
+    _INSERT_STATE("SideSmash", 0, 0, 0, 0, 0, 0, 1, 1, 1, 0);
+    _INSERT_STATE("UpSmash", 0, 0, 0, 0, 0, 0, 1, 1, .21, 1);
+    _INSERT_STATE("DownSmash", 0, 0, 0, 0, 0, 0, 1, 1, .21, -1);
+
+    cs.clear();
+    cs.rtrigger = -1;
+    actionMap_["Blocking"] = cs;
+
+    cs.clear();
+    cs.joyx = 1;
+    cs.joyxv = 1;
+    cs.rtrigger = -1;
+    actionMap_["GroundRoll"] = cs;
 
     // Blank state, blank controller
     _INSERT_STATE("", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -411,14 +433,16 @@ CaseGameState GhostAIPlayer::cps2cgs(const CasePlayerState &me,
     return cgs;
 }
 
-std::string GhostAIPlayer::getNextAction() const
+CaseAction GhostAIPlayer::getNextAction() const
 {
-    std::string action = "";
+    CaseAction action;
+    action.target = "";
+    action.dir = 1.f;
     CaseGameState best;
     float bestScore = -HUGE_VAL;
     const float scoreThresh = -HUGE_VAL;
 
-    std::map<CaseGameState, std::string>::const_iterator it;
+    std::map<CaseGameState, CaseAction>::const_iterator it;
     for (it = caseBase_.begin(); it != caseBase_.end(); it++)
     {
         float curScore = caseHeuristic(cgs_, it->first);
@@ -431,7 +455,7 @@ std::string GhostAIPlayer::getNextAction() const
     }
 
     logger_->debug() << "Found best matching case (" << bestScore << "): " << best << '\n';
-    logger_->debug() << "Calculated action: '" << action << "'\n";
+    logger_->debug() << "Calculated action: '" << action.target << "' " << action.dir << '\n';
     
     return action;
 }
@@ -439,15 +463,16 @@ std::string GhostAIPlayer::getNextAction() const
 float GhostAIPlayer::caseHeuristic(const CaseGameState &cur, const CaseGameState &ref)
 {
     const float posWeight = 1.0f;
-    const float velWeight = 0.03f;
-    const float damageWeight = 1.0f;
-    const float vulnerableWeight = 200.f;
-    const float hitboxWeight = 100.f;
+    const float velWeight = 0.3f;//0.03f;
+    const float damageWeight = 0.f;//1.0f;
+    const float vulnerableWeight = 0.f;//50.f;
+    const float hitboxWeight = 0.f;//100.f;
 
     float score = 0.f;
 
     // If not the same frame, do not pick
-    if (cur.myframe != ref.myframe) return -HUGE_VAL;
+    if (!isSynonymState(cur.myframe, ref.myframe))
+        return -HUGE_VAL;
 
     float relXDist = fabs(cur.relpos.x - ref.relpos.x);
     float relYDist = fabs(cur.relpos.y - ref.relpos.y);
@@ -468,6 +493,24 @@ float GhostAIPlayer::caseHeuristic(const CaseGameState &cur, const CaseGameState
     return score;
 }
 
+bool GhostAIPlayer::isSynonymState(const std::string &a, const std::string &b)
+{
+    if (a == b) return true;
+
+    // Make aa <= bb
+    std::string aa = a, bb = b;
+    if (aa > bb) std::swap(aa, bb);
+
+    std::pair<std::string, std::string> p(aa, bb);
+
+    std::set<std::pair<std::string, std::string> > synonymstates_;
+    synonymstates_.insert(std::pair<std::string, std::string>("GroundNormal", "GroundWalking"));
+    synonymstates_.insert(std::pair<std::string, std::string>("Ducking", "GroundWalking"));
+    synonymstates_.insert(std::pair<std::string, std::string>("Ducking", "GroundNormal"));
+
+    return synonymstates_.count(p) > 0;
+}
+
 std::ostream & operator<<(std::ostream &os, const glm::vec2 &vec)
 {
     os << '[' << vec.x << ' ' << vec.y << ']';
@@ -476,7 +519,7 @@ std::ostream & operator<<(std::ostream &os, const glm::vec2 &vec)
 
 std::ostream & operator<<(std::ostream &os, const CaseGameState &cgs)
 {
-    os  << cgs.abspos << ' ' << cgs.relpos << ' ' << cgs.relvel << ' '
+    os  << /*cgs.abspos << ' ' <<*/ cgs.relpos << ' ' << cgs.relvel << ' '
         << cgs.myframe << ' ' << cgs.facing << ' ' << cgs.enemydamage << ' '
         << cgs.enemyhitbox << ' ' << cgs.enemyvulnerable;
 
