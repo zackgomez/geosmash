@@ -1,23 +1,27 @@
 KISS_PARTICLES=kiss-particles
+OBJDIR=obj
+SRCDIR=src
 
+CXX=g++
 CXXFLAGS=-g -O0 -Wall -Iglm-0.9.2.7 -I$(KISS_PARTICLES) -IirrKlang-1.3.0/include -m32
 LDFLAGS=-lSDL -lGL -lGLEW -lIrrKlang -LirrKlang-1.3.0/bin/linux-gcc -lpthread
 
+OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(SRCDIR)/*.cpp)))
+
 all: ssb
 
-ssb: main.o Engine.o util.o Fighter.o AudioManager.o ExplosionManager.o \
-	FrameManager.o StatsManager.o Attack.o FighterState.o GameEntity.o \
-	Projectile.o CameraManager.o StageManager.o FontManager.o Controller.o \
-	libkiss_particles.a InGameState.o MenuState.o StatsGameState.o ParamReader.o \
-	MatrixStack.o Player.o GhostAIRecorder.o kiss-skeleton.o
-	g++ $(CXXFLAGS)  -o $@ $^ $(LDFLAGS)
+ssb: $(OBJECTS) obj/libkiss_particles.a
+	$(CXX) $(CXXFLAGS)  -o $@ $^ $(LDFLAGS)
 
-libkiss_particles.a: force_look
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
+	$(CXX) -c $(CXXFLAGS) -o $(OBJDIR)/$*.o $<
+
+obj/libkiss_particles.a: force_look
 	cd $(KISS_PARTICLES) && $(MAKE) libkiss_particles.a
-	cp $(KISS_PARTICLES)/libkiss_particles.a .
+	cp $(KISS_PARTICLES)/libkiss_particles.a obj/
 
 clean:
-	rm -f ssb *.o *.a
+	rm -f ssb obj/*
 	cd $(KISS_PARTICLES) && make clean
 
 debug: ssb
