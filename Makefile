@@ -1,10 +1,12 @@
-KISS_PARTICLES=kiss-particles
+KISS_PARTICLES=lib/kiss-particles
+IRRKLANG=lib/irrKlang-1.3.0
+GLM=lib/glm-0.9.2.7
 OBJDIR=obj
 SRCDIR=src
 
 CXX=g++
-CXXFLAGS=-g -O0 -Wall -Iglm-0.9.2.7 -I$(KISS_PARTICLES) -IirrKlang-1.3.0/include -m32
-LDFLAGS=-lSDL -lGL -lGLEW -lIrrKlang -LirrKlang-1.3.0/bin/linux-gcc -lpthread
+CXXFLAGS=-g -O0 -Wall -I$(GLM) -I$(KISS_PARTICLES) -I$(IRRKLANG)/include -m32
+LDFLAGS=-lSDL -lGL -lGLEW -lIrrKlang -L$(IRRKLANG)/bin/linux-gcc -lpthread
 
 OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(SRCDIR)/*.cpp)))
 
@@ -22,7 +24,7 @@ obj/libkiss_particles.a: force_look
 
 clean:
 	rm -f ssb obj/*
-	rmdir obj
+	rm -rf obj/
 	cd $(KISS_PARTICLES) && make clean
 
 debug: ssb
