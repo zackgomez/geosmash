@@ -374,6 +374,12 @@ void GhostAIPlayer::fillActionMap()
     cs.rtrigger = -1;
     actionMap_["GroundRoll"] = cs;
 
+    cs.clear();
+    cs.joyy = -1;
+    cs.joyxv = -1;
+    cs.rtrigger = -1;
+    actionMap_["StepDodge"] = cs;
+
     // Blank state, blank controller
     _INSERT_STATE("", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }

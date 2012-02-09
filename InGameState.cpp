@@ -47,6 +47,8 @@ InGameState::InGameState(const std::vector<Player *> &players,
     StageManager::get()->clear();
     ParticleManager::get()->reset();
 
+    logger_ = Logger::getLogger("InGameState");
+
     for (unsigned i = 0; i < fighters.size(); i++)
     {
         const float FIGHTER_SPAWN_Y = 50.f;
@@ -95,6 +97,14 @@ InGameState::InGameState(const std::vector<Player *> &players,
     // Add players as listeners
     for (size_t i = 0; i < players_.size(); i++)
         listeners_.push_back(players_[i]);
+
+    replayStream_.open("replays/lastreplay", std::ostream::out);
+    // Print out the player names for the first line
+    for (size_t i = 0; i < players_.size(); i++)
+        replayStream_ << players_[i]->getUsername() << ' ';
+    replayStream_ << '\n';
+    logger_->info() << "Saving replay to replays/lastreplay\n";
+    assert(replayStream_);
 }
 
 InGameState::~InGameState()
@@ -103,12 +113,14 @@ InGameState::~InGameState()
     for (size_t i = fighters_.size(); i < entities_.size(); i++)
         delete entities_[i];
 
-    // Fighters/players are passed to StatsGameState
+    // Fighters/players are passed to StatsGameState and don't need to be destructed
 
     // Clean up the listeners that want to be cleaned up
     for (size_t i = 0; i < listeners_.size(); i++)
         if (listeners_[i]->removeOnCompletion())
             delete listeners_[i];
+
+    replayStream_.close();
 }
 
 GameState * InGameState::processInput(const std::vector<Controller*> &controllers, float dt)
@@ -136,6 +148,23 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
     // If paused, don't update fighters or ask for next state
     if (paused_)
         return NULL;
+
+    // Output replay information
+    for (size_t i = 0; i < players_.size(); i++)
+    {
+        const controller_state cs = players_[i]->getState();
+        replayStream_ << '[' << i << "] "
+            << cs.joyx << ' ' << cs.joyxv << ' '
+            << cs.joyy << ' ' << cs.joyyv << ' '
+            << cs.pressa << ' ' << cs.buttona << ' '
+            << cs.pressb << ' ' << cs.buttonb << ' '
+            << cs.pressx << ' ' << cs.buttonx << ' '
+            << cs.pressy << ' ' << cs.buttony << ' '
+            << cs.rtrigger << ' ' << cs.ltrigger << ' '
+            << cs.presslb << ' ' << cs.lbumper << ' '
+            << cs.pressrb << ' ' << cs.rbumper << ' '
+            << cs.dpadl << ' ' << cs.dpadr << ' ' << cs.dpadu << ' ' << cs.dpadd << '\n';
+    }
 
     // Check for life steal action
     for (size_t i = 0; i < players_.size(); i++)
