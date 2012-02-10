@@ -10,7 +10,7 @@ LDFLAGS=-lSDL -lGL -lGLEW -lIrrKlang -L$(IRRKLANG)/bin/linux-gcc -lpthread
 
 OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(SRCDIR)/*.cpp)))
 
-all: ssb
+all: obj ssb
 
 ssb: $(OBJECTS) obj/libkiss_particles.a
 	$(CXX) $(CXXFLAGS)  -o $@ $^ $(LDFLAGS)
@@ -27,7 +27,7 @@ clean:
 	rm -rf obj/
 	cd $(KISS_PARTICLES) && make clean
 
-debug: ssb
+debug: obj ssb
 	./ssb --debug
 
 force_look:
