@@ -38,7 +38,7 @@ void postRender();
 
 // For now just creates a cube
 mesh createMesh(std::string objfile);
-void renderMesh(const mesh &m, const glm::mat4 &trans, const glm::vec3 &color);
+void renderMesh(const glm::mat4 &modelMatrix, const mesh &m, GLuint program);
 
 // Matrix operations
 MatrixStack& getProjectionMatrixStack();

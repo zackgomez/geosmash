@@ -7,7 +7,6 @@ attribute vec2 texcoord;
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 uniform mat4 normalMatrix;
-uniform vec4 lightPos;
 
 varying vec2 frag_texcoord;
 varying vec4 frag_normal;

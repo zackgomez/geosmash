@@ -581,6 +581,7 @@ void GroundState::render(float dt)
             jumpTime_, dashTime_, waitTime_, ducking_);
             */
 
+    frameName_ = "GroundNormal";
     if (dashing_)
         frameName_ = "GroundRunning";
     if (dashing_ && waitTime_ > 0.f)

@@ -29,7 +29,6 @@ static struct
     GLuint maskprogram;
 
     GLuint hblurprogram, vblurprogram;
-    GLuint meshprogram;
 
     GLuint particleprogram;
     GLuint part_buffer;
@@ -314,12 +313,6 @@ bool initGLUtils(int screenw, int screenh)
         return false;
     resources.hblurprogram = make_program(blurvertex_shader, hblurfrag_shader);
     resources.vblurprogram = make_program(blurvertex_shader, vblurfrag_shader);
-
-    GLuint meshvert = make_shader(GL_VERTEX_SHADER, "shaders/mesh.v.glsl");
-    GLuint meshfrag = make_shader(GL_FRAGMENT_SHADER, "shaders/mesh.f.glsl");
-    if (!meshvert || !meshfrag)
-        return false;
-    resources.meshprogram = make_program(meshvert, meshfrag);
 
     GLuint partfrag = make_shader(GL_VERTEX_SHADER, "shaders/particle.v.glsl");
     GLuint partvert = make_shader(GL_FRAGMENT_SHADER, "shaders/particle.f.glsl");
@@ -641,27 +634,21 @@ mesh createMesh(std::string objfile)
     return ret;
 }
 
-void renderMesh(const mesh &m, const glm::mat4 &modelMatrix, const glm::vec3 &color)
+void renderMesh(const glm::mat4 &modelMatrix, const mesh &m, GLuint program)
 {
-    glm::vec4 lightPos = viewMatrixStack.current() * glm::vec4(500.f, 400.f, 200.f, 1.f);
-    lightPos /= lightPos.w;
     // Uniform locations
-    GLuint modelViewUniform = glGetUniformLocation(resources.meshprogram, "modelViewMatrix");
-    GLuint projectionUniform = glGetUniformLocation(resources.meshprogram, "projectionMatrix");
-    GLuint normalUniform = glGetUniformLocation(resources.meshprogram, "normalMatrix");
-    GLuint colorUniform = glGetUniformLocation(resources.meshprogram, "color");
-    GLuint lightPosUniform = glGetUniformLocation(resources.meshprogram, "lightpos");
+    GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
+    GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
+    GLuint normalUniform = glGetUniformLocation(program, "normalMatrix");
     // Attributes
-    GLuint positionAttrib = glGetAttribLocation(resources.meshprogram, "position");
-    GLuint normalAttrib   = glGetAttribLocation(resources.meshprogram, "normal");
-    GLuint texcoordAttrib = glGetAttribLocation(resources.meshprogram, "texcoord");
+    GLuint positionAttrib = glGetAttribLocation(program, "position");
+    GLuint normalAttrib   = glGetAttribLocation(program, "normal");
+    GLuint texcoordAttrib = glGetAttribLocation(program, "texcoord");
     // Enable program and set up values
-    glUseProgram(resources.meshprogram);
+    glUseProgram(program);
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrixStack.current()));
     glUniformMatrix4fv(normalUniform, 1, GL_FALSE, glm::value_ptr(glm::inverse(modelMatrix)));
-    glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(color, 1.0f)));
-    glUniform4fv(lightPosUniform, 1, glm::value_ptr(lightPos));
 
     // Bind data
     glBindBuffer(GL_ARRAY_BUFFER, m.data_buffer);

@@ -14,9 +14,20 @@ StageManager::StageManager() :
 {
     initBackground();
 
+    // TODO move to initStage
     // Load the ground mesh
     level_mesh_ = createMesh("models/level.obj");
     platform_mesh_ = createMesh("models/cube.obj");
+
+    GLuint vert = make_shader(GL_VERTEX_SHADER, "shaders/stage.v.glsl");
+    GLuint frag = make_shader(GL_FRAGMENT_SHADER, "shaders/stage.f.glsl");
+    if (!vert || !frag)
+    {
+        std::cerr << "Unable to read background sphere shaders\n";
+        exit(1);
+    }
+    stageProgram_ = make_program(vert, frag);
+    assert(stageProgram_);
 }
 
 std::vector<std::string> StageManager::getStageNames() const
@@ -59,7 +70,6 @@ void StageManager::initLevel(const std::string &stage)
     l.occupied = false;
     l.dir = 1;
     ledges_.push_back(new Ledge(l));
-
 }
 
 void StageManager::clear()
@@ -172,11 +182,20 @@ void StageManager::renderSphereBackground(float dt)
 
 void StageManager::renderStage(float dt)
 {
+    // Set initial shader values
+    glUseProgram(stageProgram_);
+    glm::vec4 lightPos = getViewMatrixStack().current() * glm::vec4(500.f, 400.f, 200.f, 1.f);
+    lightPos /= lightPos.w;
+    GLuint colorUniform = glGetUniformLocation(stageProgram_, "color");
+    GLuint lightPosUniform = glGetUniformLocation(stageProgram_, "lightpos");
+    glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(ground_color_, 1.0f)));
+    glUniform4fv(lightPosUniform, 1, glm::value_ptr(lightPos));
+
     // Draw the land
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.0f), glm::vec3(ground_.x, ground_.y, 0.1)),
             glm::vec3(ground_.w/2, ground_.h/2, getParam("level.d")/2));
-    renderMesh(level_mesh_, transform, ground_color_);
+    renderMesh(transform, level_mesh_, stageProgram_);
 
     // Draw the platforms
     for (size_t i = 0; i < platforms_.size(); i++)
@@ -185,8 +204,10 @@ void StageManager::renderStage(float dt)
         transform = glm::scale(
                 glm::translate(glm::mat4(1.0f), glm::vec3(pf.x, pf.y, 0.0)),
                 glm::vec3(pf.w, pf.h, getParam("level.d")/3));
-        renderMesh(platform_mesh_, transform, ground_color_);
+        renderMesh(transform, platform_mesh_, stageProgram_);
     }
+
+    glUseProgram(0);
 }
 
 rectangle StageManager::getGroundRect() const

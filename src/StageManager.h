@@ -51,7 +51,7 @@ private:
 
     int meshRes_;
     GLuint meshBuf_;
-    GLuint sphereProgram_;
+    GLuint sphereProgram_, stageProgram_;
     GLuint **indicies_;
     float t_;
 
