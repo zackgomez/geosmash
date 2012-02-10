@@ -36,6 +36,7 @@ private:
     LoggerPtr logger_;
 
     std::map<std::string, const anim_frame*> frames_;
+    std::map<std::string, const Keyframe> poses_;
 
     void addFrame(const anim_frame *frame);
     GLuint createMaskTexture(GLubyte *data, int w, int h);

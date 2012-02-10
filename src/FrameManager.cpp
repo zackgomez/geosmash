@@ -47,8 +47,13 @@ void FrameManager::loadFile(const std::string &filename)
 
 Keyframe FrameManager::getPose(const std::string &poseName) const
 {
-    // TODO
-    return Keyframe();
+    if (poses_.find(poseName) == poses_.end())
+    {
+        logger_->warning() << "Couldn't find skeleton pose '" << poseName << "'\n";
+        return Keyframe();
+    }
+
+    return poses_.find(poseName)->second;
 }
 
 void FrameManager::addFrame(const anim_frame *frame)

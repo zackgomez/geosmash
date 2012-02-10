@@ -419,6 +419,10 @@ void SkeletonFighterRenderer::render(const glm::mat4 &transform, const glm::vec4
     glm::mat4 scaledTransform = glm::scale(transform, glm::vec3(60, 50, 60));
 
     renderer_->setColor(color);
+
+    skeleton_->resetPose();
+    skeleton_->setPose(FrameManager::get()->getPose(frameName).bones);
+
     skeleton_->render(scaledTransform);
 }
 
