@@ -20,7 +20,8 @@ public:
     void renderFrame(const glm::mat4 &transform, const glm::vec4 &color,
             const std::string &name) const;
 
-    void loadFile(const std::string &filename);
+    void loadFrameFile(const std::string &filename);
+    void loadPoseFile(const std::string &filename);
 
     // Returns a keyframe ready for passing to a skeleton for the given pose
     Keyframe getPose(const std::string &poseName) const;
@@ -36,10 +37,12 @@ private:
     LoggerPtr logger_;
 
     std::map<std::string, const anim_frame*> frames_;
-    std::map<std::string, const Keyframe> poses_;
+    std::map<std::string, Keyframe> poses_;
 
     void addFrame(const anim_frame *frame);
     GLuint createMaskTexture(GLubyte *data, int w, int h);
     anim_frame *loadAnimFrame(std::istream &stream);
+    static Keyframe loadPose(std::istream &is, std::string &posename);
+    static BoneFrame readBoneFrame(std::istream &is);
 };
 

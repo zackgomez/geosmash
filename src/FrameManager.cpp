@@ -2,6 +2,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <fstream>
 #include <cstdio>
+#include <sstream>
 
 FrameManager * FrameManager::get()
 {
@@ -26,7 +27,7 @@ void FrameManager::renderFrame(const glm::mat4 &trans, const glm::vec4 &col,
     renderMaskedRectangle(finalTransform, col, frame);
 }
 
-void FrameManager::loadFile(const std::string &filename)
+void FrameManager::loadFrameFile(const std::string &filename)
 {
     std::ifstream file(filename.c_str());
     if (!file)
@@ -35,13 +36,34 @@ void FrameManager::loadFile(const std::string &filename)
         assert(false);
     }
 
-    while(!(!file))
+    while (file)
     {
         anim_frame *frm = loadAnimFrame(file);
         if (!frm)
             continue;
         logger_->info() << "Loaded frame " << frm->id << '\n';
         addFrame(frm);
+    }
+}
+
+void FrameManager::loadPoseFile(const std::string &filename)
+{
+    std::ifstream file(filename.c_str());
+    if (!file)
+    {
+        logger_->error() << "Unable to open file " << filename << '\n';
+        assert(false);
+    }
+
+    while (file)
+    {
+        std::string posename;
+        Keyframe kf = loadPose(file, posename);
+        // empty posename means end of file
+        if (posename.empty())
+            break;
+        logger_->info() << "Loaded pose '" << posename << "'\n";
+        poses_[posename] = kf;
     }
 }
 
@@ -156,3 +178,47 @@ anim_frame* FrameManager::loadAnimFrame(std::istream &stream)
 
     return ret;
 }
+
+Keyframe FrameManager::loadPose(std::istream &is, std::string &posename)
+{
+    std::string line;
+    Keyframe kf;
+    while (std::getline(is, line))
+    {
+        // Empty line signals the end
+        if (line.empty())
+            break;
+
+        // First line is posename
+        if (posename.empty())
+        {
+            posename = line;
+            continue;
+        }
+
+        // Read bone frame
+        std::stringstream ss(line);
+        std::string name;
+        ss >> name;
+        BoneFrame bf = readBoneFrame(ss);
+        kf.bones[name] = bf;
+
+        std::cout << "Read bone " << name << " length " << bf.length << '\n';
+    }
+
+    return kf;
+}
+
+BoneFrame FrameManager::readBoneFrame(std::istream &is)
+{
+    BoneFrame bf;
+    is >> bf.length >> bf.rot.x >> bf.rot.y >> bf.rot.z >> bf.rot[3];
+    if (!is)
+    {
+        std::cerr << "Unable to read BoneFrame\n";
+        exit(1);
+    }
+
+    return bf;
+}
+
