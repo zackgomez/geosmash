@@ -33,6 +33,10 @@ static struct
     GLuint particleprogram;
     GLuint part_buffer;
 
+    GLuint boneprogram;
+
+    mesh cubemesh;
+
     GLuint fbo;
     GLuint depthbuf;
     GLuint rendertex[3];
@@ -320,8 +324,16 @@ bool initGLUtils(int screenw, int screenh)
         return false;
     resources.particleprogram = make_program(partvert, partfrag);
 
+    partfrag = make_shader(GL_VERTEX_SHADER, "shaders/stage.v.glsl");
+    partvert = make_shader(GL_FRAGMENT_SHADER, "shaders/stage.f.glsl");
+    if (!partfrag || !partvert)
+        return false;
+    resources.boneprogram = make_program(partvert, partfrag);
+
     glGenFramebuffers(1, &resources.fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, resources.fbo);
+
+    resources.cubemesh = createMesh("models/cube.obj");
 
     // Set up depth buffer attachment 
     glGenRenderbuffers(1, &resources.depthbuf);
@@ -716,11 +728,20 @@ void renderParticles(const std::vector<particleData> &data)
     glUseProgram(0);
 }
 
+void GeosmashBoneRenderer::setColor(const glm::vec4 &color)
+{
+    color_ = color;
+}
 
 void GeosmashBoneRenderer::operator() (const glm::mat4 &transform, const Bone* b)
 {
     glm::mat4 fullTransform = glm::scale(transform, glm::vec3(b->length, 0.02, 0.02));
     fullTransform = glm::translate(fullTransform, glm::vec3(0.5f, 0.f, 0.f));
 
-    renderRectangle(fullTransform, glm::vec4(1,1,1,0));
+    GLuint colorUniform = glGetUniformLocation(resources.boneprogram, "color");
+    glUseProgram(resources.boneprogram);
+    glUniform4fv(colorUniform, 1, glm::value_ptr(color_));
+    glUseProgram(0);
+
+    renderMesh(fullTransform, resources.cubemesh, resources.boneprogram);
 }

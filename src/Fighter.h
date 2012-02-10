@@ -165,6 +165,7 @@ public:
 };
 
 class Skeleton;
+class GeosmashBoneRenderer;
 class SkeletonFighterRenderer : public FighterRenderer
 {
 public:
@@ -175,6 +176,7 @@ public:
             const std::string &frameName, float dt) const;
 private:
     Skeleton *skeleton_;
+    GeosmashBoneRenderer *renderer_;
 };
 
 // Interface exposed when a fighter goes limp.  Allows direct control of the

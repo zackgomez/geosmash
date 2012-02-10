@@ -50,6 +50,9 @@ void setCamera(const glm::vec3 &pos);
 class GeosmashBoneRenderer : public BoneRenderer
 {
 public:
+    void setColor(const glm::vec4 &color);
     virtual void operator() (const glm::mat4 &transform, const Bone* b);
+
 private:
+    glm::vec4 color_;
 };
