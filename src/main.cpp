@@ -96,16 +96,24 @@ void mainloop()
         state->update(dt);
 
         // Render
+        int pre, mid, post;
+        int rstartms = SDL_GetTicks();
         preRender();
         glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+        pre = SDL_GetTicks() - rstartms;
 
+        rstartms = SDL_GetTicks();
         state->render(dt);
+        mid = SDL_GetTicks() - rstartms;
 
         // TODO call state->postframe()
         
+        rstartms = SDL_GetTicks();
         postRender();
         SDL_GL_SwapBuffers();
+        post = SDL_GetTicks() - rstartms;
+        logger->debug() << "Render times (ms): " << pre << ' ' << mid << ' ' << post << '\n';
 
         // Some timing and delay to force framerate
         int endms = SDL_GetTicks();
