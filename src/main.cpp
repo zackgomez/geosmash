@@ -96,12 +96,13 @@ void mainloop()
         state->update(dt);
 
         // Render
-        int pre, mid, post;
+        int pre, clear, mid, post;
         int rstartms = SDL_GetTicks();
         preRender();
+        pre = SDL_GetTicks() - rstartms;
         glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-        pre = SDL_GetTicks() - rstartms;
+        clear = SDL_GetTicks() - rstartms - pre;
 
         rstartms = SDL_GetTicks();
         state->render(dt);
@@ -113,15 +114,13 @@ void mainloop()
         postRender();
         SDL_GL_SwapBuffers();
         post = SDL_GetTicks() - rstartms;
-        logger->debug() << "Render times (ms): " << pre << ' ' << mid << ' ' << post << '\n';
+        logger->debug() << "Render times (ms): " << pre << ' ' << clear << ' ' << mid << ' ' << post << '\n';
 
         // Some timing and delay to force framerate
         int endms = SDL_GetTicks();
         int delay = 16 - std::min(16, std::max(0, endms - startms));
-        /*
-        logger_->debug() << "Frame time (ms): " << endms - startms << 
+        logger->debug() << "Frame time (ms): " << endms - startms << 
             "   Delay time (ms): " << delay << '\n';
-            */
         SDL_Delay(delay);
     }
 }

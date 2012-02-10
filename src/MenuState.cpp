@@ -4,6 +4,7 @@
 #include "Fighter.h"
 #include <cassert>
 #include <glm/gtc/matrix_transform.hpp>
+// XXX Remove SDL header
 #include <SDL/SDL.h>
 #include <GL/glew.h>
 #include "Engine.h"
@@ -113,7 +114,6 @@ void NumberSelectWidget::handleInput(float val)
 void NumberSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
         bool selected) const
 {
-    //if (selected) assert(enabled_);
     const float charsize = size.y;
     glm::mat4 transform;
     glm::vec3 color = selected ? widgetSelColor : widgetEnabledColor;
@@ -429,6 +429,9 @@ void MenuState::render(float dt)
     const float ysize = 500.f;
     const float xoffset = 0.f;
     const float yoffset = 1080.f - 2 * ysize;
+
+    int a, b;
+    int startms = SDL_GetTicks();
     for (size_t i = 0; i < widgets_.size(); i++)
     {
         int x = i % 2;
@@ -436,9 +439,9 @@ void MenuState::render(float dt)
         glm::vec2 center(xoffset + xsize * (x + 0.5f), yoffset + ysize * (y + 0.5f));
         glm::vec2 size(xsize, ysize);
 
-
         widgets_[i]->render(center, size, dt);
     }
+    a = SDL_GetTicks() - startms;
 
     float xchange = 1920.f / (topWidgets_.size() + 1);
     for (size_t i = 0; i < topWidgets_.size(); i++)
@@ -448,6 +451,9 @@ void MenuState::render(float dt)
 
         topWidgets_[i]->render(center, size, topMenuController_ != -1 && i == topWidgetIdx_);
     }
+    b = SDL_GetTicks() - startms - a;
+
+    logger_->debug() << "Menu render times(ms): " << a << ' ' << b << '\n';
 }
 
 GameState* MenuState::processInput(const std::vector<Controller*> &controllers, float dt)
