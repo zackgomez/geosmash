@@ -173,6 +173,14 @@ KeyboardController::KeyboardController(int ctrlID) :
 	keyboardControllers_.push_back(this);
 }
 
+void KeyboardController::keyboardClear() 
+{
+	state_.joyx = 0;
+	state_.joyy = 0;
+	state_.joyxv = 0;
+	state_.joyyv = 0;
+}
+
 void KeyboardController::update(float dt)
 {
 	if (!shouldAcceptInput_) 
@@ -182,30 +190,69 @@ void KeyboardController::update(float dt)
 		return;
 	}
 
-	state_.clear();
+	// Just clear the joystick position. This allows to save parts of 
+	// the previous state (in particular, button<whatever> values).
+	// We need to set state_.pressa, etc. correctly
+	keyboardClear();
 
     // Ask SDL for keyboard state we care about 
     Uint8 *keystate = SDL_GetKeyState(NULL);
+
+	// A BUTTON
     if ( keystate[SDLK_a] )
     {
-        state_.buttona = true;
-        state_.pressa = true;
+        state_.pressa = !state_.buttona;
+		state_.buttona = true;
     }
+	else
+	{
+		state_.pressa = state_.buttona = false;
+	}
+
+
+	// B BUTTON
     if ( keystate[SDLK_b] )
     {
-        state_.buttonb = true;
-        state_.pressb = true;
+        state_.pressb = !state_.buttonb;
+		state_.buttonb = true;
     }
+	else 
+	{
+		state_.pressb = state_.buttonb = false;
+	}
+
+	// Y BUTTON
     if ( keystate[SDLK_y] )
     {
-        state_.buttony = true;
-        state_.pressy = true;
+		state_.pressy = !state_.buttony;
+		state_.buttony = true;
     }
+	else 
+	{
+		state_.pressy = state_.buttony = false;
+	}
+	
+	// X BUTTON
+    if ( keystate[SDLK_x] )
+    {
+		state_.pressx = !state_.buttonx;
+		state_.buttonx = true;
+    }
+	else 
+	{
+		state_.pressx = state_.buttonx = false;
+	}
+	
+	// RETURN
     if (keystate[SDLK_RETURN]) 
     {
-        state_.pressstart = true;
+		state_.pressstart = !state_.buttonstart;
         state_.buttonstart = true;
     }
+	else 
+	{
+		state_.pressstart = state_.buttonstart = false;
+	}
 
     // set controller direction
     if (keystate[SDLK_LEFT])
