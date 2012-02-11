@@ -40,32 +40,56 @@ public:
     ~Controller();
 
     // Does per frame controller updates...
-    void update(float dt);
+    virtual void update(float dt);
     // Gets the next state
-    controller_state getState() const;
+    virtual controller_state getState() const;
 
 	// Clears all the press variables, useful for transitions
-	void clearPresses();
-
-
+	virtual void clearPresses();
 
     // Gets a unique identifier for this controller, roughly the player #
     // of the controller
-    int getControllerID() const;
+    virtual int getControllerID() const;
 
 	static bool keyboardPlayerExists(const std::vector<Controller*>);
 
-private:
+protected:
     int controllerID_;
 	bool isKeyboard_;
+	LoggerPtr logger_;
+    controller_state state_;
+
+private:
     SDL_Joystick *joystick_;
 
-    controller_state state_;
 
     int ltrigAxis_, rtrigAxis_;
 	int dpadnsAxis_, dpadweAxis_;
 
-    LoggerPtr logger_;
+    
+};
 
-    void keyboardUpdate();
+
+//
+// Controller abstraction for a Keyboard controller. Useful for debugging.
+// 
+class KeyboardController : public Controller
+{
+public:
+    KeyboardController(int controllerID);
+    ~KeyboardController();
+
+    // Does per frame controller updates...
+    virtual void update(float dt);
+    
+	static bool keyboardPlayerExists(const std::vector<Controller*>);
+	
+private:
+
+	// If a developer creates multiple KeyboardControllers, the last one
+	// created should have priority over all others 
+	bool shouldAcceptInput_;
+
+	static std::vector<KeyboardController*> keyboardControllers_;
+	
 };

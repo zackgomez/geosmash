@@ -10,6 +10,8 @@ void controller_state::clear()
 
 static const float MAX_JOYSTICK_VALUE = 32767.0f;
 
+std::vector<KeyboardController*> KeyboardController::keyboardControllers_;
+
 Controller::Controller(int controllerID, bool isKeyboard) :
     controllerID_(controllerID),
     joystick_(NULL),
@@ -66,13 +68,6 @@ void Controller::update(float dt)
 {
     // No presses
 	clearPresses();
-
-    // Deal with keyboard
-	if (isKeyboard_)
-	{
-        keyboardUpdate();
-        return;
-	}
 
     // temporary value for computing velocities
     float newval;
@@ -165,8 +160,30 @@ int Controller::getControllerID() const
     return controllerID_;
 }
 
-void Controller::keyboardUpdate()
+///////////////////////////////////
+// KeyboardController
+
+KeyboardController::KeyboardController(int ctrlID) : 
+	Controller(ctrlID, true), shouldAcceptInput_(true)
+{  
+	for (size_t i = 0; i < keyboardControllers_.size(); i++)
+	{
+		keyboardControllers_[i]->shouldAcceptInput_ = false;
+	}
+	keyboardControllers_.push_back(this);
+}
+
+void KeyboardController::update(float dt)
 {
+	if (!shouldAcceptInput_) 
+	{
+		// In this case, the developer needed this controller to create an AI
+		// (or some similar scenario) and we're ignoring all input.
+		return;
+	}
+
+	state_.clear();
+
     // Ask SDL for keyboard state we care about 
     Uint8 *keystate = SDL_GetKeyState(NULL);
     if ( keystate[SDLK_a] )

@@ -125,7 +125,7 @@ void addKeyboardController()
 	{
 		return;
 	}
-	Controller *c = new Controller(controllers.size(), true);
+	Controller *c = new KeyboardController(controllers.size());
 	controllers.push_back(c);
 }
 
