@@ -159,11 +159,16 @@ void checkForJoysticks(unsigned maxPlayers)
 {
     unsigned numJoysticks = SDL_NumJoysticks();
 	Uint8 *keystate = SDL_GetKeyState(NULL);
+	static bool apressed = false;
 	if (keystate[SDLK_a])
 	{
-		// A developer requested a keyboard controller
-		addKeyboardController();
+		if (!apressed)
+			// A developer requested a keyboard controller
+			addKeyboardController();
+		apressed = true;
 	}
+	else
+		apressed = false;
 
     // Are there new joysticks?
     if (numJoysticks > controllers.size())
