@@ -590,7 +590,7 @@ void GroundState::render(float dt)
     if (ducking_)
         frameName_ = "Ducking";
     // if not ducking and moving, then walking
-    else if (fabs(fighter_->vel_.x) > 0)
+    else if (!dashing_ && fabs(fighter_->vel_.x) > 0)
         frameName_ = "GroundWalking";
 
     glm::vec3 color = fighter_->color_;
