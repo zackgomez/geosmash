@@ -54,6 +54,8 @@ static const std::string *teamStrs__ = teamStrs_;
 static const std::vector<std::string> teamStrs(teamStrs__, teamStrs__ + 4);
 static const std::string boolStrs_[] = {"OFF", "ON"};
 static const std::vector<std::string> boolStrs(boolStrs_, boolStrs_+2);
+static const std::string fighterStrs_[] = {"charlie", "stickman"};
+static const std::vector<std::string> fighterStrs(fighterStrs_, fighterStrs_+2);
 
 static const glm::vec3 widgetSelColor      = glm::vec3(.9, .9, .9);
 static const glm::vec3 widgetEnabledColor  = glm::vec3(.3, .3, .3);
@@ -67,6 +69,7 @@ static struct
     bool handicap;
     int stageIdx;
     int profileID[4];
+    int fighterID[4];
     int teamID[4];
     bool active[4];
     int colors[4];
@@ -78,6 +81,7 @@ static struct
     true,
     false,
     0,
+    {0, 0, 0, 0},
     {0, 0, 0, 0},
     {0, 1, 2, 3},
     {false, false, false, false},
@@ -222,9 +226,11 @@ PlayerWidget::PlayerWidget(int playerID, const bool *teams, const bool *handicap
     assert(playerID < 4);
     usernameWidget_ = new StringSelectWidget("Profile ", StatsManager::get()->getUsernames(),
             defstate.profileID[playerID]);
+    fighterWidget_ = new StringSelectWidget("Fighter ", fighterStrs, defstate.fighterID[playerID]);
     teamIDWidget_ = new StringSelectWidget("Team ", teamStrs, defstate.teamID[playerID]);
     handicapWidget_ = new NumberSelectWidget("Handicap ", 0, 9, defstate.handicaps[playerID]);
     widgets_.push_back(usernameWidget_);
+    widgets_.push_back(fighterWidget_);
     widgets_.push_back(teamIDWidget_);
     widgets_.push_back(handicapWidget_);
 }
@@ -232,6 +238,7 @@ PlayerWidget::PlayerWidget(int playerID, const bool *teams, const bool *handicap
 PlayerWidget::~PlayerWidget()
 {
     delete usernameWidget_;
+    delete fighterWidget_;
     delete teamIDWidget_;
     delete handicapWidget_;
 }
@@ -364,6 +371,16 @@ int PlayerWidget::getProfileID() const
 std::string PlayerWidget::getUsername() const
 {
     return usernameWidget_->strValue();
+}
+
+int PlayerWidget::getFighterID() const
+{
+    return fighterWidget_->value();
+}
+
+std::string PlayerWidget::getFighterName() const
+{
+    return fighterWidget_->strValue();
 }
 
 int PlayerWidget::getColorID() const
@@ -551,11 +568,12 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
             int teamID = widgets_[i]->getTeamID();
             glm::vec3 color = widgets_[i]->getColor(teamCounts[teamID]);
             std::string username = widgets_[i]->getUsername();
+            std::string fighterName = widgets_[i]->getFighterName();
 
             int handicapLives = widgets_[i]->getHandicapLives();
 
             Fighter *fighter = new Fighter(color, i, teamID,
-                    lives + handicapLives, username);
+                    lives + handicapLives, username, fighterName);
             teamCounts[teamID]++;
             fighters.push_back(fighter);
 
@@ -589,7 +607,8 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
         {
             defstate.active[i] = true;
             defstate.teamID[i] = widgets_[i]->getTeamID();
-            defstate.profileID[i]  = widgets_[i]->getProfileID();
+            defstate.profileID[i] = widgets_[i]->getProfileID();
+            defstate.fighterID[i] = widgets_[i]->getFighterID();
             defstate.colors[i] = widgets_[i]->getColorID();
             defstate.handicaps[i] = widgets_[i]->getHandicapLives();
         }
@@ -598,6 +617,7 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
             defstate.active[i] = false;
             defstate.teamID[i] = i;
             defstate.profileID[i] = 0;
+            defstate.fighterID[i] = 0;
             defstate.colors[i] = i;
             defstate.handicaps[i] = 0;
         }

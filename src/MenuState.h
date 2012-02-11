@@ -77,8 +77,10 @@ public:
     int getTeamID() const;
     int getProfileID() const;
     int getColorID() const;
+    int getFighterID() const;
     glm::vec3 getColor(int colorScheme = 0) const;
     std::string getUsername() const;
+    std::string getFighterName() const;
     int getHandicapLives() const;
 
 private:
@@ -88,6 +90,7 @@ private:
 
     StringSelectWidget *usernameWidget_;
     StringSelectWidget *teamIDWidget_;
+    StringSelectWidget *fighterWidget_;
     NumberSelectWidget *handicapWidget_;
 
     int widgetIdx_;

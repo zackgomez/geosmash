@@ -29,7 +29,8 @@ class Fighter : public GameEntity
 {
 public:
     Fighter(const glm::vec3 &color, int playerID,
-            int teamID, int startingLives, const std::string &username);
+            int teamID, int startingLives, const std::string &username,
+            const std::string &fighterName);
     ~Fighter();
 
     void setRespawnLocation(float x, float y);
