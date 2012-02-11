@@ -17,7 +17,8 @@
 const std::string Fighter::type = "FighterEntity";
 
 Fighter::Fighter(const glm::vec3& color, int playerID,
-        int teamID, int startingLives, const std::string &username) :
+        int teamID, int startingLives, const std::string &username,
+        const std::string &fighterName) :
     dir_(-1),
     state_(0),
     damage_(0),
@@ -98,8 +99,12 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     
 
     // Create the renderer
-    //renderer_ = new BixelFighterRenderer();
-    renderer_ = new SkeletonFighterRenderer();
+    if (fighterName == "charlie")
+        renderer_ = new BixelFighterRenderer();
+    else if (fighterName == "stickman")
+        renderer_ = new SkeletonFighterRenderer();
+    else
+        assert(false && "Unknown fighter name");
 
     state_ = 0;
 }
