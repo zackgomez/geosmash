@@ -96,9 +96,19 @@ GameState * StatsGameState::processInput(const std::vector<Controller*> &control
     return NULL;
 }
 
+void StatsGameState::preFrame()
+{
+    // nop
+}
+
+void StatsGameState::postFrame()
+{
+    // nop
+}
+
 void StatsGameState::update(float dt)
 {
-    // Empty
+    // nop
 }
 
 const float columnWidth = 1920.f/4 - 10.f;

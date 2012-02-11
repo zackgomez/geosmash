@@ -62,11 +62,8 @@ protected:
 private:
     SDL_Joystick *joystick_;
 
-
     int ltrigAxis_, rtrigAxis_;
 	int dpadnsAxis_, dpadweAxis_;
-
-    
 };
 
 

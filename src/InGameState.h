@@ -23,6 +23,8 @@ public:
             float dt);
     virtual void update(float dt);
     virtual void render(float dt);
+    virtual void preFrame();
+    virtual void postFrame();
 
     const std::vector<const Fighter*> getFighters() const;
 

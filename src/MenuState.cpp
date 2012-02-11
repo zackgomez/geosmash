@@ -434,11 +434,15 @@ MenuState::~MenuState()
         delete topWidgets_[i];
 }
 
-void MenuState::update(float)
+void MenuState::preFrame()
 {
     checkForJoysticks(getParam("maxPlayers"));
 }
 
+void MenuState::update(float)
+{
+    // nop
+}
 
 void MenuState::render(float dt)
 {
@@ -465,6 +469,11 @@ void MenuState::render(float dt)
 
         topWidgets_[i]->render(center, size, topMenuController_ != -1 && i == topWidgetIdx_);
     }
+}
+
+void MenuState::postFrame()
+{
+    // nop
 }
 
 GameState* MenuState::processInput(const std::vector<Controller*> &controllers, float dt)

@@ -276,6 +276,16 @@ void InGameState::render(float dt)
         renderPause();
 }
 
+void InGameState::preFrame()
+{
+    // nop
+}
+
+void InGameState::postFrame()
+{
+    // nop
+}
+
 bool InGameState::stealLife(int teamID)
 {
     for (size_t i = 0; i < fighters_.size(); i++)

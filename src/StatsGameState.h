@@ -24,6 +24,8 @@ public:
             float dt);
     virtual void update(float dt);
     virtual void render(float dt);
+    virtual void preFrame();
+    virtual void postFrame();
 
 private:
     std::vector<Player *>  players_;

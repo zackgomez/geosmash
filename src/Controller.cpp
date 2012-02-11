@@ -14,8 +14,8 @@ std::vector<KeyboardController*> KeyboardController::keyboardControllers_;
 
 Controller::Controller(int controllerID, bool isKeyboard) :
     controllerID_(controllerID),
-    joystick_(NULL),
-	isKeyboard_(isKeyboard)
+	isKeyboard_(isKeyboard),
+    joystick_(NULL)
 {
     logger_ = Logger::getLogger("Controller");
     // Clear the state

@@ -75,7 +75,7 @@ void mainloop()
         // Global events like ESC or mute etc
         globalEvents();
 		
-		// TODO call state->preframe()
+        state->preFrame();
 
         // Update controllers
         for (size_t i = 0; i < controllers.size(); i++)
@@ -99,8 +99,8 @@ void mainloop()
 
         state->render(dt);
 
-        // TODO call state->postframe()
-        
+        state->postFrame();
+
         postRender();
         SDL_GL_SwapBuffers();
 

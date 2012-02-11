@@ -109,8 +109,10 @@ public:
     ~MenuState();
 
     virtual GameState* processInput(const std::vector<Controller*>&, float dt);
+    virtual void preFrame();
     virtual void update(float dt);
     virtual void render(float dt);
+    virtual void postFrame();
     
 private:
     std::vector<PlayerWidget*> widgets_;
