@@ -126,6 +126,7 @@ void AudioManager::setSoundtrack(const std::string &file)
 		soundtrack_->stop();
 	}
 	soundtrack_ = engine->play2D(file.c_str(), true, true, true);
+	assert(soundtrack_ && "Couldn't find the soundtrack. Did you add the SFX directory?");
 }
 
 void AudioManager::startSoundtrack()

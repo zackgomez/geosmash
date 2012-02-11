@@ -8,13 +8,11 @@
 #include "irrKlang.h"
 
 //
-// SFML Notes
-// SFML uses OpenAL, which will NOT use spatialization features
-// on audio files that contain more than one channel.
+// Irrklang notes:
+// Irrklang only releases a 32 bit build, so the entire project must be
+// 32 bit. Kind of annoying, maybe we should think about replacing this library
+// at some point.
 //
-// YOU MUST USE MONO AUDIO FILES TO USE PANNING! 
-//
-
 class AudioManager
 {
 public:
