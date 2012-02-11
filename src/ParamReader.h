@@ -16,6 +16,9 @@ public:
 
     bool hasParam(const std::string &key) const;
 
+    // Sets a given parameter, overwrites if the param already exits
+    void setParam(const std::string &key, float value);
+
     void printParams() const;
 
 private:

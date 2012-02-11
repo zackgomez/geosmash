@@ -503,7 +503,8 @@ GameState* MenuState::processInput(const std::vector<Controller*> &controllers, 
     }
 
 
-    if (teams.size() >= 2 && shouldStart)
+    // start when someone asks to and either at least two teams, or it's debug mode
+    if (shouldStart && (teams.size() >= 2 || getParam("debug")))
     {
         logger_->debug() << "Starting a new game by from Player " << startingPlayer+1 << "'s request\n";
         return newGame(controllers);
@@ -623,7 +624,14 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
         }
     }
 
-    GameState *gs = new InGameState(players, fighters, recordStats, stage);
+    // Create game mode
+    GameMode *gameMode;
+    if (getParam("debug"))
+        gameMode = new DebugGameMode();
+    else
+        gameMode = new StockGameMode();
+
+    GameState *gs = new InGameState(players, fighters, recordStats, stage, gameMode);
     return gs;
 }
 

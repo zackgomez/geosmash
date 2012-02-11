@@ -16,7 +16,6 @@
 static const float dt = 1.f / 60.f;
 static const int MAX_PLAYERS = 4;
 
-bool debug;
 LoggerPtr logger;
 
 std::vector<Controller*> controllers;
@@ -39,10 +38,11 @@ int main(int argc, char *argv[])
     ParamReader::get()->loadFile("config/global.params");
     ParamReader::get()->loadFile("config/charlie.params");
 
+    ParamReader::get()->setParam("debug", 0.f);
     for (int i = 1; i < argc; i++)
     {
         if (strcmp(argv[i], "--debug") == 0)
-            debug = true;
+            ParamReader::get()->setParam("debug", 1.f);
     }
 
     if (!initLibs())
@@ -177,11 +177,11 @@ void checkForJoysticks(unsigned maxPlayers)
 
 int initGraphics()
 {
-    float xres = debug ? getParam("debug.resolution.x") : getParam("resolution.x");
-    float yres = debug ? getParam("debug.resolution.y") : getParam("resolution.y");
+    float xres = getParam("debug") ? getParam("debug.resolution.x") : getParam("resolution.x");
+    float yres = getParam("debug") ? getParam("debug.resolution.y") : getParam("resolution.y");
 
     int flags = SDL_OPENGL;
-    if (!debug)
+    if (!getParam("debug"))
         flags |= SDL_FULLSCREEN;
 
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -198,7 +198,7 @@ int initGraphics()
         return 0;
     }
 
-    if (!debug)
+    if (!getParam("debug"))
         SDL_ShowCursor(SDL_DISABLE);
     SDL_WM_SetCaption("GeoSMASH BUILT " __DATE__ " " __TIME__, "geosmash");
     // Set the viewport
@@ -238,7 +238,7 @@ int initLibs()
     // Get AudioManager singleton to call constructor
     AudioManager::get();
     // Mute on debug by default
-    if (debug)
+    if (getParam("debug"))
         AudioManager::get()->mute();
 
     // Seed random number generator

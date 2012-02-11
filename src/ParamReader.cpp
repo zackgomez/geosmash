@@ -56,6 +56,11 @@ float ParamReader::get(const std::string &key) const
         return it->second;
 }
 
+void ParamReader::setParam(const std::string &key, float value)
+{
+    params_[key] = value;
+}
+
 bool ParamReader::hasParam(const std::string &key) const
 {
     return params_.find(key) != params_.end();
