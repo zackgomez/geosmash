@@ -37,9 +37,10 @@ const std::vector<const Fighter*> InGameState::getFighters() const
 
 InGameState::InGameState(const std::vector<Player *> &players,
         const std::vector<Fighter*> &fighters, bool keepStats,
-        const std::string &stage) :
+        const std::string &stage, GameMode *gameMode) :
     players_(players),
     fighters_(fighters),
+    gameMode_(gameMode),
     paused_(false),
     pausingPlayer_(-1),
     keepStats_(keepStats)
@@ -71,9 +72,6 @@ InGameState::InGameState(const std::vector<Player *> &players,
     // Clear the stats
     StatsManager::get()->clear();
 
-    // Set game mode
-    gameMode_ = new StockGameMode();
-    
     // Set per game stats
     StatsManager::get()->setStat("numPlayers", players_.size());
 
@@ -144,7 +142,7 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
         if (players_[i]->wantsPauseToggle())
             togglePause(i);
 
-        if (paused_ && pausingPlayer_ == players_[i]->getPlayerID() &&
+        if (paused_ && pausingPlayer_ == i &&
                 players_[i]->getState().pressback)
             return new StatsGameState(players_, -1);
     }

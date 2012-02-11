@@ -16,7 +16,7 @@ class InGameState : public GameState
 public:
     InGameState(const std::vector<Player *> &players,
             const std::vector<Fighter *> &fighters, bool keepStats,
-            const std::string &stage);
+            const std::string &stage, GameMode *gameMode);
     virtual ~InGameState();
 
     virtual GameState* processInput(const std::vector<Controller*> &joysticks,
@@ -94,4 +94,15 @@ private:
     bool gameOver_;
     bool criticalMusic_;
     int winningTeam_;
+};
+
+// Debug game mode, game never ends, no one wins
+class DebugGameMode : public GameMode
+{
+public:
+    DebugGameMode() { }
+    virtual ~DebugGameMode() { }
+    virtual void update(float dt, const std::vector<Fighter *> &fighters) { }
+    virtual bool gameOver() const { return false; }
+    virtual int getWinningTeam() const { return -1; }
 };
