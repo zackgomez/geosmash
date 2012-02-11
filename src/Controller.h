@@ -86,6 +86,9 @@ public:
 	
 private:
 
+	// Selectively clear some fields.
+	void keyboardClear();
+
 	// If a developer creates multiple KeyboardControllers, the last one
 	// created should have priority over all others 
 	bool shouldAcceptInput_;
