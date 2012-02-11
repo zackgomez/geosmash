@@ -104,7 +104,7 @@ InGameState::InGameState(const std::vector<Player *> &players,
         replayStream_ << players_[i]->getUsername() << ' ';
     replayStream_ << '\n';
     logger_->info() << "Saving replay to replays/lastreplay\n";
-    assert(replayStream_);
+    assert(replayStream_ && "Couldn't save a replay. Make sure you created 'replays/' folder.");
 }
 
 InGameState::~InGameState()
