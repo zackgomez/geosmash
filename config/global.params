@@ -67,9 +67,9 @@ killbox.right   1300
 #stageHazardAttack.xaccel       1500
 #stageHazardAttack.twirlHeight  120
 
-volcanoHazard.startup  5.0
-volcanoHazard.duration 1.0
-volcanoHazard.cooldown 0
+volcanoHazard.startup  3.0
+volcanoHazard.duration 0.6
+volcanoHazard.cooldown 1.2
 volcanoHazard.mintime  10
 volcanoHazard.maxtime  15
 

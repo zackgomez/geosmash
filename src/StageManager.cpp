@@ -342,6 +342,7 @@ void VolcanoHazard::render(float dt)
     else if (t_ > getParam(pre_ + "startup")
             && t_ < getParam(pre_ + "startup") + getParam(pre_ + "duration"))
     {
+        // Fire and brimstone
         glm::mat4 transform = glm::scale(
                 glm::translate(glm::mat4(1.f),
                     glm::vec3(attack_->getHitbox().x, attack_->getHitbox().y, 0.f)),
@@ -351,7 +352,12 @@ void VolcanoHazard::render(float dt)
     }
     else
     {
-        // TODO render cooldown
+        // Cooldown, a smokey texture
+        glm::mat4 transform = glm::scale(
+                glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
+                glm::vec3(getParam(pre_ + "steamw"), getParam(pre_ + "steamh"), 1.f));
+
+        renderRectangle(transform, glm::vec4(0.2f, 0.2f, 0.2f, 0.0f));
     }
 }
 
