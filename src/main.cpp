@@ -141,11 +141,6 @@ void globalEvents()
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 running = false;
-            if (event.key.keysym.sym == SDLK_a)
-			{
-				// A developer requested a keyboard controller
-				addKeyboardController();
-			}
             if (event.key.keysym.sym == SDLK_m)
                 AudioManager::get()->mute();
                 AudioManager::get()->pauseSoundtrack();
@@ -163,6 +158,13 @@ void globalEvents()
 void checkForJoysticks(unsigned maxPlayers)
 {
     unsigned numJoysticks = SDL_NumJoysticks();
+	Uint8 *keystate = SDL_GetKeyState(NULL);
+	if (keystate[SDLK_a])
+	{
+		// A developer requested a keyboard controller
+		addKeyboardController();
+	}
+
     // Are there new joysticks?
     if (numJoysticks > controllers.size())
     {
@@ -171,6 +173,7 @@ void checkForJoysticks(unsigned maxPlayers)
         {
             logger->info() << "Adding joystick: " << SDL_JoystickName(i) << '\n';
             controllers.push_back(new Controller(i));
+
         }
     }
 }
