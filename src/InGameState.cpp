@@ -70,6 +70,9 @@ InGameState::InGameState(const std::vector<Player *> &players,
     StageManager::get()->initLevel(stage);
     // Clear the stats
     StatsManager::get()->clear();
+
+    // Set game mode
+    gameMode_ = new StockGameMode();
     
     // Set per game stats
     StatsManager::get()->setStat("numPlayers", players_.size());
@@ -119,6 +122,8 @@ InGameState::~InGameState()
     for (size_t i = 0; i < listeners_.size(); i++)
         if (listeners_[i]->removeOnCompletion())
             delete listeners_[i];
+
+    delete gameMode_;
 
     replayStream_.close();
 }
@@ -182,35 +187,11 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
     }
 
     // Check for state changes
-    // change when only 1 or 0 teams left alive
-    int alivePlayers = 0;
-    int totalLives = 0;
-    std::set<int> teamsAlive;
-    for (unsigned i = 0; i < fighters_.size(); i++)
-    {
-        totalLives += fighters_[i]->getLives();
-        if (fighters_[i]->isAlive())
-        {
-            alivePlayers++;
-            teamsAlive.insert(fighters_[i]->getTeamID());
-        }
-    }
-
-    // Check for switch to tense music
-    if (alivePlayers == totalLives && !criticalMusic_)
-    {
-        criticalMusic_ = true;
-        AudioManager::get()->setSoundtrack("sfx/08 Critical Stealth (loop).ogg");
-        AudioManager::get()->startSoundtrack();
-    }
-
-    // End the game when zero or one team is left
-    if (teamsAlive.size() < 2)
+    gameMode_->update(dt, fighters_);
+    if (gameMode_->gameOver())
     {
         // Winning team is -1 if no team exists
-        int winningTeam = -1;
-        if (!teamsAlive.empty())
-            winningTeam = *teamsAlive.begin();
+        int winningTeam = gameMode_->getWinningTeam();
 
         // Set the run time stat
         StatsManager::get()->setStat("MatchLength",
@@ -640,4 +621,67 @@ std::vector<GameEntity *> getEntitiesToAdd()
     std::vector<GameEntity *> ret = entitiesToAdd;
     entitiesToAdd.clear();
     return ret;
+}
+
+// -----------------
+// StockGameMode
+// -----------------
+
+StockGameMode::StockGameMode() :
+    gameOver_(false), criticalMusic_(false), winningTeam_(-1)
+{
+}
+
+StockGameMode::~StockGameMode()
+{
+}
+
+void StockGameMode::update(float dt, const std::vector<Fighter *> &fighters)
+{
+    // Sanity check
+    assert(!gameOver_);
+
+    // Calculate number of players, teams, and total lives
+    int alivePlayers = 0;
+    int totalLives = 0;
+    std::set<int> teamsAlive;
+    for (unsigned i = 0; i < fighters.size(); i++)
+    {
+        totalLives += fighters[i]->getLives();
+        if (fighters[i]->isAlive())
+        {
+            alivePlayers++;
+            teamsAlive.insert(fighters[i]->getTeamID());
+        }
+    }
+
+    // Check for switch to tense music
+    if (alivePlayers == totalLives && !criticalMusic_)
+    {
+        criticalMusic_ = true;
+        AudioManager::get()->setSoundtrack("sfx/08 Critical Stealth (loop).ogg");
+        AudioManager::get()->startSoundtrack();
+    }
+
+    // End the game when zero or one team is left
+    if (teamsAlive.size() <= 1)
+    {
+        gameOver_ = true;
+        // Winning team is -1 if no team exists
+        winningTeam_ = -1;
+        // Otherwise, only one team, and that team is winner
+        if (!teamsAlive.empty())
+            winningTeam_ = *teamsAlive.begin();
+    }
+}
+
+bool StockGameMode::gameOver() const
+{
+    return gameOver_;
+}
+
+int StockGameMode::getWinningTeam() const
+{
+    assert(gameOver_);
+    return winningTeam_;
 }
