@@ -436,7 +436,7 @@ MenuState::~MenuState()
 
 void MenuState::update(float)
 {
-    // nop
+    checkForJoysticks(getParam("maxPlayers"));
 }
 
 

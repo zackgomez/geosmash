@@ -14,7 +14,6 @@
 #include "Logger.h"
 
 static const float dt = 1.f / 60.f;
-static const int MAX_PLAYERS = 4;
 
 LoggerPtr logger;
 
@@ -75,11 +74,8 @@ void mainloop()
 
         // Global events like ESC or mute etc
         globalEvents();
-
-
-        // TODO call state->preframe()
-        // TODO move this to menu state
-        checkForJoysticks(MAX_PLAYERS);
+		
+		// TODO call state->preframe()
 
         // Update controllers
         for (size_t i = 0; i < controllers.size(); i++)
@@ -122,7 +118,7 @@ void mainloop()
 void addKeyboardController() 
 {
 	// Make sure to tell this controller that it's a keyboard ctrl
-	if (controllers.size() == MAX_PLAYERS)
+	if (controllers.size() == getParam("maxPlayers"))
 	{
 		return;
 	}
