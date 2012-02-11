@@ -16,8 +16,8 @@ all: obj ssb params
 
 params: $(PARAMS)
 
-config/%.params:
-	cp config/$*.params.def config/$*.params
+config/%.params: config/%.params.def
+	cp $^ $@
 
 ssb: $(OBJECTS) obj/libkiss_particles.a params
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJECTS) obj/libkiss_particles.a $(LDFLAGS)
