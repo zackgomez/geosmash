@@ -93,6 +93,7 @@ backgroundSphere.pulseCount     1000
 backgroundSphere.divisionCount  1000
 backgroundSphere.lineCount      10
 backgroundSphere.meshRes        512
+backgroundSphere.shouldRender   0
 
 hud.x       0
 hud.y       -0.70

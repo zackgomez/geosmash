@@ -152,6 +152,10 @@ std::vector<rectangle> StageManager::getPlatforms() const
 void StageManager::renderSphereBackground(float dt)
 {
     t_ += 3*dt;
+	if (getParam("backgroundSphere.shouldRender") == 0) 
+	{
+		return;
+	}
     glEnable(GL_CULL_FACE);
     float r = getParam("backgroundSphere.radius");
     glm::mat4 transform = glm::rotate(glm::scale(glm::mat4(1.f), glm::vec3(r, r, r)),
