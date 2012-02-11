@@ -52,7 +52,7 @@ void FrameManager::loadPoseFile(const std::string &filename)
     if (!file)
     {
         logger_->error() << "Unable to open file " << filename << '\n';
-        assert(false);
+        assert(false && "Failed to load a pose file");
     }
 
     while (file)

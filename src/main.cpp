@@ -104,13 +104,10 @@ void mainloop()
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
         clear = SDL_GetTicks() - rstartms - pre;
 
-        rstartms = SDL_GetTicks();
         state->render(dt);
-        mid = SDL_GetTicks() - rstartms;
 
         // TODO call state->postframe()
         
-        rstartms = SDL_GetTicks();
         postRender();
         SDL_GL_SwapBuffers();
         post = SDL_GetTicks() - rstartms;
