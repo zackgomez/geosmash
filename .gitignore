@@ -5,3 +5,4 @@ lastreplay.replay
 kiss_particles
 kiss-particles
 ssb
+config/*.params

@@ -10,11 +10,17 @@ CXXFLAGS=-g -O0 -Wall -I$(GLM) -I$(KISS_PARTICLES) -I$(IRRKLANG)/include -I$(KIS
 LDFLAGS=-lSDL -lGL -lGLEW -lIrrKlang -L$(IRRKLANG)/bin/linux-gcc -lpthread
 
 OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(SRCDIR)/*.cpp))) obj/kiss-skeleton.o
+PARAMS = config/global.params config/charlie.params config/stickman.params
 
-all: obj ssb
+all: obj ssb params
 
-ssb: $(OBJECTS) obj/libkiss_particles.a
-	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+params: $(PARAMS)
+
+config/%.params:
+	cp config/$*.params.def config/$*.params
+
+ssb: $(OBJECTS) obj/libkiss_particles.a params
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJECTS) obj/libkiss_particles.a $(LDFLAGS)
 
 $(OBJDIR)/kiss-skeleton.o: $(KISS_SKELETON)/kiss-skeleton.cpp
 	$(CXX) -c $(CXXFLAGS) -o $@ $^
@@ -31,7 +37,7 @@ clean:
 	rm -rf obj/
 	cd $(KISS_PARTICLES) && make clean
 
-debug: obj ssb
+debug: obj ssb params
 	./ssb --debug
 
 force_look:
@@ -40,4 +46,4 @@ force_look:
 obj:
 	mkdir -p obj
 
-.PHONY: clean force_look obj
+.PHONY: clean force_look obj config
