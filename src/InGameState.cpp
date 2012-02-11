@@ -214,6 +214,9 @@ void InGameState::update(float dt)
     if (paused_)
         return;
 
+    // Update level
+    StageManager::get()->update(dt);
+
     // Add new GameEntities
     std::vector<GameEntity *> newEntities = getEntitiesToAdd();
     entities_.insert(entities_.end(), newEntities.begin(), newEntities.end());

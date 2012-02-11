@@ -5,6 +5,7 @@
 #include "Attack.h"
 #include "Fighter.h"
 #include "Engine.h"
+#include "Logger.h"
 
 struct Ledge
 {
@@ -45,6 +46,8 @@ public:
 private:
     StageManager();
 
+    LoggerPtr logger_;
+
     std::vector<Ledge*> ledges_;
     rectangle ground_;
     std::vector<rectangle> platforms_;
@@ -54,6 +57,10 @@ private:
     GLuint sphereProgram_, stageProgram_;
     GLuint **indicies_;
     float t_;
+
+    // Hazard related members
+    bool levelHazard_;
+    float hazardT_;
 
     void initBackground();
 
@@ -87,6 +94,35 @@ private:
     void renderLatitude(void);
     void renderLongitude(void);
     void updateLitSegments(void);
+};
+
+
+class VolcanoHazard : public GameEntity
+{
+public:
+    VolcanoHazard(const glm::vec2 &pos);
+    virtual ~VolcanoHazard();
+
+    virtual std::string getType() const { return "VolcanoHazard"; }
+
+    virtual bool isDone() const;
+    virtual bool hasAttack() const;
+    virtual const Attack * getAttack() const;
+    virtual bool canBeHit() const { return false; }
+
+    virtual void update(float dt);
+
+    // GameEntity overrides
+    virtual void render(float dt);
+    virtual void attackCollision(const Attack*);
+    virtual void attackConnected(GameEntity*);
+    virtual void collisionWithGround(const rectangle&, bool, bool);
+    virtual void hitByAttack(const Attack*);
+
+private:
+    SimpleAttack *attack_;
+    std::string pre_;
+    float t_;
 };
 
 

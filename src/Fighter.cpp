@@ -422,7 +422,7 @@ void SkeletonFighterRenderer::render(const glm::mat4 &transform, const glm::vec4
         const std::string &frameName, float dt) const
 {
     glm::mat4 scaledTransform = glm::rotate(glm::scale(transform, glm::vec3(60, 50, 60)), 
-		70.f, glm::vec3(0.f, 1.f, 0.f));
+		getParam("stickman.rotation"), glm::vec3(0.f, 1.f, 0.f));
 
     renderer_->setColor(color);
 

@@ -9,9 +9,12 @@
 #include "FrameManager.h"
 #include "PManager.h"
 
+void addEntity(GameEntity *);
+
 StageManager::StageManager() :
     t_(0)
 {
+    logger_ = Logger::getLogger("StageManager");
     initBackground();
 
     // TODO move to initStage
@@ -28,6 +31,32 @@ StageManager::StageManager() :
     }
     stageProgram_ = make_program(vert, frag);
     assert(stageProgram_);
+}
+
+// XXX this already exists in kiss-particles utils, make a global utils
+float random_float(float min, float max)
+{
+    return rand() / static_cast<float>(RAND_MAX) * (max - min) + min;
+}
+
+void StageManager::update(float dt)
+{
+    hazardT_ -= dt;
+    if (levelHazard_ && hazardT_ < 0.f)
+    {
+        // spawn hazard at random location on ground
+        glm::vec2 hpos(random_float(ground_.x - ground_.w/2, ground_.x + ground_.w/2),
+                ground_.y + ground_.h/2);
+        // Make sure it's not on the edge
+        hpos.x *= 0.8f;
+
+        addEntity(new VolcanoHazard(hpos));
+
+        // Reset timer
+        hazardT_ = random_float(getParam("volcanoHazard.mintime"),
+                getParam("volcanoHazard.maxtime"));
+        logger_->info() << "Spawning hazard.  Next in " << hazardT_ << "s\n";
+    }
 }
 
 std::vector<std::string> StageManager::getStageNames() const
@@ -49,6 +78,13 @@ void StageManager::initLevel(const std::string &stage)
             getParam("level.g"), getParam("level.b"));
 
     // XXX: hardcoded
+    if (stage == "default")
+    {
+        // Set up hazard params
+        levelHazard_ = true;
+        hazardT_ = random_float(getParam("volcanoHazard.mintime"),
+                getParam("volcanoHazard.maxtime"));
+    }
     if (stage == "platforms")
     {
         platforms_.push_back(rectangle(-200, 40, 220, 10));
@@ -58,6 +94,7 @@ void StageManager::initLevel(const std::string &stage)
         ground_.w *= 0.80f;
     }
 
+    // Set up ledges based on location of ground
     // Left side ledge
     Ledge l;
     l.pos = glm::vec2(ground_.x - ground_.w / 2, ground_.y + ground_.h/2);
@@ -74,6 +111,7 @@ void StageManager::initLevel(const std::string &stage)
 
 void StageManager::clear()
 {
+    ground_ = rectangle();
     ledges_.clear();
     platforms_.clear();
 }
@@ -218,6 +256,127 @@ rectangle StageManager::getGroundRect() const
 {
     return ground_;
 }
+
+//////////////////////////////////////////////
+// Volcano Hazard  
+//////////////////////////////////////////////
+
+VolcanoHazard::VolcanoHazard(const glm::vec2 &pos) :
+    GameEntity()
+{
+    pos_ = pos;
+    size_  = glm::vec2(0.f);
+    vel_   = glm::vec2(0.f);
+    accel_ = glm::vec2(0.f);
+
+    pre_ = "volcanoHazard.";
+
+    glm::vec2 kbdir = glm::normalize(glm::vec2(
+                getParam(pre_ + "knockbackx"),
+                getParam(pre_ + "knockbacky")));
+    kbdir *= glm::vec2(glm::sign(vel_.x), 1.f);
+
+    glm::vec2 asize = glm::vec2(
+            getParam(pre_ + "hitboxx"),
+            getParam(pre_ + "hitboxy"));
+    glm::vec2 apos = glm::vec2(pos_.x, pos_.y + asize.y/2);
+
+    attack_ = new SimpleAttack(
+            kbdir,
+            getParam(pre_ + "kbbase"),
+            getParam(pre_ + "kbscaling"),
+            getParam(pre_ + "damage"),
+            getParam(pre_ + "stun"),
+            getParam(pre_ + "priority"),
+            apos, asize,
+            1, // odir
+            -1, -1, // player, team IDs
+            ""); // audio ID
+
+}
+
+VolcanoHazard::~VolcanoHazard()
+{
+    delete attack_;
+}
+
+bool VolcanoHazard::isDone() const
+{
+    // Done when gone through all stages
+    return t_ > getParam(pre_ + "startup") +
+        getParam(pre_ + "duration") + getParam(pre_ + "cooldown");
+}
+
+bool VolcanoHazard::hasAttack() const
+{
+    return t_ > getParam(pre_ + "startup")
+        && t_ < getParam(pre_ + "startup") + getParam(pre_ + "duration");
+}
+
+const Attack* VolcanoHazard::getAttack() const
+{
+    // Quick sanity check
+    assert(hasAttack());
+    return attack_;
+}
+
+void VolcanoHazard::update(float dt)
+{
+    t_ += dt;
+
+    GameEntity::update(dt);
+}
+
+void VolcanoHazard::render(float dt)
+{
+    // Depending on state render different things
+    // Startup, just have it steam
+    if (t_ < getParam(pre_ + "startup"))
+    {
+        glm::mat4 transform = glm::scale(
+                glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
+                glm::vec3(getParam(pre_ + "steamw"), getParam(pre_ + "steamh"), 1.f));
+
+        renderRectangle(transform, glm::vec4(0.8f, 0.8f, 0.8f, 0.0f));
+    }
+    else if (t_ > getParam(pre_ + "startup")
+            && t_ < getParam(pre_ + "startup") + getParam(pre_ + "duration"))
+    {
+        glm::mat4 transform = glm::scale(
+                glm::translate(glm::mat4(1.f),
+                    glm::vec3(attack_->getHitbox().x, attack_->getHitbox().y, 0.f)),
+                glm::vec3(attack_->getHitbox().w, attack_->getHitbox().h, 1.f));
+
+        renderRectangle(transform, glm::vec4(0.8f, 0.1f, 0.1f, 0.0f));
+    }
+    else
+    {
+        // TODO render cooldown
+    }
+}
+
+void VolcanoHazard::attackCollision(const Attack*)
+{
+    // Ignore
+}
+
+void VolcanoHazard::attackConnected(GameEntity *victim)
+{
+    victim->hitByAttack(attack_);
+    attack_->hit(victim);
+}
+
+void VolcanoHazard::collisionWithGround(const rectangle &, bool, bool)
+{
+    // Ignore 
+}
+
+void VolcanoHazard::hitByAttack(const Attack*)
+{
+    // Should never happen
+    assert(false);
+}
+
 
 //////////////////////////////////////////////
 // Hazard  
