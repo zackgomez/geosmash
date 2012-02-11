@@ -192,7 +192,7 @@ void StageManager::renderStage(float dt)
     lightPos /= lightPos.w;
     GLuint colorUniform = glGetUniformLocation(stageProgram_, "color");
     GLuint lightPosUniform = glGetUniformLocation(stageProgram_, "lightpos");
-    glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(ground_color_, 1.0f)));
+    glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(ground_color_, 0.0f)));
     glUniform4fv(lightPosUniform, 1, glm::value_ptr(lightPos));
 
     // Draw the land

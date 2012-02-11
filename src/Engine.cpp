@@ -735,7 +735,7 @@ void GeosmashBoneRenderer::setColor(const glm::vec4 &color)
 
 void GeosmashBoneRenderer::operator() (const glm::mat4 &transform, const Bone* b)
 {
-    glm::mat4 fullTransform = glm::scale(transform, glm::vec3(b->length, 0.02, 0.02));
+    glm::mat4 fullTransform = glm::scale(transform, glm::vec3(b->length, 0.05, 0.05));
     fullTransform = glm::translate(fullTransform, glm::vec3(0.5f, 0.f, 0.f));
 
     GLuint colorUniform = glGetUniformLocation(resources.boneprogram, "color");

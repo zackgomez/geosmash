@@ -15,5 +15,5 @@ void main()
     ndotl = min(max(ndotl, 0) + 0.3, 1);
 
     gl_FragData[0] = vec4(ndotl * vec3(color), 1.0f);
-    gl_FragData[1] = vec4(0.0f, 0.0f, 0.0f, 0.f);
+    gl_FragData[1] = vec4(color.rgb, 1.f) * color.a;
 }
