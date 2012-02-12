@@ -45,6 +45,13 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     else
         assert(false && "Unknown fighter name");
 
+    fillAttacks(fighterName);
+}
+
+void Fighter::fillAttacks(const std::string &moveset)
+{
+    assert(moveset == "charlie" || moveset == "stickman");
+
     // Load ground attacks
     std::string g = "groundhit";
     std::string a = "airhit";

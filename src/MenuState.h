@@ -7,6 +7,9 @@
 #include <set>
 #include "Logger.h"
 
+class Skeleton;
+class GeosmashBoneRenderer;
+
 class MenuWidget
 {
 public:
@@ -84,6 +87,7 @@ public:
     int getHandicapLives() const;
 
 private:
+    void renderFighter(const glm::mat4 &transform, const glm::vec3 &color);
     int playerID_;
 
     bool active_;
@@ -100,6 +104,9 @@ private:
     bool widgetChangePrimed_;
 
     const bool *teams_, *handicap_;
+
+    Skeleton *skeleton_;
+    GeosmashBoneRenderer *srenderer_;
 };
 
 class MenuState : public GameState

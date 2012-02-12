@@ -120,6 +120,8 @@ private:
     void stateWrapper(FighterState *fs);
     float param(const std::string &param) const;
     void renderHelper(float dt, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
+    // Fills in attacks based on the move set
+    void fillAttacks(const std::string &moveset);
     // Loads an attack from the params using the attackName.param syntax
     template<class AttackClass>
     AttackClass* loadAttack(std::string attackName, const std::string &audioID,

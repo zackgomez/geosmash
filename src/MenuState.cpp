@@ -14,6 +14,7 @@
 #include "ParamReader.h"
 #include "FrameManager.h"
 #include "Player.h"
+#include "kiss-skeleton.h"
 
 void checkForJoysticks(unsigned maxPlayers);
 
@@ -233,6 +234,11 @@ PlayerWidget::PlayerWidget(int playerID, const bool *teams, const bool *handicap
     widgets_.push_back(fighterWidget_);
     widgets_.push_back(teamIDWidget_);
     widgets_.push_back(handicapWidget_);
+
+    skeleton_ = new Skeleton();
+    srenderer_ = new GeosmashBoneRenderer();
+    skeleton_->readSkeleton("models/test.bones");
+    skeleton_->setBoneRenderer(srenderer_);
 }
 
 PlayerWidget::~PlayerWidget()
@@ -241,6 +247,8 @@ PlayerWidget::~PlayerWidget()
     delete fighterWidget_;
     delete teamIDWidget_;
     delete handicapWidget_;
+
+    delete skeleton_;
 }
 
 bool PlayerWidget::isActive() const { return active_; }
@@ -344,8 +352,8 @@ void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float 
     {
         trans = glm::scale(glm::translate(glm::mat4(1.f),
                     glm::vec3(center.x + 0.3f * size.x, center.y, -0.1f)),
-                glm::vec3(5.f, -5.f, 0.f));
-        FrameManager::get()->renderFrame(trans, glm::vec4(color, 0.15f), "GroundNormal");
+                glm::vec3(25.f, -25.f, 0.f));
+        renderFighter(trans, color);
 
         glm::vec2 widgetStart = center - glm::vec2(size.x *0.1f, size.y * 0.25f);
         glm::vec2 widgetSize = glm::vec2(0.33f, 0.1f) * size;
@@ -356,6 +364,29 @@ void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float 
                     widgetSize, widgetIdx_ == i);
         }
     }
+}
+
+void PlayerWidget::renderFighter(const glm::mat4 &transform, const glm::vec3 &color)
+{
+    std::string fighter = fighterWidget_->strValue() ;
+    // Scale for each bixel being 5 game units
+    if (fighter == "charlie")
+    {
+        glm::mat4 finalTransform = glm::scale(transform, glm::vec3(0.2f, 0.2f, 1.f));
+        FrameManager::get()->renderFrame(finalTransform,
+                glm::vec4(color, 0.15f), "GroundNormal");
+    }
+    else if (fighter == "stickman")
+    {
+        float aspect_ratio = getParam("stickman.w") / getParam("stickman.h");
+        // Scale for proper size
+        glm::mat4 finalTransform = glm::scale(transform,
+                glm::vec3(aspect_ratio*10.f, 10.f, 1.f));
+        srenderer_->setColor(glm::vec4(color, 0.55f));
+        skeleton_->render(finalTransform);
+    }
+    else
+        assert(false && "Unknown fighter to render");
 }
 
 int PlayerWidget::getTeamID() const
