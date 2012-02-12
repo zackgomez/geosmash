@@ -40,7 +40,6 @@ stickman.w             50
 stickman.h             60
 stickman.minDashTime   0.25
 
-
 stickman.dodge.duration    0.42
 stickman.dodge.invincTime  0.32
 stickman.dodge.speed       450

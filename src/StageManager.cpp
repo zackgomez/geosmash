@@ -62,8 +62,8 @@ void StageManager::update(float dt)
 std::vector<std::string> StageManager::getStageNames() const
 {
     std::vector<std::string> ret;
-    ret.push_back("default");
-    ret.push_back("platforms");
+    ret.push_back("bandwidth bar");
+    ret.push_back("realtime ranch");
 
     return ret;
 }
@@ -78,20 +78,24 @@ void StageManager::initLevel(const std::string &stage)
             getParam("level.g"), getParam("level.b"));
 
     // XXX: hardcoded
-    if (stage == "default")
+    if (stage == "bandwidth bar")
     {
         // Set up hazard params
         levelHazard_ = true;
         hazardT_ = random_float(getParam("volcanoHazard.mintime"),
                 getParam("volcanoHazard.maxtime"));
     }
-    if (stage == "platforms")
+    else if (stage == "realtime ranch")
     {
         platforms_.push_back(rectangle(-200, 40, 220, 10));
         platforms_.push_back(rectangle(0, 140, 220, 10));
         platforms_.push_back(rectangle(200, 40, 220, 10));
 
         ground_.w *= 0.80f;
+    }
+    else
+    {
+        assert(false && "Unknown level");
     }
 
     // Set up ledges based on location of ground
