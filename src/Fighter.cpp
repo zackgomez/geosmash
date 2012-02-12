@@ -91,8 +91,8 @@ void Fighter::fillAttacks(const std::string &moveset)
     attackMap_["dashSpecial"]->setHitboxFrame("Null");
     attackMap_["dashSpecial"]->setStartSound("dashspecialhit");
 
-    attackMap_["tauntUp"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntAttack");
-    attackMap_["tauntDown"] = loadAttack<FighterAttack>("tauntAttack", a, "Bong");
+    attackMap_["tauntUp"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntA");
+    attackMap_["tauntDown"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntB");
 
     attackMap_["neutralSmash"] = loadAttack<VaryingDirectionAttack>("neutralSmashAttack", s, "NeutralSmash");
     attackMap_["neutralSmash"]->setTwinkle(true);
