@@ -137,7 +137,7 @@ void AIPlayer::update(float)
     // if Left/right of the stage midpoint, move to the center
     // If feet are below the top of the stage, attempt to jump
 
-    memset(&cs_, 0 , sizeof(controller_state));
+	cs_.clear();
 
     // First, update some variables. Nothing here should modify cs_.
     pos = fighter_->getPosition();
@@ -159,13 +159,10 @@ void AIPlayer::update(float)
     {
         cs_.joyx = glm::sign(targetPos.x - fighter_->getPosition().x);
     }
-    if (fighter_->getPosition().y < r.y)
-    {
-        cs_.pressy = true;
-    }
 
     // We want to spend as little time as possible in the ground state
-    if (fighter_->getFrameName() == "GroundNormal")
+    if (fighter_->getFrameName() == "GroundWalking" ||
+		fighter_->getFrameName() == "GroundNormal")
     {
         // short hop
         cs_.pressy = true;
@@ -173,7 +170,8 @@ void AIPlayer::update(float)
     }
     // if we're not in danger of falling off and someone is near us,
     // just attack
-    if (fighter_->getFrameName() == "AirNormal")
+    if (fighter_->getFrameName() == "AirNormalHop" || 
+		fighter_->getFrameName() == "AirNormal")
     {
         performAttack();
     }
