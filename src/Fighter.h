@@ -90,6 +90,9 @@ public:
     // for delete callback object.
     LimpFighter* goLimp(UnlimpCallback *l);
 
+	// a getParam() call that automatically prefixes the name of the character
+	float param(const std::string &param) const;
+
 private:
     FighterState *state_;
     std::string pre_;
@@ -118,7 +121,6 @@ private:
 
     // ---- Helper functions ----
     void stateWrapper(FighterState *fs);
-    float param(const std::string &param) const;
     void renderHelper(float dt, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
     // Loads an attack from the params using the attackName.param syntax
     template<class AttackClass>

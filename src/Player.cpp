@@ -90,7 +90,7 @@ void AIPlayer::performGetBack()
         glm::vec2 upb_delta;
         // How far from the center of the stage are we?
         float dist = fabs(pos.x - r.x);
-        float ledgeDist = getParam("ledgeGrab.dist");
+        float ledgeDist = fighter_->param("ledgeGrab.dist");
         upb_delta.x = getParam("upSpecialAttack.xvel") * 
             getParam("upSpecialAttack.duration");
         upb_delta.y = getParam("upSpecialAttack.yvel") *
