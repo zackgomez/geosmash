@@ -19,10 +19,11 @@ const std::string Fighter::type = "FighterEntity";
 Fighter::Fighter(const glm::vec3& color, int playerID,
         int teamID, int startingLives, const std::string &username,
         const std::string &fighterName) :
-    dir_(-1),
     state_(0),
+    pre_(fighterName + '.'),
+    dir_(-1),
     damage_(0),
-    shieldHealth_(getParam("shield.maxHealth")),
+    shieldHealth_(param("shield.maxHealth")),
     lives_(startingLives),
     respawnx_(0), respawny_(0),
     color_(color),
@@ -32,9 +33,17 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
 {
     // Set GameEntity members
     pos_ = vel_ = accel_ = glm::vec2(0.f, 0.f);
-    size_ = glm::vec2(getParam("fighter.w"), getParam("fighter.h"));
+    size_ = glm::vec2(param("w"), param("h"));
     playerID_ = playerID;
     teamID_ = teamID;
+
+    // Create the renderer
+    if (fighterName == "charlie")
+        renderer_ = new BixelFighterRenderer();
+    else if (fighterName == "stickman")
+        renderer_ = new SkeletonFighterRenderer();
+    else
+        assert(false && "Unknown fighter name");
 
     // Load ground attacks
     std::string g = "groundhit";
@@ -61,7 +70,6 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
     attackMap_["airFront"]->setHitboxFrame("AirFronttiltHitbox");
     attackMap_["airFront"]->setTwinkle(true);
-    //attackMap_["airBack"] = loadAttack<FighterAttack>("airBackAttack", a, "AirBacktilt");
     attackMap_["airDown"] = loadAttack<FighterAttack>("airDownAttack", a, "AirDowntilt");
     attackMap_["airDown"]->setHitboxFrame("AirDowntiltHitbox");
     attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
@@ -96,17 +104,6 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     attackMap_["grab"] = loadAttack<FighterAttack>("grabAttack", "", "GrabAttempt");
     attackMap_["grab"]->setStartSound("grabattempt");
     //attackMap_["grab"]->setHitboxFrame("GrabbingHitbox");
-    
-
-    // Create the renderer
-    if (fighterName == "charlie")
-        renderer_ = new BixelFighterRenderer();
-    else if (fighterName == "stickman")
-        renderer_ = new SkeletonFighterRenderer();
-    else
-        assert(false && "Unknown fighter name");
-
-    state_ = 0;
 }
 
 void Fighter::setRespawnLocation(float x, float y)
@@ -187,8 +184,8 @@ void Fighter::update(float dt)
     GameEntity::update(dt);
 
     // Regain some shield health
-    shieldHealth_ += getParam("shield.regen") * dt;
-    shieldHealth_ = std::min(shieldHealth_, getParam("shield.maxHealth"));
+    shieldHealth_ += param("shield.regen") * dt;
+    shieldHealth_ = std::min(shieldHealth_, param("shield.maxHealth"));
 
     // State update
     state_->update(dt);
@@ -386,7 +383,11 @@ AttackClass* Fighter::loadAttack(std::string attackName, const std::string &audi
     AttackClass *ret = new AttackClass(attackName, audioID, fname);
 
     return ret;
+}
 
+float Fighter::param(const std::string &p) const
+{
+    return getParam(pre_+ p);
 }
 
 // ----------------------------------------------------------------------------

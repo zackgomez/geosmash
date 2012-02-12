@@ -49,7 +49,6 @@ public:
     float getDamage() const;
     float getDirection() const; // returns -1 or 1
     // Fighters are allowed to get the name of the current animation frame
-    // (Useful for AI)
     std::string getFrameName() const;
     const glm::vec3& getColor() const { return color_; }
     const std::string& getUsername() const { return username_; }
@@ -76,10 +75,11 @@ public:
     virtual bool canBeHit() const;
 
     // Respawns the fighter at its respawn location.  If killed is true, a
-    // life be removed
+    // life will be removed
     void respawn(bool killed);
 
 
+    // Functions for life sharing in teams
     void stealLife();
     void addLives(int lives);
 
@@ -91,8 +91,9 @@ public:
     LimpFighter* goLimp(UnlimpCallback *l);
 
 private:
-    float dir_; // 1 or -1 look in xdir
     FighterState *state_;
+    std::string pre_;
+    float dir_; // 1 or -1 look in xdir
     float damage_;
     float shieldHealth_;
     int lives_;
@@ -101,8 +102,7 @@ private:
 
     // Fighter ID members
     float respawnx_, respawny_;
-    glm::vec3 color_;
-    std::string username_;
+    glm::vec3 color_; std::string username_;
 
     std::string lastFrameName_;
     FighterRenderer *renderer_;
@@ -118,6 +118,7 @@ private:
 
     // ---- Helper functions ----
     void stateWrapper(FighterState *fs);
+    float param(const std::string &param) const;
     void renderHelper(float dt, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
     // Loads an attack from the params using the attackName.param syntax
     template<class AttackClass>

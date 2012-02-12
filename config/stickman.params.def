@@ -1,2 +1,71 @@
 # aesthetic only
 stickman.rotation 50
+
+
+##
+##
+##
+## CHARLIE PARAMS HERE NEED TO CHANGE THESE BELOW
+##
+##
+##
+stickman.walkSpeed        133.3
+stickman.dashSpeed        400.0
+
+# force applied when in AirNormal state
+stickman.airForce         450.0
+# "gravity"
+stickman.airAccel         -1100.0
+# for when the fighter is stunned
+stickman.airDI            200.0
+
+# also determines short hop input window
+stickman.jumpStartupTime  0.060
+stickman.jumpSpeed        600.0
+stickman.hopSpeed         275.0
+stickman.secondJumpSpeed  500.0
+# Maximum x speed from input
+stickman.jumpAirSpeed     200.0
+stickman.landingCooldownTime 0.05
+
+stickman.dashStartupTime  0.06
+stickman.dashChangeTime   0.17
+
+stickman.fastFallAccel    -600.0
+stickman.fastFallInitialSpeed -250.0
+stickman.fastFallMaxInitialSpeed -500
+stickman.fastFallMaxSpeed -1000
+
+stickman.w             50
+stickman.h             60
+stickman.minDashTime   0.25
+
+
+stickman.dodge.duration    0.42
+stickman.dodge.invincTime  0.32
+stickman.dodge.speed       450
+stickman.dodge.cooldown    0.15
+
+stickman.stepdodge.invincTime  0.18
+stickman.stepdodge.cooldown    0.20
+stickman.stepdodge.zoffset     -15
+# ^ aesthetic only
+
+stickman.shield.maxHealth 50.0
+stickman.shield.regen     8.0
+stickman.shield.degen     -28.0
+stickman.shield.size      35.0
+stickman.shield.startup   0.06
+stickman.shield.cooldown  0.18
+stickman.shield.dazeTime  3.0
+stickman.shield.stunFactor 0.002
+
+stickman.ledgeGrab.grabInvincTime 1.0
+stickman.ledgeGrab.hbwidth        40.0
+stickman.ledgeGrab.hbheight       60.0
+stickman.ledgeGrab.dist           90.0
+stickman.ledgeGrab.dropTime       0.30
+stickman.ledgeGrab.wakeupTime     0.15
+stickman.ledgeGrab.attackInvinc   0.40
+stickman.ledgeGrab.wakeUpInvinc   0.15
+stickman.ledgeGrab.inputDelay     0.20

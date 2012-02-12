@@ -1,63 +1,63 @@
-walkSpeed        133.3
-dashSpeed        400.0
+charlie.walkSpeed        133.3
+charlie.dashSpeed        400.0
 
 # force applied when in AirNormal state
-airForce         450.0
+charlie.airForce         450.0
 # "gravity"
-airAccel         -1100.0
+charlie.airAccel         -1100.0
 # for when the fighter is stunned
-airDI            200.0
+charlie.airDI            200.0
 
 # also determines short hop input window
-jumpStartupTime  0.060
-jumpSpeed        600.0
-hopSpeed         275.0
-secondJumpSpeed  500.0
+charlie.jumpStartupTime  0.060
+charlie.jumpSpeed        600.0
+charlie.hopSpeed         275.0
+charlie.secondJumpSpeed  500.0
 # Maximum x speed from input
-jumpAirSpeed     200.0
-landingCooldownTime 0.05
+charlie.jumpAirSpeed     200.0
+charlie.landingCooldownTime 0.05
 
-dashStartupTime  0.06
-dashChangeTime   0.17
+charlie.dashStartupTime  0.06
+charlie.dashChangeTime   0.17
 
-fastFallAccel    -600.0
-fastFallInitialSpeed -250.0
-fastFallMaxInitialSpeed -500
-fastFallMaxSpeed -1000
+charlie.fastFallAccel    -600.0
+charlie.fastFallInitialSpeed -250.0
+charlie.fastFallMaxInitialSpeed -500
+charlie.fastFallMaxSpeed -1000
 
-fighter.w             50
-fighter.h             60
-fighter.minDashTime   0.25
+charlie.w             50
+charlie.h             60
+charlie.minDashTime   0.25
 
 
-dodge.duration    0.42
-dodge.invincTime  0.32
-dodge.speed       450
-dodge.cooldown    0.15
+charlie.dodge.duration    0.42
+charlie.dodge.invincTime  0.32
+charlie.dodge.speed       450
+charlie.dodge.cooldown    0.15
 
-stepdodge.invincTime  0.18
-stepdodge.cooldown    0.20
-stepdodge.zoffset     -15
+charlie.stepdodge.invincTime  0.18
+charlie.stepdodge.cooldown    0.20
+charlie.stepdodge.zoffset     -15
 # ^ aesthetic only
 
-shield.maxHealth 50.0
-shield.regen     8.0
-shield.degen     -28.0
-shield.size      35.0
-shield.startup   0.06
-shield.cooldown  0.18
-shield.dazeTime  3.0
-shield.stunFactor 0.002
+charlie.shield.maxHealth 50.0
+charlie.shield.regen     8.0
+charlie.shield.degen     -28.0
+charlie.shield.size      35.0
+charlie.shield.startup   0.06
+charlie.shield.cooldown  0.18
+charlie.shield.dazeTime  3.0
+charlie.shield.stunFactor 0.002
 
-ledgeGrab.grabInvincTime 1.0
-ledgeGrab.hbwidth        40.0
-ledgeGrab.hbheight       60.0
-ledgeGrab.dist           90.0
-ledgeGrab.dropTime       0.30
-ledgeGrab.wakeupTime     0.15
-ledgeGrab.attackInvinc   0.40
-ledgeGrab.wakeUpInvinc   0.15
-ledgeGrab.inputDelay     0.20
+charlie.ledgeGrab.grabInvincTime 1.0
+charlie.ledgeGrab.hbwidth        40.0
+charlie.ledgeGrab.hbheight       60.0
+charlie.ledgeGrab.dist           90.0
+charlie.ledgeGrab.dropTime       0.30
+charlie.ledgeGrab.wakeupTime     0.15
+charlie.ledgeGrab.attackInvinc   0.40
+charlie.ledgeGrab.wakeUpInvinc   0.15
+charlie.ledgeGrab.inputDelay     0.20
 
 
 # ---------------
@@ -198,21 +198,6 @@ airFrontAttack.hitboxy      -5
 airFrontAttack.hitboxw      35
 airFrontAttack.hitboxh      40
 airFrontAttack.priority     1.0
-
-airBackAttack.startup      0.25
-airBackAttack.duration     0.25
-airBackAttack.cooldown     0.18
-airBackAttack.damage       8
-airBackAttack.stun         0.13
-airBackAttack.knockbackx   -5
-airBackAttack.knockbacky   2
-airBackAttack.kbbase       140.0
-airBackAttack.kbscaling    1.40
-airBackAttack.hitboxx      -40
-airBackAttack.hitboxy      0
-airBackAttack.hitboxw      30
-airBackAttack.hitboxh      20
-airBackAttack.priority     1.0
 
 airDownAttack.startup      0.15
 airDownAttack.duration     0.15
