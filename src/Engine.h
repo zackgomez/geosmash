@@ -19,7 +19,8 @@ void show_info_log( GLuint object, PFNGLGETSHADERIVPROC glGet__iv, PFNGLGETSHADE
 
 GLuint make_shader(GLenum type, const char *filename);
 
-GLuint make_program(GLuint vertex_shader, GLuint fragment_shader);
+GLuint make_program(GLuint vertex_shader, GLuint fragment_shader, 
+        GLuint geometry_shader = 0);
 
 GLuint make_texture(const char *filename);
 void   free_texture(GLuint tex);

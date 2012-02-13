@@ -202,8 +202,6 @@ Keyframe FrameManager::loadPose(std::istream &is, std::string &posename)
         ss >> name;
         BoneFrame bf = readBoneFrame(ss);
         kf.bones[name] = bf;
-
-        std::cout << "Read bone " << name << " length " << bf.length << '\n';
     }
 
     return kf;

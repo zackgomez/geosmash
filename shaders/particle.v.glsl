@@ -6,10 +6,10 @@ attribute vec4 color;
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 
-varying vec4 pcolor;
+varying vec4 vpcolor;
 
 void main()
 {
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1);
-    pcolor = color;
+    vpcolor = color;
 }

@@ -42,6 +42,7 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
             pos_, size_, -dir.x, playerID_, teamID_,
             audioID_);
 
+    // TODO make this depend on the color of the player
     glm::vec4 pcolors_raw[] =
     {
         glm::vec4(0.1, 0.2, 0.8, 0.4),
@@ -59,7 +60,6 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
         ->setParticleColorF(new discreteColorF(pcolors))
         ->setOutputRate(2000);
     ParticleManager::get()->addEmitter(emitter_);
-
 }
 
 Projectile::~Projectile()

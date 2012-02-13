@@ -31,6 +31,9 @@ StageManager::StageManager() :
     }
     stageProgram_ = make_program(vert, frag);
     assert(stageProgram_);
+    
+    // Add a particle group for gravity
+    logger_->debug() << "Adding gravity particle group\n"; 
 }
 
 // XXX this already exists in kiss-particles utils, make a global utils
@@ -77,6 +80,8 @@ void StageManager::initLevel(const std::string &stage)
     ground_color_ = glm::vec3(getParam("level.r"),
             getParam("level.g"), getParam("level.b"));
 
+    levelHazard_ = false;
+    hazardT_ = HUGE_VAL;
     // XXX: hardcoded
     if (stage == "bandwidth bar")
     {
@@ -266,7 +271,8 @@ rectangle StageManager::getGroundRect() const
 //////////////////////////////////////////////
 
 VolcanoHazard::VolcanoHazard(const glm::vec2 &pos) :
-    GameEntity()
+    GameEntity(),
+    t_(0.f)
 {
     pos_ = pos;
     size_  = glm::vec2(0.f);
@@ -297,11 +303,20 @@ VolcanoHazard::VolcanoHazard(const glm::vec2 &pos) :
             -1, -1, // player, team IDs
             ""); // audio ID
 
+    emitter_ = ParticleManager::get()->newEmitter();
+    emitter_->setParticleLifetimeF(new lifetimeNormalF(1.8f, 0.5f))
+            ->setParticleVelocityF(new coneVelocityF(60.f, 3.f, glm::vec3(0,1,0), 0.9f))
+            ->setParticleLocationF(new locationF(1.0f))
+            ->setLocation(glm::vec3(pos, 0.f))
+            ->setOutputRate(200);
+    ParticleManager::get()->addEmitter(emitter_);
+
 }
 
 VolcanoHazard::~VolcanoHazard()
 {
     delete attack_;
+    ParticleManager::get()->quashEmitter(emitter_);
 }
 
 bool VolcanoHazard::isDone() const
@@ -337,31 +352,48 @@ void VolcanoHazard::render(float dt)
     // Startup, just have it steam
     if (t_ < getParam(pre_ + "startup"))
     {
-        glm::mat4 transform = glm::scale(
-                glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
-                glm::vec3(getParam(pre_ + "steamw"), getParam(pre_ + "steamh"), 1.f));
-
-        renderRectangle(transform, glm::vec4(0.8f, 0.8f, 0.8f, 0.0f));
+        float fact = t_ / getParam(pre_ + "startup");
+        emitter_->setOutputRate(200 + 200*fact);
+        // TODO Set parameters to make the steam grow
     }
     else if (t_ > getParam(pre_ + "startup")
             && t_ < getParam(pre_ + "startup") + getParam(pre_ + "duration"))
     {
-        // Fire and brimstone
-        glm::mat4 transform = glm::scale(
-                glm::translate(glm::mat4(1.f),
-                    glm::vec3(attack_->getHitbox().x, attack_->getHitbox().y, 0.f)),
-                glm::vec3(attack_->getHitbox().w, attack_->getHitbox().h, 1.f));
-
-        renderRectangle(transform, glm::vec4(0.8f, 0.1f, 0.1f, 0.0f));
+        glm::vec4 pcolors_raw[] =
+        {
+            glm::vec4(0.8, 0.1, 0.1, 0.8),
+            glm::vec4(0.8, 0.1, 0.1, 0.8),
+            glm::vec4(0.8, 0.1, 0.1, 0.8),
+            glm::vec4(0.8, 0.1, 0.1, 0.8),
+            glm::vec4(0.8, 0.2, 0.1, 0.8),
+            glm::vec4(0.7, 0.5, 0.2, 0.8),
+            glm::vec4(0.7, 0.5, 0.2, 0.8),
+            glm::vec4(0.8, 0.2, 0.3, 0.8),
+            glm::vec4(0.8, 0.3, 0.2, 0.8),
+            glm::vec4(0.8, 0.3, 0.1, 0.8),
+            glm::vec4(0.3, 0.3, 0.3, 0.0),
+            glm::vec4(0.3, 0.3, 0.3, 0.0),
+            glm::vec4(0.1, 0.1, 0.1, 0.0)
+        };
+        std::vector<glm::vec4> pcolors(pcolors_raw,
+                pcolors_raw + sizeof(pcolors_raw)/sizeof(glm::vec4));
+        // Set color and shit to be Fire and brimstone
+        emitter_->setParticleLocationF(new circleInteriorLocationF(attack_->getHitbox().w, glm::vec3(0,1,0)))
+                ->setParticleVelocityF(new coneVelocityF(800.f, 350.f, glm::vec3(0,1,0), 1.0f))
+                ->setOutputRate(6000)
+                ->setParticleColorF(new discreteColorF(pcolors));
     }
     else
     {
-        // Cooldown, a smokey texture
-        glm::mat4 transform = glm::scale(
-                glm::translate(glm::mat4(1.f), glm::vec3(pos_, 0.f)),
-                glm::vec3(getParam(pre_ + "steamw"), getParam(pre_ + "steamh"), 1.f));
-
-        renderRectangle(transform, glm::vec4(0.2f, 0.2f, 0.2f, 0.0f));
+        PGroup * gravityGroup = ParticleManager::get()->newGroup("gravity");
+        gravityGroup->addAction(new ConstForceF(8, glm::vec3(0, -1, 0)));
+        // Smokey
+        // XXX fix the gravity group!
+        emitter_->setParticleLocationF(new circleInteriorLocationF(attack_->getHitbox().w/5, glm::vec3(0,1,0)))
+                ->setParticleVelocityF(new coneVelocityF(50.f, 3.f, glm::vec3(0,1,0), 0.95f))
+                ->setParticleLifetimeF(new lifetimeNormalF(0.5f, 0.2f))
+                ->setOutputRate(500)
+                ->setParticleColorF(new colorF(glm::vec4(0.4f), 0.7, 0.1));
     }
 }
 

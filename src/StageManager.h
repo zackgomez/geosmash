@@ -96,6 +96,7 @@ private:
     void updateLitSegments(void);
 };
 
+class Emitter;
 
 class VolcanoHazard : public GameEntity
 {
@@ -123,5 +124,7 @@ private:
     SimpleAttack *attack_;
     std::string pre_;
     float t_;
+
+    Emitter *emitter_;
 };
 

@@ -130,16 +130,16 @@ GLuint make_shader(GLenum type, const char *filename)
     return shader;
 }
 
-GLuint make_program(GLuint vertex_shader, GLuint fragment_shader)
+GLuint make_program(GLuint vertex_shader, GLuint fragment_shader, GLuint geometry_shader)
 {
-    GLint program_ok;
-
     GLuint program = glCreateProgram();
 
+    glAttachShader(program, geometry_shader);
     glAttachShader(program, vertex_shader);
     glAttachShader(program, fragment_shader);
     glLinkProgram(program);
 
+    GLint program_ok;
     glGetProgramiv(program, GL_LINK_STATUS, &program_ok);
     if (!program_ok) {
         logger->fatal() << "Failed to link shader program:\n";
@@ -318,11 +318,36 @@ bool initGLUtils(int screenw, int screenh)
     resources.hblurprogram = make_program(blurvertex_shader, hblurfrag_shader);
     resources.vblurprogram = make_program(blurvertex_shader, vblurfrag_shader);
 
+    // PARTICLE SHADER
     GLuint partfrag = make_shader(GL_VERTEX_SHADER, "shaders/particle.v.glsl");
     GLuint partvert = make_shader(GL_FRAGMENT_SHADER, "shaders/particle.f.glsl");
     if (!partfrag || !partvert)
         return false;
-    resources.particleprogram = make_program(partvert, partfrag);
+    GLuint partgeom = 0;
+    if (GLEW_EXT_geometry_shader4)
+    {
+        logger->info() << "Using geometry shader for particles\n";
+        partgeom = make_shader(GL_GEOMETRY_SHADER, "shaders/particle.g.glsl");
+        if (!partgeom)
+            return false;
+    }
+    resources.particleprogram = glCreateProgram();
+    glAttachShader(resources.particleprogram, partvert);
+    glAttachShader(resources.particleprogram, partgeom);
+    glAttachShader(resources.particleprogram, partfrag);
+    glProgramParameteriEXT(resources.particleprogram, GL_GEOMETRY_INPUT_TYPE_EXT, GL_POINTS);
+    glProgramParameteriEXT(resources.particleprogram, GL_GEOMETRY_OUTPUT_TYPE_EXT, GL_TRIANGLE_STRIP);
+    glProgramParameteriEXT(resources.particleprogram, GL_GEOMETRY_VERTICES_OUT_EXT, 4);
+    glLinkProgram(resources.particleprogram);
+    GLint program_ok;
+    glGetProgramiv(resources.particleprogram, GL_LINK_STATUS, &program_ok);
+    if (!program_ok) {
+        logger->fatal() << "Failed to link shader program:\n";
+        show_info_log(resources.particleprogram, glGetProgramiv, glGetProgramInfoLog);
+        glDeleteProgram(resources.particleprogram);
+        return false;
+    }
+
 
     partfrag = make_shader(GL_VERTEX_SHADER, "shaders/stage.v.glsl");
     partvert = make_shader(GL_FRAGMENT_SHADER, "shaders/stage.f.glsl");
