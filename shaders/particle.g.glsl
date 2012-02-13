@@ -9,21 +9,23 @@ varying out vec4 pcolor;
 
 void main(void)
 {
+    // TODO make this be a param
+    const float r = 0.75f;
     for (int i = 0; i < gl_VerticesIn; i++)
     {
-        gl_Position = gl_PositionIn[i] + vec4(-0.5, 0.5, 0, 0);
+        gl_Position = gl_PositionIn[i] + vec4(r, r, 0, 0);
         pcolor = vpcolor[i];
         EmitVertex();
 
-        gl_Position = gl_PositionIn[i] + vec4(0.5, 0.5, 0, 0);
+        gl_Position = gl_PositionIn[i] + vec4(-r, r, 0, 0);
         pcolor = vpcolor[i];
         EmitVertex();
 
-        gl_Position = gl_PositionIn[i] + vec4(0.5, -0.5, 0, 0);
+        gl_Position = gl_PositionIn[i] + vec4(r, -r, 0, 0);
         pcolor = vpcolor[i];
         EmitVertex();
 
-        gl_Position = gl_PositionIn[i] + vec4(-0.5, -0.5, 0, 0);
+        gl_Position = gl_PositionIn[i] + vec4(-r, -r, 0, 0);
         pcolor = vpcolor[i];
         EmitVertex();
     }

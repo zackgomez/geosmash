@@ -366,14 +366,15 @@ void VolcanoHazard::render(float dt)
             glm::vec4(0.8, 0.1, 0.1, 0.8),
             glm::vec4(0.8, 0.1, 0.1, 0.8),
             glm::vec4(0.8, 0.2, 0.1, 0.8),
-            glm::vec4(0.7, 0.5, 0.2, 0.8),
-            glm::vec4(0.7, 0.5, 0.2, 0.8),
-            glm::vec4(0.8, 0.2, 0.3, 0.8),
-            glm::vec4(0.8, 0.3, 0.2, 0.8),
+            glm::vec4(0.7, 0.4, 0.1, 0.8),
+            glm::vec4(0.7, 0.4, 0.1, 0.8),
+            glm::vec4(0.8, 0.2, 0.1, 0.8),
+            glm::vec4(0.8, 0.3, 0.1, 0.8),
             glm::vec4(0.8, 0.3, 0.1, 0.8),
             glm::vec4(0.3, 0.3, 0.3, 0.0),
             glm::vec4(0.3, 0.3, 0.3, 0.0),
-            glm::vec4(0.1, 0.1, 0.1, 0.0)
+            glm::vec4(0.1, 0.1, 0.1, 0.0),
+            glm::vec4(0.1, 0.1, 0.1, 0.0),
         };
         std::vector<glm::vec4> pcolors(pcolors_raw,
                 pcolors_raw + sizeof(pcolors_raw)/sizeof(glm::vec4));
