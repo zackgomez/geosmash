@@ -254,7 +254,7 @@ void KeyboardController::update(float dt)
 		state_.pressstart = state_.buttonstart = false;
 	}
 
-    //
+    // BACKSPACE (BACK BUTTON)
     if (keystate[SDLK_BACKSPACE])
     {
         state_.pressback = !state_.buttonback;
@@ -263,6 +263,28 @@ void KeyboardController::update(float dt)
     else
     {
         state_.pressback = state_.buttonback = false;
+    }
+
+    // N (LEFT BUMPER)
+    if (keystate[SDLK_n])
+    {
+        state_.presslb = !state_.lbumper;
+        state_.lbumper = true;
+    }
+    else
+    {
+        state_.presslb = state_.lbumper = false;
+    }
+
+    // M (RIGHT BUMPER)
+    if (keystate[SDLK_m])
+    {
+        state_.pressrb = !state_.rbumper;
+        state_.rbumper = true;
+    }
+    else
+    {
+        state_.pressrb = state_.rbumper = false;
     }
 
     // set controller direction
