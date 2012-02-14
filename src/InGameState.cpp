@@ -2,7 +2,6 @@
 // TODO clean up these includes for the love of god
 #include "InGameState.h"
 #include <GL/glew.h>
-#include <SDL/SDL.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
 #include <cstdlib>
@@ -90,7 +89,7 @@ InGameState::InGameState(const std::vector<Player *> &players,
     CameraManager::get()->setCurrent(cameraLoc);
 
     // Start of match time
-    startTime_ = SDL_GetTicks();
+    StatsManager::get()->setStat("startMillis", getCurrentMillis());
 
     // Add a ghost ai learning listener if specified
     if (getParam("debug.saveghost"))
@@ -144,7 +143,12 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
 
         if (paused_ && pausingPlayer_ == i &&
                 players_[i]->getState().pressback)
+        {
+            // Set the run time stat
+            StatsManager::get()->setStat("MatchLength",
+                    (getCurrentMillis() - StatsManager::get()->getStat("startMillis")) / 1000.0f);
             return new StatsGameState(players_, -1);
+        }
     }
 
 
@@ -193,7 +197,7 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
 
         // Set the run time stat
         StatsManager::get()->setStat("MatchLength",
-                (SDL_GetTicks() - startTime_) / 1000.0f);
+                (getCurrentMillis() - StatsManager::get()->getStat("startMillis")) / 1000.0f);
 
         // Transition to end of game state
         StatsManager::get()->setStat("winningTeam", winningTeam);

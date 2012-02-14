@@ -292,6 +292,10 @@ void Fighter::respawn(bool killed)
             StatsManager::get()->addStat("numPlayers", -1.f);
 
             StatsManager::get()->setStat(statPrefix(playerID_) + "place", nextPlace);
+
+            // Also set time of death
+            StatsManager::get()->setStat(statPrefix(playerID_) + "deathTime",
+                    (getCurrentMillis() - StatsManager::get()->getStat("startMillis")) / 1000.f);
         }
     }
     delete state_;

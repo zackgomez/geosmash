@@ -37,6 +37,9 @@ void renderMaskedRectangle(const glm::mat4 &transform, const glm::vec4 &color,
 void preRender();
 void postRender();
 
+// Returns a millisecond resolution time
+int getCurrentMillis();
+
 // For now just creates a cube
 mesh createMesh(std::string objfile);
 void renderMesh(const glm::mat4 &modelMatrix, const mesh &m, GLuint program);

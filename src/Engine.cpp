@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include <GL/glew.h>
+#include <SDL/SDL.h>
 #include <cstdlib>
 #include <cstdio>
 #include <iostream>
@@ -769,4 +770,9 @@ void GeosmashBoneRenderer::operator() (const glm::mat4 &transform, const Bone* b
     glUseProgram(0);
 
     renderMesh(fullTransform, resources.cubemesh, resources.boneprogram);
+}
+
+int getCurrentMillis()
+{
+    return SDL_GetTicks();
 }

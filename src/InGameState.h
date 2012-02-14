@@ -35,7 +35,6 @@ private:
     GameMode *gameMode_;
 
     bool paused_;
-    size_t startTime_;
 
     int pausingPlayer_;
     bool keepStats_;
