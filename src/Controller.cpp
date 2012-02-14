@@ -254,6 +254,17 @@ void KeyboardController::update(float dt)
 		state_.pressstart = state_.buttonstart = false;
 	}
 
+    //
+    if (keystate[SDLK_BACKSPACE])
+    {
+        state_.pressback = !state_.buttonback;
+        state_.buttonback = true;
+    }
+    else
+    {
+        state_.pressback = state_.buttonback = false;
+    }
+
     // set controller direction
     if (keystate[SDLK_LEFT])
     {
