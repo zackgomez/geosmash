@@ -16,12 +16,28 @@ fighter_stat::fighter_stat(const std::string &sname, const std::string &dname) :
 {
 }
 
-void fighter_stat::render(const rectangle &rect)
+void fighter_stat::render(const rectangle &rect, int playerID)
 {
+    const glm::vec3 stat_color(0.8f, 0.8f, 0.8f);
     glm::mat4 transform =
         glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(rect.x, rect.y, 0.f)),
                 glm::vec3(rect.w, rect.h, 1.f));
-    renderRectangle(transform, glm::vec4(1,1,1,0));
+    //renderRectangle(transform, glm::vec4(1,0,0,0));
+
+    // First render the stat name
+    transform = glm::scale(glm::translate(glm::mat4(1.f),
+                glm::vec3(rect.x - rect.w / 2 + rect.h * 0.75f * display_name.length() / 2.f, rect.y, 0.f)),
+            glm::vec3(rect.h, rect.h, 1.f));
+    FontManager::get()->renderString(transform, stat_color, display_name);
+
+    // Calculate the stat value
+    int value = StatsManager::get()->getStat(
+            StatsManager::getStatPrefix(playerID) + stat_name);
+    // And now the stat value
+    transform = glm::scale(glm::translate(glm::mat4(1.f),
+                glm::vec3(rect.x + rect.w / 2 - rect.h * 0.75f * FontManager::numDigits(value) / 2.f, rect.y, 0.f)),
+            glm::vec3(rect.h, rect.h, 1.f));
+    FontManager::get()->renderNumber(transform, stat_color, value);
 }
 
 StatsGameState::StatsGameState(
@@ -121,6 +137,8 @@ void StatsGameState::update(float dt)
 }
 
 const float columnWidth = 1920.f/4 - 10.f;
+// The border around each column
+const float columnBorder = columnWidth / 20;
 float columnCenter(int col)
 {
     assert(col >= 0 && col < 4);
@@ -130,13 +148,13 @@ float columnCenter(int col)
 float columnLeft(int col)
 {
     assert(col >= 0 && col < 4);
-    return 1920.f/2 + columnWidth * (col - 2.0f);
+    return 1920.f/2 + columnWidth * (col - 2.0f) + columnBorder;
 }
 
 float columnRight(int col)
 {
     assert(col >= 0 && col < 4);
-    return 1920.f/2 + columnWidth * (col - 1.0f);
+    return 1920.f/2 + columnWidth * (col - 1.0f) - columnBorder;
 }
 
 void StatsGameState::render(float dt)
@@ -153,7 +171,6 @@ void StatsGameState::render(float dt)
     const float fighter_height = 1080.f - 1080.f/5.f;
     const float stat_size = 35.f;
     const float stat_height = 1080.f - 1080.f/3 - stat_size;
-    const float stat_xmargin = 10.f;
     const glm::vec3 stat_color(0.8f, 0.8f, 0.8f);
 
 
@@ -196,36 +213,12 @@ void StatsGameState::render(float dt)
         for (size_t j = 0; j < stats_.size(); j++)
         {
             fighter_stat *stat = stats_[j];
-
-            if (j == 0)
-            {
-                rectangle r;
-                r.x = columnCenter(i);
-                r.y = -static_cast<int>(j) * stat_size * 1.5f;
-                r.w = columnRight(i) - columnLeft(i);
-                r.h = stat_height;
-                stat->render(r);
-            }
-
-            // Render the display name
-            float xoffset = stat_size * 0.75f * stat->display_name.length() / 2.f + stat_xmargin;
-            float yoffset = -static_cast<int>(j) * stat_size * 1.5f;
-            transform = glm::scale(
-                    glm::translate(glm::mat4(1.f),
-                        glm::vec3(columnLeft(i) + xoffset, stat_height + yoffset, 0.0f)),
-                    glm::vec3(stat_size, stat_size, 1.f));
-            FontManager::get()->renderString(transform, stat_color, stat->display_name);
-
-            // Now render value
-            int value = StatsManager::get()->getStat(
-                    StatsManager::getStatPrefix(players_[i]->getPlayerID()) +
-                    stat->stat_name);
-            xoffset = -stat_size * 0.75f * FontManager::numDigits(value) / 2.f - stat_xmargin;
-            transform = glm::scale(
-                    glm::translate(glm::mat4(1.f),
-                        glm::vec3(columnRight(i) + xoffset, stat_height + yoffset, 0.0f)),
-                    glm::vec3(stat_size, stat_size, 1.f));
-            FontManager::get()->renderNumber(transform, stat_color, value);
+            rectangle r;
+            r.x = columnCenter(i);
+            r.y = stat_height - static_cast<int>(j) * stat_size * 1.5f;
+            r.w = columnWidth - 2 * columnBorder;
+            r.h = stat_size;
+            stat->render(r, players_[i]->getPlayerID());
         }
     }
 }

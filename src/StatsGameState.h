@@ -13,7 +13,7 @@ struct fighter_stat
     std::string display_name;
 
     fighter_stat(const std::string &sname, const std::string &dname);
-    void render(const rectangle &rect);
+    void render(const rectangle &rect, int playerID);
 };
 
 class StatsGameState : public GameState
