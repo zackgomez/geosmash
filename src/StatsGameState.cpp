@@ -90,9 +90,9 @@ void tabbed_view::handle_input(const controller_state &cs)
 {
     // Left/Right bumper moves left/right in tabs, no wrap
     if (cs.pressrb)
-        curtab_ = std::min(curtab_ + 1, (int)tabs_.size());
+        curtab_ = std::min(curtab_ + 1, (int)tabs_.size() - 1);
     if (cs.presslb)
-        curtab_ = std::min(curtab_ + 1, (int)tabs_.size());
+        curtab_ = std::max(curtab_ - 1, 0);
 }
 
 void tabbed_view::render(const glm::vec2 &topleft, const glm::vec2 &size,
@@ -118,6 +118,7 @@ StatsGameState::StatsGameState(
     AudioManager::get()->setSoundtrack("sfx/09 Virtual Void (loop).ogg");
     AudioManager::get()->startSoundtrack();
 
+    statTabs_ = new tabbed_view();
     tab_pane *pane = new tab_pane();
     pane->add_stat(new fighter_stat("kills.total", "Kills"));
     pane->add_stat(new fighter_stat("deaths", "Deaths"));
@@ -131,6 +132,11 @@ StatsGameState::StatsGameState(
     // if (teamGame_)
     pane->add_stat(new fighter_stat("kills.team", "Team Kills"));
     pane->add_stat(new fighter_stat("teamDamageGiven", "Team Damage"));
+    statTabs_->add_tab(pane);
+
+    // Add a second pane with per fighter based information
+    // TODO eventually keep track of all stats per fighter (dmg given/taken, etc)
+    pane = new tab_pane();
     for (size_t i = 0; i < players_.size(); i++)
     {
         std::stringstream ss;
@@ -138,8 +144,6 @@ StatsGameState::StatsGameState(
         pane->add_stat(
                 new fighter_stat("kills." + ss.str(), ss.str() + " KOs"));
     }
-
-    statTabs_ = new tabbed_view();
     statTabs_->add_tab(pane);
 
 
