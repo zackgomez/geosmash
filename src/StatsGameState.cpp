@@ -16,6 +16,14 @@ fighter_stat::fighter_stat(const std::string &sname, const std::string &dname) :
 {
 }
 
+void fighter_stat::render(const rectangle &rect)
+{
+    glm::mat4 transform =
+        glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(rect.x, rect.y, 0.f)),
+                glm::vec3(rect.w, rect.h, 1.f));
+    renderRectangle(transform, glm::vec4(1,1,1,0));
+}
+
 StatsGameState::StatsGameState(
         const std::vector<Player *> players,
         int winningTeam) :
@@ -172,6 +180,7 @@ void StatsGameState::render(float dt)
                 glm::vec3(name_size, name_size, 1.f));
         FontManager::get()->renderString(transform, glm::vec3(fighter_color), players_[i]->getUsername());
 
+        // TODO draw correct fighter, not always charlie
         // draw fighter at top of column, only if not ready
         assert(ready_.size() == players_.size());
         if (!ready_[i])
@@ -187,6 +196,16 @@ void StatsGameState::render(float dt)
         for (size_t j = 0; j < stats_.size(); j++)
         {
             fighter_stat *stat = stats_[j];
+
+            if (j == 0)
+            {
+                rectangle r;
+                r.x = columnCenter(i);
+                r.y = -static_cast<int>(j) * stat_size * 1.5f;
+                r.w = columnRight(i) - columnLeft(i);
+                r.h = stat_height;
+                stat->render(r);
+            }
 
             // Render the display name
             float xoffset = stat_size * 0.75f * stat->display_name.length() / 2.f + stat_xmargin;

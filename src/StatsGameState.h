@@ -5,6 +5,7 @@
 
 class Fighter;
 class Player;
+struct rectangle;
 
 struct fighter_stat
 {
@@ -12,6 +13,7 @@ struct fighter_stat
     std::string display_name;
 
     fighter_stat(const std::string &sname, const std::string &dname);
+    void render(const rectangle &rect);
 };
 
 class StatsGameState : public GameState
