@@ -23,16 +23,17 @@ public:
     static const std::string ghost_ai_user;
 
     // Sets the value of the passed state
-    void setStat(std::string stat, float val);
+    void setStat(const std::string &stat, float val);
     // Adds the delta value to the stat, if the stat doesn't exists,
     // sets the value to be delta.
-    void addStat(std::string stat, float delta);
+    void addStat(const std::string &stat, float delta);
     // Makes the value of the stat be the maximum of the current stat and
     // the passed in stat.  If the stat does not exist, then the passed value
     // is set.
-    void maxStat(std::string stat, float val);
+    void maxStat(const std::string &stat, float val);
 
-    float getStat(std::string stat);
+    float getStat(const std::string &stat) const;
+    float getLifetimeStat(const std::string &username, const std::string &stat) const;
 
     void printStats() const;
 

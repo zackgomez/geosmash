@@ -16,7 +16,7 @@ fighter_stat::fighter_stat(const std::string &sname, const std::string &dname) :
 {
 }
 
-void fighter_stat::render(const rectangle &rect, int playerID) const
+void fighter_stat::render(const rectangle &rect) const
 {
     const glm::vec3 stat_color(0.8f, 0.8f, 0.8f);
     glm::mat4 transform =
@@ -31,8 +31,7 @@ void fighter_stat::render(const rectangle &rect, int playerID) const
     FontManager::get()->renderString(transform, stat_color, display_name_);
 
     // Calculate the stat value
-    int value = StatsManager::get()->getStat(
-            StatsManager::getStatPrefix(playerID) + stat_name_);
+    int value = StatsManager::get()->getStat(stat_name_);
     // And now the stat value
     transform = glm::scale(glm::translate(glm::mat4(1.f),
                 glm::vec3(rect.x + rect.w / 2 - rect.h * 0.75f * FontManager::numDigits(value) / 2.f, rect.y, 0.f)),
@@ -51,7 +50,7 @@ void tab_pane::add_stat(fighter_stat *fs)
     stats_.push_back(fs);
 }
 
-void tab_pane::render(const glm::vec2 &topleft, const glm::vec2 &size, int playerID) const
+void tab_pane::render(const glm::vec2 &topleft, const glm::vec2 &size) const
 {
     const float stat_size = 35.f;
     const float stat_height = 1080.f - 1080.f/3 - stat_size;
@@ -66,7 +65,7 @@ void tab_pane::render(const glm::vec2 &topleft, const glm::vec2 &size, int playe
         r.y = topleft.y - static_cast<int>(j) * stat_size * 1.5f;
         r.w = size.x;
         r.h = stat_size;
-        stat->render(r, playerID);
+        stat->render(r);
     }
 }
 
@@ -95,15 +94,14 @@ void tabbed_view::handle_input(const controller_state &cs)
         curtab_ = std::max(curtab_ - 1, 0);
 }
 
-void tabbed_view::render(const glm::vec2 &topleft, const glm::vec2 &size,
-        int playerID) const
+void tabbed_view::render(const glm::vec2 &topleft, const glm::vec2 &size) const
 {
     if (tabs_.size() == 0)
         return;
 
-    assert(curtab_ < tabs_.size());
+    assert(curtab_ >= 0 && curtab_ < tabs_.size());
 
-    tabs_[curtab_]->render(topleft, size, playerID);
+    tabs_[curtab_]->render(topleft, size);
 }
 
 StatsGameState::StatsGameState(
@@ -118,33 +116,39 @@ StatsGameState::StatsGameState(
     AudioManager::get()->setSoundtrack("sfx/09 Virtual Void (loop).ogg");
     AudioManager::get()->startSoundtrack();
 
-    statTabs_ = new tabbed_view();
-    tab_pane *pane = new tab_pane();
-    pane->add_stat(new fighter_stat("kills.total", "Kills"));
-    pane->add_stat(new fighter_stat("deaths", "Deaths"));
-    pane->add_stat(new fighter_stat("suicides", "Suicides"));
-    pane->add_stat(new fighter_stat("damageGiven", "Damage Given"));
-    pane->add_stat(new fighter_stat("damageTaken", "Damage Taken"));
-    pane->add_stat(new fighter_stat("maxDamageStreak", "Damage Streak"));
-    pane->add_stat(new fighter_stat("maxKillStreak", "Max KO Streak"));
-    pane->add_stat(new fighter_stat("deathTime", "Seconds Alive"));
-    // TODO check to see if it's a team game for these ones
-    // if (teamGame_)
-    pane->add_stat(new fighter_stat("kills.team", "Team Kills"));
-    pane->add_stat(new fighter_stat("teamDamageGiven", "Team Damage"));
-    statTabs_->add_tab(pane);
-
-    // Add a second pane with per fighter based information
-    // TODO eventually keep track of all stats per fighter (dmg given/taken, etc)
-    pane = new tab_pane();
     for (size_t i = 0; i < players_.size(); i++)
     {
-        std::stringstream ss;
-        ss << "Player" << players_[i]->getPlayerID();
-        pane->add_stat(
-                new fighter_stat("kills." + ss.str(), ss.str() + " KOs"));
+        const std::string statpre = StatsManager::getStatPrefix(players_[i]->getPlayerID());
+        const std::string username = players_[i]->getUsername();
+
+        tabbed_view *view = new tabbed_view();
+        tab_pane *pane = new tab_pane();
+        pane->add_stat(new fighter_stat(statpre + "kills.total", "Kills"));
+        pane->add_stat(new fighter_stat(statpre + "deaths", "Deaths"));
+        pane->add_stat(new fighter_stat(statpre + "suicides", "Suicides"));
+        pane->add_stat(new fighter_stat(statpre + "damageGiven", "Damage Given"));
+        pane->add_stat(new fighter_stat(statpre + "damageTaken", "Damage Taken"));
+        pane->add_stat(new fighter_stat(statpre + "maxDamageStreak", "Damage Streak"));
+        pane->add_stat(new fighter_stat(statpre + "maxKillStreak", "Max KO Streak"));
+        pane->add_stat(new fighter_stat(statpre + "deathTime", "Seconds Alive"));
+        // TODO check to see if it's a team game for these ones
+        // if (teamGame_)
+        pane->add_stat(new fighter_stat(statpre + "kills.team", "Team Kills"));
+        pane->add_stat(new fighter_stat(statpre + "teamDamageGiven", "Team Damage"));
+        view->add_tab(pane);
+
+        // Add a second pane with per fighter based information
+        // TODO eventually keep track of all stats per fighter (dmg given/taken, etc)
+        pane = new tab_pane();
+        for (size_t i = 0; i < players_.size(); i++)
+        {
+            const std::string playerName = StatsManager::getPlayerName(players_[i]->getPlayerID());
+            pane->add_stat(
+                    new fighter_stat(statpre + "kills." + playerName, playerName + " KOs"));
+        }
+        view->add_tab(pane);
+        statTabs_.push_back(view);
     }
-    statTabs_->add_tab(pane);
 
 
     // Print stats to console
@@ -159,9 +163,11 @@ StatsGameState::StatsGameState(
 StatsGameState::~StatsGameState()
 {
     for (size_t i = 0; i < players_.size(); i++)
+    {
         delete players_[i];
+        delete statTabs_[i];
+    }
 
-    delete statTabs_;
 
     free_texture(backgroundTex_);
 }
@@ -184,7 +190,7 @@ GameState * StatsGameState::processInput(const std::vector<Controller*> &control
             ready_[i] = true;
 
         // Update their view
-        statTabs_->handle_input(cs);
+        statTabs_[i]->handle_input(cs);
     }
 
     // if everyone is ready, transition
@@ -281,6 +287,6 @@ void StatsGameState::render(float dt)
 
         // Render the current tab
         const glm::vec2 topleft(columnCenter(i) - stat_block_size.x/2, stats_top);
-        statTabs_->render(topleft, stat_block_size, players_[i]->getPlayerID());
+        statTabs_[i]->render(topleft, stat_block_size);
     }
 }

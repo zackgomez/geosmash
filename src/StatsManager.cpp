@@ -19,12 +19,12 @@ const std::string StatsManager::guest_user = "GUEST";
 const std::string StatsManager::ai_user = "AI";
 const std::string StatsManager::ghost_ai_user = "GHOST";
 
-void StatsManager::setStat(std::string stat, float val)
+void StatsManager::setStat(const std::string &stat, float val)
 {
     stats_[stat] = val;
 }
 
-void StatsManager::addStat(std::string stat, float delta)
+void StatsManager::addStat(const std::string &stat, float delta)
 {
     // If not there, just set val
     if (stats_.find(stat) == stats_.end())
@@ -33,7 +33,7 @@ void StatsManager::addStat(std::string stat, float delta)
         stats_[stat] += delta;
 }
 
-void StatsManager::maxStat(std::string stat, float val)
+void StatsManager::maxStat(const std::string &stat, float val)
 {
     // If not there, just set val
     if (stats_.find(stat) == stats_.end())
@@ -43,11 +43,29 @@ void StatsManager::maxStat(std::string stat, float val)
         stats_[stat] = val;
 }
 
-float StatsManager::getStat(std::string stat)
+float StatsManager::getStat(const std::string &stat) const
 {
+    const std::string lifetimePrefix = "lifetime.";
+    // If the stat starts with "lifetime." then refer to lifetime stats
+    if (stat.find(lifetimePrefix) == 0)
+    {
+        size_t nextDotInd = stat.find(".", lifetimePrefix.size()+1);
+        const std::string username = stat.substr(lifetimePrefix.size()+1,
+                nextDotInd);
+        const std::string statname = stat.substr(nextDotInd+1);
+                
+        return getLifetimeStat(username, statname);
+    }
     if (stats_.find(stat) == stats_.end())
         return 0.f;
-    return stats_[stat];
+    return stats_.find(stat)->second;
+}
+
+float StatsManager::getLifetimeStat(const std::string &username,
+        const std::string &stat) const
+{
+    logger_->debug() << "Asked for lifetime stat '" << stat << "' for user " << username << '\n';
+    return 0.f;
 }
 
 void StatsManager::printStats() const

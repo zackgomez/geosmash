@@ -13,7 +13,7 @@ class fighter_stat
 {
 public:
     fighter_stat(const std::string &sname, const std::string &dname);
-    void render(const rectangle &rect, int playerID) const;
+    void render(const rectangle &rect) const;
 
 private:
     std::string stat_name_;
@@ -26,8 +26,7 @@ public:
     tab_pane() { }
     ~tab_pane();
 
-    void render(const glm::vec2 &topleft,
-            const glm::vec2 &size, int playerID) const;
+    void render(const glm::vec2 &topleft, const glm::vec2 &size) const;
 
     void add_stat(fighter_stat* fs);
 
@@ -43,8 +42,8 @@ public:
 
     void add_tab(tab_pane *tab);
     void handle_input(const controller_state &cs);
-    void render(const glm::vec2 &topleft, const glm::vec2 &size,
-            int playerID) const;
+    void render(const glm::vec2 &topleft, const glm::vec2 &size) const;
+    size_t numTabs() const { return tabs_.size(); }
 
 private:
     std::vector<tab_pane *> tabs_;
@@ -68,7 +67,9 @@ private:
     std::vector<Player *>  players_;
     int winningTeam_;
 
-    tabbed_view *statTabs_;
+    std::vector<tabbed_view*> statTabs_;
+    std::vector<int> curTabs_;
+
     std::vector<bool> ready_;
 
     GLuint backgroundTex_;
