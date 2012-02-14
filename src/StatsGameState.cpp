@@ -99,7 +99,7 @@ void tabbed_view::render(const glm::vec2 &topleft, const glm::vec2 &size) const
     if (tabs_.size() == 0)
         return;
 
-    assert(curtab_ >= 0 && curtab_ < tabs_.size());
+    assert(curtab_ >= 0 && curtab_ < (int)tabs_.size());
 
     tabs_[curtab_]->render(topleft, size);
 }
@@ -118,10 +118,11 @@ StatsGameState::StatsGameState(
 
     for (size_t i = 0; i < players_.size(); i++)
     {
-        const std::string statpre = StatsManager::getStatPrefix(players_[i]->getPlayerID());
-        const std::string username = players_[i]->getUsername();
+        // TODO add a "HEADER STAT" to each tab
 
         tabbed_view *view = new tabbed_view();
+        // Add pane of "game info"
+        const std::string statpre = StatsManager::getStatPrefix(players_[i]->getPlayerID());
         tab_pane *pane = new tab_pane();
         pane->add_stat(new fighter_stat(statpre + "kills.total", "Kills"));
         pane->add_stat(new fighter_stat(statpre + "deaths", "Deaths"));
@@ -137,16 +138,28 @@ StatsGameState::StatsGameState(
         pane->add_stat(new fighter_stat(statpre + "teamDamageGiven", "Team Damage"));
         view->add_tab(pane);
 
-        // Add a second pane with per fighter based information
+        // Add a second pane with per player based information
         // TODO eventually keep track of all stats per fighter (dmg given/taken, etc)
         pane = new tab_pane();
-        for (size_t i = 0; i < players_.size(); i++)
+        for (size_t j = 0; j < players_.size(); j++)
         {
-            const std::string playerName = StatsManager::getPlayerName(players_[i]->getPlayerID());
+            const std::string playerName = StatsManager::getPlayerName(players_[j]->getPlayerID());
             pane->add_stat(
                     new fighter_stat(statpre + "kills." + playerName, playerName + " KOs"));
         }
         view->add_tab(pane);
+
+        // Add a third pane with lifetime stats
+        // TODO display no info if username == StatsManager::guest_user
+        const std::string username = players_[i]->getUsername();
+        const std::string pre = "lifetime." + username + '.';
+        pane = new tab_pane();
+        pane->add_stat(new fighter_stat(pre + "kills", "Kills"));
+        pane->add_stat(new fighter_stat(pre + "deaths", "Deaths"));
+        pane->add_stat(new fighter_stat(pre + "gamesPlayed", "Games Played"));
+        pane->add_stat(new fighter_stat(pre + "gamesWon", "Games Won"));
+        view->add_tab(pane);
+
         statTabs_.push_back(view);
     }
 

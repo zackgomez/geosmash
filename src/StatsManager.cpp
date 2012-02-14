@@ -50,7 +50,7 @@ float StatsManager::getStat(const std::string &stat) const
     if (stat.find(lifetimePrefix) == 0)
     {
         size_t nextDotInd = stat.find(".", lifetimePrefix.size()+1);
-        const std::string username = stat.substr(lifetimePrefix.size()+1,
+        const std::string username = stat.substr(lifetimePrefix.size(),
                 nextDotInd);
         const std::string statname = stat.substr(nextDotInd+1);
                 
