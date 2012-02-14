@@ -64,7 +64,6 @@ int main(int argc, char *argv[])
 
 void mainloop()
 {
-    int count = 0;
     running = true;
     state = new MenuState();
     while (running)
@@ -106,7 +105,10 @@ void mainloop()
 
         // Some timing and delay to force framerate
         int endms = SDL_GetTicks();
-        int delay = 16 - std::min(16, std::max(0, endms - startms));
+        int frametime = std::max(0, endms - startms);
+        int delay = 16 - std::min(16, frametime);
+        if (frametime > 16)
+            logger->warning() << "Dropped frame. Time (ms): " << frametime << '\n';
         /*
         logger_->debug() << "Frame time (ms): " << endms - startms << 
             "   Delay time (ms): " << delay << '\n';
