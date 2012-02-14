@@ -35,6 +35,7 @@ StatsGameState::StatsGameState(
     stats_.push_back(new fighter_stat("damageTaken", "Damage Taken"));
     stats_.push_back(new fighter_stat("maxDamageStreak", "Damage Streak"));
     stats_.push_back(new fighter_stat("maxKillStreak", "Max KO Streak"));
+    stats_.push_back(new fighter_stat("deathTime", "Seconds Alive"));
     // TODO check to see if it's a team game for these ones
     // if (teamGame_)
     stats_.push_back(new fighter_stat("kills.team", "Team Kills"));
