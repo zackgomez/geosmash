@@ -690,7 +690,7 @@ FighterState* BlockingState::processInput(controller_state &controller, float dt
     else if (controller.joyy < -getParam("input.dodgeThresh")
             && controller.joyyv < -getParam("input.velThresh"))
     {
-        invincTime_ = getParam("stepdodge.invincTime") ;
+        invincTime_ = fighter_->param("stepdodge.invincTime") ;
         stepTime_ = invincTime_ + fighter_->param("stepdodge.cooldown");
     }
 
@@ -1759,6 +1759,9 @@ void LimpState::hit(const Attack *attack)
         (*unlimpCallback_)(this);
     else
         logger_->warning() << "already next in LimpState::hit()\n";
+    // Record last hit by
+    if (attack->getPlayerID() != -1)
+        fighter_->lastHitBy_ = attack->getPlayerID();
     next_ = FighterState::calculateHitResult(attack);
 }
 
