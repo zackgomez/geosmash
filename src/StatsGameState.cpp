@@ -127,15 +127,15 @@ StatsGameState::StatsGameState(
         pane->add_stat(new fighter_stat(statpre + "kills.total", "Kills"));
         pane->add_stat(new fighter_stat(statpre + "deaths", "Deaths"));
         pane->add_stat(new fighter_stat(statpre + "suicides", "Suicides"));
-        pane->add_stat(new fighter_stat(statpre + "damageGiven", "Damage Given"));
-        pane->add_stat(new fighter_stat(statpre + "damageTaken", "Damage Taken"));
-        pane->add_stat(new fighter_stat(statpre + "maxDamageStreak", "Damage Streak"));
+        pane->add_stat(new fighter_stat(statpre + "damageGiven", "DMG Given"));
+        pane->add_stat(new fighter_stat(statpre + "damageTaken", "DMG Taken"));
+        pane->add_stat(new fighter_stat(statpre + "maxDamageStreak", "DMG Streak"));
         pane->add_stat(new fighter_stat(statpre + "maxKillStreak", "Max KO Streak"));
-        pane->add_stat(new fighter_stat(statpre + "deathTime", "Seconds Alive"));
+        pane->add_stat(new fighter_stat(statpre + "deathTime", "Death Time"));
         // TODO check to see if it's a team game for these ones
         // if (teamGame_)
         pane->add_stat(new fighter_stat(statpre + "kills.team", "Team Kills"));
-        pane->add_stat(new fighter_stat(statpre + "teamDamageGiven", "Team Damage"));
+        pane->add_stat(new fighter_stat(statpre + "teamDamageGiven", "Team DMG"));
         view->add_tab(pane);
 
         // Add a second pane with per player based information
@@ -152,12 +152,19 @@ StatsGameState::StatsGameState(
         // Add a third pane with lifetime stats
         // TODO display no info if username == StatsManager::guest_user
         const std::string username = players_[i]->getUsername();
-        const std::string pre = "lifetime." + username + '.';
         pane = new tab_pane();
-        pane->add_stat(new fighter_stat(pre + "kills", "Kills"));
-        pane->add_stat(new fighter_stat(pre + "deaths", "Deaths"));
-        pane->add_stat(new fighter_stat(pre + "gamesPlayed", "Games Played"));
-        pane->add_stat(new fighter_stat(pre + "gamesWon", "Games Won"));
+        if (StatsManager::get()->hasLifetimeStats(username))
+        {
+            const std::string pre = "lifetime." + username + '.';
+            pane->add_stat(new fighter_stat(pre + "gamesPlayed", "Games Played"));
+            pane->add_stat(new fighter_stat(pre + "gamesWon", "Games Won"));
+            pane->add_stat(new fighter_stat(pre + "kills", "Kills"));
+            pane->add_stat(new fighter_stat(pre + "deaths", "Deaths"));
+            pane->add_stat(new fighter_stat(pre + "suicides", "Suicides"));
+            pane->add_stat(new fighter_stat(pre + "damageGiven", "DMG Given"));
+            pane->add_stat(new fighter_stat(pre + "damageTaken", "DMG Taken"));
+            pane->add_stat(new fighter_stat(pre + "teamDamage", "Team DMG"));
+        }
         view->add_tab(pane);
 
         statTabs_.push_back(view);

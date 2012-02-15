@@ -49,9 +49,9 @@ float StatsManager::getStat(const std::string &stat) const
     // If the stat starts with "lifetime." then refer to lifetime stats
     if (stat.find(lifetimePrefix) == 0)
     {
-        size_t nextDotInd = stat.find(".", lifetimePrefix.size()+1);
+        size_t nextDotInd = stat.find('.', lifetimePrefix.size());
         const std::string username = stat.substr(lifetimePrefix.size(),
-                nextDotInd);
+                nextDotInd - lifetimePrefix.size());
         const std::string statname = stat.substr(nextDotInd+1);
                 
         return getLifetimeStat(username, statname);
@@ -64,8 +64,39 @@ float StatsManager::getStat(const std::string &stat) const
 float StatsManager::getLifetimeStat(const std::string &username,
         const std::string &stat) const
 {
-    logger_->debug() << "Asked for lifetime stat '" << stat << "' for user " << username << '\n';
+    if (user_stats_.find(username) == user_stats_.end())
+    {
+        logger_->warning() << "Unable to find username '" << username << "' lifetime stats.\n";
+        return 0.f;
+    }
+    const lifetime_stats& lstats = user_stats_.find(username)->second;
+
+    // TODO this sucks fix it, use a map of some kind
+    if (stat == "gamesPlayed")
+        return lstats.games_played;
+    else if (stat == "gamesWon")
+        return lstats.games_won;
+    else if (stat == "kills")
+        return lstats.kills;
+    else if (stat == "deaths")
+        return lstats.deaths;
+    else if (stat == "suicides")
+        return lstats.suicides;
+    else if (stat == "damageGiven")
+        return lstats.damage_dealt;
+    else if (stat == "damageTaken")
+        return lstats.damage_taken;
+    else if (stat == "teamDamage")
+        return lstats.team_damage;
+    else 
+        assert(false && "unknown lifetime stat requested");
+
     return 0.f;
+}
+
+bool StatsManager::hasLifetimeStats(const std::string &username) const
+{
+    return user_stats_.find(username) != user_stats_.end();
 }
 
 void StatsManager::printStats() const

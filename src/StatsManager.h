@@ -34,6 +34,7 @@ public:
 
     float getStat(const std::string &stat) const;
     float getLifetimeStat(const std::string &username, const std::string &stat) const;
+    bool hasLifetimeStats(const std::string &username) const;
 
     void printStats() const;
 
