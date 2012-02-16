@@ -11,99 +11,6 @@
 #include "MenuState.h"
 #include "Player.h"
 
-fighter_stat::fighter_stat(const std::string &sname, const std::string &dname) :
-    stat_name_(sname), display_name_(dname)
-{
-}
-
-void fighter_stat::render(const rectangle &rect) const
-{
-    const glm::vec3 stat_color(0.8f, 0.8f, 0.8f);
-    glm::mat4 transform =
-        glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(rect.x, rect.y, 0.f)),
-                glm::vec3(rect.w, rect.h, 1.f));
-    //renderRectangle(transform, glm::vec4(1,0,0,0));
-
-    // First render the stat name
-    transform = glm::scale(glm::translate(glm::mat4(1.f),
-                glm::vec3(rect.x - rect.w / 2 + rect.h * 0.75f * display_name_.length() / 2.f, rect.y, 0.f)),
-            glm::vec3(rect.h, rect.h, 1.f));
-    FontManager::get()->renderString(transform, stat_color, display_name_);
-
-    // Calculate the stat value
-    int value = StatsManager::get()->getStat(stat_name_);
-    // And now the stat value
-    transform = glm::scale(glm::translate(glm::mat4(1.f),
-                glm::vec3(rect.x + rect.w / 2 - rect.h * 0.75f * FontManager::numDigits(value) / 2.f, rect.y, 0.f)),
-            glm::vec3(rect.h, rect.h, 1.f));
-    FontManager::get()->renderNumber(transform, stat_color, value);
-}
-
-tab_pane::~tab_pane()
-{
-    for (size_t i = 0; i < stats_.size(); i++)
-        delete stats_[i];
-}
-
-void tab_pane::add_stat(fighter_stat *fs)
-{
-    stats_.push_back(fs);
-}
-
-void tab_pane::render(const glm::vec2 &topleft, const glm::vec2 &size) const
-{
-    const float stat_size = 35.f;
-    const float stat_height = 1080.f - 1080.f/3 - stat_size;
-    const glm::vec2 center = topleft + size/2.f;
-
-    // Next loop over the stats and render each
-    for (size_t j = 0; j < stats_.size(); j++)
-    {
-        const fighter_stat *stat = stats_[j];
-        rectangle r;
-        r.x = center.x;
-        r.y = topleft.y - static_cast<int>(j) * stat_size * 1.5f;
-        r.w = size.x;
-        r.h = stat_size;
-        stat->render(r);
-    }
-}
-
-tabbed_view::tabbed_view() :
-    curtab_(0)
-{
-}
-
-tabbed_view::~tabbed_view()
-{
-    for (size_t i = 0; i < tabs_.size(); i++)
-        delete tabs_[i];
-}
-
-void tabbed_view::add_tab(tab_pane *tab)
-{
-    tabs_.push_back(tab);
-}
-
-void tabbed_view::handle_input(const controller_state &cs)
-{
-    // Left/Right bumper moves left/right in tabs, no wrap
-    if (cs.pressrb)
-        curtab_ = std::min(curtab_ + 1, (int)tabs_.size() - 1);
-    if (cs.presslb)
-        curtab_ = std::max(curtab_ - 1, 0);
-}
-
-void tabbed_view::render(const glm::vec2 &topleft, const glm::vec2 &size) const
-{
-    if (tabs_.size() == 0)
-        return;
-
-    assert(curtab_ >= 0 && curtab_ < (int)tabs_.size());
-
-    tabs_[curtab_]->render(topleft, size);
-}
-
 StatsGameState::StatsGameState(
         const std::vector<Player *> players,
         int winningTeam) :
@@ -124,27 +31,29 @@ StatsGameState::StatsGameState(
         // Add pane of "game info"
         const std::string statpre = StatsManager::getStatPrefix(players_[i]->getPlayerID());
         tab_pane *pane = new tab_pane();
-        pane->add_stat(new fighter_stat(statpre + "kills.total", "Kills"));
-        pane->add_stat(new fighter_stat(statpre + "deaths", "Deaths"));
-        pane->add_stat(new fighter_stat(statpre + "suicides", "Suicides"));
-        pane->add_stat(new fighter_stat(statpre + "damageGiven", "DMG Given"));
-        pane->add_stat(new fighter_stat(statpre + "damageTaken", "DMG Taken"));
-        pane->add_stat(new fighter_stat(statpre + "maxDamageStreak", "DMG Streak"));
-        pane->add_stat(new fighter_stat(statpre + "maxKillStreak", "Max KO Streak"));
-        pane->add_stat(new fighter_stat(statpre + "deathTime", "Death Time"));
+        pane->add_entry(new centered_text_entry("GAME STATS"));
+        pane->add_entry(new fighter_stat(statpre + "kills.total", "Kills"));
+        pane->add_entry(new fighter_stat(statpre + "deaths", "Deaths"));
+        pane->add_entry(new fighter_stat(statpre + "suicides", "Suicides"));
+        pane->add_entry(new fighter_stat(statpre + "damageGiven", "DMG Given"));
+        pane->add_entry(new fighter_stat(statpre + "damageTaken", "DMG Taken"));
+        pane->add_entry(new fighter_stat(statpre + "maxDamageStreak", "DMG Streak"));
+        pane->add_entry(new fighter_stat(statpre + "maxKillStreak", "Max KO Streak"));
+        pane->add_entry(new fighter_stat(statpre + "deathTime", "Death Time"));
         // TODO check to see if it's a team game for these ones
         // if (teamGame_)
-        pane->add_stat(new fighter_stat(statpre + "kills.team", "Team Kills"));
-        pane->add_stat(new fighter_stat(statpre + "teamDamageGiven", "Team DMG"));
+        pane->add_entry(new fighter_stat(statpre + "kills.team", "Team Kills"));
+        pane->add_entry(new fighter_stat(statpre + "teamDamageGiven", "Team DMG"));
         view->add_tab(pane);
 
         // Add a second pane with per player based information
         // TODO eventually keep track of all stats per fighter (dmg given/taken, etc)
         pane = new tab_pane();
+        pane->add_entry(new centered_text_entry("PLAYER STATS"));
         for (size_t j = 0; j < players_.size(); j++)
         {
             const std::string playerName = StatsManager::getPlayerName(players_[j]->getPlayerID());
-            pane->add_stat(
+            pane->add_entry(
                     new fighter_stat(statpre + "kills." + playerName, playerName + " KOs"));
         }
         view->add_tab(pane);
@@ -153,17 +62,18 @@ StatsGameState::StatsGameState(
         // TODO display no info if username == StatsManager::guest_user
         const std::string username = players_[i]->getUsername();
         pane = new tab_pane();
+        pane->add_entry(new centered_text_entry("LIFETIME STATS"));
         if (StatsManager::get()->hasLifetimeStats(username))
         {
             const std::string pre = "lifetime." + username + '.';
-            pane->add_stat(new fighter_stat(pre + "gamesPlayed", "Games Played"));
-            pane->add_stat(new fighter_stat(pre + "gamesWon", "Games Won"));
-            pane->add_stat(new fighter_stat(pre + "kills", "Kills"));
-            pane->add_stat(new fighter_stat(pre + "deaths", "Deaths"));
-            pane->add_stat(new fighter_stat(pre + "suicides", "Suicides"));
-            pane->add_stat(new fighter_stat(pre + "damageGiven", "DMG Given"));
-            pane->add_stat(new fighter_stat(pre + "damageTaken", "DMG Taken"));
-            pane->add_stat(new fighter_stat(pre + "teamDamage", "Team DMG"));
+            pane->add_entry(new fighter_stat(pre + "gamesPlayed", "Games Played"));
+            pane->add_entry(new fighter_stat(pre + "gamesWon", "Games Won"));
+            pane->add_entry(new fighter_stat(pre + "kills", "Kills"));
+            pane->add_entry(new fighter_stat(pre + "deaths", "Deaths"));
+            pane->add_entry(new fighter_stat(pre + "suicides", "Suicides"));
+            pane->add_entry(new fighter_stat(pre + "damageGiven", "DMG Given"));
+            pane->add_entry(new fighter_stat(pre + "damageTaken", "DMG Taken"));
+            pane->add_entry(new fighter_stat(pre + "teamDamage", "Team DMG"));
         }
         view->add_tab(pane);
 
@@ -263,7 +173,6 @@ void StatsGameState::render(float dt)
     const float name_size = 60.f;
     const float fighter_height = 1080.f - 1080.f/5.f;
     const float stat_size = 35.f;
-    const float stat_height = 1080.f - 1080.f/3 - stat_size;
     const float stats_top = 1080.f - 1080.f/3 - stat_size;
 
     // Make sure to use columnWidth to offset each center
@@ -310,3 +219,110 @@ void StatsGameState::render(float dt)
         statTabs_[i]->render(topleft, stat_block_size);
     }
 }
+
+fighter_stat::fighter_stat(const std::string &sname, const std::string &dname) :
+    stat_name_(sname), display_name_(dname)
+{
+}
+
+void fighter_stat::render(const rectangle &rect) const
+{
+    const glm::vec3 stat_color(0.8f, 0.8f, 0.8f);
+    glm::mat4 transform =
+        glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(rect.x, rect.y, 0.f)),
+                glm::vec3(rect.w, rect.h, 1.f));
+    //renderRectangle(transform, glm::vec4(1,0,0,0));
+
+    // First render the stat name
+    transform = glm::scale(glm::translate(glm::mat4(1.f),
+                glm::vec3(rect.x - rect.w / 2 + rect.h * 0.75f * display_name_.length() / 2.f, rect.y, 0.f)),
+            glm::vec3(rect.h, rect.h, 1.f));
+    FontManager::get()->renderString(transform, stat_color, display_name_);
+
+    // Calculate the stat value
+    int value = StatsManager::get()->getStat(stat_name_);
+    // And now the stat value
+    transform = glm::scale(glm::translate(glm::mat4(1.f),
+                glm::vec3(rect.x + rect.w / 2 - rect.h * 0.75f * FontManager::numDigits(value) / 2.f, rect.y, 0.f)),
+            glm::vec3(rect.h, rect.h, 1.f));
+    FontManager::get()->renderNumber(transform, stat_color, value);
+}
+
+centered_text_entry::centered_text_entry(const std::string &str) :
+    text_(str)
+{
+}
+
+void centered_text_entry::render(const rectangle &rect) const
+{
+    const glm::vec3 color(0.9f, 0.9f, 0.9f);
+    glm::mat4 transform =
+        glm::scale(glm::translate(glm::mat4(1.f), glm::vec3(rect.x, rect.y, 0.f)),
+                    glm::vec3(rect.h, rect.h, 1.f));
+    FontManager::get()->renderString(transform, color, text_);
+}
+
+tab_pane::~tab_pane()
+{
+    for (size_t i = 0; i < stats_.size(); i++)
+        delete stats_[i];
+}
+
+void tab_pane::add_entry(pane_entry *fs)
+{
+    stats_.push_back(fs);
+}
+
+void tab_pane::render(const glm::vec2 &topleft, const glm::vec2 &size) const
+{
+    const float stat_size = 35.f;
+    const glm::vec2 center = topleft + size/2.f;
+
+    // Next loop over the stats and render each
+    for (size_t j = 0; j < stats_.size(); j++)
+    {
+        const pane_entry *stat = stats_[j];
+        rectangle r;
+        r.x = center.x;
+        r.y = topleft.y - static_cast<int>(j) * stat_size * 1.5f;
+        r.w = size.x;
+        r.h = stat_size;
+        stat->render(r);
+    }
+}
+
+tabbed_view::tabbed_view() :
+    curtab_(0)
+{
+}
+
+tabbed_view::~tabbed_view()
+{
+    for (size_t i = 0; i < tabs_.size(); i++)
+        delete tabs_[i];
+}
+
+void tabbed_view::add_tab(tab_pane *tab)
+{
+    tabs_.push_back(tab);
+}
+
+void tabbed_view::handle_input(const controller_state &cs)
+{
+    // Left/Right bumper moves left/right in tabs, no wrap
+    if (cs.pressrb)
+        curtab_ = std::min(curtab_ + 1, (int)tabs_.size() - 1);
+    if (cs.presslb)
+        curtab_ = std::max(curtab_ - 1, 0);
+}
+
+void tabbed_view::render(const glm::vec2 &topleft, const glm::vec2 &size) const
+{
+    if (tabs_.size() == 0)
+        return;
+
+    assert(curtab_ >= 0 && curtab_ < (int)tabs_.size());
+
+    tabs_[curtab_]->render(topleft, size);
+}
+
