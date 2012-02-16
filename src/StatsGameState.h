@@ -44,6 +44,13 @@ public:
     virtual void render(const rectangle &rect) const = 0;
 };
 
+class null_pane_entry : public pane_entry
+{
+public:
+    virtual ~null_pane_entry() { }
+    virtual void render(const rectangle &rect) const { }
+};
+
 class centered_text_entry : public pane_entry
 {
 public:
@@ -59,7 +66,8 @@ private:
 class fighter_stat : public pane_entry
 {
 public:
-    fighter_stat(const std::string &sname, const std::string &dname);
+    fighter_stat(const std::string &sname, const std::string &dname,
+            float normfact = 1.f);
     virtual ~fighter_stat() { }
 
     virtual void render(const rectangle &rect) const;
@@ -67,6 +75,7 @@ public:
 private:
     std::string stat_name_;
     std::string display_name_;
+    float normfact_;
 };
 
 class tab_pane

@@ -56,16 +56,23 @@ StatsGameState::StatsGameState(
             pane->add_entry(
                     new fighter_stat(statpre + "kills." + playerName, playerName + " KOs"));
         }
+        // TODO add killed by info to this pane
         view->add_tab(pane);
 
         // Add a third pane with lifetime stats
         // TODO display no info if username == StatsManager::guest_user
         const std::string username = players_[i]->getUsername();
         pane = new tab_pane();
+        tab_pane *normpane = new tab_pane();
         pane->add_entry(new centered_text_entry("LIFETIME STATS"));
+        pane->add_entry(new centered_text_entry("TOTAL"));
+        normpane->add_entry(new centered_text_entry("LIFETIME STATS"));
+        normpane->add_entry(new centered_text_entry("AVERAGE"));
         if (StatsManager::get()->hasLifetimeStats(username))
         {
             const std::string pre = "lifetime." + username + '.';
+            const float normfact = StatsManager::get()->getLifetimeStat(username, "gamesPlayed");
+
             pane->add_entry(new fighter_stat(pre + "gamesPlayed", "Games Played"));
             pane->add_entry(new fighter_stat(pre + "gamesWon", "Games Won"));
             pane->add_entry(new fighter_stat(pre + "kills", "Kills"));
@@ -74,8 +81,29 @@ StatsGameState::StatsGameState(
             pane->add_entry(new fighter_stat(pre + "damageGiven", "DMG Given"));
             pane->add_entry(new fighter_stat(pre + "damageTaken", "DMG Taken"));
             pane->add_entry(new fighter_stat(pre + "teamDamage", "Team DMG"));
+
+            normpane->add_entry(new fighter_stat(pre + "gamesPlayed", "Games Played", normfact));
+            normpane->add_entry(new fighter_stat(pre + "gamesWon", "Games Won", normfact));
+            normpane->add_entry(new fighter_stat(pre + "kills", "Kills", normfact));
+            normpane->add_entry(new fighter_stat(pre + "deaths", "Deaths", normfact));
+            normpane->add_entry(new fighter_stat(pre + "suicides", "Suicides", normfact));
+            normpane->add_entry(new fighter_stat(pre + "damageGiven", "DMG Given", normfact));
+            normpane->add_entry(new fighter_stat(pre + "damageTaken", "DMG Taken", normfact));
+            normpane->add_entry(new fighter_stat(pre + "teamDamage", "Team DMG", normfact));
+        }
+        else
+        {
+            pane->add_entry(new null_pane_entry());
+            pane->add_entry(new centered_text_entry("NO STATS FOR USER"));
+
+            normpane->add_entry(new null_pane_entry());
+            normpane->add_entry(new centered_text_entry("NO STATS FOR USER"));
         }
         view->add_tab(pane);
+        view->add_tab(normpane);
+
+        // TODO
+        // Add a fourth pane with normalized lifetime stats
 
         statTabs_.push_back(view);
     }
@@ -220,8 +248,10 @@ void StatsGameState::render(float dt)
     }
 }
 
-fighter_stat::fighter_stat(const std::string &sname, const std::string &dname) :
-    stat_name_(sname), display_name_(dname)
+fighter_stat::fighter_stat(const std::string &sname, const std::string &dname,
+        float normfact) :
+    stat_name_(sname), display_name_(dname),
+    normfact_(normfact)
 {
 }
 
@@ -239,8 +269,8 @@ void fighter_stat::render(const rectangle &rect) const
             glm::vec3(rect.h, rect.h, 1.f));
     FontManager::get()->renderString(transform, stat_color, display_name_);
 
-    // Calculate the stat value
-    int value = StatsManager::get()->getStat(stat_name_);
+    // Calculate the stat value, including normalization
+    int value = StatsManager::get()->getStat(stat_name_) / normfact_;
     // And now the stat value
     transform = glm::scale(glm::translate(glm::mat4(1.f),
                 glm::vec3(rect.x + rect.w / 2 - rect.h * 0.75f * FontManager::numDigits(value) / 2.f, rect.y, 0.f)),
