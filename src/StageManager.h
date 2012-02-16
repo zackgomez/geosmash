@@ -28,7 +28,7 @@ public:
     // For now, just put out a stage hazard (maybe)
     void update(float dt);
 
-    void renderSphereBackground(float dt);
+    void renderBackground(float dt);
 
     // Renders the actual stage platform
     void renderStage(float dt);
@@ -39,6 +39,7 @@ public:
     // Returns the nearest non occupied ledge, or null
     Ledge * getPossibleLedge(const glm::vec2 &pos);
 
+    rectangle getKillBox() const;
     rectangle getGroundRect() const;
 
     std::vector<rectangle> getPlatforms() const;
@@ -51,12 +52,15 @@ private:
     std::vector<Ledge*> ledges_;
     rectangle ground_;
     std::vector<rectangle> platforms_;
+    rectangle killbox_;
 
     int meshRes_;
     GLuint meshBuf_;
-    GLuint sphereProgram_, stageProgram_;
     GLuint **indicies_;
     float t_;
+    GLuint sphereProgram_, wormholeProgram_;
+
+    GLuint backProgram_, stageProgram_;
 
     // Hazard related members
     bool levelHazard_;

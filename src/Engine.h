@@ -19,6 +19,7 @@ void show_info_log( GLuint object, PFNGLGETSHADERIVPROC glGet__iv, PFNGLGETSHADE
 
 GLuint make_shader(GLenum type, const char *filename);
 
+GLuint make_program(const char *vertfile, const char *fragfile);
 GLuint make_program(GLuint vertex_shader, GLuint fragment_shader, 
         GLuint geometry_shader = 0);
 

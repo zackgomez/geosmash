@@ -131,6 +131,20 @@ GLuint make_shader(GLenum type, const char *filename)
     return shader;
 }
 
+GLuint make_program(const char *vertfile, const char *fragfile)
+{
+    GLuint vert = make_shader(GL_VERTEX_SHADER, vertfile);
+    GLuint frag = make_shader(GL_FRAGMENT_SHADER, fragfile);
+    if (!vert || !frag)
+    {
+        std::cerr << "Unable to read shaders\n";
+        exit(1);
+    }
+    GLuint program = make_program(vert, frag);
+    assert(program);
+    return program;
+}
+
 GLuint make_program(GLuint vertex_shader, GLuint fragment_shader, GLuint geometry_shader)
 {
     GLuint program = glCreateProgram();

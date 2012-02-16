@@ -22,15 +22,8 @@ StageManager::StageManager() :
     level_mesh_ = createMesh("models/level.obj");
     platform_mesh_ = createMesh("models/cube.obj");
 
-    GLuint vert = make_shader(GL_VERTEX_SHADER, "shaders/stage.v.glsl");
-    GLuint frag = make_shader(GL_FRAGMENT_SHADER, "shaders/stage.f.glsl");
-    if (!vert || !frag)
-    {
-        std::cerr << "Unable to read background sphere shaders\n";
-        exit(1);
-    }
-    stageProgram_ = make_program(vert, frag);
-    assert(stageProgram_);
+    stageProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
+    wormholeProgram_ = make_program("shaders/wormholebg.v.glsl", "shaders/wormholebg.f.glsl");
     
     // Add a particle group for gravity
     logger_->debug() << "Adding gravity particle group\n"; 
@@ -67,8 +60,14 @@ std::vector<std::string> StageManager::getStageNames() const
     std::vector<std::string> ret;
     ret.push_back("bandwidth bar");
     ret.push_back("realtime ranch");
+    ret.push_back("ether net");
 
     return ret;
+}
+
+rectangle StageManager::getKillBox() const
+{
+    return killbox_;
 }
 
 void StageManager::initLevel(const std::string &stage)
@@ -82,6 +81,8 @@ void StageManager::initLevel(const std::string &stage)
 
     levelHazard_ = false;
     hazardT_ = HUGE_VAL;
+    killbox_ = rectangle(getParam("killbox.x"), getParam("killbox.y"), 
+            getParam("killbox.w"), getParam("killbox.h"));
     // XXX: hardcoded
     if (stage == "bandwidth bar")
     {
@@ -89,6 +90,7 @@ void StageManager::initLevel(const std::string &stage)
         levelHazard_ = true;
         hazardT_ = random_float(getParam("volcanoHazard.mintime"),
                 getParam("volcanoHazard.maxtime"));
+        backProgram_ = sphereProgram_;
     }
     else if (stage == "realtime ranch")
     {
@@ -97,6 +99,16 @@ void StageManager::initLevel(const std::string &stage)
         platforms_.push_back(rectangle(200, 40, 220, 10));
 
         ground_.w *= 0.80f;
+        backProgram_ = wormholeProgram_;
+    }
+    else if (stage == "ether net")
+    {
+        platforms_.push_back(rectangle(-200, 40, 220, 10));
+        platforms_.push_back(rectangle(-100, 190, 220, 10));
+        platforms_.push_back(rectangle(-200, 340, 220, 10));
+
+        ground_.w *= 0.80f;
+        backProgram_ = sphereProgram_;
     }
     else
     {
@@ -156,14 +168,7 @@ void StageManager::initBackground()
     }
 
     // make the shaders
-    GLuint vert = make_shader(GL_VERTEX_SHADER, "shaders/sphere.v.glsl");
-    GLuint frag = make_shader(GL_FRAGMENT_SHADER, "shaders/sphere.f.glsl");
-    if (!vert || !frag)
-    {
-        std::cerr << "Unable to read background sphere shaders\n";
-        exit(1);
-    }
-    sphereProgram_ = make_program(vert, frag);
+    sphereProgram_ = make_program("shaders/sphere.v.glsl", "shaders/sphere.f.glsl");
     assert(sphereProgram_);
 }
 
@@ -196,7 +201,7 @@ std::vector<rectangle> StageManager::getPlatforms() const
     return platforms_;
 }
 
-void StageManager::renderSphereBackground(float dt)
+void StageManager::renderBackground(float dt)
 {
     t_ += 3*dt;
 	if (getParam("backgroundSphere.shouldRender") == 0) 
@@ -209,11 +214,11 @@ void StageManager::renderSphereBackground(float dt)
             //5*sinf(t_), glm::normalize(glm::vec3(0, cosf(t_/25), sinf(t_/25))));
             t_, glm::normalize(glm::vec3(0, 1, 0)));
     
-    GLuint projectionUniform = glGetUniformLocation(sphereProgram_, "projectionMatrix");
-    GLuint modelViewUniform = glGetUniformLocation(sphereProgram_, "modelViewMatrix");
-    GLuint positionAttrib = glGetAttribLocation(sphereProgram_, "position");
+    GLuint projectionUniform = glGetUniformLocation(backProgram_, "projectionMatrix");
+    GLuint modelViewUniform = glGetUniformLocation(backProgram_, "modelViewMatrix");
+    GLuint positionAttrib = glGetAttribLocation(backProgram_, "position");
 
-    glUseProgram(sphereProgram_);
+    glUseProgram(backProgram_);
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrixStack().current()));
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(getViewMatrixStack().current() * transform));
 

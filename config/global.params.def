@@ -46,10 +46,10 @@ level.r      0.2
 level.g      0.2
 level.b      0.2
 
-killbox.top     800
-killbox.bottom  -600
-killbox.left    -1300
-killbox.right   1300
+killbox.x       0
+killbox.y       200
+killbox.w       2600
+killbox.h       1400
 
 #stageHazardAttack.cooldown     0.50
 #stageHazardAttack.damage       15

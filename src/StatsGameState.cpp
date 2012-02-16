@@ -102,9 +102,6 @@ StatsGameState::StatsGameState(
         view->add_tab(pane);
         view->add_tab(normpane);
 
-        // TODO
-        // Add a fourth pane with normalized lifetime stats
-
         statTabs_.push_back(view);
     }
 

@@ -254,7 +254,7 @@ void InGameState::render(float dt)
 
 
     // Draw the background
-    StageManager::get()->renderSphereBackground(dt);
+    StageManager::get()->renderBackground(dt);
     StageManager::get()->renderStage(dt);
 
     // Draw all entities
@@ -575,8 +575,11 @@ next_entity:
         if (!fighter->isAlive()) continue;
 
         // Respawn condition
-        if (fighter->getRect().y < getParam("killbox.bottom") || fighter->getRect().y > getParam("killbox.top")
-                || fighter->getRect().x < getParam("killbox.left") || fighter->getRect().x > getParam("killbox.right"))
+        rectangle killbox = StageManager::get()->getKillBox();
+        if (fighter->getRect().y < killbox.y - killbox.h / 2 
+                || fighter->getRect().y > killbox.y + killbox.h / 2
+                || fighter->getRect().x < killbox.x - killbox.w / 2
+                || fighter->getRect().x > killbox.x + killbox.w / 2)
         {
             std::string died = StatsManager::getPlayerName(fighter->getPlayerID());
             // Record the kill if it's not a self destruct
