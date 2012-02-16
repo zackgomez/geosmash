@@ -104,11 +104,15 @@ void StageManager::initLevel(const std::string &stage)
     else if (stage == "ether net")
     {
         platforms_.push_back(rectangle(-200, 40, 220, 10));
-        platforms_.push_back(rectangle(-100, 190, 220, 10));
+        // This guy is the fatty platform in the middle
+        platforms_.push_back(rectangle(10, 190, 440, 10));
         platforms_.push_back(rectangle(-200, 340, 220, 10));
 
         ground_.w *= 0.80f;
         backProgram_ = sphereProgram_;
+        killbox_ = rectangle(getParam("ether_net.killbox.x"), getParam("ether_net.killbox.y"), 
+            getParam("ether_net.killbox.w"), getParam("ether_net.killbox.h"));
+
     }
     else
     {

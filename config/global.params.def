@@ -50,6 +50,10 @@ killbox.x       0
 killbox.y       200
 killbox.w       2600
 killbox.h       1400
+ether_net.killbox.x       0
+ether_net.killbox.y       300
+ether_net.killbox.w       2200
+ether_net.killbox.h       1600
 
 #stageHazardAttack.cooldown     0.50
 #stageHazardAttack.damage       15
