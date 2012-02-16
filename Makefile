@@ -37,6 +37,9 @@ clean:
 	rm -rf obj/
 	cd $(KISS_PARTICLES) && make clean
 
+cleanconfig:
+	rm -f $(PARAMS)
+
 debug: obj ssb params
 	./ssb --debug
 

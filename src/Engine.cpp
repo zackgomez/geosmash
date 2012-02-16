@@ -234,32 +234,39 @@ void postRender()
     projectionMatrixStack.current() = viewMatrixStack.current() = glm::mat4(1.f);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
-    // blur the glow texture
-    for (int i = 0; i < 3; i++)
+    if (getParam("engine.useBlur"))
     {
-        glDrawBuffer(GL_COLOR_ATTACHMENT2);
-        blurTexture(resources.rendertex[1], true);
-        glDrawBuffer(GL_COLOR_ATTACHMENT1);
-        blurTexture(resources.rendertex[2], false);
+        // blur the glow texture
+        for (int i = 0; i < 3; i++)
+        {
+            glDrawBuffer(GL_COLOR_ATTACHMENT2);
+            blurTexture(resources.rendertex[1], true);
+            glDrawBuffer(GL_COLOR_ATTACHMENT1);
+            blurTexture(resources.rendertex[2], false);
+        }
+
     }
-
     checkFramebufferStatus();
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    // Render to screen
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     // clear the screen
     glClearColor( 0.0f, 0.0f, 0.0f, 0.0f );
     glClear( GL_COLOR_BUFFER_BIT );
 
-    // Draw normal
+    // Draw normal colors
     renderTexturedRectangle(glm::scale(glm::mat4(1.0f), glm::vec3(2.f, 2.f, 1.f)),
             resources.rendertex[0]);
 
     // Blend in glow
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ONE);
-    renderTexturedRectangle(glm::scale(glm::mat4(1.0f), glm::vec3(2.f, 2.f, 1.f)),
-            resources.rendertex[1]);
-    glDisable(GL_BLEND);
+    if (getParam("engine.useBlur"))
+    {
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
+        renderTexturedRectangle(glm::scale(glm::mat4(1.0f), glm::vec3(2.f, 2.f, 1.f)),
+                resources.rendertex[1]);
+        glDisable(GL_BLEND);
+    }
 
     projectionMatrixStack.pop();
     viewMatrixStack.pop();
