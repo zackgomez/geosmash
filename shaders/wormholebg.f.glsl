@@ -19,8 +19,8 @@ void main()
 
     float fact = length(wave);
 
-    gl_FragData[0] = glm::vec4(1,1,1,1);
-    gl_FragData[1] = glm::vec4(0,0,0,0);
+    gl_FragData[0] = vec4(1,1,1,1);
+    gl_FragData[1] = vec4(0,0,0,0);
     
     /*
     if (fact == 0)

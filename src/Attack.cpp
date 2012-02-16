@@ -557,7 +557,7 @@ void NeutralSpecialAttack::update(float dt)
             new Projectile(owner_->getPosition(),
                     glm::vec2(owner_->getDirection(), 0.f), paramPrefix_,
                     "Projectile", "projectilehit", owner_->getPlayerID(),
-                    owner_->getTeamID());
+                    owner_->getTeamID(), owner_->getColor());
         addEntity(projectile);
 
         released_ = true;

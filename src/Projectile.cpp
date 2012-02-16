@@ -8,7 +8,8 @@
 #include "PManager.h"
 Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
         const std::string &paramPrefix, const std::string &frameName,
-        const std::string &audioID, int playerID, int teamID) :
+        const std::string &audioID, int playerID, int teamID,
+        const glm::vec3 &color) :
     GameEntity(),
     attack_(NULL),
     t_(0),
@@ -42,13 +43,12 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
             pos_, size_, -dir.x, playerID_, teamID_,
             audioID_);
 
-    // TODO make this depend on the color of the player
     glm::vec4 pcolors_raw[] =
     {
-        glm::vec4(0.1, 0.2, 0.8, 0.4),
-        glm::vec4(0.1, 0.2, 0.8, 0.8),
         glm::vec4(0.7, 0.7, 0.7, 0.4),
-        glm::vec4(0.1, 0.4, 0.8, 0.4),
+        glm::vec4(color, 0.4),
+        glm::vec4(color, 0.8),
+        glm::vec4(color + glm::vec3(0.2), 0.4),
     };
     std::vector<glm::vec4> pcolors;
     pcolors.assign(pcolors_raw, pcolors_raw + sizeof(pcolors_raw) / sizeof(glm::vec4));

@@ -10,7 +10,8 @@ class Projectile : public GameEntity
 public:
     Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
             const std::string &paramPrefix, const std::string &frameName,
-            const std::string &audioID, int playerID, int teamID);
+            const std::string &audioID, int playerID, int teamID,
+            const glm::vec3 &color);
     virtual ~Projectile();
 
     virtual std::string getType() const { return "ProjectileEntity"; }
