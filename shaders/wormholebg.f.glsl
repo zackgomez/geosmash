@@ -18,17 +18,11 @@ void main()
     wave = smoothstep(0.95, 1.00, wave);
 
     float fact = length(wave);
-
-    gl_FragData[0] = vec4(1,1,1,1);
-    gl_FragData[1] = vec4(0,0,0,0);
     
-    /*
     if (fact == 0)
         discard;
 
     gl_FragData[0] = fact * linecol;
     gl_FragData[1] = vec4(linecol.rgb, 0.0f);
-    */
-
 }
 

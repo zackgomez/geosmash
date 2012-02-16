@@ -18,8 +18,8 @@ void main()
    // v -> [-1, 1]
    float v = (position.y) / 5.0;
 
-   vec3 world = vec3(r*sin(u), r*cos(u), 10*v);
-   world = 0.01*vec3(cos(u), 0.f, position.y);
+   vec3 world = vec3(r*cos(u), r*sin(u), 5*v);
+   //world = 0.1*vec3(r*cos(u), r*sin(u), v);
    //world = 0.01*vec3(position.x, 0.f, position.y);
 
    gl_Position = projectionMatrix * modelViewMatrix * vec4(world,1.0);
