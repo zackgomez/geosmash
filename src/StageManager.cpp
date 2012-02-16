@@ -216,15 +216,18 @@ void StageManager::renderBackground(float dt)
     float r = getParam("backgroundSphere.radius");
     glm::mat4 transform = glm::rotate(glm::scale(glm::mat4(1.f), glm::vec3(r, r, r)),
             //5*sinf(t_), glm::normalize(glm::vec3(0, cosf(t_/25), sinf(t_/25))));
-            t_, glm::normalize(glm::vec3(0, 1, 0)));
+            0.f, glm::normalize(glm::vec3(0, 1, 0)));
+            //t_, glm::normalize(glm::vec3(0, 1, 0)));
     
     GLuint projectionUniform = glGetUniformLocation(backProgram_, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(backProgram_, "modelViewMatrix");
+    GLuint timeUniform = glGetUniformLocation(backProgram_, "t");
     GLuint positionAttrib = glGetAttribLocation(backProgram_, "position");
 
     glUseProgram(backProgram_);
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrixStack().current()));
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(getViewMatrixStack().current() * transform));
+    glUniform1f(timeUniform, t_);
 
     glBindBuffer(GL_ARRAY_BUFFER, meshBuf_);
     glEnableVertexAttribArray(positionAttrib);

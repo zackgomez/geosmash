@@ -5,6 +5,7 @@ const float length = 100.0;
 
 attribute vec4 position;
 uniform mat4 projectionMatrix, modelViewMatrix;
+uniform float t;
 varying vec2 coord;
 
 void main()
@@ -18,7 +19,7 @@ void main()
    // v -> [-1, 1]
    float v = (position.y) / 5.0;
 
-   vec3 world = vec3(r*cos(u), r*sin(u), 5*v);
+   vec3 world = vec3(r*cos(u) + 0.5*r*sin(5*pi*(v+1)+t), r*sin(u), 5*v);
    //world = 0.1*vec3(r*cos(u), r*sin(u), v);
    //world = 0.01*vec3(position.x, 0.f, position.y);
 
