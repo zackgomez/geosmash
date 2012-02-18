@@ -19,7 +19,11 @@ void main()
    // v -> [-1, 1]
    float v = (position.y) / 5.0;
 
-   vec3 world = vec3(r*cos(u) + 0.5*r*sin(5*pi*(v+1)+t), r*sin(u), 5*v);
+   float x = r*cos(u) + 0.5*r*sin(5*pi*(v+1)+0.4*t)*sin(t);
+   float y = r*sin(u) + 0.5*r*sin(5*pi*(v+1)+0.4*t)*cos(t);
+   float z = 4*v;
+
+   vec3 world = vec3(x, y, z);
    //world = 0.1*vec3(r*cos(u), r*sin(u), v);
    //world = 0.01*vec3(position.x, 0.f, position.y);
 
