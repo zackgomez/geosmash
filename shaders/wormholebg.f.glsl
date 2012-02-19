@@ -4,8 +4,9 @@ varying vec2 coord;
 
 const float thresh = 0.9;
 const float c = 100.;
+const float pi = 3.1415926535;
 
-const vec4 linecol = vec4(0.3, 0.05, 0.3, 1.f);
+const vec3 linecol = vec3(0.3, 0.05, 0.3);
 
 void main()
 {
@@ -14,15 +15,14 @@ void main()
     float u = coord.x;
     float v = coord.y;
 
-    vec2 wave = vec2(sin(c * u), sin(c * v));
-    wave = smoothstep(0.95, 1.00, wave);
+    float fact = smoothstep(0.90, 1.00, sin(0.1*c*pi*u));//length(wave);
 
-    float fact = length(wave);
-    
+    /*
     if (fact == 0)
         discard;
+        */
 
-    gl_FragData[0] = fact * linecol;
-    gl_FragData[1] = vec4(linecol.rgb, 0.0f);
+    gl_FragData[0] = vec4(fact * linecol, 1.f);
+    gl_FragData[1] = vec4(0.f);//vec4(linecol.rgb, 0.0f);
 }
 

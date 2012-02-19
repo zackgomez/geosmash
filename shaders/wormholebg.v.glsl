@@ -10,8 +10,8 @@ varying vec2 coord;
 
 void main()
 {
-   // Convert from the [-5,5]x[-5,5] range provided into radians
-   // between 0 and 2*pi
+   // Save for the frag shader
+   // coord is [-5, 5] x [-5, 5]
    coord = position.xy;
 
    // u -> [0, 2pi]
@@ -19,14 +19,22 @@ void main()
    // v -> [-1, 1]
    float v = (position.y) / 5.0;
 
-   float x = r*cos(u) + 0.5*r*sin(5*pi*(v+1)+0.4*t)*sin(t);
-   float y = r*sin(u) + 0.5*r*sin(5*pi*(v+1)+0.4*t)*cos(t);
-   float z = 4*v;
+   float off = 0.2 * sin(5*v + t) * 5*v;
+   float xfact = (sin(pi*t/10 - v) + 1) / 2;
+   float xoff = off * xfact;
+   float yoff = off * (1 - xfact);
+
+   float x = r*cos(u) + xoff;
+   float y = r*sin(u) + yoff;
+
+   x *= 1.2 + v;
+   y *= 1.2 + v;
+   float z = v;
 
    vec3 world = vec3(x, y, z);
    //world = 0.1*vec3(r*cos(u), r*sin(u), v);
    //world = 0.01*vec3(position.x, 0.f, position.y);
 
-   gl_Position = projectionMatrix * modelViewMatrix * vec4(world,1.0);
+   gl_Position = projectionMatrix * modelViewMatrix * vec4(world, 1.0);
 }
 
