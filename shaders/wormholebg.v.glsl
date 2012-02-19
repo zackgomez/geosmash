@@ -18,18 +18,19 @@ void main()
    float u = (position.x + 5.0) / 10.0 * 2 * pi;
    // v -> [-1, 1]
    float v = (position.y) / 5.0;
+   v *= 2;
 
-   float off = 0.2 * sin(5*v + t) * 5*v;
-   float xfact = (sin(pi*t/10 - v) + 1) / 2;
+   float off = 0.2 * sin(5*v - t) * 5*(-v);
+   float xfact = (sin(pi*t/10 + v) + 1) / 2;
    float xoff = off * xfact;
    float yoff = off * (1 - xfact);
 
    float x = r*cos(u) + xoff;
    float y = r*sin(u) + yoff;
 
-   x *= 1.2 + v;
-   y *= 1.2 + v;
-   float z = v;
+   //x *= 1.2 + v;
+   //y *= 1.2 + v;
+   float z = 2*v;
 
    vec3 world = vec3(x, y, z);
    //world = 0.1*vec3(r*cos(u), r*sin(u), v);
