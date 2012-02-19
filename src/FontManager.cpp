@@ -3,6 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <sstream>
+#include <iomanip>
 
 const float widthRatio = 0.75f;
 
@@ -22,12 +23,10 @@ FontManager::~FontManager()
 }
 
 void FontManager::renderNumber(const glm::mat4 &transform,
-        const glm::vec3 &color, int num)
+        const glm::vec3 &color, float num)
 {
     assert(num >= 0);
-    std::stringstream ss;
-    ss << num;
-    std::string s = ss.str();
+    std::string s = floatStr(num);
     size_t len = s.length();
 
     float offset = static_cast<float>(len) / -2.f + 0.5f;
@@ -140,6 +139,24 @@ void FontManager::renderCharacter(const glm::mat4 &transform, const glm::vec3 &c
     renderRectangleProgram(glm::scale(transform, glm::vec3(0.66f, -1.f, 1.f)), numProgram_);
 
     glDisable(GL_TEXTURE_2D);
+}
+
+int FontManager::numChars(float f)
+{
+    return floatStr(f).length();
+}
+
+std::string FontManager::floatStr(float f)
+{
+    std::stringstream ss;
+    if (f != (int) f)
+    {
+        ss.precision(2);
+        ss.setf(std::ios::fixed, std::ios::floatfield);
+    }
+    ss << f;
+
+    return ss.str();
 }
 
 FontManager * FontManager::get()

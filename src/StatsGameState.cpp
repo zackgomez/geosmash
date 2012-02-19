@@ -25,8 +25,6 @@ StatsGameState::StatsGameState(
 
     for (size_t i = 0; i < players_.size(); i++)
     {
-        // TODO add a "HEADER STAT" to each tab
-
         tabbed_view *view = new tabbed_view();
         // Add pane of "game info"
         const std::string statpre = StatsManager::getStatPrefix(players_[i]->getPlayerID());
@@ -267,10 +265,10 @@ void fighter_stat::render(const rectangle &rect) const
     FontManager::get()->renderString(transform, stat_color, display_name_);
 
     // Calculate the stat value, including normalization
-    int value = StatsManager::get()->getStat(stat_name_) / normfact_;
+    float value = StatsManager::get()->getStat(stat_name_) / normfact_;
     // And now the stat value
     transform = glm::scale(glm::translate(glm::mat4(1.f),
-                glm::vec3(rect.x + rect.w / 2 - rect.h * 0.75f * FontManager::numDigits(value) / 2.f, rect.y, 0.f)),
+                glm::vec3(rect.x + rect.w / 2 - rect.h * 0.75f * FontManager::numChars(value) / 2.f, rect.y, 0.f)),
             glm::vec3(rect.h, rect.h, 1.f));
     FontManager::get()->renderNumber(transform, stat_color, value);
 }
