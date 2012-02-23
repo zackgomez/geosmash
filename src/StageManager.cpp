@@ -394,18 +394,20 @@ void VolcanoHazard::render(float dt)
         emitter_->setParticleLocationF(new circleInteriorLocationF(attack_->getHitbox().w, glm::vec3(0,1,0)))
                 ->setParticleVelocityF(new coneVelocityF(800.f, 350.f, glm::vec3(0,1,0), 1.0f))
                 ->setOutputRate(6000)
-                ->setParticleColorF(new discreteColorF(pcolors));
+                ->setParticleColorF(new discreteColorF(pcolors))
+                ->setParticleSize(glm::vec3(3,3,3));
     }
     else
     {
         PGroup * gravityGroup = ParticleManager::get()->newGroup("gravity");
-        gravityGroup->addAction(new ConstForceF(8, glm::vec3(0, -1, 0)));
+        gravityGroup->setAction(new ConstForceF(8, glm::vec3(0, -1, 0)));
         // Smokey
         // XXX fix the gravity group!
         emitter_->setParticleLocationF(new circleInteriorLocationF(attack_->getHitbox().w/5, glm::vec3(0,1,0)))
                 ->setParticleVelocityF(new coneVelocityF(50.f, 3.f, glm::vec3(0,1,0), 0.95f))
                 ->setParticleLifetimeF(new lifetimeNormalF(0.5f, 0.2f))
                 ->setOutputRate(500)
+                ->setParticleSize(glm::vec3(1.f))
                 ->setParticleColorF(new colorF(glm::vec4(0.4f), 0.7, 0.1));
     }
 }

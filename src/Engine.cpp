@@ -759,7 +759,7 @@ MatrixStack & getViewMatrixStack()
     return viewMatrixStack;
 }
 
-void renderParticles(const std::vector<particleData> &data)
+void renderParticles(const std::vector<Particle> &data)
 {
 	if (data.empty()) return;
 
@@ -767,23 +767,35 @@ void renderParticles(const std::vector<particleData> &data)
     GLuint projectionUniform = glGetUniformLocation(resources.particleprogram, "projectionMatrix");
     GLuint positionAttrib = glGetAttribLocation(resources.particleprogram, "position");
     GLuint colorAttrib = glGetAttribLocation(resources.particleprogram, "color");
+    GLuint sizeAttrib = glGetAttribLocation(resources.particleprogram, "size");
+    GLuint lifeAttrib = glGetAttribLocation(resources.particleprogram, "lifetime");
+    GLuint velocityAttrib = glGetAttribLocation(resources.particleprogram, "velocity");
 
     glUseProgram(resources.particleprogram);
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current()));
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrixStack.current()));
 
     glBindBuffer(GL_ARRAY_BUFFER, resources.part_buffer);
-    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(particleData), &data.front(), GL_STREAM_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Particle), &data.front(), GL_STREAM_DRAW);
 
     glEnableVertexAttribArray(positionAttrib);
-    glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(particleData), 0);
+    glVertexAttribPointer(positionAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)offsetof(Particle, loc));
     glEnableVertexAttribArray(colorAttrib);
-    glVertexAttribPointer(colorAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(particleData), (void *)(3 * sizeof(float)));
+    glVertexAttribPointer(colorAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)offsetof(Particle, color));
+    glEnableVertexAttribArray(sizeAttrib);
+    glVertexAttribPointer(sizeAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)offsetof(Particle, size));
+    glEnableVertexAttribArray(velocityAttrib);
+    glVertexAttribPointer(velocityAttrib, 3, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)offsetof(Particle, vel));
+    glEnableVertexAttribArray(lifeAttrib);
+    glVertexAttribPointer(lifeAttrib, 1, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)offsetof(Particle, t));
 
     glDrawArrays(GL_POINTS, 0, data.size());
 
     glDisableVertexAttribArray(positionAttrib);
     glDisableVertexAttribArray(colorAttrib);
+    glDisableVertexAttribArray(sizeAttrib);
+    glDisableVertexAttribArray(lifeAttrib);
+    glDisableVertexAttribArray(velocityAttrib);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
 }
