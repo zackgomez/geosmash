@@ -1141,7 +1141,8 @@ FighterState * UpSpecialState::processInput(controller_state &, float dt)
         fighter_->vel_.y = fighter_->param(pre_ + "yvel");
     }
 
-    return NULL;
+    // Grab during attack
+    return checkForLedgeGrab(true);
 }
 
 void UpSpecialState::render(float dt)
@@ -1201,7 +1202,6 @@ FighterState * DashSpecialState::processInput(controller_state &, float dt)
         }
     }
 
-    // TODO make this ignore the fact that we have an attack
     // True is for being able to grab during attack
     return checkForLedgeGrab(true);
 }

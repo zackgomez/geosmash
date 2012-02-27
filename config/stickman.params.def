@@ -275,14 +275,14 @@ stickman.upSpecialAttack.knockbackx   0
 stickman.upSpecialAttack.knockbacky   0
 stickman.upSpecialAttack.kbbase       200.0
 stickman.upSpecialAttack.kbscaling    1.00
-stickman.upSpecialAttack.hitboxx      25
-stickman.upSpecialAttack.hitboxy      30
-stickman.upSpecialAttack.hitboxw      40
-stickman.upSpecialAttack.hitboxh      60
+stickman.upSpecialAttack.hitboxx      0
+stickman.upSpecialAttack.hitboxy      0
+stickman.upSpecialAttack.hitboxw      45
+stickman.upSpecialAttack.hitboxh      75
 stickman.upSpecialAttack.priority     2.0
 # teleport distance
 stickman.upSpecialAttack.dist         150
-stickman.upSpecialAttack.momentum     150
+stickman.upSpecialAttack.momentum     250
 
 stickman.sideSpecialAttack.startup      0.18
 stickman.sideSpecialAttack.duration     0.30
