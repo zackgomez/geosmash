@@ -84,8 +84,8 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
     // Calculate direction of hit
     glm::vec2 knockback = attack->calcKnockback(fighter_, fighter_->damage_);
 
-    // Get knocked back
-    fighter_->vel_ = knockback;
+    // Get knocked back, according to fighter
+    fighter_->vel_ = fighter_->param("kbscaling") * knockback;
 
     // Generate a tiny explosion here
     glm::vec2 hitdir = glm::vec2(fighter_->pos_.x, fighter_->pos_.y)
@@ -1021,9 +1021,9 @@ CounterState::CounterState(Fighter *f, bool ground) :
 FighterState* CounterState::processInput(controller_state & controller, float dt)
 {
     t_ += dt;
-    float totalT = getParam(pre_ + "startup") +
-        getParam(pre_ + "duration") + 
-        getParam(pre_ + "cooldown");
+    float totalT = fighter_->param(pre_ + "startup") +
+        fighter_->param(pre_ + "duration") + 
+        fighter_->param(pre_ + "cooldown");
 
     if (!fighter_->attack_ && t_ > totalT)
     {
@@ -1033,7 +1033,7 @@ FighterState* CounterState::processInput(controller_state & controller, float dt
         else 
             return new AirNormalState(fighter_);
     }
-    if (t_ > getParam(pre_ + "startup") + getParam(pre_ + "duration")
+    if (t_ > fighter_->param(pre_ + "startup") + fighter_->param(pre_ + "duration")
             && !playedSound_)
     {
         playedSound_ = true;
@@ -1050,18 +1050,18 @@ FighterState* CounterState::hitByAttack(const Attack* attack)
         return NULL;
 
     // If counter isn't ready yet (or it's too late), eat the attack
-    if (t_ < getParam(pre_ + "startup") || 
-            t_ > getParam(pre_ + "startup") + getParam(pre_ + "duration"))
+    if (t_ < fighter_->param(pre_ + "startup") || 
+            t_ > fighter_->param(pre_ + "startup") + fighter_->param(pre_ + "duration"))
     {
         return calculateHitResult(attack);
     }
 
-    float calcedpow = getParam("counterAttack.reflectfact") *
+    float calcedpow = fighter_->param("counterAttack.reflectfact") *
         glm::length(attack->calcKnockback(fighter_, fighter_->getDamage()));
 
     // Now the other player gets screwed over for attacking us at the wrong time.
     // Otherwise create a new Fighter attack helper.
-    fighter_->attack_ = new FighterAttack("counterAttack", "groundhit", "CounterAttack");
+    fighter_->attack_ = new FighterAttack(fighter_->pre_ + "counterAttack", "groundhit", "CounterAttack");
     fighter_->attack_->setHitboxFrame("CounterAttackHitbox");
     fighter_->attack_->setFighter(fighter_);
     fighter_->attack_->start();
@@ -1085,9 +1085,9 @@ void CounterState::render(float dt)
             */
 
     glm::vec3 color = fighter_->color_;
-    if (t_ > getParam(pre_ + "startup")
-            && t_ < getParam(pre_ + "startup")
-                + getParam(pre_ + "duration"))
+    if (t_ > fighter_->param(pre_ + "startup")
+            && t_ < fighter_->param(pre_ + "startup")
+                + fighter_->param(pre_ + "duration"))
                 
     {
         color = muxByTime(color, t_);
@@ -1117,8 +1117,8 @@ FighterState * UpSpecialState::processInput(controller_state &, float dt)
     // Only boost while the hitbox is active
     if (fighter_->attack_->hasHitbox())
     {
-        fighter_->vel_.x = fighter_->dir_ * getParam(pre_ + "xvel");
-        fighter_->vel_.y = getParam(pre_ + "yvel");
+        fighter_->vel_.x = fighter_->dir_ * fighter_->param(pre_ + "xvel");
+        fighter_->vel_.y = fighter_->param(pre_ + "yvel");
     }
 
     return NULL;
@@ -1201,7 +1201,7 @@ void DashSpecialState::update(float dt)
     // Only boost while the hitbox is active
     if (fighter_->attack_ && fighter_->attack_->hasHitbox())
     {
-        fighter_->vel_.x = fighter_->dir_ * getParam(pre_ + "xvel");
+        fighter_->vel_.x = fighter_->dir_ * fighter_->param(pre_ + "xvel");
         fighter_->vel_.y = 0.f;
         // TODO figure out what to do with the yvel
         /*
@@ -1210,7 +1210,7 @@ void DashSpecialState::update(float dt)
             */
     }
     else if (fighter_->attack_ && !ground_)
-        fighter_->vel_.x = getParam(pre_ + "endxvel") * fighter_->dir_;
+        fighter_->vel_.x = fighter_->param(pre_ + "endxvel") * fighter_->dir_;
     else
         fighter_->vel_.x = 0.f;
 
@@ -1264,7 +1264,7 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
     holdTimeLeft_ -= dt;
 
     // Do the speed damping
-    fighter_->accel_ = -getParam(pre_ + "speedDamping") * fighter_->vel_;
+    fighter_->accel_ = -fighter_->param(pre_ + "speedDamping") * fighter_->vel_;
 
     // If the "grab attack" has expired and we have no victim, back to ground
     // normal.  grab attack cooldown should take care of grab cooldown
@@ -1281,7 +1281,7 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
         victim_->release();
         fighter_->accel_ = glm::vec2();
         // A bit of cooldown time here
-        return new GroundState(fighter_, getParam(pre_ + "releaseCooldown"));
+        return new GroundState(fighter_, fighter_->param(pre_ + "releaseCooldown"));
     }
 
     if (victim_)
@@ -1310,16 +1310,16 @@ FighterState * GrabbingState::processInput(controller_state &controller, float d
         if (shouldThrow)
         {
             glm::vec2 kbdir = glm::normalize(
-                    glm::vec2(getParam(throwPrefix + "knockbackx"),
-                        getParam(throwPrefix + "knockbacky")));
+                    glm::vec2(fighter_->param(throwPrefix + "knockbackx"),
+                        fighter_->param(throwPrefix + "knockbacky")));
             kbdir *= glm::vec2(fighter_->getDirection(), 1.f);
 
             SimpleAttack thrw = SimpleAttack(
                     kbdir,
-                    getParam(throwPrefix + "kbbase"),
-                    getParam(throwPrefix + "kbscaling"),
-                    getParam(throwPrefix + "damage"),
-                    getParam(throwPrefix + "stun"),
+                    fighter_->param(throwPrefix + "kbbase"),
+                    fighter_->param(throwPrefix + "kbscaling"),
+                    fighter_->param(throwPrefix + "damage"),
+                    fighter_->param(throwPrefix + "stun"),
                     0.f, // priority doesn't matter
                     glm::vec2(0.f), // position doesn't matter
                     glm::vec2(0.f), // size doesn't matter
@@ -1397,7 +1397,7 @@ FighterState* GrabbingState::attackConnected(GameEntity *victim)
     // They can be hit by other attacks for now
     victim_->setHitable(true);
     // Set hold timer to be hold time remaining
-    holdTimeLeft_ = getParam(pre_ + "holdTime");
+    holdTimeLeft_ = fighter_->param(pre_ + "holdTime");
 
 
     // Finish our attack

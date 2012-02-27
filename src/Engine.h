@@ -40,6 +40,7 @@ void postRender();
 
 // Returns a millisecond resolution time
 int getCurrentMillis();
+std::string getTimeString();
 
 // For now just creates a cube
 mesh createMesh(std::string objfile);

@@ -8,14 +8,16 @@ stickman.dashSpeed        500.0
 # force applied when in AirNormal state
 stickman.airForce         600.0
 # "gravity"
-stickman.airAccel         -900.0
+stickman.airAccel         -1500.0
 # for when the fighter is stunned
 stickman.airDI            200.0
+# multiplied by received knockback
+stickman.kbscaling        1.1
 
 # also determines short hop input window
 stickman.jumpStartupTime  0.060
-stickman.jumpSpeed        550.0
-stickman.hopSpeed         250.0
+stickman.jumpSpeed        600.0
+stickman.hopSpeed         300.0
 stickman.secondJumpSpeed  550.0
 # Maximum x speed from input
 stickman.jumpAirSpeed     280.0
@@ -61,3 +63,376 @@ stickman.ledgeGrab.wakeupTime     0.15
 stickman.ledgeGrab.attackInvinc   0.40
 stickman.ledgeGrab.wakeUpInvinc   0.15
 stickman.ledgeGrab.inputDelay     0.20
+
+# ---------------
+# - DASH ATTACK -
+# ---------------
+stickman.dashAttack.startup      0.05
+stickman.dashAttack.duration     0.55
+stickman.dashAttack.cooldown     0.15
+stickman.dashAttack.damage       5
+stickman.dashAttack.stun         0.10
+stickman.dashAttack.knockbackx   -2
+stickman.dashAttack.knockbacky   5
+stickman.dashAttack.kbbase       160.0
+stickman.dashAttack.kbscaling    4.00
+stickman.dashAttack.hitboxx      45
+stickman.dashAttack.hitboxy      -15
+stickman.dashAttack.hitboxw      40
+stickman.dashAttack.hitboxh      25
+stickman.dashAttack.priority     1.0
+stickman.dashAttack.initialSpeed 550.0
+stickman.dashAttack.deceleration -800.0
+
+
+# ----------------
+# - LEDGE ATTACK -
+# ----------------
+stickman.ledgeAttack.startup      0.15
+stickman.ledgeAttack.duration     0.22
+stickman.ledgeAttack.cooldown     0.20
+stickman.ledgeAttack.damage       6
+stickman.ledgeAttack.stun         0.10
+stickman.ledgeAttack.knockbackx   3
+stickman.ledgeAttack.knockbacky   5
+stickman.ledgeAttack.kbbase       180.0
+stickman.ledgeAttack.kbscaling    5.00
+stickman.ledgeAttack.hitboxx      45
+stickman.ledgeAttack.hitboxy      -15
+stickman.ledgeAttack.hitboxw      30
+stickman.ledgeAttack.hitboxh      25
+stickman.ledgeAttack.priority     2.0
+
+
+
+# ----------------
+# - TILT ATTACKS -
+# ----------------
+stickman.neutralTiltAttack.startup      0.03
+stickman.neutralTiltAttack.duration     0.15
+stickman.neutralTiltAttack.cooldown     0.1
+stickman.neutralTiltAttack.damage       3
+stickman.neutralTiltAttack.stun         0.10
+stickman.neutralTiltAttack.knockbackx   1
+stickman.neutralTiltAttack.knockbacky   1
+stickman.neutralTiltAttack.kbbase       100.0
+stickman.neutralTiltAttack.kbscaling    4.50
+stickman.neutralTiltAttack.hitboxx      30
+stickman.neutralTiltAttack.hitboxy      0
+stickman.neutralTiltAttack.hitboxw      30
+stickman.neutralTiltAttack.hitboxh      18
+stickman.neutralTiltAttack.priority     1.0
+
+stickman.sideTiltAttack.startup      0.1
+stickman.sideTiltAttack.duration     0.22
+stickman.sideTiltAttack.cooldown     0.25
+stickman.sideTiltAttack.damage       6
+stickman.sideTiltAttack.stun         0.10
+stickman.sideTiltAttack.knockbackx   3
+stickman.sideTiltAttack.knockbacky   2
+stickman.sideTiltAttack.kbbase       120.0
+stickman.sideTiltAttack.kbscaling    5.00
+stickman.sideTiltAttack.hitboxx      50
+stickman.sideTiltAttack.hitboxy      5
+stickman.sideTiltAttack.hitboxw      50
+stickman.sideTiltAttack.hitboxh      18
+stickman.sideTiltAttack.priority     1.0
+
+stickman.downTiltAttack.startup      0.15
+stickman.downTiltAttack.duration     0.22
+stickman.downTiltAttack.cooldown     0.25
+stickman.downTiltAttack.damage       8
+stickman.downTiltAttack.stun         0.16
+stickman.downTiltAttack.knockbackx   1
+stickman.downTiltAttack.knockbacky   5
+stickman.downTiltAttack.kbbase       140.0
+stickman.downTiltAttack.kbscaling    5.00
+stickman.downTiltAttack.hitboxx      60
+stickman.downTiltAttack.hitboxy      -30
+stickman.downTiltAttack.hitboxw      65
+stickman.downTiltAttack.hitboxh      15
+stickman.downTiltAttack.priority     1.0
+
+stickman.upTiltAttack.startup      0.1
+stickman.upTiltAttack.duration     0.22
+stickman.upTiltAttack.cooldown     0.20
+stickman.upTiltAttack.damage       9
+stickman.upTiltAttack.stun         0.14
+stickman.upTiltAttack.knockbackx   1
+stickman.upTiltAttack.knockbacky   9
+stickman.upTiltAttack.kbbase       140.0
+stickman.upTiltAttack.kbscaling    5.00
+stickman.upTiltAttack.hitboxx      25
+stickman.upTiltAttack.hitboxy      30
+stickman.upTiltAttack.hitboxw      40
+stickman.upTiltAttack.hitboxh      40
+stickman.upTiltAttack.priority     1.0
+
+
+
+# ------------------
+# - AERIAL ATTACKS -
+# ------------------
+stickman.airNeutralAttack.startup      0.05
+stickman.airNeutralAttack.duration     0.36
+stickman.airNeutralAttack.cooldown     0.15
+stickman.airNeutralAttack.damage       8
+stickman.airNeutralAttack.stun         0.09
+stickman.airNeutralAttack.knockbackx   3
+stickman.airNeutralAttack.knockbacky   2
+stickman.airNeutralAttack.kbbase       200.0
+stickman.airNeutralAttack.kbscaling    4.00
+stickman.airNeutralAttack.hitboxx      25
+stickman.airNeutralAttack.hitboxy      -10
+stickman.airNeutralAttack.hitboxw      40
+stickman.airNeutralAttack.hitboxh      25
+stickman.airNeutralAttack.priority     1.5
+
+stickman.airFrontAttack.startup      0.25
+stickman.airFrontAttack.duration     0.25
+stickman.airFrontAttack.cooldown     0.30
+stickman.airFrontAttack.damage       8
+stickman.airFrontAttack.stun         0.13
+stickman.airFrontAttack.knockbackx   5
+stickman.airFrontAttack.knockbacky   2
+stickman.airFrontAttack.kbbase       400.0
+stickman.airFrontAttack.kbscaling    7.00
+stickman.airFrontAttack.hitboxx      40
+stickman.airFrontAttack.hitboxy      -5
+stickman.airFrontAttack.hitboxw      35
+stickman.airFrontAttack.hitboxh      40
+stickman.airFrontAttack.priority     1.0
+
+stickman.airDownAttack.startup      0.15
+stickman.airDownAttack.duration     0.15
+stickman.airDownAttack.cooldown     0.30
+stickman.airDownAttack.damage       8
+stickman.airDownAttack.stun         0.18
+stickman.airDownAttack.knockbackx   0
+stickman.airDownAttack.knockbacky   -1
+stickman.airDownAttack.kbbase       600.0
+stickman.airDownAttack.kbscaling    3.00
+stickman.airDownAttack.hitboxx      0
+stickman.airDownAttack.hitboxy      -40
+stickman.airDownAttack.hitboxw      35
+stickman.airDownAttack.hitboxh      30
+stickman.airDownAttack.priority     1.0
+
+stickman.airUpAttack.startup      0.15
+stickman.airUpAttack.duration     0.15
+stickman.airUpAttack.cooldown     0.20
+stickman.airUpAttack.damage       9
+stickman.airUpAttack.stun         0.20
+stickman.airUpAttack.knockbackx   0
+stickman.airUpAttack.knockbacky   1
+stickman.airUpAttack.kbbase       300
+stickman.airUpAttack.kbscaling    7.00
+stickman.airUpAttack.hitboxx      0
+stickman.airUpAttack.hitboxy      40
+stickman.airUpAttack.hitboxw      45
+stickman.airUpAttack.hitboxh      25
+stickman.airUpAttack.priority     1.0
+
+stickman.tauntAttack.startup      0.4
+stickman.tauntAttack.duration     0.0
+stickman.tauntAttack.cooldown     0.4
+stickman.tauntAttack.damage       0
+stickman.tauntAttack.stun         0
+stickman.tauntAttack.knockbackx   0
+stickman.tauntAttack.knockbacky   1
+stickman.tauntAttack.kbbase       0
+stickman.tauntAttack.kbscaling    0
+stickman.tauntAttack.hitboxx      0
+stickman.tauntAttack.hitboxy      0
+stickman.tauntAttack.hitboxw      0
+stickman.tauntAttack.hitboxh      0
+stickman.tauntAttack.priority     0
+
+
+
+# -------------------
+# - Special Attacks -
+# -------------------
+stickman.neutralSpecialAttack.startup      0.30
+stickman.neutralSpecialAttack.cooldown     0.15
+stickman.neutralSpecialAttack.damage       5
+stickman.neutralSpecialAttack.stun         0.06
+stickman.neutralSpecialAttack.speed        550.0
+stickman.neutralSpecialAttack.sizex        20.0
+stickman.neutralSpecialAttack.sizey        20.0
+stickman.neutralSpecialAttack.knockbackx   1
+stickman.neutralSpecialAttack.knockbacky   1
+stickman.neutralSpecialAttack.kbbase       20.0
+stickman.neutralSpecialAttack.kbscaling    0.20
+stickman.neutralSpecialAttack.lifetime     2.0
+
+stickman.upSpecialAttack.startup      0.07
+stickman.upSpecialAttack.duration     0.20
+stickman.upSpecialAttack.cooldown     0.00
+stickman.upSpecialAttack.damage       2
+stickman.upSpecialAttack.stun         0.11
+stickman.upSpecialAttack.knockbackx   1
+stickman.upSpecialAttack.knockbacky   3
+stickman.upSpecialAttack.kbbase       70.0
+stickman.upSpecialAttack.kbscaling    0.70
+stickman.upSpecialAttack.hitboxx      25
+stickman.upSpecialAttack.hitboxy      30
+stickman.upSpecialAttack.hitboxw      40
+stickman.upSpecialAttack.hitboxh      60
+stickman.upSpecialAttack.priority     2.0
+stickman.upSpecialAttack.repeatInterval  0.04
+stickman.upSpecialAttack.xvel            160
+stickman.upSpecialAttack.yvel            600
+
+stickman.sideSpecialAttack.startup      0.18
+stickman.sideSpecialAttack.duration     0.30
+stickman.sideSpecialAttack.cooldown     0.45
+stickman.sideSpecialAttack.damage       7
+stickman.sideSpecialAttack.stun         0.10
+stickman.sideSpecialAttack.knockbackx   2
+stickman.sideSpecialAttack.knockbacky   4 
+stickman.sideSpecialAttack.kbbase       100.0
+stickman.sideSpecialAttack.kbscaling    1.00
+stickman.sideSpecialAttack.hitboxx      0
+stickman.sideSpecialAttack.hitboxy      0
+stickman.sideSpecialAttack.hitboxw      50
+stickman.sideSpecialAttack.hitboxh      60
+stickman.sideSpecialAttack.priority     1.0
+stickman.sideSpecialState.yvel         0
+stickman.sideSpecialState.xvel         800
+stickman.sideSpecialState.endxvel      200
+
+stickman.downSpecialAttack.startup      0.15
+stickman.downSpecialAttack.duration     0.25
+stickman.downSpecialAttack.cooldown     0.30
+# when hit the counterAttack comes out
+stickman.counterAttack.startup      0.0
+stickman.counterAttack.duration     0.30
+stickman.counterAttack.cooldown     0.25
+stickman.counterAttack.damage       8
+stickman.counterAttack.stun         0.10
+stickman.counterAttack.knockbackx   5
+stickman.counterAttack.knockbacky   2
+stickman.counterAttack.kbbase       120.0
+stickman.counterAttack.kbscaling    0
+stickman.counterAttack.hitboxx      45
+stickman.counterAttack.hitboxy      0
+stickman.counterAttack.hitboxw      60
+stickman.counterAttack.hitboxh      60
+stickman.counterAttack.priority     2.5
+# counter kb = reflectfact * incoming kb
+stickman.counterAttack.reflectfact  1
+
+
+
+# -----------------
+# - SMASH ATTACKS -
+# -----------------
+stickman.neutralSmashAttack.startup      0.40
+stickman.neutralSmashAttack.duration     0.05
+stickman.neutralSmashAttack.cooldown     0.20
+stickman.neutralSmashAttack.damage       24
+stickman.neutralSmashAttack.stun         0.15
+stickman.neutralSmashAttack.knockbackx   0
+stickman.neutralSmashAttack.knockbacky   0
+stickman.neutralSmashAttack.kbbase       666.0
+stickman.neutralSmashAttack.kbscaling    9.00
+stickman.neutralSmashAttack.hitboxx      0
+stickman.neutralSmashAttack.hitboxy      -20
+stickman.neutralSmashAttack.hitboxw      30
+stickman.neutralSmashAttack.hitboxh      50
+stickman.neutralSmashAttack.priority     1.5
+
+stickman.sideSmashAttack.startup      0.30
+stickman.sideSmashAttack.duration     0.25
+stickman.sideSmashAttack.cooldown     0.35
+stickman.sideSmashAttack.damage       17
+stickman.sideSmashAttack.stun         0.13
+stickman.sideSmashAttack.knockbackx   3
+stickman.sideSmashAttack.knockbacky   2
+stickman.sideSmashAttack.kbbase       480.0
+stickman.sideSmashAttack.kbscaling    7.00
+stickman.sideSmashAttack.hitboxx      50
+stickman.sideSmashAttack.hitboxy      15
+stickman.sideSmashAttack.hitboxw      50
+stickman.sideSmashAttack.hitboxh      30
+stickman.sideSmashAttack.priority     1.5
+
+stickman.downSmashAttack.startup      0.21
+stickman.downSmashAttack.duration     0.25
+stickman.downSmashAttack.cooldown     0.30
+stickman.downSmashAttack.damage       15
+stickman.downSmashAttack.stun         0.13
+stickman.downSmashAttack.knockbackx   0
+stickman.downSmashAttack.knockbacky   0
+stickman.downSmashAttack.kbbase       360.0
+stickman.downSmashAttack.kbscaling    7.00
+stickman.downSmashAttack.hitboxx      0
+stickman.downSmashAttack.hitboxy      -20
+stickman.downSmashAttack.hitboxw      130
+stickman.downSmashAttack.hitboxh      20
+stickman.downSmashAttack.priority     1.5
+
+stickman.upSmashAttack.startup      0.28
+stickman.upSmashAttack.duration     0.20
+stickman.upSmashAttack.cooldown     0.30
+stickman.upSmashAttack.damage       14
+stickman.upSmashAttack.stun         0.13
+stickman.upSmashAttack.knockbackx   1
+stickman.upSmashAttack.knockbacky   4
+stickman.upSmashAttack.kbbase       440.0
+stickman.upSmashAttack.kbscaling    7.00
+stickman.upSmashAttack.hitboxw      48
+stickman.upSmashAttack.hitboxh      48
+stickman.upSmashAttack.priority     1.5
+stickman.upSmashAttack.hitboxx      -20
+stickman.upSmashAttack.hitboxy      30
+stickman.upSmashAttack.hitboxx1     35
+stickman.upSmashAttack.hitboxy1     30
+
+
+
+# ----------------------
+# - GRAB/THROW ATTACKS -
+# ----------------------
+stickman.grabAttack.startup          0.10
+stickman.grabAttack.duration         0.35
+stickman.grabAttack.cooldown         0.20
+stickman.grabAttack.damage           0
+stickman.grabAttack.stun             0
+stickman.grabAttack.knockbackx       0
+stickman.grabAttack.knockbacky       0
+stickman.grabAttack.kbbase           0
+stickman.grabAttack.kbscaling        0
+stickman.grabAttack.priority         0
+stickman.grabAttack.hitboxx          30
+stickman.grabAttack.hitboxy          5
+stickman.grabAttack.hitboxw          30
+stickman.grabAttack.hitboxh          30
+
+stickman.grabState.holdTime          1.5
+stickman.grabState.releaseCooldown   0.25
+# accel = velocity * -damping
+stickman.grabState.speedDamping      4
+
+stickman.frontThrow.knockbackx       7
+stickman.frontThrow.knockbacky       4
+stickman.frontThrow.kbbase           350
+stickman.frontThrow.kbscaling        4.00
+stickman.frontThrow.damage           8
+stickman.frontThrow.stun             0.12
+
+stickman.backThrow.knockbackx       -8
+stickman.backThrow.knockbacky       4
+stickman.backThrow.kbbase           400
+stickman.backThrow.kbscaling        4.00
+stickman.backThrow.damage           8
+stickman.backThrow.stun             0.12
+
+stickman.upThrow.knockbackx       0
+stickman.upThrow.knockbacky       1
+stickman.upThrow.kbbase           400
+stickman.upThrow.kbscaling        5.00
+stickman.upThrow.damage           5
+stickman.upThrow.stun             0.17
+

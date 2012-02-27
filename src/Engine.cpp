@@ -822,3 +822,12 @@ int getCurrentMillis()
 {
     return SDL_GetTicks();
 }
+
+std::string getTimeString()
+{
+    char buf[100];
+    time_t curtime = time(NULL);
+    strftime(buf, sizeof(buf), "%Y%m%d%M%S", localtime(&curtime));
+
+    return std::string(buf);
+}

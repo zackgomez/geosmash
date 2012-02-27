@@ -98,13 +98,15 @@ InGameState::InGameState(const std::vector<Player *> &players,
     for (size_t i = 0; i < players_.size(); i++)
         listeners_.push_back(players_[i]);
 
-    replayStream_.open("replays/lastreplay", std::ostream::out);
+    std::string replayName = "replays/lastreplay.";
+    replayName += getTimeString();
+    replayStream_.open(replayName.c_str(), std::ostream::out);
     // Print out the player names for the first line
     for (size_t i = 0; i < players_.size(); i++)
         replayStream_ << players_[i]->getUsername() << ' ';
     replayStream_ << '\n';
-    logger_->info() << "Saving replay to replays/lastreplay\n";
-    assert(replayStream_ && "Couldn't open replays/lastreplay, does replays/ exist?");
+    logger_->info() << "Saving replay to " << replayName << '\n';
+    assert(replayStream_ && "Couldn't open replay file does replays/ exist?");
 }
 
 InGameState::~InGameState()
@@ -155,7 +157,6 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
     // If paused, don't update fighters or ask for next state
     if (paused_)
         return NULL;
-
     // Output replay information
     for (size_t i = 0; i < players_.size(); i++)
     {

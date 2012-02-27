@@ -3,6 +3,7 @@
 #include <ctime>
 #include <sstream>
 #include <iostream>
+#include "Engine.h"
 
 GhostAIRecorder::GhostAIRecorder()
 {
@@ -11,9 +12,7 @@ GhostAIRecorder::GhostAIRecorder()
     // Create a string "ghostdata.timestamp"
     char buf[100];
     std::stringstream ss;
-    time_t curtime = time(NULL);
-    strftime(buf, sizeof(buf), "%Y%m%d%M%S", localtime(&curtime));
-    ss << "ghostdata/run." << buf;
+    ss << "ghostdata/run." << getTimeString();
 
     logger_->info() << "Recording ghost data to " << ss.str() << '\n';
 
