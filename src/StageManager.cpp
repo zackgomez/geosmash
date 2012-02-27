@@ -392,7 +392,7 @@ void VolcanoHazard::render(float dt)
                 pcolors_raw + sizeof(pcolors_raw)/sizeof(glm::vec4));
         // Set color and shit to be Fire and brimstone
         emitter_->setParticleLocationF(new circleInteriorLocationF(attack_->getHitbox().w, glm::vec3(0,1,0)))
-                ->setParticleVelocityF(new coneVelocityF(800.f, 350.f, glm::vec3(0,1,0), 1.0f))
+                ->setParticleVelocityF(new coneVelocityF(800.f, 200.f, glm::vec3(0,1,0), 1.0f))
                 ->setOutputRate(6000)
                 ->setParticleColorF(new discreteColorF(pcolors))
                 ->setParticleSize(glm::vec3(3,3,3));
