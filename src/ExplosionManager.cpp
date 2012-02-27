@@ -72,6 +72,19 @@ void ExplosionManager::addPuff(float x, float y, float t)
     ParticleManager::get()->addEmitter(em);
 }
 
+void ExplosionManager::addPuff(const glm::vec2 &pos, float r, float t)
+{
+    Emitter *em = ParticleManager::get()->newEmitter();
+    em->setLocation(glm::vec3(pos, 0.f))
+        ->setTimeRemaining(t/2)
+        ->setParticleLifetimeF(new lifetimeNormalF(0.3, 0.3))
+        ->setParticleVelocityF(new velocityF(20.f, 20.f, 5.f))
+        ->setParticleLocationF(new locationF(r))
+        ->setParticleColorF(new colorF(glm::vec4(0.8, 0.8, 0.8, 0.5), 0.8, 0.2))
+        ->setOutputRate(1000);
+    ParticleManager::get()->addEmitter(em);
+}
+
 void ExplosionManager::addTwinkle(float x, float y)
 {
     twinkles_.push_back(Twinkle(x, y, 0.25, 1.0f));

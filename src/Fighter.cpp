@@ -12,6 +12,8 @@
 #include "Attack.h"
 #include "Controller.h"
 #include "FighterState.h"
+// TODO remove this to a factory method of some kind
+#include "StickmanStates.h"
 #include "StatsManager.h"
 
 const std::string Fighter::type = "FighterEntity";
@@ -82,9 +84,6 @@ void Fighter::fillAttacks(const std::string &moveset)
     attackMap_["airUp"] = loadAttack<FighterAttack>(pre_ + "airUpAttack", a, "AirUptilt");
     attackMap_["airUp"]->setHitboxFrame("AirUptiltHitbox");
 
-    attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>(pre_ + "upSpecialAttack", a, "UpSpecial");
-    attackMap_["upSpecial"]->setHitboxFrame("UpSpecialHitbox");
-    attackMap_["upSpecial"]->setStartSound("upspecial");
     attackMap_["neutralSpecial"] = new NeutralSpecialAttack(pre_ + "neutralSpecialAttack", "NeutralSpecial");
     attackMap_["neutralSpecial"]->setStartSound("projectile");
     attackMap_["dashSpecial"] = loadAttack<FighterAttack>(pre_ + "sideSpecialAttack", "dashspecialhit", "DashSpecial");
@@ -111,6 +110,26 @@ void Fighter::fillAttacks(const std::string &moveset)
     attackMap_["grab"] = loadAttack<FighterAttack>(pre_ + "grabAttack", "", "GrabAttempt");
     attackMap_["grab"]->setStartSound("grabattempt");
     //attackMap_["grab"]->setHitboxFrame("GrabbingHitbox");
+
+    // Special moves
+    if (moveset == "charlie")
+    {
+        attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>(pre_ + "upSpecialAttack", a, "UpSpecial");
+        attackMap_["upSpecial"]->setHitboxFrame("UpSpecialHitbox");
+        attackMap_["upSpecial"]->setStartSound("upspecial");
+        
+        specialStateFactory_ = &getCharlieSpecialState;
+    }
+    else if (moveset == "stickman")
+    {
+        attackMap_["upSpecial"] = loadAttack<FighterAttack>(pre_ + "upSpecialAttack", a, "UpSpecial");
+        attackMap_["upSpecial"]->setHitboxFrame("Null");
+        attackMap_["upSpecial"]->setStartSound("upspecial");
+
+        specialStateFactory_ = &getStickmanSpecialState;
+    }
+    else
+        assert(false && "unknown fighter");
 }
 
 void Fighter::setRespawnLocation(float x, float y)

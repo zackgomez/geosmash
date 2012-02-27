@@ -29,6 +29,9 @@ public:
     // Adds a colored 'puff' for dashing or landing
     void addPuff(float x, float y, float t);
 
+    // Adds a colored puff with a given size
+    void addPuff(const glm::vec2 &pos, float r, float t);
+
     // Adds a glowy twinkle for specifying strong hits
     void addTwinkle(float x, float y);
 

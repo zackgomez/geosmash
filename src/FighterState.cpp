@@ -11,6 +11,7 @@
 #include "StageManager.h"
 #include "Controller.h"
 #include "InGameState.h"
+#include "StickmanStates.h"
 
 int getTeamID(int);
 
@@ -165,6 +166,22 @@ FighterState* FighterState::checkForLedgeGrab(bool attackOK)
     return NULL;
 }
 
+SpecialState *getCharlieSpecialState(const std::string &name, Fighter *f, bool ground)
+{
+    if (name == "upSpecial")
+        return new UpSpecialState(f, ground);
+    else
+        assert(false);
+}
+
+SpecialState *getStickmanSpecialState(const std::string &name, Fighter *f, bool ground)
+{
+    if (name == "upSpecial")
+        return new StickmanUpSpecial(f, ground);
+    else
+        assert(false);
+}
+
 FighterState* FighterState::performBMove(const controller_state &controller, bool ground)
 {
     assert(controller.pressb);
@@ -175,7 +192,8 @@ FighterState* FighterState::performBMove(const controller_state &controller, boo
     // Check for up B
     if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
     {
-        next = new UpSpecialState(fighter_);
+        //next = fighter_->specialAttackMap_["upSpecial"]->clone(ground);
+        next = fighter_->specialStateFactory_("upSpecial", fighter_, ground);
     }
     // Check for down B
     else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
@@ -191,6 +209,8 @@ FighterState* FighterState::performBMove(const controller_state &controller, boo
     // Otherwise neutral B
     else
     {
+        // TODO make this a special state, and move these to a map for easy
+        // cloning on different fighters
         fighter_->attack_ = fighter_->attackMap_["neutralSpecial"]->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
@@ -1098,8 +1118,8 @@ void CounterState::render(float dt)
 }
 
 //// -------------------- UP SPECIAL STATE ------------------------------
-UpSpecialState::UpSpecialState(Fighter *f) :
-    FighterState(f)
+UpSpecialState::UpSpecialState(Fighter *f, bool ground) :
+    SpecialState(f, ground)
 {
     pre_ = "upSpecialAttack.";
     fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
@@ -1136,8 +1156,7 @@ void UpSpecialState::render(float dt)
 FighterState* UpSpecialState::collisionWithGround(const rectangle &ground, bool collision,
         bool platform)
 {
-    // XXX not sure if this is right
-    return NULL;
+    return SpecialState::collisionWithGround(ground, collision, platform);
 }
 
 FighterState* UpSpecialState::hitByAttack(const Attack *attack)
@@ -1151,6 +1170,7 @@ FighterState* UpSpecialState::attackConnected(GameEntity *victim)
     victim->push(glm::vec2(0, 20));
     return FighterState::attackConnected(victim);
 }
+
 
 //// ------------------- DASH SPECIAL STATE -----------------------------
 DashSpecialState::DashSpecialState(Fighter *f, bool ground) :

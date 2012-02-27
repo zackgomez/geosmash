@@ -266,23 +266,23 @@ stickman.neutralSpecialAttack.kbbase       20.0
 stickman.neutralSpecialAttack.kbscaling    0.20
 stickman.neutralSpecialAttack.lifetime     2.0
 
-stickman.upSpecialAttack.startup      0.07
-stickman.upSpecialAttack.duration     0.20
+stickman.upSpecialAttack.startup      0.35
+stickman.upSpecialAttack.duration     0.30
 stickman.upSpecialAttack.cooldown     0.00
-stickman.upSpecialAttack.damage       2
+stickman.upSpecialAttack.damage       5
 stickman.upSpecialAttack.stun         0.11
-stickman.upSpecialAttack.knockbackx   1
-stickman.upSpecialAttack.knockbacky   3
-stickman.upSpecialAttack.kbbase       70.0
-stickman.upSpecialAttack.kbscaling    0.70
+stickman.upSpecialAttack.knockbackx   0
+stickman.upSpecialAttack.knockbacky   0
+stickman.upSpecialAttack.kbbase       200.0
+stickman.upSpecialAttack.kbscaling    1.00
 stickman.upSpecialAttack.hitboxx      25
 stickman.upSpecialAttack.hitboxy      30
 stickman.upSpecialAttack.hitboxw      40
 stickman.upSpecialAttack.hitboxh      60
 stickman.upSpecialAttack.priority     2.0
-stickman.upSpecialAttack.repeatInterval  0.04
-stickman.upSpecialAttack.xvel            160
-stickman.upSpecialAttack.yvel            600
+# teleport distance
+stickman.upSpecialAttack.dist         150
+stickman.upSpecialAttack.momentum     150
 
 stickman.sideSpecialAttack.startup      0.18
 stickman.sideSpecialAttack.duration     0.30
@@ -298,13 +298,13 @@ stickman.sideSpecialAttack.hitboxy      0
 stickman.sideSpecialAttack.hitboxw      50
 stickman.sideSpecialAttack.hitboxh      60
 stickman.sideSpecialAttack.priority     1.0
-stickman.sideSpecialState.yvel         0
-stickman.sideSpecialState.xvel         800
-stickman.sideSpecialState.endxvel      200
+stickman.dashSpecialState.yvel         0
+stickman.dashSpecialState.xvel         800
+stickman.dashSpecialState.endxvel      200
 
-stickman.downSpecialAttack.startup      0.15
-stickman.downSpecialAttack.duration     0.25
-stickman.downSpecialAttack.cooldown     0.30
+stickman.counterSpecial.startup      0.15
+stickman.counterSpecial.duration     0.25
+stickman.counterSpecial.cooldown     0.30
 # when hit the counterAttack comes out
 stickman.counterAttack.startup      0.0
 stickman.counterAttack.duration     0.30

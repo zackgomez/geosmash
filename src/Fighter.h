@@ -4,7 +4,9 @@
 #include <map>
 #include "GameEntity.h"
 
+class Fighter;
 class FighterState;
+class SpecialState;
 class Attack;
 class FighterAttack;
 struct controller_state;
@@ -24,6 +26,7 @@ public:
 class LimpFighter;
 struct UnlimpCallback;
 class FighterRenderer;
+typedef SpecialState* (*SpecialStateFunc)(const std::string&, Fighter*, bool);
 
 class Fighter : public GameEntity
 {
@@ -118,6 +121,7 @@ private:
 
     // This fighters attacks
     std::map<std::string, FighterAttack *> attackMap_;
+    SpecialStateFunc specialStateFactory_;
 
     // ---- Helper functions ----
     void stateWrapper(FighterState *fs);
@@ -145,6 +149,7 @@ private:
     friend class LimpState;
     friend class SpecialState;
     friend class DashSpecialState;
+    friend class StickmanUpSpecial;
 
     friend class MovingAttack;
     friend class DashAttack;

@@ -147,78 +147,6 @@ private:
     float gbMag_;
 };
 
-// For special moves (b-moves)
-class SpecialState : public FighterState
-{
-public:
-    SpecialState(Fighter *f, bool ground);
-    virtual ~SpecialState() {}
-
-    virtual FighterState* processInput(controller_state&, float dt) = 0;
-    virtual void render(float dt) = 0;
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
-            bool platform);
-    virtual FighterState* hitByAttack(const Attack *attack) = 0;
-
-protected:
-    bool ground_;
-};
-
-class CounterState : public SpecialState
-{
-public:
-    CounterState(Fighter *f, bool ground);
-    virtual ~CounterState() {}
-
-    virtual FighterState* processInput(controller_state&, float dt);
-    virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
-            bool platform);
-    virtual FighterState* hitByAttack(const Attack *attack);
-
-private:
-    // How long have we been in this state?
-    float t_;
-    std::string pre_;
-    bool playedSound_;
-};
-
-class UpSpecialState : public FighterState
-{
-public:
-    UpSpecialState(Fighter *f);
-    virtual ~UpSpecialState() {}
-
-    virtual FighterState* processInput(controller_state&, float dt);
-    virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
-            bool platform);
-    virtual FighterState* hitByAttack(const Attack *attack);
-    virtual FighterState* attackConnected(GameEntity *victim);
-
-private:
-    std::string pre_;
-};
-
-class DashSpecialState : public SpecialState
-{
-public:
-    DashSpecialState(Fighter *f, bool ground);
-    virtual ~DashSpecialState() {}
-
-    virtual FighterState* processInput(controller_state&, float dt);
-    virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
-            bool platform);
-    virtual FighterState* hitByAttack(const Attack *attack);
-    virtual FighterState* attackConnected(GameEntity *victim);
-
-    virtual void update(float dt);
-
-private:
-    std::string pre_;
-};
-
 // Responsible for grabbing, holding and throwing
 class GrabbingState : public FighterState
 {
@@ -339,7 +267,7 @@ private:
 class DeadState : public FighterState
 {
 public:
-    DeadState(Fighter *f);
+    explicit DeadState(Fighter *f);
     virtual ~DeadState() {};
 
     virtual FighterState* processInput(controller_state&, float dt);
@@ -350,3 +278,82 @@ public:
     virtual bool canBeHit() const;
 };
 
+// For special moves (b-moves)
+class SpecialState : public FighterState
+{
+public:
+    SpecialState(Fighter *f, bool ground);
+    virtual ~SpecialState() {}
+
+    virtual FighterState* processInput(controller_state&, float dt) = 0;
+    virtual void render(float dt) = 0;
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
+    virtual FighterState* hitByAttack(const Attack *attack) = 0;
+
+protected:
+    bool ground_;
+};
+
+SpecialState *getCharlieSpecialState(const std::string &name, Fighter *f, bool ground);
+SpecialState *getStickmanSpecialState(const std::string &name, Fighter *f, bool ground);
+
+
+
+
+// TODO move this to CharlieSpecialStates.h
+class CounterState : public SpecialState
+{
+public:
+    CounterState(Fighter *f, bool ground);
+    virtual ~CounterState() {}
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
+    virtual FighterState* hitByAttack(const Attack *attack);
+
+private:
+    // How long have we been in this state?
+    float t_;
+    std::string pre_;
+    bool playedSound_;
+};
+
+// TODO convert to special state
+class UpSpecialState : public SpecialState
+{
+public:
+    explicit UpSpecialState(Fighter *f, bool ground);
+    virtual ~UpSpecialState() {}
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
+    virtual FighterState* hitByAttack(const Attack *attack);
+    virtual FighterState* attackConnected(GameEntity *victim);
+
+private:
+    std::string pre_;
+};
+
+class DashSpecialState : public SpecialState
+{
+public:
+    DashSpecialState(Fighter *f, bool ground);
+    virtual ~DashSpecialState() {}
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
+    virtual FighterState* hitByAttack(const Attack *attack);
+    virtual FighterState* attackConnected(GameEntity *victim);
+
+    virtual void update(float dt);
+
+private:
+    std::string pre_;
+};
