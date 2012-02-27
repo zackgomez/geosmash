@@ -106,7 +106,7 @@ void StageManager::initLevel(const std::string &stage)
         platforms_.push_back(rectangle(-200, 40, 220, 10));
         // This guy is the fatty platform in the middle
         platforms_.push_back(rectangle(10, 190, 440, 10));
-        platforms_.push_back(rectangle(-200, 340, 220, 10));
+        platforms_.push_back(rectangle(200, 340, 220, 10));
 
         ground_.w *= 0.80f;
         backProgram_ = sphereProgram_;
