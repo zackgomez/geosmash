@@ -8,7 +8,6 @@
 #include "AudioManager.h"
 #include "Projectile.h"
 
-
 // XXX remove this
 void addEntity(GameEntity *ent);
 

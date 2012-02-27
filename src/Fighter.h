@@ -149,7 +149,9 @@ private:
     friend class LimpState;
     friend class SpecialState;
     friend class DashSpecialState;
+    friend class CharlieNeutralSpecial;
     friend class StickmanUpSpecial;
+    friend class StickmanNeutralSpecial;
 
     friend class MovingAttack;
     friend class DashAttack;

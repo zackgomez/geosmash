@@ -14,6 +14,7 @@
 #include "StickmanStates.h"
 
 int getTeamID(int);
+void addEntity(GameEntity *ent);
 
 // ----------------------------------------------------------------------------
 // FighterState class methods
@@ -170,8 +171,10 @@ SpecialState *getCharlieSpecialState(const std::string &name, Fighter *f, bool g
 {
     if (name == "upSpecial")
         return new UpSpecialState(f, ground);
-    else
-        assert(false);
+    else if (name == "neutralSpecial")
+        return new CharlieNeutralSpecial(f, ground);
+
+    assert(false);
 }
 
 SpecialState *getStickmanSpecialState(const std::string &name, Fighter *f, bool ground)
@@ -209,11 +212,7 @@ FighterState* FighterState::performBMove(const controller_state &controller, boo
     // Otherwise neutral B
     else
     {
-        // TODO make this a special state, and move these to a map for easy
-        // cloning on different fighters
-        fighter_->attack_ = fighter_->attackMap_["neutralSpecial"]->clone();
-        fighter_->attack_->setFighter(fighter_);
-        fighter_->attack_->start();
+        next = fighter_->specialStateFactory_("neutralSpecial", fighter_, ground);
     }
 
     // Make sure we're facing the right direction
@@ -1000,6 +999,11 @@ AirNormalState * AirNormalState::setNoGrabTime(float t)
     return this;
 }
 
+AirNormalState * AirNormalState::disableSecondJump()
+{
+    canSecondJump_ = false;
+    return this;
+}
 
 //// ----------------------- SPECIAL STATE --------------------------------
 
@@ -1252,6 +1256,71 @@ FighterState* DashSpecialState::hitByAttack(const Attack *attack)
 }
 
 FighterState* DashSpecialState::attackConnected(GameEntity *victim)
+{
+    return FighterState::attackConnected(victim);
+}
+
+
+//// --------------- CHARLIE NEUTRAL SPECIAL STATE -------------------------
+CharlieNeutralSpecial::CharlieNeutralSpecial(Fighter *f, bool ground) :
+    SpecialState(f, ground),
+    pre_("neutralSpecialAttack."),
+    t_(0.f),
+    shot_(false)
+{
+    frameName_ = "NeutralSpecial";
+}
+
+FighterState * CharlieNeutralSpecial::processInput(controller_state &, float dt)
+{
+    t_ += dt;
+    if (t_ > fighter_->param(pre_ + "startup") && !shot_)
+    {
+        shot_ = true;
+
+        Projectile *projectile =
+            new Projectile(fighter_->pos_,
+                    glm::vec2(fighter_->dir_, 0.f), fighter_->pre_ + pre_,
+                    "Projectile", "projectilehit", fighter_->getPlayerID(),
+                    fighter_->getTeamID(), fighter_->getColor());
+        addEntity(projectile);
+    }
+    // Check for transition away
+    if (t_ > fighter_->param(pre_ + "startup") +
+             fighter_->param(pre_ + "cooldown"))
+    {
+        if (ground_)
+        {
+            fighter_->vel_ = glm::vec2(0.f);
+            return new GroundState(fighter_);
+        }
+        else
+        {
+            return new AirNormalState(fighter_);
+        }
+    }
+
+    // No Transition otherwise
+    return NULL;
+}
+
+void CharlieNeutralSpecial::render(float dt)
+{
+    fighter_->renderHelper(dt, fighter_->getColor());
+}
+
+FighterState* CharlieNeutralSpecial::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
+{
+    return SpecialState::collisionWithGround(ground, collision, platform);
+}
+
+FighterState* CharlieNeutralSpecial::hitByAttack(const Attack *attack)
+{
+    return FighterState::calculateHitResult(attack);
+}
+
+FighterState* CharlieNeutralSpecial::attackConnected(GameEntity *victim)
 {
     return FighterState::attackConnected(victim);
 }

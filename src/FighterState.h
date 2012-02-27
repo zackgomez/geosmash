@@ -114,6 +114,7 @@ public:
     virtual FighterState* hitByAttack(const Attack *attack);
 
     AirNormalState * setNoGrabTime(float t);
+    AirNormalState * disableSecondJump();
 
 private:
     // True if the player has a second jump available
@@ -301,7 +302,7 @@ SpecialState *getStickmanSpecialState(const std::string &name, Fighter *f, bool 
 
 
 
-// TODO move this to CharlieSpecialStates.h
+// TODO move these to CharlieSpecialStates.h
 class CounterState : public SpecialState
 {
 public:
@@ -321,11 +322,10 @@ private:
     bool playedSound_;
 };
 
-// TODO convert to special state
 class UpSpecialState : public SpecialState
 {
 public:
-    explicit UpSpecialState(Fighter *f, bool ground);
+    UpSpecialState(Fighter *f, bool ground);
     virtual ~UpSpecialState() {}
 
     virtual FighterState* processInput(controller_state&, float dt);
@@ -357,3 +357,22 @@ public:
 private:
     std::string pre_;
 };
+
+class CharlieNeutralSpecial : public SpecialState
+{
+public:
+    CharlieNeutralSpecial(Fighter *f, bool ground);
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
+    virtual FighterState* hitByAttack(const Attack *attack);
+    virtual FighterState* attackConnected(GameEntity *victim);
+
+private:
+    std::string pre_;
+    float t_;
+    bool shot_;
+};
+

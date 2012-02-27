@@ -17,7 +17,7 @@ Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
     frameName_(frameName),
     audioID_(audioID)
 {
-    paramPrefix_ = paramPrefix + '.';
+    paramPrefix_ = paramPrefix;
     playerID_ = playerID;
     teamID_ = teamID;
 
