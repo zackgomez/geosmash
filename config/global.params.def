@@ -7,7 +7,8 @@ debug.saveghost     1
 # - GAMEPLAY PARAMS -
 # -------------------
 maxPlayers 4
-fighter.respawnTime   1.0
+fighter.minRespawnTime   1.0
+fighter.maxRespawnTime   4.0
 fighter.gbThresh      600.0
 fighter.gbVelDamping  0.7
 fighter.gbStunDamping 0.13

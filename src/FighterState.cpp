@@ -15,7 +15,6 @@
 #include "CharlieStates.h"
 
 int getTeamID(int);
-void addEntity(GameEntity *ent);
 
 // ----------------------------------------------------------------------------
 // FighterState class methods
@@ -1585,7 +1584,10 @@ RespawnState::RespawnState(Fighter *f) :
 FighterState* RespawnState::processInput(controller_state &controller, float dt)
 {
     t_ += dt;
-    if (t_ > getParam("fighter.respawnTime"))
+    if (t_ > getParam("fighter.maxRespawnTime"))
+        return new AirNormalState(fighter_);
+    if (t_ > getParam("fighter.minRespawnTime")
+            && controller.joyy < -getParam("input.tiltThresh"))
         return new AirNormalState(fighter_);
     return NULL;
 }
