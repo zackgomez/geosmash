@@ -54,3 +54,20 @@ private:
     bool playedSound_;
 };
 
+
+class StickmanSideSpecial : public SpecialState
+{
+public:
+    StickmanSideSpecial(Fighter *f, bool ground);
+    ~StickmanSideSpecial();
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* hitByAttack(const Attack *attack);
+    virtual FighterState* attackConnected(GameEntity *victim);
+
+private:
+    std::string pre_;
+    bool pushed_;
+};
+

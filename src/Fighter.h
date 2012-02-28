@@ -83,6 +83,8 @@ public:
 
     // Inherited from GameEntity, but overriden for direction changing
     virtual void reflect();
+    // Overriden to ignore message
+    virtual void reown(int playerID, int teamID) { }
 
     // Functions for life sharing in teams
     void stealLife();
@@ -154,6 +156,7 @@ private:
     friend class CharlieNeutralSpecial;
     friend class StickmanUpSpecial;
     friend class StickmanNeutralSpecial;
+    friend class StickmanSideSpecial;
 
     friend class MovingAttack;
     friend class DashAttack;

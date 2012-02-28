@@ -35,3 +35,9 @@ void GameEntity::reflect()
 {
     vel_.x *= -1;
 }
+
+void GameEntity::reown(int playerID, int teamID)
+{
+    playerID_ = playerID;
+    teamID_ = teamID;
+}

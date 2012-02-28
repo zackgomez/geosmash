@@ -292,21 +292,21 @@ stickman.upSpecialAttack.momentum     250
 
 stickman.sideSpecialAttack.startup      0.18
 stickman.sideSpecialAttack.duration     0.30
-stickman.sideSpecialAttack.cooldown     0.45
+stickman.sideSpecialAttack.cooldown     0.20
 stickman.sideSpecialAttack.damage       7
-stickman.sideSpecialAttack.stun         0.10
-stickman.sideSpecialAttack.knockbackx   2
-stickman.sideSpecialAttack.knockbacky   4 
-stickman.sideSpecialAttack.kbbase       100.0
-stickman.sideSpecialAttack.kbscaling    1.00
-stickman.sideSpecialAttack.hitboxx      0
+stickman.sideSpecialAttack.stun         0.00
+stickman.sideSpecialAttack.knockbackx   0
+stickman.sideSpecialAttack.knockbacky   0 
+stickman.sideSpecialAttack.kbbase       0
+stickman.sideSpecialAttack.kbscaling    0
+stickman.sideSpecialAttack.hitboxx      25
 stickman.sideSpecialAttack.hitboxy      0
-stickman.sideSpecialAttack.hitboxw      50
-stickman.sideSpecialAttack.hitboxh      60
-stickman.sideSpecialAttack.priority     1.0
-stickman.dashSpecialState.yvel         0
-stickman.dashSpecialState.xvel         800
-stickman.dashSpecialState.endxvel      200
+stickman.sideSpecialAttack.hitboxw      30
+stickman.sideSpecialAttack.hitboxh      40
+stickman.sideSpecialAttack.priority     -1
+stickman.sideSpecialState.velx     300
+stickman.sideSpecialState.vely     250
+stickman.sideSpecialState.accelx   -150
 
 stickman.counterSpecial.startup      0.15
 stickman.counterSpecial.duration     0.25

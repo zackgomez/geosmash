@@ -77,6 +77,8 @@ public:
     void push(const glm::vec2 &vec);
     // Reflects the velocity of the entity over the y axis
     virtual void reflect();
+    // Sets the player/team IDs for this entity, (may be ignored by subclasses)
+    virtual void reown(int playerID, int teamID);
 
 protected:
     glm::vec2 pos_, vel_, accel_;

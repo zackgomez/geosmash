@@ -31,6 +31,8 @@ public:
 
     // Called when Fighter::attackConnected is called
     virtual FighterState* attackConnected(GameEntity *victim);
+    // Called when Fighter::attackCollision is called
+    virtual FighterState* attackCollision(const Attack *other);
 
     virtual rectangle getRect() const;
 

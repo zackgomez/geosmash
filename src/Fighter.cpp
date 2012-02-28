@@ -237,7 +237,7 @@ void Fighter::attackCollision(const Attack *inAttack)
     // If two attacks collide, just cancel them and go to cooldown
     assert(attack_);
     assert(inAttack);
-    attack_->attackCollision(inAttack);
+    stateWrapper(state_->attackCollision(inAttack));
 }
 
 void Fighter::hitByAttack(const Attack *attack)

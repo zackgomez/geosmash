@@ -27,7 +27,24 @@ StickmanUpSpecial::~StickmanUpSpecial()
 
 FighterState* StickmanUpSpecial::processInput(controller_state &cs, float dt)
 {
-    if (fighter_->hasAttack())
+    // Are we done?
+    if (!fighter_->attack_)
+    {
+        if (ground_)
+        {
+            fighter_->vel_ = glm::vec2(0.f);
+            return new GroundState(fighter_);
+        }
+        else
+        {
+            // Keep some momentum
+            fighter_->vel_ = dir_ * fighter_->param(pre_ + "momentum");
+            // After up special leave them stunned
+            return new AirStunnedState(fighter_, HUGE_VAL);
+        }
+    }
+    // Maybe the attack is active?
+    else if (fighter_->hasAttack())
     {
         if (dir_ == glm::vec2(0.f))
         {
@@ -45,22 +62,12 @@ FighterState* StickmanUpSpecial::processInput(controller_state &cs, float dt)
         // No more acceleration
         fighter_->accel_ = glm::vec2(0.f);
     }
-
-
-    if (!fighter_->attack_)
+    // startup or cooldown
+    else
     {
-        if (ground_)
-        {
-            fighter_->vel_ = glm::vec2(0.f);
-            return new GroundState(fighter_);
-        }
-        else
-        {
-            // Keep some momentum
-            fighter_->vel_ = dir_ * fighter_->param(pre_ + "momentum");
-            // After up special leave them stunned
-            return new AirStunnedState(fighter_, HUGE_VAL);
-        }
+        // never any cooldown, set to 0
+        fighter_->vel_ = glm::vec2(0.f);
+        fighter_->accel_ = glm::vec2(0.f);
     }
 
     // Grab during attack
@@ -108,9 +115,6 @@ StickmanNeutralSpecial::~StickmanNeutralSpecial()
 
 FighterState* StickmanNeutralSpecial::processInput(controller_state &cs, float dt)
 {
-    if (fighter_->hasAttack())
-        return NULL;
-
     if (!fighter_->attack_)
     {
         if (ground_)
@@ -231,3 +235,89 @@ void CounterState::render(float dt)
     fighter_->renderHelper(dt, color);
 }
 
+// --------------------------------------------
+// - Side Special Attack - Cape
+// --------------------------------------------
+
+StickmanSideSpecial::StickmanSideSpecial(Fighter *f, bool ground) :
+    SpecialState(f, ground),
+    pre_("sideSpecialState."),
+    pushed_(false)
+{
+    frameName_ = "SideSpecial";
+
+    // TODO set starting and hitting sfx here, maybe hitbox frame
+    fighter_->attack_ = fighter_->loadAttack<FighterAttack>("sideSpecialAttack",
+            "", "SideSpecial");
+    fighter_->attack_->setFighter(f);
+    fighter_->attack_->start();
+}
+
+StickmanSideSpecial::~StickmanSideSpecial()
+{
+}
+
+FighterState* StickmanSideSpecial::processInput(controller_state &cs, float dt)
+{
+    if (fighter_->hasAttack() && !pushed_)
+    {
+        fighter_->vel_.x = fighter_->dir_ * fighter_->param(pre_ + "velx");
+        fighter_->accel_.x = fighter_->dir_ * fighter_->param(pre_ + "accelx");
+
+        // only give vertical velocity if in air:w
+        if (!ground_)
+            fighter_->vel_.y = fighter_->param(pre_ + "vely");
+
+        // Only add velocity
+        pushed_ = true;
+    }
+
+    if (!fighter_->attack_)
+    {
+        if (ground_)
+        {
+            fighter_->vel_ = glm::vec2(0.f);
+            fighter_->accel_ = glm::vec2(0.f);
+            return new GroundState(fighter_);
+        }
+        else
+        {
+            return new AirNormalState(fighter_);
+        }
+    }
+
+    // No transition
+    return NULL;
+}
+
+FighterState* StickmanSideSpecial::hitByAttack(const Attack *attack)
+{
+    return calculateHitResult(attack);
+}
+
+void StickmanSideSpecial::render(float dt)
+{
+    fighter_->renderHelper(dt, fighter_->color_);
+}
+
+FighterState* StickmanSideSpecial::attackConnected(GameEntity *victim)
+{
+    // Turn the victim around
+    victim->reflect();
+    // don't hit them multiple times
+    fighter_->attack_->hit(victim);
+
+    if (victim->getType() == "Projectile")
+    {
+        // Take ownership of the projectile
+        victim->reown(fighter_->playerID_, fighter_->teamID_);
+    }
+    else if (victim->getType() == Fighter::type)
+    {
+        Fighter *fvic = (Fighter *)victim;
+        // TODO this damage is not recorded for stats, fix that!
+        fvic->damage_ += fighter_->attack_->getDamage();
+    }
+
+    return NULL;
+}

@@ -41,6 +41,12 @@ FighterState* FighterState::attackConnected(GameEntity *victim)
     return NULL;
 }
 
+FighterState* FighterState::attackCollision(const Attack *inAttack)
+{
+    fighter_->attack_->attackCollision(inAttack);
+    return NULL;
+}
+
 rectangle FighterState::getRect() const
 {
     return rectangle(fighter_->pos_.x, fighter_->pos_.y,
@@ -173,6 +179,10 @@ SpecialState *getCharlieSpecialState(const std::string &name, Fighter *f, bool g
         return new UpSpecialState(f, ground);
     else if (name == "neutralSpecial")
         return new CharlieNeutralSpecial(f, ground);
+    else if (name == "sideSpecial")
+        return new DashSpecialState(f, ground);
+    else if (name == "downSpecial")
+        return new CounterState(f, ground);
 
     assert(false);
 }
@@ -183,6 +193,10 @@ SpecialState *getStickmanSpecialState(const std::string &name, Fighter *f, bool 
         return new StickmanUpSpecial(f, ground);
     else if (name == "neutralSpecial")
         return new StickmanNeutralSpecial(f, ground);
+    else if (name == "sideSpecial")
+        return new StickmanSideSpecial(f, ground);
+    else if (name == "downSpecial")
+        return new CounterState(f, ground);
     else
         assert(false);
 }
@@ -196,26 +210,18 @@ FighterState* FighterState::performBMove(const controller_state &controller, boo
     glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
     // Check for up B
     if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-    {
         //next = fighter_->specialAttackMap_["upSpecial"]->clone(ground);
         next = fighter_->specialStateFactory_("upSpecial", fighter_, ground);
-    }
     // Check for down B
     else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-    {
-        next = new CounterState(fighter_, ground);
-    }
+        next = fighter_->specialStateFactory_("downSpecial", fighter_, ground);
     // Check for side B
     else if (fabs(controller.joyx) > getParam("input.tiltThresh") 
                 && fabs(tiltDir.x) > fabs(tiltDir.y))
-    {
-        next = new DashSpecialState(fighter_, ground);
-    }
+        next = fighter_->specialStateFactory_("sideSpecial", fighter_, ground);
     // Otherwise neutral B
     else
-    {
         next = fighter_->specialStateFactory_("neutralSpecial", fighter_, ground);
-    }
 
     // Make sure we're facing the right direction
     if (fabs(controller.joyx) > getParam("input.deadzone"))
@@ -1586,6 +1592,7 @@ FighterState* RespawnState::processInput(controller_state &controller, float dt)
     t_ += dt;
     if (t_ > getParam("fighter.maxRespawnTime"))
         return new AirNormalState(fighter_);
+    // TODO change the removal condition to be any button
     if (t_ > getParam("fighter.minRespawnTime")
             && controller.joyy < -getParam("input.tiltThresh"))
         return new AirNormalState(fighter_);
