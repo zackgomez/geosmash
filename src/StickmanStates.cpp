@@ -112,18 +112,22 @@ FighterState* StickmanNeutralSpecial::processInput(controller_state &cs, float d
 
     if (!fighter_->attack_)
     {
-        // Jump when attack is over
-        // Set direction to be based on joystick, straight up if no input
-        glm::vec2 joypos = glm::vec2(cs.joyx, cs.joyy);
-        glm::vec2 dir = glm::normalize(glm::vec2(cs.joyx, 1));
-        if (fabs(cs.joyx) < getParam("input.tiltThresh"))
-            dir = glm::vec2(0, 1);
-        fighter_->vel_ = dir * fighter_->param(pre_ + "speed");
-        if (cs.joyx > getParam("input.deadzone"))
-            fighter_->dir_ = glm::sign(cs.joyx);
+        // Jump when attack is over, if we can
+        if (!fighter_->airData_["specialJumped"])
+        {
+            // Set direction to be based on joystick, straight up if no input
+            glm::vec2 dir = glm::normalize(glm::vec2(cs.joyx, 1));
+            if (fabs(cs.joyx) < getParam("input.tiltThresh"))
+                dir = glm::vec2(0, 1);
+            fighter_->vel_ = dir * fighter_->param(pre_ + "speed");
+            if (cs.joyx > getParam("input.deadzone"))
+                fighter_->dir_ = glm::sign(cs.joyx);
+            // Can only special jump once
+            fighter_->airData_["specialJumped"] = 1;
+        }
 
         // After special jump leave them w/o a second jump
-        return (new AirNormalState(fighter_))->disableSecondJump();
+        return (new AirNormalState(fighter_));
     }
 
     // No transition

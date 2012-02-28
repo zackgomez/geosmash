@@ -312,7 +312,7 @@ VolcanoHazard::VolcanoHazard(const glm::vec2 &pos) :
             getParam(pre_ + "priority"),
             apos, asize,
             1, // odir
-            -1, -1, // player, team IDs
+            -2, -2, // player, team IDs
             ""); // audio ID
 
     emitter_ = ParticleManager::get()->newEmitter();

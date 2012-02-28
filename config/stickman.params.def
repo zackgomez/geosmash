@@ -22,6 +22,7 @@ stickman.secondJumpSpeed  550.0
 # Maximum x speed from input
 stickman.jumpAirSpeed     280.0
 stickman.landingCooldownTime 0.05
+stickman.maxAirJumps      1
 
 stickman.dashStartupTime  0.06
 stickman.dashChangeTime   0.09
@@ -254,7 +255,7 @@ stickman.tauntAttack.priority     0
 # -------------------
 # - Special Attacks -
 # -------------------
-stickman.neutralSpecialState.speed     400
+stickman.neutralSpecialState.speed     500
 # attack/damage params
 stickman.neutralSpecialAttack.startup      0.15
 stickman.neutralSpecialAttack.duration     0.10

@@ -15,6 +15,7 @@ charlie.jumpStartupTime  0.060
 charlie.jumpSpeed        600.0
 charlie.hopSpeed         275.0
 charlie.secondJumpSpeed  500.0
+charlie.maxAirJumps      1
 # Maximum x speed from input
 charlie.jumpAirSpeed     200.0
 charlie.landingCooldownTime 0.05

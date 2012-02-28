@@ -230,6 +230,8 @@ AirStunnedState::AirStunnedState(Fighter *f, float duration, float gbmag) :
     FighterState(f), stunDuration_(duration), stunTime_(0), gbMag_(gbmag)
 {
     frameName_ = "AirStunned";
+    // When stunned regain all air jumps
+    fighter_->airData_["airJumps"] = 0;
 }
 
 FighterState* AirStunnedState::processInput(controller_state &controller, float dt)
@@ -815,7 +817,7 @@ FighterState* BlockingState::hitByAttack(const Attack *attack)
 
 //// -------------------- AIR NORMAL STATE -----------------------------
 AirNormalState::AirNormalState(Fighter *f, bool shortHop) :
-    FighterState(f), canSecondJump_(true), jumpTime_(-1),
+    FighterState(f), jumpTime_(-1),
     fastFalling_(false), fallThroughPlatforms_(false),
     noGrabTime_(0)
 {
@@ -908,7 +910,8 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
     }
 
     // --- Check for jump ---
-    if (controller.pressy && jumpTime_ < 0 && canSecondJump_)
+    if (controller.pressy && jumpTime_ < 0 &&
+            fighter_->airData_["airJumps"] < fighter_->param("maxAirJumps"))
     {
         jumpTime_ = 0;
     }
@@ -920,7 +923,7 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
             0.0f;
         fighter_->vel_.y = fighter_->param("secondJumpSpeed");
         jumpTime_ = -1;
-        canSecondJump_ = false;
+        fighter_->airData_["airJumps"] += 1;
         frameName_ = "AirNormalSecondJump";
         // Draw a puff
         ExplosionManager::get()->addPuff(
@@ -997,12 +1000,6 @@ FighterState* AirNormalState::hitByAttack(const Attack *attack)
 AirNormalState * AirNormalState::setNoGrabTime(float t)
 {
     noGrabTime_ = t;
-    return this;
-}
-
-AirNormalState * AirNormalState::disableSecondJump()
-{
-    canSecondJump_ = false;
     return this;
 }
 

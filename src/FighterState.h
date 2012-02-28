@@ -114,11 +114,8 @@ public:
     virtual FighterState* hitByAttack(const Attack *attack);
 
     AirNormalState * setNoGrabTime(float t);
-    AirNormalState * disableSecondJump();
 
 private:
-    // True if the player has a second jump available
-    bool canSecondJump_;
     // Jump startup timer.  Value > 0 implies that the fighter is starting a jump
     float jumpTime_;
     // True if this player has begun fastfalling
