@@ -142,9 +142,9 @@ void Projectile::render(float dt)
 }
 
 
-void Projection::reflect()
+void Projectile::reflect()
 {
     GameEntity::reflect();
-    odir_ = -odir_;
+    attack_->setOriginDirection(-attack_->getOriginDirection());
 }
 
