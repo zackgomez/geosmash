@@ -32,6 +32,7 @@ public:
     virtual void render(float dt);
 
     virtual void reflect();
+    virtual void reown(int playerID, int teamID);
 
 private:
     std::string paramPrefix_;

@@ -65,6 +65,7 @@ public:
     virtual void render(float dt);
     virtual FighterState* hitByAttack(const Attack *attack);
     virtual FighterState* attackConnected(GameEntity *victim);
+    virtual FighterState* attackCollision(const Attack *other);
 
 private:
     std::string pre_;

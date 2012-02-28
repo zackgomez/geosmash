@@ -112,6 +112,12 @@ void SimpleAttack::clearHit()
     hasHit_.clear();
 }
 
+void SimpleAttack::reown(int playerID, int teamID)
+{
+    playerID_ = playerID;
+    teamID_ = teamID;
+}
+
 // ----------------------------------------------------------------------------
 // FighterAttack class methods
 // ----------------------------------------------------------------------------

@@ -300,14 +300,22 @@ void StickmanSideSpecial::render(float dt)
     fighter_->renderHelper(dt, fighter_->color_);
 }
 
+FighterState* StickmanSideSpecial::attackCollision(const Attack *other)
+{
+    // Swallow this message, cannot cancel this move
+    return NULL;
+}
+
 FighterState* StickmanSideSpecial::attackConnected(GameEntity *victim)
 {
+    std::cout << "REFLECTING...\n";
     // Turn the victim around
     victim->reflect();
     // don't hit them multiple times
     fighter_->attack_->hit(victim);
 
-    if (victim->getType() == "Projectile")
+    // TODO hardcoded...
+    if (victim->getType() == "ProjectileEntity")
     {
         // Take ownership of the projectile
         victim->reown(fighter_->playerID_, fighter_->teamID_);

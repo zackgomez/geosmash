@@ -87,20 +87,21 @@ const Attack * Projectile::getAttack() const
 
 bool Projectile::canBeHit() const
 {
-    // Cannot be hit, only hitbox collisions
-    return false;
+    return true;
 }
 
 void Projectile::attackCollision(const Attack *other)
 {
-    // For now, just make the attack go away
-    hit_ = true;
+    // For now, just make the attack go away on equal or higher priority hit
+    if (other->getPriority() >= attack_->getPriority())
+        hit_ = true;
+    std::cout << "Projectile collision\n";
 }
 
 void Projectile::hitByAttack(const Attack *attack)
 {
-    // Should never be hit, attack collision takes care of it
-    assert(false);
+    // Die...
+    hit_ = true;
 }
 
 void Projectile::attackConnected(GameEntity *other)
@@ -112,6 +113,7 @@ void Projectile::attackConnected(GameEntity *other)
     other->hitByAttack(attack_);
     // no more hits
     hit_ = true;
+    std::cout << "Projectile connected\n";
 }
 
 void Projectile::collisionWithGround(const rectangle &rect, bool collision,
@@ -133,10 +135,8 @@ void Projectile::update(float dt)
 
 void Projectile::render(float dt)
 {
-    /*
     printf("PROJECTILE | t: %f  Pos: [%f %f]  Vel: [%f %f]\n",
             t_, pos_.x, pos_.y, vel_.x, vel_.y);
-            */
 
     emitter_->setLocation(glm::vec3(pos_, 0.0f));
 }
@@ -147,5 +147,12 @@ void Projectile::reflect()
     GameEntity::reflect();
     // TODO
     //attack_->setOriginDirection(-attack_->getOriginDirection());
+}
+
+void Projectile::reown(int playerID, int teamID)
+{
+    std::cout << "Projection reown\n";
+    GameEntity::reown(playerID, teamID);
+    attack_->reown(playerID, teamID);
 }
 
