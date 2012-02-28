@@ -1,56 +1,58 @@
 #pragma once
-#include "Fighter.h"
 #include "FighterState.h"
 
-class StickmanUpSpecial : public SpecialState
+
+class UpSpecialState : public SpecialState
 {
 public:
-    StickmanUpSpecial(Fighter *f, bool ground);
-    ~StickmanUpSpecial();
+    UpSpecialState(Fighter *f, bool ground);
+    virtual ~UpSpecialState() {}
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
     virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
             bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
-
-private:
-    std::string pre_;
-    glm::vec2 dir_;
-};
-
-class StickmanNeutralSpecial : public SpecialState
-{
-public:
-    StickmanNeutralSpecial(Fighter *f, bool ground);
-    ~StickmanNeutralSpecial();
-
-    virtual FighterState* processInput(controller_state&, float dt);
-    virtual void render(float dt);
-    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
-            bool platform);
-    virtual FighterState* hitByAttack(const Attack *attack);
+    virtual FighterState* attackConnected(GameEntity *victim);
 
 private:
     std::string pre_;
 };
 
-class CounterState : public SpecialState
+class DashSpecialState : public SpecialState
 {
 public:
-    CounterState(Fighter *f, bool ground);
-    virtual ~CounterState() {}
+    DashSpecialState(Fighter *f, bool ground);
+    virtual ~DashSpecialState() {}
 
     virtual FighterState* processInput(controller_state&, float dt);
     virtual void render(float dt);
     virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
             bool platform);
     virtual FighterState* hitByAttack(const Attack *attack);
+    virtual FighterState* attackConnected(GameEntity *victim);
+
+    virtual void update(float dt);
 
 private:
-    // How long have we been in this state?
+    std::string pre_;
+};
+
+class CharlieNeutralSpecial : public SpecialState
+{
+public:
+    CharlieNeutralSpecial(Fighter *f, bool ground);
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
+    virtual FighterState* hitByAttack(const Attack *attack);
+    virtual FighterState* attackConnected(GameEntity *victim);
+
+private:
+    std::string pre_;
     float t_;
-    std::string pre_;
-    bool playedSound_;
+    bool shot_;
 };
 

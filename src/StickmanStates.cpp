@@ -3,6 +3,7 @@
 #include "Controller.h"
 #include "Attack.h"
 #include "ParamReader.h"
+#include "AudioManager.h"
 
 // --------------------------------------------
 // - Up Special Attack
@@ -143,3 +144,90 @@ void StickmanNeutralSpecial::render(float dt)
 {
     fighter_->renderHelper(dt, fighter_->color_);
 }
+
+
+// --------------------------------------------
+// - Counter (Down) Special Attack
+// --------------------------------------------
+
+CounterState::CounterState(Fighter *f, bool ground) :
+    SpecialState(f, ground), t_(0), pre_("counterSpecial."),
+    playedSound_(false)
+{
+    frameName_ = "Counter";
+}
+
+FighterState* CounterState::processInput(controller_state & controller, float dt)
+{
+    t_ += dt;
+    float totalT = fighter_->param(pre_ + "startup") +
+        fighter_->param(pre_ + "duration") + 
+        fighter_->param(pre_ + "cooldown");
+
+    if (!fighter_->attack_ && t_ > totalT)
+    {
+        // Move to the next state
+        if (ground_)
+            return new GroundState(fighter_);
+        else 
+            return new AirNormalState(fighter_);
+    }
+    if (t_ > fighter_->param(pre_ + "startup") + fighter_->param(pre_ + "duration")
+            && !playedSound_)
+    {
+        playedSound_ = true;
+        AudioManager::get()->playSound("counterhit");
+    }
+
+    return NULL;
+}
+
+FighterState* CounterState::hitByAttack(const Attack* attack)
+{
+    // Invincibility during the counter!
+    if (fighter_->attack_)
+        return NULL;
+
+    // If counter isn't ready yet (or it's too late), eat the attack
+    if (t_ < fighter_->param(pre_ + "startup") || 
+            t_ > fighter_->param(pre_ + "startup") + fighter_->param(pre_ + "duration"))
+    {
+        return calculateHitResult(attack);
+    }
+
+    float calcedpow = fighter_->param("counterAttack.reflectfact") *
+        glm::length(attack->calcKnockback(fighter_, fighter_->getDamage()));
+
+    // Now the other player gets screwed over for attacking us at the wrong time.
+    // Otherwise create a new Fighter attack helper.
+    fighter_->attack_ = new FighterAttack(fighter_->pre_ + "counterAttack", "groundhit", "CounterAttack");
+    fighter_->attack_->setHitboxFrame("CounterAttackHitbox");
+    fighter_->attack_->setFighter(fighter_);
+    fighter_->attack_->start();
+    fighter_->attack_->setBaseKnockback(calcedpow);
+    fighter_->dir_ = attack->getOriginDirection(fighter_);
+
+    return NULL;
+}
+
+FighterState* CounterState::collisionWithGround(const rectangle &ground, bool collision,
+        bool platform)
+{
+    return SpecialState::collisionWithGround(ground, collision, platform);
+}
+
+void CounterState::render(float dt)
+{
+    glm::vec3 color = fighter_->color_;
+    if (t_ > fighter_->param(pre_ + "startup")
+            && t_ < fighter_->param(pre_ + "startup")
+                + fighter_->param(pre_ + "duration"))
+                
+    {
+        color = muxByTime(color, t_);
+        color = glm::vec3(0.8f, 0.8f, 0.8f);
+    }
+
+    fighter_->renderHelper(dt, color);
+}
+
