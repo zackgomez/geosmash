@@ -75,6 +75,8 @@ public:
 
     // Push the game entity by the passed vector
     void push(const glm::vec2 &vec);
+    // Reflects the velocity of the entity over the y axis
+    virtual void reflect();
 
 protected:
     glm::vec2 pos_, vel_, accel_;

@@ -30,3 +30,8 @@ void GameEntity::push(const glm::vec2 &vec)
 {
     pos_ += vec;
 }
+
+void GameEntity::reflect()
+{
+    vel_.x *= -1;
+}

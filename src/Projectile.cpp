@@ -141,3 +141,10 @@ void Projectile::render(float dt)
     emitter_->setLocation(glm::vec3(pos_, 0.0f));
 }
 
+
+void Projection::reflect()
+{
+    GameEntity::reflect();
+    odir_ = -odir_;
+}
+

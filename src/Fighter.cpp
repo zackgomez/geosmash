@@ -179,6 +179,12 @@ std::string Fighter::getFrameName() const
     return lastFrameName_;
 }
 
+void Fighter::reflect()
+{
+    GameEntity::reflect();
+    dir_ = -dir_;
+};
+
 void Fighter::processInput(controller_state &controller, float dt)
 {
     // TODO move this to update? frame vs realtime issue then

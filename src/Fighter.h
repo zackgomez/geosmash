@@ -81,6 +81,8 @@ public:
     // life will be removed
     void respawn(bool killed);
 
+    // Inherited from GameEntity, but overriden for direction changing
+    virtual void reflect();
 
     // Functions for life sharing in teams
     void stealLife();

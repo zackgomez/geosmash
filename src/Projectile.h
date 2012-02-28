@@ -31,6 +31,8 @@ public:
     virtual void update(float dt);
     virtual void render(float dt);
 
+    virtual void reflect();
+
 private:
     std::string paramPrefix_;
     SimpleAttack *attack_;
