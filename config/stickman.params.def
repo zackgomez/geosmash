@@ -257,20 +257,19 @@ stickman.tauntAttack.priority     0
 # -------------------
 stickman.neutralSpecialState.speed     500
 # attack/damage params
-stickman.neutralSpecialAttack.startup      0.15
-stickman.neutralSpecialAttack.duration     0.10
-stickman.neutralSpecialAttack.cooldown     0.00
-stickman.neutralSpecialAttack.damage       5
-stickman.neutralSpecialAttack.stun         0.06
-stickman.neutralSpecialAttack.speed        550.0
-stickman.neutralSpecialAttack.knockbackx   0
-stickman.neutralSpecialAttack.knockbacky   1
-stickman.neutralSpecialAttack.kbbase       200.0
-stickman.neutralSpecialAttack.kbscaling    2.0
-stickman.neutralSpecialAttack.hitboxx      0
-stickman.neutralSpecialAttack.hitboxy      0
-stickman.neutralSpecialAttack.hitboxw      55
-stickman.neutralSpecialAttack.hitboxh      80
+stickman.neutralSpecialAttack.startup      0.50
+stickman.neutralSpecialAttack.duration     0.15
+stickman.neutralSpecialAttack.cooldown     0.30
+stickman.neutralSpecialAttack.damage       19
+stickman.neutralSpecialAttack.stun         0.12
+stickman.neutralSpecialAttack.knockbackx   5
+stickman.neutralSpecialAttack.knockbacky   3
+stickman.neutralSpecialAttack.kbbase       500.0
+stickman.neutralSpecialAttack.kbscaling    9.0
+stickman.neutralSpecialAttack.hitboxx      25
+stickman.neutralSpecialAttack.hitboxy       5
+stickman.neutralSpecialAttack.hitboxw      45
+stickman.neutralSpecialAttack.hitboxh      60
 stickman.neutralSpecialAttack.priority     2.0
 
 stickman.upSpecialAttack.startup      0.30
@@ -284,10 +283,10 @@ stickman.upSpecialAttack.kbbase       400.0
 stickman.upSpecialAttack.kbscaling    4.00
 stickman.upSpecialAttack.hitboxx      0
 stickman.upSpecialAttack.hitboxy      0
-stickman.upSpecialAttack.hitboxw      45
-stickman.upSpecialAttack.hitboxh      75
+stickman.upSpecialAttack.hitboxw      50
+stickman.upSpecialAttack.hitboxh      80
 stickman.upSpecialAttack.priority     2.0
-# teleport distance
+# movement details
 stickman.upSpecialAttack.speed        700
 stickman.upSpecialAttack.momentum     250
 

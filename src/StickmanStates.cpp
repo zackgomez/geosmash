@@ -69,6 +69,8 @@ FighterState* StickmanUpSpecial::processInput(controller_state &cs, float dt)
 FighterState* StickmanUpSpecial::collisionWithGround(const rectangle &ground, bool collision,
         bool platform)
 {
+    if (collision)
+        fighter_->attack_->cancel();
     return SpecialState::collisionWithGround(ground, collision, platform);
 }
 
@@ -92,7 +94,7 @@ StickmanNeutralSpecial::StickmanNeutralSpecial(Fighter *f, bool ground) :
 {
     frameName_ = "NeutralSpecial";
 
-    // TODO set sfx here, maybe hitbox frame
+    // TODO set starting and hitting sfx here, maybe hitbox frame
     fighter_->attack_ = fighter_->loadAttack<FighterAttack>("neutralSpecialAttack",
             "", "NeutralSpecial");
     fighter_->attack_->setFighter(f);
@@ -110,22 +112,16 @@ FighterState* StickmanNeutralSpecial::processInput(controller_state &cs, float d
 
     if (!fighter_->attack_)
     {
-        // Jump when attack is over, if we can
-        if (!fighter_->airData_["specialJumped"])
+        if (ground_)
         {
-            // Set direction to be based on joystick, straight up if no input
-            glm::vec2 dir = glm::normalize(glm::vec2(cs.joyx, 1));
-            if (fabs(cs.joyx) < getParam("input.tiltThresh"))
-                dir = glm::vec2(0, 1);
-            fighter_->vel_ = dir * fighter_->param(pre_ + "speed");
-            if (cs.joyx > getParam("input.deadzone"))
-                fighter_->dir_ = glm::sign(cs.joyx);
-            // Can only special jump once
-            fighter_->airData_["specialJumped"] = 1;
+            fighter_->vel_ = glm::vec2(0.f);
+            fighter_->accel_ = glm::vec2(0.f);
+            return new GroundState(fighter_);
         }
-
-        // After special jump leave them w/o a second jump
-        return (new AirNormalState(fighter_));
+        else
+        {
+            return new AirNormalState(fighter_);
+        }
     }
 
     // No transition
@@ -135,8 +131,6 @@ FighterState* StickmanNeutralSpecial::processInput(controller_state &cs, float d
 FighterState* StickmanNeutralSpecial::collisionWithGround(const rectangle &ground, bool collision,
         bool platform)
 {
-    if (collision)
-        fighter_->attack_->cancel();
     return SpecialState::collisionWithGround(ground, collision, platform);
 }
 
