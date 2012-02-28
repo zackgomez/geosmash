@@ -584,7 +584,7 @@ next_entity:
         {
             std::string died = StatsManager::getPlayerName(fighter->getPlayerID());
             // Record the kill if it's not a self destruct
-            if (fighter->getLastHitBy() != -1)
+            if (fighter->getLastHitBy() >= 0)
             {
                 int killerID = fighter->getLastHitBy();
                 std::string killer = StatsManager::getPlayerName(killerID);

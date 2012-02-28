@@ -145,6 +145,7 @@ void Projectile::render(float dt)
 void Projectile::reflect()
 {
     GameEntity::reflect();
-    attack_->setOriginDirection(-attack_->getOriginDirection());
+    // TODO
+    //attack_->setOriginDirection(-attack_->getOriginDirection());
 }
 

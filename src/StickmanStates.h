@@ -16,7 +16,7 @@ public:
 
 private:
     std::string pre_;
-    bool teleported_;
+    glm::vec2 dir_;
 };
 
 class StickmanNeutralSpecial : public SpecialState

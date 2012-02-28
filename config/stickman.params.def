@@ -8,7 +8,7 @@ stickman.dashSpeed        500.0
 # force applied when in AirNormal state
 stickman.airForce         600.0
 # "gravity"
-stickman.airAccel         -1500.0
+stickman.airAccel         -1400.0
 # for when the fighter is stunned
 stickman.airDI            200.0
 # multiplied by received knockback
@@ -16,9 +16,9 @@ stickman.kbscaling        1.1
 
 # also determines short hop input window
 stickman.jumpStartupTime  0.060
-stickman.jumpSpeed        600.0
-stickman.hopSpeed         300.0
-stickman.secondJumpSpeed  550.0
+stickman.jumpSpeed        580.0
+stickman.hopSpeed         290.0
+stickman.secondJumpSpeed  540.0
 # Maximum x speed from input
 stickman.jumpAirSpeed     280.0
 stickman.landingCooldownTime 0.05
@@ -273,22 +273,22 @@ stickman.neutralSpecialAttack.hitboxw      55
 stickman.neutralSpecialAttack.hitboxh      80
 stickman.neutralSpecialAttack.priority     2.0
 
-stickman.upSpecialAttack.startup      0.25
-stickman.upSpecialAttack.duration     0.30
+stickman.upSpecialAttack.startup      0.30
+stickman.upSpecialAttack.duration     0.25
 stickman.upSpecialAttack.cooldown     0.00
-stickman.upSpecialAttack.damage       5
+stickman.upSpecialAttack.damage       12
 stickman.upSpecialAttack.stun         0.11
 stickman.upSpecialAttack.knockbackx   0
 stickman.upSpecialAttack.knockbacky   0
-stickman.upSpecialAttack.kbbase       200.0
-stickman.upSpecialAttack.kbscaling    1.00
+stickman.upSpecialAttack.kbbase       400.0
+stickman.upSpecialAttack.kbscaling    4.00
 stickman.upSpecialAttack.hitboxx      0
 stickman.upSpecialAttack.hitboxy      0
 stickman.upSpecialAttack.hitboxw      45
 stickman.upSpecialAttack.hitboxh      75
 stickman.upSpecialAttack.priority     2.0
 # teleport distance
-stickman.upSpecialAttack.dist         150
+stickman.upSpecialAttack.speed        700
 stickman.upSpecialAttack.momentum     250
 
 stickman.sideSpecialAttack.startup      0.18

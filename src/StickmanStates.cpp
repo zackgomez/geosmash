@@ -11,7 +11,7 @@
 StickmanUpSpecial::StickmanUpSpecial(Fighter *f, bool ground) :
     SpecialState(f, ground),
     pre_("upSpecialAttack."),
-    teleported_(false)
+    dir_(0.f)
 {
     frameName_ = "UpSpecial";
 
@@ -26,27 +26,23 @@ StickmanUpSpecial::~StickmanUpSpecial()
 
 FighterState* StickmanUpSpecial::processInput(controller_state &cs, float dt)
 {
-    if (fighter_->hasAttack() && !teleported_)
+    if (fighter_->hasAttack())
     {
-        // Add a big puff at source location
-        ExplosionManager::get()->addPuff(fighter_->pos_, fighter_->size_.x/2, 0.5f);
-
-        // Calculate teleport direction, default to straight up
-        glm::vec2 joypos = glm::vec2(cs.joyx, cs.joyy);
-        glm::vec2 dir = glm::normalize(glm::vec2(cs.joyx, cs.joyy));
-        if (glm::length(joypos) < getParam("input.tiltThresh"))
-            dir = glm::vec2(0, 1);
-        // Teleport them
-        fighter_->pos_ += dir * fighter_->param(pre_ + "dist");
-        fighter_->vel_ = dir * fighter_->param(pre_ + "momentum");
+        if (dir_ == glm::vec2(0.f))
+        {
+            // Calculate teleport direction, default to straight up
+            glm::vec2 joypos = glm::vec2(cs.joyx, cs.joyy);
+            dir_ = glm::normalize(glm::vec2(cs.joyx, cs.joyy));
+            if (glm::length(joypos) < getParam("input.tiltThresh"))
+                dir_ = glm::vec2(0, 1);
+            // Set facing too
+            if (cs.joyx > getParam("input.deadzone"))
+                fighter_->dir_ = glm::sign(cs.joyx);
+        }
+        // Move them
+        fighter_->vel_ = dir_ * fighter_->param(pre_ + "speed");
+        // No more acceleration
         fighter_->accel_ = glm::vec2(0.f);
-        if (cs.joyx > getParam("input.deadzone"))
-            fighter_->dir_ = glm::sign(cs.joyx);
-
-        // Add a another big puff at destination
-        ExplosionManager::get()->addPuff(fighter_->pos_, fighter_->size_.x/2, 0.4f);
-
-        teleported_ = true;
     }
 
 
@@ -59,6 +55,8 @@ FighterState* StickmanUpSpecial::processInput(controller_state &cs, float dt)
         }
         else
         {
+            // Keep some momentum
+            fighter_->vel_ = dir_ * fighter_->param(pre_ + "momentum");
             // After up special leave them stunned
             return new AirStunnedState(fighter_, HUGE_VAL);
         }
@@ -137,6 +135,8 @@ FighterState* StickmanNeutralSpecial::processInput(controller_state &cs, float d
 FighterState* StickmanNeutralSpecial::collisionWithGround(const rectangle &ground, bool collision,
         bool platform)
 {
+    if (collision)
+        fighter_->attack_->cancel();
     return SpecialState::collisionWithGround(ground, collision, platform);
 }
 
