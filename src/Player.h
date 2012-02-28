@@ -44,9 +44,10 @@ public:
     virtual int getTeamID() const;
     virtual std::string getUsername() const;
     virtual glm::vec3 getColor() const;
+    virtual std::string getFighterName() const;
+
 protected:
     const Fighter *fighter_;
-
 };
 
 class AIPlayer : public Player 

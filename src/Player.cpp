@@ -33,6 +33,11 @@ glm::vec3 Player::getColor() const
     return fighter_->getColor();
 }
 
+std::string Player::getFighterName() const
+{
+    return fighter_->getFighterName();
+}
+
 LocalPlayer::LocalPlayer(Controller *controller, const Fighter *f) :
     Player(f),
     controller_(controller)

@@ -27,6 +27,31 @@ void FrameManager::renderFrame(const glm::mat4 &trans, const glm::vec4 &col,
     renderMaskedRectangle(finalTransform, col, frame);
 }
 
+void FrameManager::renderFighter(const glm::mat4 &trans, const glm::vec4 &col,
+        const std::string &fighterName) const
+{
+    if (fighterName == "charlie")
+    {
+        renderFrame(trans, col, "GroundNormal");
+    }
+    else if (fighterName == "stickman")
+    {
+        // TODO this sucks, work out a better way
+        Skeleton *skeleton = new Skeleton();
+        GeosmashBoneRenderer *renderer = new GeosmashBoneRenderer();
+        skeleton->readSkeleton("models/test.bones");
+
+        renderer->setColor(col);
+        skeleton->resetPose();
+        skeleton->render(glm::scale(trans, glm::vec3(120, 100, 120)));
+
+        delete skeleton;
+        delete renderer;
+    }
+    else
+        assert(false && "Unknown fighter");
+}
+
 void FrameManager::loadFrameFile(const std::string &filename)
 {
     std::ifstream file(filename.c_str());

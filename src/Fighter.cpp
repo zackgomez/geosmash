@@ -179,6 +179,11 @@ std::string Fighter::getFrameName() const
     return lastFrameName_;
 }
 
+std::string Fighter::getFighterName() const
+{
+    return pre_.substr(0, pre_.length()-1);
+}
+
 void Fighter::reflect()
 {
     GameEntity::reflect();

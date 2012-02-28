@@ -58,7 +58,6 @@ StatsGameState::StatsGameState(
         view->add_tab(pane);
 
         // Add a third pane with lifetime stats
-        // TODO display no info if username == StatsManager::guest_user
         const std::string username = players_[i]->getUsername();
         pane = new tab_pane();
         tab_pane *normpane = new tab_pane();
@@ -66,6 +65,7 @@ StatsGameState::StatsGameState(
         pane->add_entry(new centered_text_entry("TOTAL"));
         normpane->add_entry(new centered_text_entry("LIFETIME STATS"));
         normpane->add_entry(new centered_text_entry("AVERAGE"));
+        // Only display info for users with lifetime stats
         if (StatsManager::get()->hasLifetimeStats(username))
         {
             const std::string pre = "lifetime." + username + '.';
@@ -234,7 +234,7 @@ void StatsGameState::render(float dt)
                     glm::translate(glm::mat4(1.f),
                         glm::vec3(columnCenter(i), fighter_height, 0.0f)),
                     glm::vec3(3.f, 3.f, 1.f));
-            FrameManager::get()->renderFrame(transform, fighter_color,  "GroundNormal");
+            FrameManager::get()->renderFighter(transform, fighter_color,  players_[i]->getFighterName());
         }
 
         // Render the current tab

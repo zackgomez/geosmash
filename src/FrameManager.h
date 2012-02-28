@@ -19,6 +19,9 @@ public:
 
     void renderFrame(const glm::mat4 &transform, const glm::vec4 &color,
             const std::string &name) const;
+    // Renders a default pose of the passed in fighter
+    void renderFighter(const glm::mat4 &transform, const glm::vec4 &color,
+            const std::string &fighterName) const;
 
     void loadFrameFile(const std::string &filename);
     void loadPoseFile(const std::string &filename);

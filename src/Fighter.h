@@ -55,6 +55,7 @@ public:
     std::string getFrameName() const;
     const glm::vec3& getColor() const { return color_; }
     const std::string& getUsername() const { return username_; }
+    std::string getFighterName() const;
     // Returns the id of the player that last hit this fighter, or -1 if there
     // is none
     int getLastHitBy() const;
