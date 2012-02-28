@@ -30,8 +30,7 @@ Fighter::Fighter(const glm::vec3& color, int playerID,
     respawnx_(0), respawny_(0),
     color_(color),
     username_(username),
-    attack_(NULL),
-    lastHitBy_(-1)
+    attack_(NULL)
 {
     // Set GameEntity members
     pos_ = vel_ = accel_ = glm::vec2(0.f, 0.f);
@@ -163,7 +162,11 @@ float Fighter::getDirection() const
 
 int Fighter::getLastHitBy() const
 {
-    return lastHitBy_;
+    if (airData_.find("lastHitBy") != airData_.end())
+        return airData_.find("lastHitBy")->second;
+    else
+        // -1 signifies no last hit by, or suicide
+        return -1;
 }
 
 rectangle Fighter::getRect() const
@@ -243,7 +246,7 @@ void Fighter::hitByAttack(const Attack *attack)
 
     // Only set last hit by when it's a player
     if (attack->getPlayerID() != -1)
-        lastHitBy_ = attack->getPlayerID();
+        airData_["lastHitBy"] = attack->getPlayerID();
 }
 
 void Fighter::attackConnected(GameEntity *victim)
@@ -288,7 +291,7 @@ void Fighter::respawn(bool killed)
     vel_ = glm::vec2(0.f);
     accel_ = glm::vec2(0.f);
     damage_ = 0;
-    lastHitBy_ = -1;
+    airData_.clear();
     // Clear the streaks
     StatsManager::get()->setStat(statPrefix(playerID_) + "curKillStreak", 0);
     StatsManager::get()->setStat(statPrefix(playerID_) + "damageStreak", 0);

@@ -116,9 +116,6 @@ private:
     // Current attack members
     FighterAttack* attack_;
 
-    // Game statistics members
-    int lastHitBy_; // The id of the fighter that last hit us, or -1
-
     // This fighters attacks
     std::map<std::string, FighterAttack *> attackMap_;
     SpecialStateFunc specialStateFactory_;
