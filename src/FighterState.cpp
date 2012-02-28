@@ -181,6 +181,8 @@ SpecialState *getStickmanSpecialState(const std::string &name, Fighter *f, bool 
 {
     if (name == "upSpecial")
         return new StickmanUpSpecial(f, ground);
+    else if (name == "neutralSpecial")
+        return new StickmanNeutralSpecial(f, ground);
     else
         assert(false);
 }
@@ -315,6 +317,7 @@ GroundState::GroundState(Fighter *f, float delay, float invincTime) :
 {
     frameName_ = "GroundNormal";
     fighter_->lastHitBy_ = -1;
+    fighter_->airData_.clear();
     invincTime_ = invincTime;
 }
 
@@ -482,8 +485,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return NULL;
-    }
-    // Check for smash attacks
+    } // Check for smash attacks
     else if (controller.pressx && !dashing_)
     {
         glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
@@ -1592,6 +1594,7 @@ LedgeGrabState::LedgeGrabState(Fighter *f) :
     ledge_(NULL)
 {
     fighter_->lastHitBy_ = -1;
+    fighter_->airData_.clear();
     invincTime_ = fighter_->param("ledgeGrab.grabInvincTime");
     waitTime_ = fighter_->param("ledgeGrab.inputDelay");
     frameName_ = "LedgeGrab";

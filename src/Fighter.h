@@ -123,6 +123,9 @@ private:
     std::map<std::string, FighterAttack *> attackMap_;
     SpecialStateFunc specialStateFactory_;
 
+    // Map that holds fighter specific air information, cleared on landing
+    std::map<std::string, float> airData_;
+
     // ---- Helper functions ----
     void stateWrapper(FighterState *fs);
     void renderHelper(float dt, const glm::vec3& color, const glm::mat4 &postTrans = glm::mat4(1.f));
@@ -130,7 +133,7 @@ private:
     void fillAttacks(const std::string &moveset);
     // Loads an attack from the params using the attackName.param syntax
     template<class AttackClass>
-    AttackClass* loadAttack(std::string attackName, const std::string &audioID,
+    AttackClass* loadAttack(const std::string &attackName, const std::string &audioID,
             const std::string &frameName);
 
     friend class FighterState;

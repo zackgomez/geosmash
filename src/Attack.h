@@ -220,22 +220,6 @@ private:
     bool started_;
 };
 
-class NeutralSpecialAttack : public FighterAttack
-{
-public:
-    NeutralSpecialAttack(const std::string &paramPrefix,
-            const std::string &frameName);
-
-    virtual FighterAttack *clone() const;
-    virtual bool hasHitbox() const;
-    virtual void update(float dt);
-    virtual void start();
-
-private:
-    std::string paramPrefix_;
-    bool released_;
-};
-
 class DashAttack : public FighterAttack
 {
 public:

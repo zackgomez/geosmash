@@ -45,14 +45,15 @@ stickman.stepdodge.cooldown    0.20
 stickman.stepdodge.zoffset     -15
 # ^ aesthetic only
 
-stickman.shield.maxHealth 50.0
+stickman.shield.maxHealth 40.0
 stickman.shield.regen     8.0
-stickman.shield.degen     -28.0
-stickman.shield.size      35.0
+stickman.shield.degen     -25.0
 stickman.shield.startup   0.06
 stickman.shield.cooldown  0.18
 stickman.shield.dazeTime  3.0
 stickman.shield.stunFactor 0.002
+# max size, aesthetic only
+stickman.shield.size      35.0
 
 stickman.ledgeGrab.grabInvincTime 1.0
 stickman.ledgeGrab.hbwidth        35.0
@@ -253,20 +254,25 @@ stickman.tauntAttack.priority     0
 # -------------------
 # - Special Attacks -
 # -------------------
-stickman.neutralSpecialAttack.startup      0.30
-stickman.neutralSpecialAttack.cooldown     0.15
+stickman.neutralSpecialState.speed     400
+# attack/damage params
+stickman.neutralSpecialAttack.startup      0.15
+stickman.neutralSpecialAttack.duration     0.10
+stickman.neutralSpecialAttack.cooldown     0.00
 stickman.neutralSpecialAttack.damage       5
 stickman.neutralSpecialAttack.stun         0.06
 stickman.neutralSpecialAttack.speed        550.0
-stickman.neutralSpecialAttack.sizex        20.0
-stickman.neutralSpecialAttack.sizey        20.0
-stickman.neutralSpecialAttack.knockbackx   1
+stickman.neutralSpecialAttack.knockbackx   0
 stickman.neutralSpecialAttack.knockbacky   1
-stickman.neutralSpecialAttack.kbbase       20.0
-stickman.neutralSpecialAttack.kbscaling    0.20
-stickman.neutralSpecialAttack.lifetime     2.0
+stickman.neutralSpecialAttack.kbbase       200.0
+stickman.neutralSpecialAttack.kbscaling    2.0
+stickman.neutralSpecialAttack.hitboxx      0
+stickman.neutralSpecialAttack.hitboxy      0
+stickman.neutralSpecialAttack.hitboxw      55
+stickman.neutralSpecialAttack.hitboxh      80
+stickman.neutralSpecialAttack.priority     2.0
 
-stickman.upSpecialAttack.startup      0.35
+stickman.upSpecialAttack.startup      0.25
 stickman.upSpecialAttack.duration     0.30
 stickman.upSpecialAttack.cooldown     0.00
 stickman.upSpecialAttack.damage       5

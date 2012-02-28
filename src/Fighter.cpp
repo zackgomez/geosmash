@@ -59,62 +59,60 @@ void Fighter::fillAttacks(const std::string &moveset)
     std::string a = "airhit";
     std::string s = "smashhit";
 
-    attackMap_["dash"] = loadAttack<DashAttack>(pre_ + "dashAttack", g, "DashAttack");
+    attackMap_["dash"] = loadAttack<DashAttack>("dashAttack", g, "DashAttack");
     attackMap_["dash"]->setHitboxFrame("DashAttackHitbox");
 
-    attackMap_["ledge"] = loadAttack<FighterAttack>(pre_ + "ledgeAttack", g, "LedgeAttack");
+    attackMap_["ledge"] = loadAttack<FighterAttack>("ledgeAttack", g, "LedgeAttack");
     attackMap_["ledge"]->setHitboxFrame("LedgeAttackHitbox");
 
-    attackMap_["neutralTilt"] = loadAttack<FighterAttack>(pre_ + "neutralTiltAttack", g, "GroundNeutral");
+    attackMap_["neutralTilt"] = loadAttack<FighterAttack>("neutralTiltAttack", g, "GroundNeutral");
     attackMap_["neutralTilt"]->setHitboxFrame("NeutralTiltHitbox");
-    attackMap_["sideTilt"] = loadAttack<FighterAttack>(pre_ + "sideTiltAttack", g, "GroundSidetilt");
+    attackMap_["sideTilt"] = loadAttack<FighterAttack>("sideTiltAttack", g, "GroundSidetilt");
     attackMap_["sideTilt"]->setHitboxFrame("SideTiltHitbox");
-    attackMap_["downTilt"] = loadAttack<FighterAttack>(pre_ + "downTiltAttack", g, "GroundDowntilt");
+    attackMap_["downTilt"] = loadAttack<FighterAttack>("downTiltAttack", g, "GroundDowntilt");
     attackMap_["downTilt"]->setHitboxFrame("DownTiltHitbox");
-    attackMap_["upTilt"] = loadAttack<FighterAttack>(pre_ + "upTiltAttack", g, "GroundUptilt");
+    attackMap_["upTilt"] = loadAttack<FighterAttack>("upTiltAttack", g, "GroundUptilt");
     attackMap_["upTilt"]->setHitboxFrame("UpTiltHitbox");
 
-    attackMap_["airNeutral"] = loadAttack<FighterAttack>(pre_ + "airNeutralAttack", a, "AirNeutral");
+    attackMap_["airNeutral"] = loadAttack<FighterAttack>("airNeutralAttack", a, "AirNeutral");
     attackMap_["airNeutral"]->setHitboxFrame("AirNeutralHitbox");
-    attackMap_["airFront"] = loadAttack<FighterAttack>(pre_ + "airFrontAttack", a, "AirFronttilt");
+    attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
     attackMap_["airFront"]->setHitboxFrame("AirFronttiltHitbox");
     attackMap_["airFront"]->setTwinkle(true);
-    attackMap_["airDown"] = loadAttack<FighterAttack>(pre_ + "airDownAttack", a, "AirDowntilt");
+    attackMap_["airDown"] = loadAttack<FighterAttack>("airDownAttack", a, "AirDowntilt");
     attackMap_["airDown"]->setHitboxFrame("AirDowntiltHitbox");
-    attackMap_["airUp"] = loadAttack<FighterAttack>(pre_ + "airUpAttack", a, "AirUptilt");
+    attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
     attackMap_["airUp"]->setHitboxFrame("AirUptiltHitbox");
 
-    attackMap_["neutralSpecial"] = new NeutralSpecialAttack(pre_ + "neutralSpecialAttack", "NeutralSpecial");
-    attackMap_["neutralSpecial"]->setStartSound("projectile");
-    attackMap_["dashSpecial"] = loadAttack<FighterAttack>(pre_ + "sideSpecialAttack", "dashspecialhit", "DashSpecial");
+    attackMap_["dashSpecial"] = loadAttack<FighterAttack>("sideSpecialAttack", "dashspecialhit", "DashSpecial");
     attackMap_["dashSpecial"]->setHitboxFrame("Null");
     attackMap_["dashSpecial"]->setStartSound("dashspecialhit");
 
-    attackMap_["tauntUp"] = loadAttack<FighterAttack>(pre_ + "tauntAttack", a, "TauntA");
-    attackMap_["tauntDown"] = loadAttack<FighterAttack>(pre_ + "tauntAttack", a, "TauntB");
+    attackMap_["tauntUp"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntA");
+    attackMap_["tauntDown"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntB");
 
-    attackMap_["neutralSmash"] = loadAttack<VaryingDirectionAttack>(pre_ + "neutralSmashAttack", s, "NeutralSmash");
+    attackMap_["neutralSmash"] = loadAttack<VaryingDirectionAttack>("neutralSmashAttack", s, "NeutralSmash");
     attackMap_["neutralSmash"]->setTwinkle(true);
     attackMap_["neutralSmash"]->setHitboxFrame("Null");
-    attackMap_["sideSmash"] = loadAttack<FighterAttack>(pre_ + "sideSmashAttack", s, "SideSmash");
+    attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
     attackMap_["sideSmash"]->setTwinkle(true);
     attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
-    attackMap_["downSmash"] = loadAttack<VaryingDirectionAttack>(pre_ + "downSmashAttack", s, "DownSmash");
+    attackMap_["downSmash"] = loadAttack<VaryingDirectionAttack>("downSmashAttack", s, "DownSmash");
     attackMap_["downSmash"]->setTwinkle(true);
     attackMap_["downSmash"]->setHitboxFrame("DownSmashHitbox");
-    attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>(pre_ + "upSmashAttack", s, "UpSmash");
+    attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");
     attackMap_["upSmash"]->setTwinkle(true);
     attackMap_["upSmash"]->setHitboxFrame("UpSmashHitbox");
 
     // FIXME no hitbox frame
-    attackMap_["grab"] = loadAttack<FighterAttack>(pre_ + "grabAttack", "", "GrabAttempt");
+    attackMap_["grab"] = loadAttack<FighterAttack>("grabAttack", "", "GrabAttempt");
     attackMap_["grab"]->setStartSound("grabattempt");
     //attackMap_["grab"]->setHitboxFrame("GrabbingHitbox");
 
     // Special moves
     if (moveset == "charlie")
     {
-        attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>(pre_ + "upSpecialAttack", a, "UpSpecial");
+        attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
         attackMap_["upSpecial"]->setHitboxFrame("UpSpecialHitbox");
         attackMap_["upSpecial"]->setStartSound("upspecial");
         
@@ -122,7 +120,7 @@ void Fighter::fillAttacks(const std::string &moveset)
     }
     else if (moveset == "stickman")
     {
-        attackMap_["upSpecial"] = loadAttack<VaryingDirectionAttack>(pre_ + "upSpecialAttack", a, "UpSpecial");
+        attackMap_["upSpecial"] = loadAttack<VaryingDirectionAttack>("upSpecialAttack", a, "UpSpecial");
         attackMap_["upSpecial"]->setHitboxFrame("Null");
         attackMap_["upSpecial"]->setStartSound("upspecial");
 
@@ -407,10 +405,10 @@ void Fighter::renderHelper(float dt, const glm::vec3 &color,
 }
 
 template<class AttackClass>
-AttackClass* Fighter::loadAttack(std::string attackName, const std::string &audioID,
+AttackClass* Fighter::loadAttack(const std::string &attackName, const std::string &audioID,
         const std::string &fname)
 {
-    AttackClass *ret = new AttackClass(attackName, audioID, fname);
+    AttackClass *ret = new AttackClass(pre_ + attackName, audioID, fname);
 
     return ret;
 }
