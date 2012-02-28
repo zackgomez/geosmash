@@ -6,6 +6,9 @@
 #include "FrameManager.h"
 #include "Attack.h"
 #include "PManager.h"
+
+std::string Projectile::type = "ProjectileEntity";
+
 Projectile::Projectile(const glm::vec2 &pos, const glm::vec2 &dir,
         const std::string &paramPrefix, const std::string &frameName,
         const std::string &audioID, int playerID, int teamID,

@@ -321,7 +321,7 @@ void Fighter::respawn(bool killed)
 
             // Also set time of death
             StatsManager::get()->setStat(statPrefix(playerID_) + "deathTime",
-                    (getCurrentMillis() - StatsManager::get()->getStat("startMillis")) / 1000.f);
+                    static_cast<int>((getCurrentMillis() - StatsManager::get()->getStat("startMillis")) / 1000.f));
         }
     }
     delete state_;

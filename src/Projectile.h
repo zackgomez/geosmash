@@ -14,7 +14,8 @@ public:
             const glm::vec3 &color);
     virtual ~Projectile();
 
-    virtual std::string getType() const { return "ProjectileEntity"; }
+    static std::string type;
+    virtual std::string getType() const { return type; }
 
     virtual bool isDone() const;
 

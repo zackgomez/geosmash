@@ -4,6 +4,7 @@
 #include "Attack.h"
 #include "ParamReader.h"
 #include "AudioManager.h"
+#include "Projectile.h"
 
 // --------------------------------------------
 // - Up Special Attack
@@ -315,7 +316,7 @@ FighterState* StickmanSideSpecial::attackConnected(GameEntity *victim)
     fighter_->attack_->hit(victim);
 
     // TODO hardcoded...
-    if (victim->getType() == "ProjectileEntity")
+    if (victim->getType() == Projectile::type)
     {
         // Take ownership of the projectile
         victim->reown(fighter_->playerID_, fighter_->teamID_);

@@ -224,7 +224,7 @@ charlie.airUpAttack.damage       9
 charlie.airUpAttack.stun         0.20
 charlie.airUpAttack.knockbackx   0
 charlie.airUpAttack.knockbacky   1
-charlie.airUpAttack.kbbase       300
+charlie.airUpAttack.kbbase       400
 charlie.airUpAttack.kbscaling    7.00
 charlie.airUpAttack.hitboxx      0
 charlie.airUpAttack.hitboxy      40
