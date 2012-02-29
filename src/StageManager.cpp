@@ -8,6 +8,7 @@
 #include "Fighter.h"
 #include "FrameManager.h"
 #include "PManager.h"
+#include "AudioManager.h"
 
 void addEntity(GameEntity *);
 
@@ -313,7 +314,7 @@ VolcanoHazard::VolcanoHazard(const glm::vec2 &pos) :
             apos, asize,
             1, // odir
             -2, -2, // player, team IDs
-            ""); // audio ID
+            "hazardhit"); // audio ID
 
     emitter_ = ParticleManager::get()->newEmitter();
     emitter_->setParticleLifetimeF(new lifetimeNormalF(1.8f, 0.5f))
@@ -322,6 +323,8 @@ VolcanoHazard::VolcanoHazard(const glm::vec2 &pos) :
             ->setLocation(glm::vec3(pos, 0.f))
             ->setOutputRate(200);
     ParticleManager::get()->addEmitter(emitter_);
+
+    AudioManager::get()->playSound("hazardwarn");
 
 }
 
@@ -355,22 +358,10 @@ void VolcanoHazard::update(float dt)
 {
     t_ += dt;
 
-    GameEntity::update(dt);
-}
-
-void VolcanoHazard::render(float dt)
-{
-    // Depending on state render different things
-    // Startup, just have it steam
-    if (t_ < getParam(pre_ + "startup"))
+    if (t_ > getParam(pre_ + "startup") && !active_)
     {
-        float fact = t_ / getParam(pre_ + "startup");
-        emitter_->setOutputRate(200 + 200*fact);
-        // TODO Set parameters to make the steam grow
-    }
-    else if (t_ > getParam(pre_ + "startup")
-            && t_ < getParam(pre_ + "startup") + getParam(pre_ + "duration"))
-    {
+        active_ = true;
+        AudioManager::get()->playSound("hazardactive");
         glm::vec4 pcolors_raw[] =
         {
             glm::vec4(0.8, 0.1, 0.1, 0.8),
@@ -396,6 +387,24 @@ void VolcanoHazard::render(float dt)
                 ->setOutputRate(6000)
                 ->setParticleColorF(new discreteColorF(pcolors))
                 ->setParticleSize(glm::vec3(3,3,3));
+    }
+
+    GameEntity::update(dt);
+}
+
+void VolcanoHazard::render(float dt)
+{
+    // Depending on state render different things
+    // Startup, just have it steam
+    if (t_ < getParam(pre_ + "startup"))
+    {
+        float fact = t_ / getParam(pre_ + "startup");
+        emitter_->setOutputRate(200 + 200*fact);
+        // TODO Set parameters to make the steam grow
+    }
+    else if (t_ > getParam(pre_ + "startup")
+            && t_ < getParam(pre_ + "startup") + getParam(pre_ + "duration"))
+    {
     }
     else
     {

@@ -128,6 +128,7 @@ private:
     SimpleAttack *attack_;
     std::string pre_;
     float t_;
+    bool active_;
 
     Emitter *emitter_;
 };
