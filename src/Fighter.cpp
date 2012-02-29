@@ -90,19 +90,6 @@ void Fighter::fillAttacks(const std::string &moveset)
     attackMap_["tauntUp"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntA");
     attackMap_["tauntDown"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntB");
 
-    attackMap_["neutralSmash"] = loadAttack<VaryingDirectionAttack>("neutralSmashAttack", s, "NeutralSmash");
-    attackMap_["neutralSmash"]->setTwinkle(true);
-    attackMap_["neutralSmash"]->setHitboxFrame("Null");
-    attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
-    attackMap_["sideSmash"]->setTwinkle(true);
-    attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
-    attackMap_["downSmash"] = loadAttack<VaryingDirectionAttack>("downSmashAttack", s, "DownSmash");
-    attackMap_["downSmash"]->setTwinkle(true);
-    attackMap_["downSmash"]->setHitboxFrame("DownSmashHitbox");
-    attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");
-    attackMap_["upSmash"]->setTwinkle(true);
-    attackMap_["upSmash"]->setHitboxFrame("UpSmashHitbox");
-
     // FIXME no hitbox frame
     attackMap_["grab"] = loadAttack<FighterAttack>("grabAttack", "", "GrabAttempt");
     attackMap_["grab"]->setStartSound("grabattempt");
@@ -111,6 +98,19 @@ void Fighter::fillAttacks(const std::string &moveset)
     // Special moves
     if (moveset == "charlie")
     {
+        attackMap_["neutralSmash"] = loadAttack<VaryingDirectionAttack>("neutralSmashAttack", s, "NeutralSmash");
+        attackMap_["neutralSmash"]->setTwinkle(true);
+        attackMap_["neutralSmash"]->setHitboxFrame("Null");
+        attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
+        attackMap_["sideSmash"]->setTwinkle(true);
+        attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
+        attackMap_["downSmash"] = loadAttack<VaryingDirectionAttack>("downSmashAttack", s, "DownSmash");
+        attackMap_["downSmash"]->setTwinkle(true);
+        attackMap_["downSmash"]->setHitboxFrame("DownSmashHitbox");
+        attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");
+        attackMap_["upSmash"]->setTwinkle(true);
+        attackMap_["upSmash"]->setHitboxFrame("UpSmashHitbox");
+
         attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
         attackMap_["upSpecial"]->setHitboxFrame("UpSpecialHitbox");
         attackMap_["upSpecial"]->setStartSound("upspecial");
@@ -119,6 +119,15 @@ void Fighter::fillAttacks(const std::string &moveset)
     }
     else if (moveset == "stickman")
     {
+        attackMap_["neutralSmash"] = loadAttack<FighterAttack>("neutralSmashAttack", s, "NeutralSmash");
+        attackMap_["neutralSmash"]->setTwinkle(true);
+        attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
+        attackMap_["sideSmash"]->setTwinkle(true);
+        attackMap_["downSmash"] = loadAttack<MovingHitboxAttack>("downSmashAttack", s, "DownSmash");
+        attackMap_["downSmash"]->setTwinkle(true);
+        attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");
+        attackMap_["upSmash"]->setTwinkle(true);
+
         attackMap_["upSpecial"] = loadAttack<VaryingDirectionAttack>("upSpecialAttack", a, "UpSpecial");
         attackMap_["upSpecial"]->setHitboxFrame("Null");
         attackMap_["upSpecial"]->setStartSound("upspecial");

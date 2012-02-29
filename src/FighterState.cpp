@@ -738,10 +738,8 @@ FighterState* BlockingState::processInput(controller_state &controller, float dt
 
 void BlockingState::render(float dt)
 {
-    /*
-    printf("BLOCKING | waitT: %.3f dazeT: %.3f health: %.3f || ",
-            waitTime_, dazeTime_, fighter_->shieldHealth_);
-            */
+    printf("BLOCKING | waitT: %.3f dazeT: %.3f health: %.3f invinc: %.3f|| \n",
+            waitTime_, dazeTime_, fighter_->shieldHealth_, invincTime_);
 
     glm::mat4 trans(1.f);
     glm::vec3 color = fighter_->color_;
@@ -801,7 +799,7 @@ FighterState* BlockingState::hitByAttack(const Attack *attack)
     ExplosionManager::get()->addExplosion(exx, exy, 0.2);
 
     // Only block if we're actively blocking right now
-    if (waitTime_ > 0.f || dazeTime_ > 0.f)
+    if (waitTime_ > 0.f || dazeTime_ > 0.f || stepTime_ > 0.f)
     {
         // Get hit
         fighter_->pos_.y += 4;
