@@ -78,8 +78,6 @@ FighterState* StickmanUpSpecial::processInput(controller_state &cs, float dt)
 FighterState* StickmanUpSpecial::collisionWithGround(const rectangle &ground, bool collision,
         bool platform)
 {
-    if (collision)
-        fighter_->attack_->cancel();
     return SpecialState::collisionWithGround(ground, collision, platform);
 }
 
