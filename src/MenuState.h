@@ -104,9 +104,6 @@ private:
     bool widgetChangePrimed_;
 
     const bool *teams_, *handicap_;
-
-    Skeleton *skeleton_;
-    GeosmashBoneRenderer *srenderer_;
 };
 
 class MenuState : public GameState

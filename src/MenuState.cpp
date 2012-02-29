@@ -234,11 +234,6 @@ PlayerWidget::PlayerWidget(int playerID, const bool *teams, const bool *handicap
     widgets_.push_back(fighterWidget_);
     widgets_.push_back(teamIDWidget_);
     widgets_.push_back(handicapWidget_);
-
-    skeleton_ = new Skeleton();
-    srenderer_ = new GeosmashBoneRenderer();
-    skeleton_->readSkeleton("models/test.bones");
-    skeleton_->setBoneRenderer(srenderer_);
 }
 
 PlayerWidget::~PlayerWidget()
@@ -247,8 +242,6 @@ PlayerWidget::~PlayerWidget()
     delete fighterWidget_;
     delete teamIDWidget_;
     delete handicapWidget_;
-
-    delete skeleton_;
 }
 
 bool PlayerWidget::isActive() const { return active_; }
@@ -372,18 +365,11 @@ void PlayerWidget::renderFighter(const glm::mat4 &transform, const glm::vec3 &co
     // Scale for each bixel being 5 game units
     if (fighter == "charlie")
     {
-        glm::mat4 finalTransform = glm::scale(transform, glm::vec3(0.2f, 0.2f, 1.f));
-        FrameManager::get()->renderFrame(finalTransform,
-                glm::vec4(color, 0.15f), "GroundNormal");
+        FrameManager::get()->renderFighter(transform, glm::vec4(color, 0.15f), fighter);
     }
     else if (fighter == "stickman")
     {
-        float aspect_ratio = getParam("stickman.w") / getParam("stickman.h");
-        // Scale for proper size
-        glm::mat4 finalTransform = glm::scale(transform,
-                glm::vec3(aspect_ratio*10.f, 10.f, 1.f));
-        srenderer_->setColor(glm::vec4(color, 0.55f));
-        skeleton_->render(finalTransform);
+        FrameManager::get()->renderFighter(transform, glm::vec4(color, 0.55f), fighter);
     }
     else
         assert(false && "Unknown fighter to render");

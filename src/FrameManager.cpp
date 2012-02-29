@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cstdio>
 #include <sstream>
+#include "ParamReader.h"
 
 FrameManager * FrameManager::get()
 {
@@ -32,7 +33,7 @@ void FrameManager::renderFighter(const glm::mat4 &trans, const glm::vec4 &col,
 {
     if (fighterName == "charlie")
     {
-        renderFrame(trans, col, "GroundNormal");
+        renderFrame(glm::scale(trans, glm::vec3(0.2f)), col, "GroundNormal");
     }
     else if (fighterName == "stickman")
     {
@@ -40,10 +41,12 @@ void FrameManager::renderFighter(const glm::mat4 &trans, const glm::vec4 &col,
         Skeleton *skeleton = new Skeleton();
         GeosmashBoneRenderer *renderer = new GeosmashBoneRenderer();
         skeleton->readSkeleton("models/test.bones");
+        skeleton->setBoneRenderer(renderer);
 
         renderer->setColor(col);
         skeleton->resetPose();
-        skeleton->render(glm::scale(trans, glm::vec3(120, 100, 120)));
+        skeleton->render(glm::scale(trans, 1.f/5.f*glm::vec3(getParam("stickman.w"), getParam("stickman.h"),
+                        1.f)));
 
         delete skeleton;
         delete renderer;

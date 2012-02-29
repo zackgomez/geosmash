@@ -225,7 +225,6 @@ void StatsGameState::render(float dt)
                 glm::vec3(name_size, name_size, 1.f));
         FontManager::get()->renderString(transform, glm::vec3(fighter_color), players_[i]->getUsername());
 
-        // TODO draw correct fighter, not always charlie
         // draw fighter at top of column, only if not ready
         assert(ready_.size() == players_.size());
         if (!ready_[i])
@@ -233,7 +232,7 @@ void StatsGameState::render(float dt)
             transform = glm::scale(
                     glm::translate(glm::mat4(1.f),
                         glm::vec3(columnCenter(i), fighter_height, 0.0f)),
-                    glm::vec3(3.f, 3.f, 1.f));
+                    glm::vec3(15.f, 15.f, 15.f));
             FrameManager::get()->renderFighter(transform, fighter_color,  players_[i]->getFighterName());
         }
 
