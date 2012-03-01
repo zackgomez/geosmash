@@ -72,8 +72,6 @@ public:
     virtual rectangle getRect() const;
 
 private:
-    // Jump startup timer.  Value >= 0 implies that the fighter is starting a jump
-    float jumpTime_;
     // Dash startup timer.  Value >= 0 implies that the fighter is start to dash
     float dashTime_;
     // Generic wait time, wait while value > 0
@@ -105,7 +103,7 @@ private:
 class AirNormalState : public FighterState
 {
 public:
-    AirNormalState(Fighter *f, bool shortHop = false);
+    AirNormalState(Fighter *f, bool jumping = false);
     virtual ~AirNormalState();
 
     virtual FighterState* processInput(controller_state&, float dt);
@@ -209,7 +207,6 @@ public:
 
 private:
     glm::vec2 hbsize_;
-    float jumpTime_;
     float waitTime_;
     Ledge *ledge_;
 };

@@ -1,6 +1,8 @@
 GroundNormal
 GroundRunning
 GroundWalking
+GroundJumpStart
+AirJumpStart
 AirNormal
 AirNormalHop
 AirNormalFastFall

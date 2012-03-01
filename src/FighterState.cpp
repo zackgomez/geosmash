@@ -320,7 +320,7 @@ FighterState* AirStunnedState::hitByAttack(const Attack *attack)
 
 //// ------------------------ GROUND STATE -------------------------
 GroundState::GroundState(Fighter *f, float delay, float invincTime) :
-    FighterState(f), jumpTime_(-1), dashTime_(-1), waitTime_(delay),
+    FighterState(f), dashTime_(-1), waitTime_(delay),
     dashing_(false), ducking_(false)
 {
     frameName_ = "GroundNormal";
@@ -347,16 +347,12 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     }
 
     // Update running timers
-    if (jumpTime_ >= 0) jumpTime_ += dt;
     if (waitTime_ >= 0) waitTime_ -= dt;
     // XXX why is this different than the rest?
     if (dashTime_ >= 0) dashTime_ += dt;
     else dashTime_ -= dt;
     // If the fighter is currently attacking, do nothing else
     if (fighter_->attack_) return NULL;
-    // Do nothing during jump startup
-    if (jumpTime_ > 0 && jumpTime_ < fighter_->param("jumpStartupTime"))
-        return NULL;
     // Do nothing during dash startup
     if (dashTime_ > 0 && dashTime_ < fighter_->param("dashStartupTime"))
         return NULL;
@@ -364,12 +360,14 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     if (waitTime_ > 0)
         return NULL;
 
+    // XXX XXX XXX
     // --- Deal with jump transition ---
+    /*
     if (jumpTime_ > fighter_->param("jumpStartupTime"))
     {
         // Set the xvelocity of the jump
         fighter_->vel_.x = fabs(controller.joyx) > getParam("input.deadzone") ?
-            controller.joyx * 0.5 * fighter_->param("dashSpeed") :
+            controller.joyx * fighter_->param("jumpXSpeed") :
             0.0f;
         // If they are still "holding down" the jump button now, then full jump
         // otherwise short hop
@@ -377,7 +375,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         if (shortHop)
             fighter_->vel_.y = fighter_->param("hopSpeed");
         else
-            fighter_->vel_.y = fighter_->param("jumpSpeed");
+            fighter_->vel_.y = fighter_->param("jumpYSpeed");
         // Draw a little puff
         ExplosionManager::get()->addPuff(
                 fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
@@ -386,6 +384,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         // Jump; transition to Air Normal
         return new AirNormalState(fighter_, shortHop);
     }
+    */
 
 
     // -- Deal with starting an attack --
@@ -593,11 +592,8 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     }
 
     // --- Check to see if they want to start a jump ---
-    if (controller.pressy && jumpTime_ < 0)
-    {
-        // Start the jump timer
-        jumpTime_ = 0.0f;
-    }
+    if (controller.pressy)
+        return new AirNormalState(fighter_, true);
     // No state change
     return NULL;
 }
@@ -820,12 +816,17 @@ FighterState* BlockingState::hitByAttack(const Attack *attack)
 
 
 //// -------------------- AIR NORMAL STATE -----------------------------
-AirNormalState::AirNormalState(Fighter *f, bool shortHop) :
+AirNormalState::AirNormalState(Fighter *f, bool jumping) :
     FighterState(f), jumpTime_(-1),
     fastFalling_(false), fallThroughPlatforms_(false),
     noGrabTime_(0)
 {
-    frameName_ = shortHop ? "AirNormalHop" : "AirNormal";
+    frameName_ = "AirNormal";
+    if (jumping)
+    {
+        jumpTime_ = 0.f;
+        frameName_ = "GroundJumpStart";
+    }
 }
 
 AirNormalState::~AirNormalState()
@@ -878,11 +879,6 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
             fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
             fighter_->attack_ = fighter_->attackMap_["airFront"]->clone();
         }
-        /*
-        else if (tiltDir.x * fighter_->dir_ < 0 && fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
-            // Do the back
-            fighter_->attack_ = fighter_->attackMap_["airBack"]->clone();
-        */
         else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
         {
             fighter_->attack_ = fighter_->attackMap_["airDown"]->clone();
@@ -918,22 +914,52 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
             fighter_->airData_["airJumps"] < fighter_->param("maxAirJumps"))
     {
         jumpTime_ = 0;
+        frameName_ = "AirJumpStart";
     }
     // jump transition
     if (jumpTime_ > fighter_->param("jumpStartupTime"))
     {
-        fighter_->vel_.x = fabs(controller.joyx) > getParam("input.deadzone") ?
-            0.8f * fighter_->param("dashSpeed") * std::max(-1.0f, std::min(1.0f, (controller.joyx - 0.2f) / 0.6f)) :
-            0.0f;
-        fighter_->vel_.y = fighter_->param("secondJumpSpeed");
-        jumpTime_ = -1;
-        fighter_->airData_["airJumps"] += 1;
-        frameName_ = "AirNormalSecondJump";
-        // Draw a puff
-        ExplosionManager::get()->addPuff(
-                fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
-                fighter_->pos_.y - fighter_->size_.y * 0.45f,
-                0.3f);
+        if (frameName_ == "AirJumpStart")
+        {
+            jumpTime_ = -1;
+            fighter_->vel_.x = fabs(controller.joyx) > getParam("input.deadzone") ?
+                fighter_->param("secondJumpXSpeed") * std::max(-1.0f, std::min(1.0f, (controller.joyx - 0.2f) / 0.6f)) :
+                0.0f;
+            fighter_->vel_.y = fighter_->param("secondJumpYSpeed");
+            fighter_->airData_["airJumps"] += 1;
+            frameName_ = "AirNormalSecondJump";
+            // Draw a puff
+            ExplosionManager::get()->addPuff(
+                    fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
+                    fighter_->pos_.y - fighter_->size_.y * 0.45f,
+                    0.3f);
+            return NULL;
+        }
+        else if (frameName_ == "GroundJumpStart")
+        {
+            jumpTime_ = -1;
+            // Set the xvelocity of the jump
+            fighter_->vel_.x = fabs(controller.joyx) > getParam("input.deadzone") ?
+                controller.joyx * fighter_->param("jumpXSpeed") :
+                0.0f;
+            // If they are still "holding down" the jump button now, then full jump
+            // otherwise short hop
+            bool shortHop = !controller.buttony;
+            if (shortHop)
+                fighter_->vel_.y = fighter_->param("hopSpeed");
+            else
+                fighter_->vel_.y = fighter_->param("jumpYSpeed");
+            // Draw a little puff
+            ExplosionManager::get()->addPuff(
+                    fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
+                    fighter_->pos_.y - fighter_->size_.y * 0.45f,
+                    0.3f);
+            frameName_ = shortHop ? "AirNormalHop" : "AirNormal";
+            // Jump; no transition (already in AirNormal)
+            return NULL;
+        }
+        else
+            assert(false && "Unknown jumping frame...\n");
     }
     // --- Check for ledge grab ---
     if (noGrabTime_ <= 0.f)
@@ -952,10 +978,6 @@ void AirNormalState::update(float dt)
 
 void AirNormalState::render(float dt)
 {
-    /*
-    printf("AIR NORMAL | JumpT: %.3f  Can2ndJump: %d || ",
-            jumpTime_, canSecondJump_);
-            */
     fighter_->renderHelper(dt, fighter_->color_);
 }
 
@@ -971,6 +993,9 @@ FighterState* AirNormalState::collisionWithGround(const rectangle &ground, bool 
     FighterState::collisionHelper(ground, platform);
     // If we're not overlapping the ground anymore, no collision
     if (!ground.overlaps(fighter_->getRect()))
+        return NULL;
+    // If we're starting a jump, we can be on the ground (collision OK)
+    if (frameName_ == "GroundJumpStart" || frameName_ == "AirJumpStart")
         return NULL;
 
 
@@ -1299,7 +1324,6 @@ LedgeGrabState::LedgeGrabState(Fighter *f) :
     FighterState(f),
     hbsize_(fighter_->param("ledgeGrab.hbwidth"), fighter_->param("ledgeGrab.hbheight")),
     
-    jumpTime_(HUGE_VAL),
     ledge_(NULL)
 {
     fighter_->airData_.clear();
@@ -1312,30 +1336,15 @@ FighterState* LedgeGrabState::processInput(controller_state &controller, float d
 {
     waitTime_ -= dt;
     if (waitTime_ > 0) return NULL;
-    if (jumpTime_ > 0 && jumpTime_ != HUGE_VAL) return NULL;
-
-    // Check for jump transition
-    if (jumpTime_ <= 0.f)
-    {
-        fighter_->vel_ = glm::vec2(0.f,
-                controller.buttony ? fighter_->param("jumpSpeed") : fighter_->param("hopSpeed"));
-        // Unoccupy
-        ledge_->occupied = false;
-
-        // Draw a little puff
-        ExplosionManager::get()->addPuff(
-                fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
-                fighter_->pos_.y - fighter_->size_.y * 0.45f,
-                0.3f);
-        // Transition
-        return new AirNormalState(fighter_);
-    }
 
     // Check for jump input
-    if (controller.pressy && jumpTime_ == HUGE_VAL)
+    if (controller.pressy)
     {
-        // Start startup time countdown
-        jumpTime_ = fighter_->param("jumpStartupTime");
+        // Unoccupy
+        ledge_->occupied = false;
+        // Jump using AirNormalState
+        return (new AirNormalState(fighter_, true))
+            ->setNoGrabTime(fighter_->param("ledgeGrab.dropTime"));
     }
     // Check for attack input
     else if (controller.pressa)
@@ -1395,16 +1404,10 @@ FighterState* LedgeGrabState::processInput(controller_state &controller, float d
 void LedgeGrabState::update(float dt)
 {
     FighterState::update(dt);
-    // Just update timers
-    jumpTime_ -= dt;
 }
 
 void LedgeGrabState::render(float dt)
 {
-    /*
-    printf("LEDGE | jumpT: %.3f invincT: %.3f || ",
-            jumpTime_, invincTime_);
-            */
     glm::vec3 color = fighter_->color_;
 
     // flash when invincible

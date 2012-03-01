@@ -12,9 +12,11 @@ charlie.kbscaling        1.0
 
 # also determines short hop input window
 charlie.jumpStartupTime  0.060
-charlie.jumpSpeed        600.0
+charlie.jumpYSpeed       600.0
+charlie.jumpXSpeed       200.0
 charlie.hopSpeed         275.0
-charlie.secondJumpSpeed  500.0
+charlie.secondJumpYSpeed 500.0
+charlie.secondJumpXSpeed 320.0
 charlie.maxAirJumps      1
 # Maximum x speed from input
 charlie.jumpAirSpeed     200.0
