@@ -297,6 +297,11 @@ void GhostAIPlayer::readCaseBase(std::istream &is)
                >> cs.presslb >> cs.lbumper
                >> cs.pressrb >> cs.rbumper
                >> cs.dpadl >> cs.dpadr >> cs.dpadu >> cs.dpadd;
+            action.cs = cs;
+            // TODO fix this
+            action.dir = 1.f;
+
+            std::cout << "Read controller state from line:\n" << line << '\n';
 
             // Compute CaseGameState from player states
             CaseGameState cgs = cps2cgs(me, enemy);
@@ -375,7 +380,7 @@ CaseGameState GhostAIPlayer::cps2cgs(const CasePlayerState &me,
 CaseAction GhostAIPlayer::getNextAction() const
 {
     CaseAction action;
-    action.target = "";
+    action.cs.clear();
     action.dir = 1.f;
     CaseGameState best;
     float bestScore = -HUGE_VAL;
@@ -394,7 +399,7 @@ CaseAction GhostAIPlayer::getNextAction() const
     }
 
     logger_->debug() << "Found best matching case (" << bestScore << "): " << best << '\n';
-    logger_->debug() << "Calculated action: '" << action.target << "' " << action.dir << '\n';
+    logger_->debug() << "Calculated action: '" << action.cs << '\n';
     
     return action;
 }
@@ -461,6 +466,18 @@ std::ostream & operator<<(std::ostream &os, const CaseGameState &cgs)
     os  << /*cgs.abspos << ' ' <<*/ cgs.relpos << ' ' << cgs.relvel << ' '
         << cgs.myframe << ' ' << cgs.facing << ' ' << cgs.enemydamage << ' '
         << cgs.enemyhitbox << ' ' << cgs.enemyvulnerable;
+
+    return os;
+}
+
+std::ostream & operator<<(std::ostream &os, const controller_state &cs)
+{
+    os  << "Stick dir: " << cs.joyx << ' ' << cs.joyy << '\n'
+        << "Stick vel: " << cs.joyxv << ' ' << cs.joyyv << '\n'
+        << "ButtonA: " << cs.pressa << ' ' << cs.buttona << '\n'
+        << "ButtonB: " << cs.pressb << ' ' << cs.buttonb << '\n'
+        << "ButtonX: " << cs.pressx << ' ' << cs.buttonx << '\n'
+        << "ButtonY: " << cs.pressy << ' ' << cs.buttony << '\n';
 
     return os;
 }

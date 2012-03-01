@@ -124,12 +124,12 @@ struct CasePlayerState
 
 struct CaseAction
 {
-    std::string target;
     controller_state cs;
     float dir;
 };
 
 std::ostream& operator<<(std::ostream &os, const CaseGameState &cgs);
+std::ostream& operator<<(std::ostream &os, const controller_state &cs);
 
 class GhostAIPlayer : public Player
 {

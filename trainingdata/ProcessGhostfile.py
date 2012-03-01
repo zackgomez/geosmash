@@ -42,7 +42,7 @@ if __name__ == "__main__":
     states = [i.split() for i in lines]
     replines = replines[1:]
 
-    i = 0
+    i = 2
     prevl0 = ""
     prevl1 = ""
     prev0 = ""
@@ -50,12 +50,12 @@ if __name__ == "__main__":
     while i < len(lines):
         l0 = lines[i]
         curr0 = l0[l0.find("FName:"):].split()[1]
-        r0 = replines[i]
+        r0 = replines[i-2]
         i += 1
 
         l1 = lines[i]
         curr1 = l1[l1.find("FName:"):].split()[1]
-        r1 = replines[i]
+        r1 = replines[i-2]
         i += 1
         
 
