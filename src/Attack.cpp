@@ -522,3 +522,31 @@ glm::vec2 VaryingDirectionAttack::calcKnockback(const GameEntity *victim,
     return kbdir * (kbbase_ + damage * kbscaling_);
 }
 
+// ----------------------------------------------------------------------------
+// RepeatingAttack class methods
+// ----------------------------------------------------------------------------
+RepeatingAttack::RepeatingAttack(const std::string &paramPrefix, const std::string &audioID,
+            const std::string &frameName) :
+    FighterAttack(paramPrefix, audioID, frameName)
+{
+}
+
+FighterAttack * RepeatingAttack::clone() const
+{
+    return new RepeatingAttack(*this);
+}
+
+void RepeatingAttack::update(float dt)
+{
+    FighterAttack::update(dt);
+    if (hasHitbox())
+    {
+        repeatT_ += dt;
+        if (repeatT_ > getParam(paramPrefix_ + "repeatT"))
+        {
+            repeatT_ -= getParam(paramPrefix_ + "repeatT");
+            hasHit_.clear();
+        }
+    }
+}
+

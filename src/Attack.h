@@ -221,6 +221,19 @@ private:
     bool started_;
 };
 
+class RepeatingAttack : public FighterAttack
+{
+public:
+    RepeatingAttack(const std::string &paramPrefix, const std::string &audioID,
+            const std::string &frameName);
+
+    virtual FighterAttack* clone() const;
+    virtual void update(float dt);
+
+private:
+    float repeatT_;
+};
+
 class DashAttack : public FighterAttack
 {
 public:

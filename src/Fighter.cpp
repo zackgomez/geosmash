@@ -73,16 +73,6 @@ void Fighter::fillAttacks(const std::string &moveset)
     attackMap_["upTilt"] = loadAttack<FighterAttack>("upTiltAttack", g, "GroundUptilt");
     attackMap_["upTilt"]->setHitboxFrame("UpTiltHitbox");
 
-    attackMap_["airNeutral"] = loadAttack<FighterAttack>("airNeutralAttack", a, "AirNeutral");
-    attackMap_["airNeutral"]->setHitboxFrame("AirNeutralHitbox");
-    attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
-    attackMap_["airFront"]->setHitboxFrame("AirFronttiltHitbox");
-    attackMap_["airFront"]->setTwinkle(true);
-    attackMap_["airDown"] = loadAttack<FighterAttack>("airDownAttack", a, "AirDowntilt");
-    attackMap_["airDown"]->setHitboxFrame("AirDowntiltHitbox");
-    attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
-    attackMap_["airUp"]->setHitboxFrame("AirUptiltHitbox");
-
     attackMap_["dashSpecial"] = loadAttack<FighterAttack>("sideSpecialAttack", "dashspecialhit", "DashSpecial");
     attackMap_["dashSpecial"]->setHitboxFrame("Null");
     attackMap_["dashSpecial"]->setStartSound("dashspecialhit");
@@ -111,6 +101,16 @@ void Fighter::fillAttacks(const std::string &moveset)
         attackMap_["upSmash"]->setTwinkle(true);
         attackMap_["upSmash"]->setHitboxFrame("UpSmashHitbox");
 
+        attackMap_["airNeutral"] = loadAttack<FighterAttack>("airNeutralAttack", a, "AirNeutral");
+        attackMap_["airNeutral"]->setHitboxFrame("AirNeutralHitbox");
+        attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
+        attackMap_["airFront"]->setHitboxFrame("AirFronttiltHitbox");
+        attackMap_["airFront"]->setTwinkle(true);
+        attackMap_["airDown"] = loadAttack<FighterAttack>("airDownAttack", a, "AirDowntilt");
+        attackMap_["airDown"]->setHitboxFrame("AirDowntiltHitbox");
+        attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
+        attackMap_["airUp"]->setHitboxFrame("AirUptiltHitbox");
+
         attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
         attackMap_["upSpecial"]->setHitboxFrame("UpSpecialHitbox");
         attackMap_["upSpecial"]->setStartSound("upspecial");
@@ -127,6 +127,11 @@ void Fighter::fillAttacks(const std::string &moveset)
         attackMap_["downSmash"]->setTwinkle(true);
         attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");
         attackMap_["upSmash"]->setTwinkle(true);
+
+        attackMap_["airNeutral"] = loadAttack<VaryingDirectionAttack>("airNeutralAttack", a, "AirNeutral");
+        attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
+        attackMap_["airDown"] = loadAttack<RepeatingAttack>("airDownAttack", a, "AirDowntilt");
+        attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
 
         attackMap_["upSpecial"] = loadAttack<VaryingDirectionAttack>("upSpecialAttack", a, "UpSpecial");
         attackMap_["upSpecial"]->setHitboxFrame("Null");
