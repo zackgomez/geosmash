@@ -251,10 +251,13 @@ void GhostAIPlayer::update(float dt)
         
         cs_ = action.cs;//actionMap_.find(action.target)->second;
         // Set the appropriate x direction
-        cs_.joyx *= glm::sign(cgs_.relpos.x * action.dir);
+        /*
+        if (cs_.joyx >
+            cs_.joyx *= glm::sign(cgs_.relpos.x * action.dir);
         cs_.joyxv *= glm::sign(cgs_.relpos.x * action.dir);
         logger_->debug() << "reldir " << fabs(cgs_.relpos.x) << " adir " << action.dir
             << " setdir " << cs_.joyx << '\n';
+        */
     }
 }
 
@@ -299,7 +302,6 @@ void GhostAIPlayer::readCaseBase(std::istream &is)
                >> cs.dpadl >> cs.dpadr >> cs.dpadu >> cs.dpadd;
             action.cs = cs;
             // TODO fix this
-            action.dir = 1.f;
 
             std::cout << "Read controller state from line:\n" << line << '\n';
 
@@ -361,6 +363,8 @@ CaseGameState GhostAIPlayer::cps2cgs(const CasePlayerState &me,
 {
     CaseGameState cgs;
 
+    // TODO make relpos l/r independent
+
     cgs.abspos = me.pos;
     cgs.relpos = enemy.pos - me.pos;
     cgs.relvel = enemy.vel - me.vel;
@@ -381,7 +385,6 @@ CaseAction GhostAIPlayer::getNextAction() const
 {
     CaseAction action;
     action.cs.clear();
-    action.dir = 1.f;
     CaseGameState best;
     float bestScore = -HUGE_VAL;
     const float scoreThresh = -HUGE_VAL;
