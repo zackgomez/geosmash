@@ -29,10 +29,14 @@ import sys
 if __name__ == "__main__":
  
     f = open(sys.argv[1])
+    f2 = open(sys.argv[2])
     lines = [i.strip() for i in f.readlines()]
+    replines = [i.strip() for i in f2.readlines()]
+    f.close()
+    f2.close()
 
     # Read the frames that actions can begin from
-    actionf = open("trainingdata/actionframes.txt")
+    actionf = open("actionframes.txt")
     startFrames = [i.strip() for i in actionf.readlines()]
 
     i = 0
@@ -43,11 +47,14 @@ if __name__ == "__main__":
     while i < len(lines):
         l0 = lines[i]
         curr0 = l0[l0.find("FName:"):].split()[1]
+        r0 = replines[i]
         i += 1
 
         l1 = lines[i]
         curr1 = l1[l1.find("FName:"):].split()[1]
+        r1 = replines[i]
         i += 1
+        
 
         # Frames we don't care about transitioning into
         ignoreFrames = ["AirStunned", "GroundNormal", "Grabbed", "GroundWalking"]
@@ -61,7 +68,9 @@ if __name__ == "__main__":
 
             # output case
             print prevl0
+            #print r0
             print prevl1
+            #print r1
             print prev0, " -> ", curr0, " ", reldir * mdir
             print
 

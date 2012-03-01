@@ -22,6 +22,7 @@ GhostAIRecorder::GhostAIRecorder()
 
 GhostAIRecorder::~GhostAIRecorder()
 {
+    logger_->info() << "Closing Ghost AI Data file\n";
     file_.close();
 }
 
