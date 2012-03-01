@@ -39,6 +39,9 @@ if __name__ == "__main__":
     actionf = open("actionframes.txt")
     startFrames = [i.strip() for i in actionf.readlines()]
 
+    states = [i.split() for i in lines]
+    replines = replines[1:]
+
     i = 0
     prevl0 = ""
     prevl1 = ""
@@ -68,10 +71,9 @@ if __name__ == "__main__":
 
             # output case
             print prevl0
-            #print r0
             print prevl1
-            #print r1
-            print prev0, " -> ", curr0, " ", reldir * mdir
+            print ' '.join(r0.split()[1:])
+            #print prev0, ' -> ', curr0, ' ', reldir * mdir
             print
 
         prevl0 = l0

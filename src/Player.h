@@ -125,6 +125,7 @@ struct CasePlayerState
 struct CaseAction
 {
     std::string target;
+    controller_state cs;
     float dir;
 };
 
@@ -148,7 +149,6 @@ private:
     // Helper functions
     void readCaseBase(std::istream &is);
     static CasePlayerState readCPS(const std::string &line);
-    void fillActionMap();
 
     static CasePlayerState fighter2cps(const Fighter *f);
     static CaseGameState cps2cgs(const CasePlayerState &me, const CasePlayerState &enemy);

@@ -226,9 +226,6 @@ GhostAIPlayer::GhostAIPlayer(const Fighter *f) :
     // load the Case Base
     std::fstream casefile("casebase");
     readCaseBase(casefile);
-
-    // fill in the action -> controller state map
-    fillActionMap();
 }
 
 GhostAIPlayer::~GhostAIPlayer()
@@ -243,29 +240,21 @@ controller_state GhostAIPlayer::getState() const
 void GhostAIPlayer::update(float dt)
 {
     const std::string curframe = fighter_->getFrameName();
-    cs_.clear();
 
+    cs_.clear();
     // Only do updates when we're in an state to perform an action
     if (actionFrames_.count(curframe))
     {
         logger_->debug() << "Looking for state similar to: " << cgs_ << '\n';
         // Search for the closest game state we've seen before
         const CaseAction action = getNextAction();
-
-        if (actionMap_.find(action.target) == actionMap_.end())
-        {
-            logger_->warning() << "Didn't find controller state for action: '" << action.target << "'\n";
-            cs_.clear();
-        }
-        else
-        {
-            cs_ = actionMap_.find(action.target)->second;
-            // Set the appropriate x direction
-            cs_.joyx *= glm::sign(cgs_.relpos.x * action.dir);
-            cs_.joyxv *= glm::sign(cgs_.relpos.x * action.dir);
-            logger_->debug() << "reldir " << fabs(cgs_.relpos.x) << " adir " << action.dir
-                << " setdir " << cs_.joyx << '\n';
-        }
+        
+        cs_ = action.cs;//actionMap_.find(action.target)->second;
+        // Set the appropriate x direction
+        cs_.joyx *= glm::sign(cgs_.relpos.x * action.dir);
+        cs_.joyxv *= glm::sign(cgs_.relpos.x * action.dir);
+        logger_->debug() << "reldir " << fabs(cgs_.relpos.x) << " adir " << action.dir
+            << " setdir " << cs_.joyx << '\n';
     }
 }
 
@@ -293,19 +282,25 @@ void GhostAIPlayer::readCaseBase(std::istream &is)
             continue;
 
         // Then it is an action
-        if (line.find("->") != std::string::npos)
+        if (line.find("PID:") == std::string::npos)
         {
             CaseAction action;
             std::stringstream ss(line);
-            std::string prevState, nextState, crap;
-            ss >> prevState >> crap >> action.target >> action.dir; assert(crap == "->");
-            assert(prevState == me.fname);
+
+            controller_state cs;
+            ss >> cs.joyx >> cs.joyxv >> cs.joyy >> cs.joyyv
+               >> cs.pressa >> cs.buttona
+               >> cs.pressb >> cs.buttonb
+               >> cs.pressx >> cs.buttonx
+               >> cs.pressy >> cs.buttony
+               >> cs.rtrigger >> cs.ltrigger
+               >> cs.presslb >> cs.lbumper
+               >> cs.pressrb >> cs.rbumper
+               >> cs.dpadl >> cs.dpadr >> cs.dpadu >> cs.dpadd;
 
             // Compute CaseGameState from player states
             CaseGameState cgs = cps2cgs(me, enemy);
             caseBase_[cgs] = action;
-
-            logger_->debug() << "Recorded case/action: " << cgs << " // " << action.target << '\n';
         }
         // Some sort of state
         else
@@ -319,72 +314,6 @@ void GhostAIPlayer::readCaseBase(std::istream &is)
                 assert(false && "playerid not recognized");
         }
     }
-}
-
-void GhostAIPlayer::fillActionMap()
-{
-    controller_state cs;
-
-#define _INSERT_STATE(fname, ba, pa, bb, pb, by, py, bx, px, jx, jy) \
-    cs.clear(); \
-    cs.buttona = ba; \
-    cs.pressa = pa; \
-    cs.buttony = by; \
-    cs.pressy  = py; \
-    cs.pressb = pb; \
-    cs.buttonb = bb; \
-    cs.buttonx = bx; \
-    cs.pressx = px; \
-    cs.joyx = jx; \
-    cs.joyxv = jx; \
-    cs.joyy = jy; \
-    cs.joyyv = jy; \
-    actionMap_[fname] = cs;
-
-    // TODO add duration
-    _INSERT_STATE("AirNormalSecondJump", 0, 0, 0, 0, 1, 1, 0, 0, 0, 0);
-    _INSERT_STATE("AirNormal", 0, 0, 0, 0, 1, 1, 0, 0, 0, 0);
-    _INSERT_STATE("AirNormalHop", 0, 0, 0, 0, 1, 0, 0, 0, 0, 0);
-    _INSERT_STATE("AirNormalFastFall", 0, 0, 0, 0, 0, 0, 0, 0, 0, -1);
-
-    _INSERT_STATE("GroundNeutral", 1, 1, 0, 0, 0, 0, 0, 0, .21, 0);
-    _INSERT_STATE("GroundSidetilt", 1, 1, 0, 0, 0, 0, 0, 0, 1, 0);
-    _INSERT_STATE("GroundDowntilt", 1, 1, 0, 0, 0, 0, 0, 0, .21, -1);
-    _INSERT_STATE("GroundUptilt", 1, 1, 0, 0, 0, 0, 0, 0, 0, 1);
-
-    _INSERT_STATE("AirNeutral", 1, 1, 0, 0, 0, 0, 0, 0, .21, 0);
-    _INSERT_STATE("AirFronttilt", 1, 1, 0, 0, 0, 0, 0, 0, 1, 0);
-    _INSERT_STATE("AirDowntilt", 1, 1, 0, 0, 0, 0, 0, 0, .21, -1);
-    _INSERT_STATE("AirUptilt", 1, 1, 0, 0, 0, 0, 0, 0, 0, 1);
-
-    _INSERT_STATE("NeutralSpecial", 0, 0, 1, 1, 0, 0, 0, 0, .21, 0);
-    _INSERT_STATE("DashSpecial", 0, 0, 1, 1, 0, 0, 0, 0, 1, 0);
-    _INSERT_STATE("UpSpecial", 0, 0, 1, 1, 0, 0, 0, 0, .21, 1);
-    _INSERT_STATE("Counter", 0, 0, 1, 1, 0, 0, 0, 0, .21, -1);
-
-    _INSERT_STATE("NeutralSmash", 0, 0, 0, 0, 0, 0, 1, 1, .21, 0);
-    _INSERT_STATE("SideSmash", 0, 0, 0, 0, 0, 0, 1, 1, 1, 0);
-    _INSERT_STATE("UpSmash", 0, 0, 0, 0, 0, 0, 1, 1, .21, 1);
-    _INSERT_STATE("DownSmash", 0, 0, 0, 0, 0, 0, 1, 1, .21, -1);
-
-    cs.clear();
-    cs.rtrigger = -1;
-    actionMap_["Blocking"] = cs;
-
-    cs.clear();
-    cs.joyx = 1;
-    cs.joyxv = 1;
-    cs.rtrigger = -1;
-    actionMap_["GroundRoll"] = cs;
-
-    cs.clear();
-    cs.joyy = -1;
-    cs.joyxv = -1;
-    cs.rtrigger = -1;
-    actionMap_["StepDodge"] = cs;
-
-    // Blank state, blank controller
-    _INSERT_STATE("", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 CasePlayerState GhostAIPlayer::fighter2cps(const Fighter *f)
@@ -404,6 +333,7 @@ CasePlayerState GhostAIPlayer::fighter2cps(const Fighter *f)
 
 CasePlayerState GhostAIPlayer::readCPS(const std::string &line)
 {
+    std::cout << "reading cps from '" << line << "'\n";
     CasePlayerState cps;
     std::stringstream ss(line);
     std::string header;
