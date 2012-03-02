@@ -125,6 +125,7 @@ struct CasePlayerState
 struct CaseAction
 {
     controller_state cs;
+    std::string desc;
 };
 
 std::ostream& operator<<(std::ostream &os, const CaseGameState &cgs);

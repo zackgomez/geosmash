@@ -72,8 +72,8 @@ if __name__ == "__main__":
             # output case
             print prevl0
             print prevl1
+            print prev0, ' -> ', curr0, ' ', reldir * mdir
             print ' '.join(r0.split()[1:])
-            #print prev0, ' -> ', curr0, ' ', reldir * mdir
             print
 
         prevl0 = l0

@@ -5,6 +5,8 @@
 #include "InGameState.h"
 #include "ParamReader.h"
 
+std::ostream & operator<<(std::ostream &os, const glm::vec2 &vec);
+
 Player::~Player()
 {
     delete fighter_;
@@ -277,6 +279,7 @@ void GhostAIPlayer::readCaseBase(std::istream &is)
 {
     CasePlayerState me, enemy;
     CaseGameState cgs;
+    std::string desc;
 
     std::string line;
     while (std::getline(is, line))
@@ -284,8 +287,24 @@ void GhostAIPlayer::readCaseBase(std::istream &is)
         if (line.empty())
             continue;
 
+        // Some sort of state
+        if (line.find("PID:") != std::string::npos)
+        {
+            CasePlayerState cps = readCPS(line);
+            if (cps.playerid == 0)
+                me = cps;
+            else if (cps.playerid == 1)
+                enemy = cps;
+            else
+                assert(false && "playerid not recognized");
+        }
+        // Description?
+        else if (line.find("->") != std::string::npos)
+        {
+            desc = line;
+        }
         // Then it is an action
-        if (line.find("PID:") == std::string::npos)
+        else
         {
             CaseAction action;
             std::stringstream ss(line);
@@ -301,24 +320,11 @@ void GhostAIPlayer::readCaseBase(std::istream &is)
                >> cs.pressrb >> cs.rbumper
                >> cs.dpadl >> cs.dpadr >> cs.dpadu >> cs.dpadd;
             action.cs = cs;
-            // TODO fix this
-
-            std::cout << "Read controller state from line:\n" << line << '\n';
+            action.desc = desc;
 
             // Compute CaseGameState from player states
             CaseGameState cgs = cps2cgs(me, enemy);
             caseBase_[cgs] = action;
-        }
-        // Some sort of state
-        else
-        {
-            CasePlayerState cps = readCPS(line);
-            if (cps.playerid == 0)
-                me = cps;
-            else if (cps.playerid == 1)
-                enemy = cps;
-            else
-                assert(false && "playerid not recognized");
         }
     }
 }
@@ -340,7 +346,6 @@ CasePlayerState GhostAIPlayer::fighter2cps(const Fighter *f)
 
 CasePlayerState GhostAIPlayer::readCPS(const std::string &line)
 {
-    std::cout << "reading cps from '" << line << "'\n";
     CasePlayerState cps;
     std::stringstream ss(line);
     std::string header;
@@ -363,8 +368,6 @@ CaseGameState GhostAIPlayer::cps2cgs(const CasePlayerState &me,
 {
     CaseGameState cgs;
 
-    // TODO make relpos l/r independent
-
     cgs.abspos = me.pos;
     cgs.relpos = enemy.pos - me.pos;
     cgs.relvel = enemy.vel - me.vel;
@@ -385,58 +388,71 @@ CaseAction GhostAIPlayer::getNextAction() const
 {
     CaseAction action;
     action.cs.clear();
-    CaseGameState best;
-    float bestScore = -HUGE_VAL;
-    const float scoreThresh = -HUGE_VAL;
+
+    std::vector<CaseGameState> candidateStates;
+    std::vector<CaseAction> viableActions;
 
     std::map<CaseGameState, CaseAction>::const_iterator it;
     for (it = caseBase_.begin(); it != caseBase_.end(); it++)
     {
-        float curScore = caseHeuristic(cgs_, it->first);
-        if (curScore > bestScore && curScore > scoreThresh)
+        float score = caseHeuristic(cgs_, it->first);
+        // Positive scores mean unacceptably bad
+        if (score <= 0.f)
         {
-            best = it->first;
-            action = it->second;
-            bestScore = curScore;
+            candidateStates.push_back(it->first);
+            viableActions.push_back(it->second);
         }
     }
 
-    logger_->debug() << "Found best matching case (" << bestScore << "): " << best << '\n';
-    logger_->debug() << "Calculated action: '" << action.cs << '\n';
+    logger_->debug() << "Found " << viableActions.size() << " possible actions\n";
+    // If no actions found, return empty action
+    if (viableActions.empty())
+    {
+        logger_->warning() << "No action found for state: " << cgs_ << '\n';
+        return action;
+    }
+
+    int ind = rand() % viableActions.size();
+    action = viableActions[ind];
+    CaseGameState state = candidateStates[ind];
+    // Adjust for facing
+    float reldir = glm::sign(state.relpos.x * cgs_.relpos.x);
+    action.cs.joyx  *= reldir;
+    action.cs.joyxv *= reldir;
+    
+    logger_->debug() << "Using state: " << state << '\n';
+    logger_->debug() << "Using action: " << action.desc << '\n';
+    logger_->debug() << "Using input:\n" << action.cs << '\n';
     
     return action;
 }
 
+glm::vec2 getBucket(const glm::vec2 &posDiff)
+{
+    const glm::vec2 bucketsz(50, 50);
+
+    return glm::floor(posDiff / bucketsz);
+}
+
 float GhostAIPlayer::caseHeuristic(const CaseGameState &cur, const CaseGameState &ref)
 {
-    const float posWeight = 1.0f;
-    const float velWeight = 0.3f;//0.03f;
-    const float damageWeight = 0.f;//1.0f;
-    const float vulnerableWeight = 0.f;//50.f;
-    const float hitboxWeight = 0.f;//100.f;
-
     float score = 0.f;
 
     // If not the same frame, do not pick
     if (!isSynonymState(cur.myframe, ref.myframe))
-        return -HUGE_VAL;
+        return HUGE_VAL;
 
-    float relXDist = fabs(cur.relpos.x - ref.relpos.x);
-    float relYDist = fabs(cur.relpos.y - ref.relpos.y);
+    // Calculate intermediate values
+    glm::vec2 dist = glm::abs(glm::abs(cur.relpos) - glm::abs(ref.relpos));
+    glm::vec2 bucket = getBucket(dist);
+    assert(bucket.x >= 0 && bucket.y >= 0);
 
-    float relXVel  = fabs(cur.relvel.x - ref.relvel.x);
-    float relYVel  = fabs(cur.relvel.y - ref.relvel.y);
+    // Calculate score...
+    score += 1e6 * (bucket.x + bucket.y);
 
-    float damageDiff = fabs(cur.enemydamage - ref.enemydamage);
-    bool vulnerable = cur.enemyvulnerable == ref.enemyvulnerable;
-    bool hitbox = cur.enemyhitbox == ref.enemyhitbox;
-
-    score -= posWeight * (relXDist + relYDist);
-    score -= velWeight * (relXVel + relYVel);
-    score -= damageWeight * damageDiff;
-    score -= vulnerableWeight * vulnerable;
-    score -= hitboxWeight * hitbox;
-
+    // Positive score means no good, negative score means good with
+    // score acting as differentiation
+    std::cout << "Bucket: " << bucket << " Score: " << score << '\n';
     return score;
 }
 
