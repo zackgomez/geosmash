@@ -16,9 +16,11 @@ stickman.kbscaling        1.1
 
 # also determines short hop input window
 stickman.jumpStartupTime  0.060
-stickman.jumpSpeed        580.0
+stickman.jumpXSpeed       200.0
+stickman.jumpYSpeed        580.0
 stickman.hopSpeed         290.0
-stickman.secondJumpSpeed  540.0
+stickman.secondJumpXSpeed 320.0
+stickman.secondJumpYSpeed  540.0
 # Maximum x speed from input
 stickman.jumpAirSpeed     280.0
 stickman.landingCooldownTime 0.05
@@ -193,12 +195,12 @@ stickman.airNeutralAttack.priority     1.0
 stickman.airFrontAttack.startup      0.18
 stickman.airFrontAttack.duration     0.30
 stickman.airFrontAttack.cooldown     0.20
-stickman.airFrontAttack.damage       8
+stickman.airFrontAttack.damage       7
 stickman.airFrontAttack.stun         0.09
 stickman.airFrontAttack.knockbackx   5
-stickman.airFrontAttack.knockbacky   2
+stickman.airFrontAttack.knockbacky   -2
 stickman.airFrontAttack.kbbase       400.0
-stickman.airFrontAttack.kbscaling    5.00
+stickman.airFrontAttack.kbscaling    4.50
 stickman.airFrontAttack.hitboxx      20
 stickman.airFrontAttack.hitboxy      -15
 stickman.airFrontAttack.hitboxw      45
@@ -212,8 +214,8 @@ stickman.airDownAttack.damage       1
 stickman.airDownAttack.stun         0.07
 stickman.airDownAttack.knockbackx   0
 stickman.airDownAttack.knockbacky   -1
-stickman.airDownAttack.kbbase       200.0
-stickman.airDownAttack.kbscaling    2.00
+stickman.airDownAttack.kbbase       0.0
+stickman.airDownAttack.kbscaling    0.00
 stickman.airDownAttack.hitboxx      0
 stickman.airDownAttack.hitboxy      -35
 stickman.airDownAttack.hitboxw      40
@@ -288,8 +290,8 @@ stickman.upSpecialAttack.hitboxw      50
 stickman.upSpecialAttack.hitboxh      80
 stickman.upSpecialAttack.priority     2.0
 # movement details
-stickman.upSpecialAttack.speed        700
-stickman.upSpecialAttack.momentum     250
+stickman.upSpecialAttack.speed        825
+stickman.upSpecialAttack.momentum     350
 
 stickman.sideSpecialAttack.startup      0.18
 stickman.sideSpecialAttack.duration     0.30
@@ -374,11 +376,11 @@ stickman.downSmashAttack.knockbackx   0
 stickman.downSmashAttack.knockbacky   1
 stickman.downSmashAttack.kbbase       400.0
 stickman.downSmashAttack.kbscaling    5.00
-stickman.downSmashAttack.hitboxx      30
+stickman.downSmashAttack.hitboxx      40
 stickman.downSmashAttack.hitboxy      -35
-stickman.downSmashAttack.hitboxx1     -30
+stickman.downSmashAttack.hitboxx1     -40
 stickman.downSmashAttack.hitboxy1     -35
-stickman.downSmashAttack.hitboxw      40
+stickman.downSmashAttack.hitboxw      45
 stickman.downSmashAttack.hitboxh      30
 stickman.downSmashAttack.priority     1.5
 

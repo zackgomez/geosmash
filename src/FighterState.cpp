@@ -959,7 +959,8 @@ FighterState* AirNormalState::processInput(controller_state &controller, float d
             return NULL;
         }
         else
-            assert(false && "Unknown jumping frame...\n");
+            //XXX
+            assert(true && "Unknown jumping frame...\n");
     }
     // --- Check for ledge grab ---
     if (noGrabTime_ <= 0.f)
