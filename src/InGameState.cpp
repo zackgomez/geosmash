@@ -149,6 +149,10 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
             // Set the run time stat
             StatsManager::get()->setStat("MatchLength",
                     (getCurrentMillis() - StatsManager::get()->getStat("startMillis")) / 1000.0f);
+            // Set the places to indicate NO CONTEST
+            for (size_t i = 0; i < players_.size(); i++)
+                StatsManager::get()->setStat(
+                        StatsManager::getStatPrefix(players_[i]->getPlayerID()) + "place", players_.size());
             return new StatsGameState(players_, -1);
         }
     }
@@ -199,6 +203,10 @@ GameState * InGameState::processInput(const std::vector<Controller*> &controller
         // Set the run time stat
         StatsManager::get()->setStat("MatchLength",
                 (getCurrentMillis() - StatsManager::get()->getStat("startMillis")) / 1000.0f);
+        // Set the places of people yet to die
+        for (size_t i = 0; i < players_.size(); i++)
+            StatsManager::get()->maxStat(
+                    StatsManager::getStatPrefix(players_[i]->getPlayerID()) + "place", 1.f);
 
         // Transition to end of game state
         StatsManager::get()->setStat("winningTeam", winningTeam);
