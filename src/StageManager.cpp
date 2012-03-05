@@ -210,7 +210,7 @@ std::vector<rectangle> StageManager::getPlatforms() const
 
 void StageManager::renderBackground(float dt)
 {
-    t_ += 3*dt;
+    t_ += 1*dt;
 	if (getParam("backgroundSphere.shouldRender") == 0) 
 	{
 		return;
