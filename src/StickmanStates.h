@@ -36,6 +36,9 @@ public:
 
 private:
     std::string pre_;
+    float t_;
+    Emitter *emitter_;
+    float maxRadius_;
 };
 
 class CounterState : public SpecialState

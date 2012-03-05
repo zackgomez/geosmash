@@ -258,7 +258,11 @@ stickman.tauntAttack.priority     0
 # -------------------
 # - Special Attacks -
 # -------------------
-stickman.neutralSpecialState.speed     500
+stickman.neutralSpecialState.startup       0.50
+stickman.neutralSpecialState.startupSizeFact 1.5
+# attack width * maxSizeFact = maxEmitterRadius
+# should be at most 0.5 probably
+stickman.neutralSpecialState.maxSizeFact   0.40
 # attack/damage params
 stickman.neutralSpecialAttack.startup      0.50
 stickman.neutralSpecialAttack.duration     0.15

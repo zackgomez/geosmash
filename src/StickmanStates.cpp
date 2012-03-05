@@ -130,7 +130,8 @@ void StickmanUpSpecial::render(float dt)
 
 StickmanNeutralSpecial::StickmanNeutralSpecial(Fighter *f, bool ground) :
     SpecialState(f, ground),
-    pre_("neutralSpecialState.")
+    pre_("neutralSpecialState."),
+    t_(0.f)
 {
     frameName_ = "NeutralSpecial";
 
@@ -140,12 +141,31 @@ StickmanNeutralSpecial::StickmanNeutralSpecial(Fighter *f, bool ground) :
             "specialhit", "NeutralSpecial");
     fighter_->attack_->setStartSound("specialpunchstart");
     fighter_->attack_->setActiveSound("specialpunchactive");
+    fighter_->attack_->setHitboxFrame("Null");
     fighter_->attack_->setFighter(f);
     fighter_->attack_->start();
+
+    // XXX this will cause a bug when the fighter is turned around as the
+    // emitter will not switch sides
+    glm::vec2 offset = glm::vec2(fighter_->attack_->getHitbox().x,
+            fighter_->attack_->getHitbox().y) - fighter_->getPosition();
+    maxRadius_ = fighter_->attack_->getHitbox().w * 0.40f;
+
+    emitter_ = ParticleManager::get()->newEmitter();
+    emitter_->addEmitterAction(new PEFollowF(&fighter_->pos_, offset));
+    emitter_->setParticleColorF(new discreteColorF(getDiscreteColorVec(fighter_->color_)))
+        ->setParticleVelocityF(new velocityAdderF(&fighter_->vel_, new velocityF(1.f, 60.f, 10.f)))
+        ->setParticleLocationF(new locationF(maxRadius_))
+        ->setParticleLifetimeF(new lifetimeF(0.04f))
+        ->setOutputRate(400)
+        ->setParticleSize(glm::vec3(2));
+
+    ParticleManager::get()->addEmitter(emitter_);
 }
 
 StickmanNeutralSpecial::~StickmanNeutralSpecial()
 {
+    ParticleManager::get()->quashEmitter(emitter_);
 }
 
 FighterState* StickmanNeutralSpecial::processInput(controller_state &cs, float dt)
@@ -181,6 +201,24 @@ FighterState* StickmanNeutralSpecial::hitByAttack(const Attack *attack)
 
 void StickmanNeutralSpecial::render(float dt)
 {
+    t_ += dt;
+    // Only real thing to do is adjust emitter params accordingly
+    if (t_ < fighter_->param(pre_ + "startup"))
+    {
+        // TODO adjust size so that it shrinks from full size to nothing during
+        // startup, only to explode out huge during hitbox active
+        float fact = 1 - t_ / fighter_->param(pre_ + "startup");
+        fact *= fighter_->param(pre_ + "startupSizeFact");
+
+        emitter_->setParticleLocationF(new locationF(fact * maxRadius_));
+    }
+    else
+    {
+        emitter_->setParticleLocationF(new locationF(maxRadius_))
+            //->setParticleVelocityF(new velocityF(1.f, 60.f, 10.f))
+            ->setParticleLifetimeF(new lifetimeF(0.15f))
+            ->setOutputRate(800);
+    }
     fighter_->renderHelper(dt, fighter_->color_);
 }
 
