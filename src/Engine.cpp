@@ -702,6 +702,9 @@ mesh createMesh(std::string objfile)
     // Now create a buffer to hold the data
     ret.data_buffer = make_buffer(GL_ARRAY_BUFFER, &verts.front(), sizeof(vert) * verts.size());
     ret.nverts = verts.size();
+    // Just set the transform to the identity
+    // TODO support reading this from the obj file
+    ret.transform = glm::mat4(1.f);
 
     return ret;
 }
@@ -718,7 +721,7 @@ void renderMesh(const glm::mat4 &modelMatrix, const mesh &m, GLuint program)
     GLuint texcoordAttrib = glGetAttribLocation(program, "texcoord");
     // Enable program and set up values
     glUseProgram(program);
-    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix * m.transform));
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrixStack.current()));
     glUniformMatrix4fv(normalUniform, 1, GL_FALSE, glm::value_ptr(glm::inverse(modelMatrix)));
 

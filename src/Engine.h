@@ -11,6 +11,8 @@ struct mesh
 {
     GLuint data_buffer;
     size_t nverts;
+
+    glm::mat4 transform;
 };
 
 GLuint make_buffer( GLenum target, const void *buffer_data, GLsizei buffer_size);
