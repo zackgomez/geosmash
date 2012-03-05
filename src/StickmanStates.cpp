@@ -35,6 +35,8 @@ StickmanUpSpecial::StickmanUpSpecial(Fighter *f, bool ground) :
     frameName_ = "UpSpecial";
 
     fighter_->attack_ = fighter_->attackMap_["upSpecial"]->clone();
+    fighter_->attack_->setStartSound("stickmanupbstartup");
+    fighter_->attack_->setActiveSound("stickmanupbactive");
     fighter_->attack_->setFighter(f);
     fighter_->attack_->start();
 
@@ -132,9 +134,12 @@ StickmanNeutralSpecial::StickmanNeutralSpecial(Fighter *f, bool ground) :
 {
     frameName_ = "NeutralSpecial";
 
-    // TODO set starting and hitting sfx here, maybe hitbox frame
+    // TODO maybe set hitbox frame, at least get rid of red box
     fighter_->attack_ = fighter_->loadAttack<FighterAttack>("neutralSpecialAttack",
-            "", "NeutralSpecial");
+            // TODO perhaps give it its own audio ID on hit
+            "specialhit", "NeutralSpecial");
+    fighter_->attack_->setStartSound("specialpunchstart");
+    fighter_->attack_->setActiveSound("specialpunchactive");
     fighter_->attack_->setFighter(f);
     fighter_->attack_->start();
 }
@@ -343,6 +348,9 @@ FighterState* StickmanSideSpecial::attackConnected(GameEntity *victim)
     victim->reflect();
     // don't hit them multiple times
     fighter_->attack_->hit(victim);
+
+    // Play sound
+    AudioManager::get()->playSound("capeswish");
 
     // TODO hardcoded...
     if (victim->getType() == Projectile::type)

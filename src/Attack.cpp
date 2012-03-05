@@ -172,6 +172,7 @@ void FighterAttack::start()
 {
     assert(owner_);
     t_ = 0.0f;
+    activeSoundPlayed_ = false;
     hasHit_.clear();
     if (!startSoundID_.empty())
         AudioManager::get()->playSound(startSoundID_);
@@ -212,6 +213,7 @@ std::string FighterAttack::getFrameName() const { return frameName_; }
 void FighterAttack::setTwinkle(bool twinkle) { twinkle_ = twinkle; }
 void FighterAttack::setHitboxFrame(const std::string &frame) { hbframe_ = frame; }
 void FighterAttack::setStartSound(const std::string &soundID) { startSoundID_ = soundID; }
+void FighterAttack::setActiveSound(const std::string &soundID) { activeSoundID_ = soundID; }
 
 bool FighterAttack::hasTwinkle() const
 {
@@ -231,6 +233,14 @@ bool FighterAttack::isDone() const
 void FighterAttack::update(float dt)
 {
     t_ += dt;
+
+    // Play the active sound first hitbox frame
+    if (t_ > startup_ && !activeSoundPlayed_)
+    {
+        activeSoundPlayed_ = true;
+        if (!startSoundID_.empty())
+            AudioManager::get()->playSound(activeSoundID_);
+    }
 }
 
 void FighterAttack::render(float dt)

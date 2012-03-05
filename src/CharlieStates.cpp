@@ -1,6 +1,7 @@
 #include "CharlieStates.h"
 #include "Attack.h"
 #include "Projectile.h"
+#include "AudioManager.h"
 
 void addEntity(GameEntity *ent);
 
@@ -160,6 +161,8 @@ FighterState * CharlieNeutralSpecial::processInput(controller_state &, float dt)
     if (t_ > fighter_->param(pre_ + "startup") && !shot_)
     {
         shot_ = true;
+
+        AudioManager::get()->playSound("projectile");
 
         Projectile *projectile =
             new Projectile(fighter_->pos_,

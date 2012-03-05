@@ -136,9 +136,12 @@ public:
     virtual bool hasTwinkle() const;
 
     void setTwinkle(bool twinkle);
-    void setHitboxFrame(const std::string &frame);
-    void setStartSound(const std::string &soundID_);
     void setFrameName(const std::string &fname);
+    void setHitboxFrame(const std::string &frame);
+    // Played during start up
+    void setStartSound(const std::string &soundID_);
+    // Played when the hitbox first becomes active
+    void setActiveSound(const std::string &soundID_);
 
 
 protected:
@@ -153,6 +156,8 @@ protected:
     bool twinkle_;
 
     std::string startSoundID_;
+    std::string activeSoundID_;
+    bool activeSoundPlayed_;
 
     Fighter *owner_;
 };
