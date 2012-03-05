@@ -1,6 +1,7 @@
 #pragma once
 #include "Fighter.h"
 #include "FighterState.h"
+#include "PManager.h"
 
 class StickmanUpSpecial : public SpecialState
 {
@@ -17,6 +18,8 @@ public:
 private:
     std::string pre_;
     glm::vec2 dir_;
+
+    Emitter *emitter_;
 };
 
 class StickmanNeutralSpecial : public SpecialState

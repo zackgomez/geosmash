@@ -310,6 +310,8 @@ void Fighter::respawn(bool killed)
         delete attack_;
         attack_ = 0;
     }
+    // Cache for later
+    bool selfkill = getLastHitBy() == -1;
     // Reset vars
     pos_.x = respawnx_;
     pos_.y = respawny_;
@@ -324,7 +326,11 @@ void Fighter::respawn(bool killed)
     if (killed)
     {
         --lives_;
-        AudioManager::get()->playSound("ko");
+        // Play a sound for death, different for suicide or ko
+        if (selfkill)
+            AudioManager::get()->playSound("selfkill");
+        else
+            AudioManager::get()->playSound("ko");
         StatsManager::get()->addStat(statPrefix(playerID_) + "deaths", 1);
 
         // If player is dead and doesn't already have a place, set place
