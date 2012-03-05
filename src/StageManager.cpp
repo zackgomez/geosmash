@@ -9,6 +9,7 @@
 #include "FrameManager.h"
 #include "PManager.h"
 #include "AudioManager.h"
+#include "StatsManager.h"
 
 void addEntity(GameEntity *);
 
@@ -22,6 +23,7 @@ StageManager::StageManager() :
     // Load the ground mesh
     level_mesh_ = createMesh("models/level.obj");
     platform_mesh_ = createMesh("models/cube.obj");
+    ship_mesh_ = createMesh("models/ship1-2.obj");
 
     stageProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
     wormholeProgram_ = make_program("shaders/wormholebg.v.glsl", "shaders/wormholebg.f.glsl");
@@ -213,6 +215,7 @@ void StageManager::renderBackground(float dt)
 	{
 		return;
 	}
+
     glEnable(GL_CULL_FACE);
     float r = getParam("backgroundSphere.radius");
     glm::mat4 transform = glm::rotate(glm::scale(glm::mat4(1.f), glm::vec3(r, r, r)),
@@ -223,11 +226,13 @@ void StageManager::renderBackground(float dt)
     GLuint projectionUniform = glGetUniformLocation(backProgram_, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(backProgram_, "modelViewMatrix");
     GLuint timeUniform = glGetUniformLocation(backProgram_, "t");
+    GLuint colorUniform = glGetUniformLocation(backProgram_, "color");
     GLuint positionAttrib = glGetAttribLocation(backProgram_, "position");
 
     glUseProgram(backProgram_);
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrixStack().current()));
     glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(getViewMatrixStack().current() * transform));
+    glUniform3fv(colorUniform, 1, glm::value_ptr(glm::vec3(0.f)));
     glUniform1f(timeUniform, t_);
 
     glBindBuffer(GL_ARRAY_BUFFER, meshBuf_);
@@ -242,6 +247,21 @@ void StageManager::renderBackground(float dt)
     glDisableVertexAttribArray(positionAttrib);
     glUseProgram(0);
     glDisable(GL_CULL_FACE);
+
+
+    // XXX render rectangle at end of tunnel
+    
+    float v = -1;
+    float off = 0.2 * sin(5*v - t_) * 7*(-v);
+    float xfact = (sin(M_PI*t_/10 + v) + 1) / 2;
+
+    float xoff = off * xfact;
+    float yoff = off * (1 - xfact);
+
+    glm::mat4 backtrans = glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(r*0.8,r*0.8,r)),
+            glm::vec3(xoff, yoff, 2*v));
+    renderMesh(glm::rotate(glm::scale(backtrans, glm::vec3(.15)), -90.f, glm::vec3(0,1,0)), ship_mesh_, stageProgram_);
+    //renderRectangle(backtrans, glm::vec4(1,1,1,0));
 }
 
 void StageManager::renderStage(float dt)

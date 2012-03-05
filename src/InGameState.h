@@ -53,6 +53,7 @@ private:
 
     void togglePause(int controllerID);
 
+    Fighter* getFighterByID(int playerID);
     bool stealLife(int teamID);
 };
 

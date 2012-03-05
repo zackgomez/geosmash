@@ -586,11 +586,12 @@ next_entity:
             // Record the kill if it's not a self destruct
             if (fighter->getLastHitBy() >= 0)
             {
+                logger_->info() << "Last hit by: " << fighter->getLastHitBy() << std::endl;
                 int killerID = fighter->getLastHitBy();
                 std::string killer = StatsManager::getPlayerName(killerID);
                 StatsManager::get()->addStat(killer+ ".kills." + died, 1);
                 // check for team kill
-                if (fighter->getTeamID() == fighters_[fighter->getLastHitBy()]->getTeamID())
+                if (fighter->getTeamID() == getFighterByID(fighter->getLastHitBy())->getTeamID())
                     StatsManager::get()->addStat(killer+ ".kills.team", 1);
                 else
                 {
@@ -607,6 +608,15 @@ next_entity:
             break;
         }
     }
+}
+
+Fighter* InGameState::getFighterByID(int playerID)
+{
+    for (size_t i = 0; i < fighters_.size(); i++)
+        if (fighters_[i]->getPlayerID() == playerID)
+            return fighters_[i];
+
+    assert(false && "Fighter not found by ID");
 }
 
 void InGameState::togglePause(int playerID)

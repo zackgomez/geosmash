@@ -71,6 +71,7 @@ private:
     glm::vec3 ground_color_;
     mesh level_mesh_;
     mesh platform_mesh_;
+    mesh ship_mesh_;
 };
 
 // Renders a shiny sphere.

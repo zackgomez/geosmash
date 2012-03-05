@@ -5,7 +5,7 @@ uniform float t;
 const float pi = 3.1415926;
 
 const float thresh = 0.9;
-const float c = 100.;
+const float c = 30.;
 
 vec4 linecol = vec4(0.3, 0.05, 0.3, 1.f);
 vec4 cola = vec4(0.3, 0, 0, 1.f);

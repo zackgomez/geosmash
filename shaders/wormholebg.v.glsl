@@ -1,6 +1,6 @@
 #version 120
 const float pi = 3.1415926535;
-const float r = 0.5;
+const float r = 0.6;
 const float length = 100.0;
 
 attribute vec4 position;
@@ -22,11 +22,12 @@ void main()
 
    float off = 0.2 * sin(5*v - t) * 5*(-v);
    float xfact = (sin(pi*t/10 + v) + 1) / 2;
+
    float xoff = off * xfact;
    float yoff = off * (1 - xfact);
 
-   float x = r*cos(u) + xoff;
-   float y = r*sin(u) + yoff;
+   float x = r*(cos(u)+.05*cos(t)*cos(10*u)) * (sin(t/2) + 3)/1.5 + xoff;
+   float y = r*(sin(u)+.05*cos(t)*cos(10*u)) * (cos(t/5) + 3)/1.5 + yoff;
 
    //x *= 1.2 + v;
    //y *= 1.2 + v;

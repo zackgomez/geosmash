@@ -744,7 +744,7 @@ void renderMesh(const glm::mat4 &modelMatrix, const mesh &m, GLuint program)
 void setCamera(const glm::vec3 &pos)
 {
     projectionMatrixStack.current() =
-        glm::perspective(getParam("camera.fov"), 16.f / 9.f, 0.1f, 6000.f);
+        glm::perspective(getParam("camera.fov"), 16.f / 9.f, 0.1f, 10000.f);
     viewMatrixStack.current() =
         glm::translate(glm::mat4(1.f), -pos);
 }
