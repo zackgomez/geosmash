@@ -125,7 +125,7 @@ void NumberSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
     color = enabled_ ? color : widgetDisabledColor;
 
     // Render name
-    glm::vec2 strcenter = center - glm::vec2(0.75f * charsize * name_.length()/2, 0.f);
+    glm::vec2 strcenter = center - glm::vec2(0.75f * charsize * name_.length()/2.f, 0.f);
     transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(strcenter, 0.f)),
             glm::vec3(charsize, -charsize, 1.f));
@@ -135,7 +135,7 @@ void NumberSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
             name_);
 
     // Render value
-    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * FontManager::numDigits(value_), 0.f);
+    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * (FontManager::numDigits(value_)/2.f + 1.f), 0.f);
     transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
             glm::vec3(charsize, -charsize, 1.f));
@@ -204,7 +204,7 @@ void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
             name_);
 
     // Render value
-    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * (values_[idx_].length()/2 + 1), 0.f);
+    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * (values_[idx_].length()/2.f + 1.f), 0.f);
     transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
             glm::vec3(charsize, -charsize, 1.f));
