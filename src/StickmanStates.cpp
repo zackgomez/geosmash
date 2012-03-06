@@ -337,7 +337,7 @@ FighterState* StickmanSideSpecial::processInput(controller_state &cs, float dt)
         fighter_->vel_.x = fighter_->dir_ * fighter_->param(pre_ + "velx");
         fighter_->accel_.x = fighter_->dir_ * fighter_->param(pre_ + "accelx");
 
-        // only give vertical velocity if in air:w
+        // only give vertical velocity if in air
         if (!ground_)
             fighter_->vel_.y = fighter_->param(pre_ + "vely");
 

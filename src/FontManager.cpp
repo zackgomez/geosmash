@@ -29,9 +29,7 @@ void FontManager::renderNumber(const glm::mat4 &transform,
     std::string s = floatStr(num);
     size_t len = s.length();
 
-    float offset = static_cast<float>(len) / -2.f;
-    if (len % 2 == 1)
-        offset += 0.5f;
+    float offset = static_cast<float>(len) / -2.f + 0.5f;
     offset *= widthRatio;
 
     for (size_t i = 0; i < len; i++)
@@ -50,9 +48,7 @@ void FontManager::renderString(const glm::mat4 &transform,
 {
     const size_t len = str.length();
 
-    float offset = static_cast<float>(len) / -2.f;
-    if (len % 2 == 1)
-        offset += 0.5f;
+    float offset = static_cast<float>(len) / -2.f + 0.5f;
     offset *= widthRatio;
 
     for (size_t i = 0; i < len; i++)

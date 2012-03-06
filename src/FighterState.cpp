@@ -1564,7 +1564,7 @@ void LimpState::hit(const Attack *attack)
     else
         logger_->warning() << "already next in LimpState::hit()\n";
     // Record last hit by
-    if (attack->getPlayerID() != -1)
+    if (attack->getPlayerID() >= 0)
         fighter_->airData_["lastHitBy"] = attack->getPlayerID();
     next_ = FighterState::calculateHitResult(attack);
 }

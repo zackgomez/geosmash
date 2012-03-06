@@ -322,11 +322,13 @@ void InGameState::renderPause()
     getProjectionMatrixStack().current() = glm::mat4(1.f);
     getViewMatrixStack().current() = glm::mat4(1.f);
 
+    glm::vec4 color = glm::vec4(players_[pausingPlayer_]->getColor(), 0.2f);
+
     glm::mat4 transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -1.f)),
             glm::vec3(0.03f / 4, 0.04f / 4, 1.f));
     FrameManager::get()->renderFrame(transform,
-            glm::vec4(0.6f, 0.6f, 0.6f, 0.3f), "PAUSED");
+            color, "PAUSED");
     //renderRectangle(transform, glm::vec4(0.1, 0.1, 0.1, 0.0));
 
 
