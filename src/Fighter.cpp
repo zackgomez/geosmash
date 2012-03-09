@@ -129,9 +129,13 @@ void Fighter::fillAttacks(const std::string &moveset)
         attackMap_["upSmash"]->setTwinkle(true);
 
         attackMap_["airNeutral"] = loadAttack<VaryingDirectionAttack>("airNeutralAttack", a, "AirNeutral");
+        attackMap_["airNeutral"]->setHitboxFrame("Null");
         attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
+        attackMap_["airFront"]->setHitboxFrame("Null");
         attackMap_["airDown"] = loadAttack<RepeatingAttack>("airDownAttack", a, "AirDowntilt");
+        attackMap_["airDown"]->setHitboxFrame("Null");
         attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
+        attackMap_["airUp"]->setHitboxFrame("Null");
 
         attackMap_["upSpecial"] = loadAttack<VaryingDirectionAttack>("upSpecialAttack", a, "UpSpecial");
         attackMap_["upSpecial"]->setHitboxFrame("Null");
