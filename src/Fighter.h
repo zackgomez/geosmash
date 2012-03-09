@@ -81,6 +81,9 @@ public:
     // Respawns the fighter at its respawn location.  If killed is true, a
     // life will be removed
     void respawn(bool killed);
+    // Deals damage to the fighter.  playerID and teamID are for stats and
+    // other effects
+    void takeDamage(float damage, int playerID, int teamID);
 
     // Inherited from GameEntity, but overriden for direction changing
     virtual void reflect();

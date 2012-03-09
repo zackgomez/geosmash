@@ -33,6 +33,8 @@ public:
     virtual FighterState* attackConnected(GameEntity *victim);
     // Called when Fighter::attackCollision is called
     virtual FighterState* attackCollision(const Attack *other);
+    // Called when Fighter::takeDamage is called
+    virtual void takeDamage(float damage, int playerID, int teamID);
 
     virtual rectangle getRect() const;
 
@@ -52,7 +54,6 @@ protected:
     FighterState* checkForLedgeGrab(bool attackOK = false);
     // Helper for dealing with all B moves.
     FighterState* performBMove(const controller_state &, bool ground = true);
-    virtual void takeDamage(float damage, int playerID, int teamID);
     template<typename T> 
     static T muxByTime(const T& color, float t);
 

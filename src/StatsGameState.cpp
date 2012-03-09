@@ -43,6 +43,8 @@ StatsGameState::StatsGameState(
         pane->add_entry(new fighter_stat(statpre + "kills.team", "Team Kills"));
         pane->add_entry(new fighter_stat(statpre + "teamDamageGiven", "Team DMG"));
         view->add_tab(pane);
+        // TODO check to see if the map has a hazard for this one
+        pane->add_entry(new fighter_stat(statpre + "hazard.deaths", "Hazard Deaths"));
 
         // Add a second pane with per player based information
         // TODO eventually keep track of all stats per fighter (dmg given/taken, etc)

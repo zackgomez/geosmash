@@ -269,8 +269,12 @@ void Fighter::hitByAttack(const Attack *attack)
 
     stateWrapper(state_->hitByAttack(attack));
 
-    // Only set last hit by when it's a player
-    airData_["lastHitBy"] = attack->getPlayerID();
+    // If attack is stage hazard, and we've already been hit,
+    // keep current lastHitBy
+    if (attack->getPlayerID() == -2 && airData_.count("lastHitBy"))
+    { }
+    else
+        airData_["lastHitBy"] = attack->getPlayerID();
 }
 
 void Fighter::attackConnected(GameEntity *victim)
@@ -355,6 +359,11 @@ void Fighter::respawn(bool killed)
     else
         // Set state to respawn state
         state_ = new RespawnState(this);
+}
+
+void Fighter::takeDamage(float damage, int playerID, int teamID)
+{
+    state_->takeDamage(damage, playerID, teamID);
 }
 
 LimpFighter* Fighter::goLimp(UnlimpCallback *l)

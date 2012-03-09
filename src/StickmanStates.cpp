@@ -399,8 +399,8 @@ FighterState* StickmanSideSpecial::attackConnected(GameEntity *victim)
     else if (victim->getType() == Fighter::type)
     {
         Fighter *fvic = (Fighter *)victim;
-        // TODO this damage is not recorded for stats, fix that!
-        fvic->damage_ += fighter_->attack_->getDamage();
+        fvic->takeDamage(fighter_->attack_->getDamage(), fighter_->playerID_,
+                fighter_->teamID_);
     }
 
     return NULL;

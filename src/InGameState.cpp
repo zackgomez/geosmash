@@ -619,6 +619,7 @@ next_entity:
             {
                 StatsManager::get()->addStat("hazard.kills", 1);
                 StatsManager::get()->addStat("hazard.kills." + died, 1);
+                StatsManager::get()->addStat(died + ".deaths.hazard", 1);
             }
             // playerID -1 means no last hit by, i.e. suicide
             else if (lastHitBy == -1)
