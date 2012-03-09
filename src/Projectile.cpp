@@ -138,8 +138,10 @@ void Projectile::update(float dt)
 
 void Projectile::render(float dt)
 {
+    /*
     printf("PROJECTILE | t: %f  Pos: [%f %f]  Vel: [%f %f]\n",
             t_, pos_.x, pos_.y, vel_.x, vel_.y);
+            */
 
     emitter_->setLocation(glm::vec3(pos_, 0.0f));
 }
