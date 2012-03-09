@@ -712,8 +712,10 @@ FighterState* BlockingState::processInput(controller_state &controller, float dt
 
 void BlockingState::render(float dt)
 {
+    /*
     printf("BLOCKING | waitT: %.3f dazeT: %.3f health: %.3f invinc: %.3f|| \n",
             waitTime_, dazeTime_, fighter_->shieldHealth_, invincTime_);
+            */
 
     glm::mat4 trans(1.f);
     glm::vec3 color = fighter_->color_;

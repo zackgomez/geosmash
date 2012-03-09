@@ -1,5 +1,5 @@
 # aesthetic only
-stickman.rotation 50
+stickman.rotation 80
 
 
 stickman.walkSpeed        150.0
@@ -157,18 +157,18 @@ stickman.downTiltAttack.hitboxw      65
 stickman.downTiltAttack.hitboxh      15
 stickman.downTiltAttack.priority     1.0
 
-stickman.upTiltAttack.startup      0.1
-stickman.upTiltAttack.duration     0.22
-stickman.upTiltAttack.cooldown     0.20
+stickman.upTiltAttack.startup      0.12
+stickman.upTiltAttack.duration     0.25
+stickman.upTiltAttack.cooldown     0.18
 stickman.upTiltAttack.damage       9
 stickman.upTiltAttack.stun         0.14
 stickman.upTiltAttack.knockbackx   1
 stickman.upTiltAttack.knockbacky   9
 stickman.upTiltAttack.kbbase       140.0
 stickman.upTiltAttack.kbscaling    5.00
-stickman.upTiltAttack.hitboxx      25
-stickman.upTiltAttack.hitboxy      30
-stickman.upTiltAttack.hitboxw      40
+stickman.upTiltAttack.hitboxx      10
+stickman.upTiltAttack.hitboxy      25
+stickman.upTiltAttack.hitboxw      30
 stickman.upTiltAttack.hitboxh      40
 stickman.upTiltAttack.priority     1.0
 
@@ -238,6 +238,10 @@ stickman.airUpAttack.hitboxw      35
 stickman.airUpAttack.hitboxh      25
 stickman.airUpAttack.priority     1.0
 
+
+# ----------
+# - TAUNTS -
+# ----------
 stickman.tauntAttack.startup      0.4
 stickman.tauntAttack.duration     0.0
 stickman.tauntAttack.cooldown     0.4
@@ -341,7 +345,7 @@ stickman.counterAttack.reflectfact  1
 # -----------------
 # - SMASH ATTACKS -
 # -----------------
-stickman.neutralSmashAttack.startup      0.30
+stickman.neutralSmashAttack.startup      0.20
 stickman.neutralSmashAttack.duration     0.15
 stickman.neutralSmashAttack.cooldown     0.10
 stickman.neutralSmashAttack.damage       13
@@ -356,9 +360,9 @@ stickman.neutralSmashAttack.hitboxw      32
 stickman.neutralSmashAttack.hitboxh      40
 stickman.neutralSmashAttack.priority     1.5
 
-stickman.sideSmashAttack.startup      0.30
+stickman.sideSmashAttack.startup      0.25
 stickman.sideSmashAttack.duration     0.25
-stickman.sideSmashAttack.cooldown     0.35
+stickman.sideSmashAttack.cooldown     0.22
 stickman.sideSmashAttack.damage       15
 stickman.sideSmashAttack.stun         0.13
 stickman.sideSmashAttack.knockbackx   3
@@ -373,24 +377,24 @@ stickman.sideSmashAttack.priority     1.5
 
 stickman.downSmashAttack.startup      0.21
 stickman.downSmashAttack.duration     0.25
-stickman.downSmashAttack.cooldown     0.30
+stickman.downSmashAttack.cooldown     0.20
 stickman.downSmashAttack.damage       15
 stickman.downSmashAttack.stun         0.13
 stickman.downSmashAttack.knockbackx   0
 stickman.downSmashAttack.knockbacky   1
 stickman.downSmashAttack.kbbase       400.0
 stickman.downSmashAttack.kbscaling    5.00
-stickman.downSmashAttack.hitboxx      40
+stickman.downSmashAttack.hitboxx      50
 stickman.downSmashAttack.hitboxy      -35
-stickman.downSmashAttack.hitboxx1     -40
+stickman.downSmashAttack.hitboxx1     -50
 stickman.downSmashAttack.hitboxy1     -35
 stickman.downSmashAttack.hitboxw      45
 stickman.downSmashAttack.hitboxh      30
 stickman.downSmashAttack.priority     1.5
 
-stickman.upSmashAttack.startup      0.28
+stickman.upSmashAttack.startup      0.23
 stickman.upSmashAttack.duration     0.25
-stickman.upSmashAttack.cooldown     0.25
+stickman.upSmashAttack.cooldown     0.20
 stickman.upSmashAttack.damage       12
 stickman.upSmashAttack.stun         0.13
 stickman.upSmashAttack.knockbackx   -2

@@ -58,83 +58,80 @@ void Fighter::fillAttacks(const std::string &moveset)
     std::string a = "airhit";
     std::string s = "smashhit";
 
+    attackMap_["neutralTilt"] = loadAttack<FighterAttack>("neutralTiltAttack", g, "GroundNeutral");
+    attackMap_["sideTilt"] = loadAttack<FighterAttack>("sideTiltAttack", g, "GroundSidetilt");
+    attackMap_["downTilt"] = loadAttack<FighterAttack>("downTiltAttack", g, "GroundDowntilt");
+    attackMap_["upTilt"] = loadAttack<FighterAttack>("upTiltAttack", g, "GroundUptilt");
+
+    attackMap_["airNeutral"] = loadAttack<VaryingDirectionAttack>("airNeutralAttack", a, "AirNeutral");
+    attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
+    attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
+
+    attackMap_["neutralSmash"] = loadAttack<FighterAttack>("neutralSmashAttack", s, "NeutralSmash");
+    attackMap_["neutralSmash"]->setTwinkle(true);
+    attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
+    attackMap_["sideSmash"]->setTwinkle(true);
+    attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");
+    attackMap_["upSmash"]->setTwinkle(true);
+
     attackMap_["dash"] = loadAttack<DashAttack>("dashAttack", g, "DashAttack");
     attackMap_["dash"]->setHitboxFrame("DashAttackHitbox");
 
     attackMap_["ledge"] = loadAttack<FighterAttack>("ledgeAttack", g, "LedgeAttack");
     attackMap_["ledge"]->setHitboxFrame("LedgeAttackHitbox");
 
-    attackMap_["neutralTilt"] = loadAttack<FighterAttack>("neutralTiltAttack", g, "GroundNeutral");
-    attackMap_["neutralTilt"]->setHitboxFrame("NeutralTiltHitbox");
-    attackMap_["sideTilt"] = loadAttack<FighterAttack>("sideTiltAttack", g, "GroundSidetilt");
-    attackMap_["sideTilt"]->setHitboxFrame("SideTiltHitbox");
-    attackMap_["downTilt"] = loadAttack<FighterAttack>("downTiltAttack", g, "GroundDowntilt");
-    attackMap_["downTilt"]->setHitboxFrame("DownTiltHitbox");
-    attackMap_["upTilt"] = loadAttack<FighterAttack>("upTiltAttack", g, "GroundUptilt");
-    attackMap_["upTilt"]->setHitboxFrame("UpTiltHitbox");
-
-    attackMap_["dashSpecial"] = loadAttack<FighterAttack>("sideSpecialAttack", "dashspecialhit", "DashSpecial");
-    attackMap_["dashSpecial"]->setHitboxFrame("Null");
-    attackMap_["dashSpecial"]->setStartSound("dashspecialhit");
-
     attackMap_["tauntUp"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntA");
     attackMap_["tauntDown"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntB");
 
-    // FIXME no hitbox frame
     attackMap_["grab"] = loadAttack<FighterAttack>("grabAttack", "", "GrabAttempt");
     attackMap_["grab"]->setStartSound("grabattempt");
-    //attackMap_["grab"]->setHitboxFrame("GrabbingHitbox");
 
-    // Special moves
+    // TODO make most of this be in a static map or params read in loadAttack
     if (moveset == "charlie")
     {
-        attackMap_["neutralSmash"] = loadAttack<VaryingDirectionAttack>("neutralSmashAttack", s, "NeutralSmash");
-        attackMap_["neutralSmash"]->setTwinkle(true);
-        attackMap_["neutralSmash"]->setHitboxFrame("Null");
-        attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
-        attackMap_["sideSmash"]->setTwinkle(true);
-        attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
-        attackMap_["downSmash"] = loadAttack<VaryingDirectionAttack>("downSmashAttack", s, "DownSmash");
+        attackMap_["airDown"] = loadAttack<FighterAttack>("airDownAttack", a, "AirDowntilt");
+        attackMap_["downSmash"] = loadAttack<FighterAttack>("downSmashAttack", s, "DownSmash");
         attackMap_["downSmash"]->setTwinkle(true);
+
+        attackMap_["neutralSmash"]->setHitboxFrame("Null");
+        attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
         attackMap_["downSmash"]->setHitboxFrame("DownSmashHitbox");
-        attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");
-        attackMap_["upSmash"]->setTwinkle(true);
         attackMap_["upSmash"]->setHitboxFrame("UpSmashHitbox");
 
-        attackMap_["airNeutral"] = loadAttack<FighterAttack>("airNeutralAttack", a, "AirNeutral");
+        attackMap_["neutralTilt"]->setHitboxFrame("NeutralTiltHitbox");
+        attackMap_["sideTilt"]->setHitboxFrame("SideTiltHitbox");
+        attackMap_["downTilt"]->setHitboxFrame("DownTiltHitbox");
+        attackMap_["upTilt"]->setHitboxFrame("UpTiltHitbox");
+
         attackMap_["airNeutral"]->setHitboxFrame("AirNeutralHitbox");
-        attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
         attackMap_["airFront"]->setHitboxFrame("AirFronttiltHitbox");
         attackMap_["airFront"]->setTwinkle(true);
-        attackMap_["airDown"] = loadAttack<FighterAttack>("airDownAttack", a, "AirDowntilt");
         attackMap_["airDown"]->setHitboxFrame("AirDowntiltHitbox");
-        attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
         attackMap_["airUp"]->setHitboxFrame("AirUptiltHitbox");
+
+        // FIXME no hitbox frame
+        //attackMap_["grab"]->setHitboxFrame("GrabbingHitbox");
 
         attackMap_["upSpecial"] = loadAttack<UpSpecialAttack>("upSpecialAttack", a, "UpSpecial");
         attackMap_["upSpecial"]->setHitboxFrame("UpSpecialHitbox");
         attackMap_["upSpecial"]->setStartSound("upspecial");
+
+        attackMap_["dashSpecial"] = loadAttack<FighterAttack>("sideSpecialAttack", "dashspecialhit", "DashSpecial");
+        attackMap_["dashSpecial"]->setHitboxFrame("Null");
+        attackMap_["dashSpecial"]->setStartSound("dashspecialhit");
         
         specialStateFactory_ = &getCharlieSpecialState;
     }
     else if (moveset == "stickman")
     {
-        attackMap_["neutralSmash"] = loadAttack<FighterAttack>("neutralSmashAttack", s, "NeutralSmash");
-        attackMap_["neutralSmash"]->setTwinkle(true);
-        attackMap_["sideSmash"] = loadAttack<FighterAttack>("sideSmashAttack", s, "SideSmash");
-        attackMap_["sideSmash"]->setTwinkle(true);
+
         attackMap_["downSmash"] = loadAttack<MovingHitboxAttack>("downSmashAttack", s, "DownSmash");
         attackMap_["downSmash"]->setTwinkle(true);
-        attackMap_["upSmash"] = loadAttack<MovingHitboxAttack>("upSmashAttack", s, "UpSmash");
-        attackMap_["upSmash"]->setTwinkle(true);
-
-        attackMap_["airNeutral"] = loadAttack<VaryingDirectionAttack>("airNeutralAttack", a, "AirNeutral");
-        attackMap_["airNeutral"]->setHitboxFrame("Null");
-        attackMap_["airFront"] = loadAttack<FighterAttack>("airFrontAttack", a, "AirFronttilt");
-        attackMap_["airFront"]->setHitboxFrame("Null");
         attackMap_["airDown"] = loadAttack<RepeatingAttack>("airDownAttack", a, "AirDowntilt");
+
+        attackMap_["airNeutral"]->setHitboxFrame("Null");
+        attackMap_["airFront"]->setHitboxFrame("Null");
         attackMap_["airDown"]->setHitboxFrame("Null");
-        attackMap_["airUp"] = loadAttack<FighterAttack>("airUpAttack", a, "AirUptilt");
         attackMap_["airUp"]->setHitboxFrame("Null");
 
         attackMap_["upSpecial"] = loadAttack<VaryingDirectionAttack>("upSpecialAttack", a, "UpSpecial");
@@ -429,9 +426,9 @@ void Fighter::renderHelper(float dt, const glm::vec3 &color,
     lastFrameName_ = frameName;
 
     // Draw body
-    glm::mat4 transform = glm::scale(
+    glm::mat4 transform = glm::rotate(
             glm::translate(glm::mat4(1.0f), glm::vec3(pos_.x, pos_.y, 0.0)),
-            glm::vec3(dir_, 1.0f, 1.0f));
+            dir_ == -1 ? 180.f : 0.f, glm::vec3(0, 1, 0));
 
     renderer_->render(transform * postTrans, glm::vec4(color, 0.25f), frameName, dt);
     //FrameManager::get()->renderFrame(transform * postTrans, glm::vec4(color, 0.25f), frameName);
