@@ -390,13 +390,11 @@ FighterState* StickmanSideSpecial::attackConnected(GameEntity *victim)
     // Play sound
     AudioManager::get()->playSound("capeswish");
 
-    // TODO hardcoded...
-    if (victim->getType() == Projectile::type)
-    {
-        // Take ownership of the projectile
-        victim->reown(fighter_->playerID_, fighter_->teamID_);
-    }
-    else if (victim->getType() == Fighter::type)
+    // Take ownership of the object (or maybe not... if they don't want us to)
+    victim->reown(fighter_->playerID_, fighter_->teamID_);
+
+    // Damage a fighter
+    if (victim->getType() == Fighter::type)
     {
         Fighter *fvic = (Fighter *)victim;
         fvic->takeDamage(fighter_->attack_->getDamage(), fighter_->playerID_,
