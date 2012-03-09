@@ -1,5 +1,5 @@
 # aesthetic only
-stickman.rotation 80
+stickman.rotation 60
 
 
 stickman.walkSpeed        150.0
@@ -68,6 +68,8 @@ stickman.ledgeGrab.attackInvinc   0.40
 stickman.ledgeGrab.wakeUpInvinc   0.15
 stickman.ledgeGrab.inputDelay     0.20
 
+
+
 # ---------------
 # - DASH ATTACK -
 # ---------------
@@ -87,6 +89,7 @@ stickman.dashAttack.hitboxh      20
 stickman.dashAttack.priority     1.0
 stickman.dashAttack.initialSpeed 550.0
 stickman.dashAttack.deceleration -800.0
+
 
 
 # ----------------
@@ -127,31 +130,31 @@ stickman.neutralTiltAttack.hitboxw      30
 stickman.neutralTiltAttack.hitboxh      18
 stickman.neutralTiltAttack.priority     1.0
 
-stickman.sideTiltAttack.startup      0.1
-stickman.sideTiltAttack.duration     0.22
-stickman.sideTiltAttack.cooldown     0.25
+stickman.sideTiltAttack.startup      0.10
+stickman.sideTiltAttack.duration     0.16
+stickman.sideTiltAttack.cooldown     0.16
 stickman.sideTiltAttack.damage       6
 stickman.sideTiltAttack.stun         0.10
 stickman.sideTiltAttack.knockbackx   3
 stickman.sideTiltAttack.knockbacky   2
 stickman.sideTiltAttack.kbbase       120.0
 stickman.sideTiltAttack.kbscaling    5.00
-stickman.sideTiltAttack.hitboxx      50
+stickman.sideTiltAttack.hitboxx      30
 stickman.sideTiltAttack.hitboxy      5
 stickman.sideTiltAttack.hitboxw      50
 stickman.sideTiltAttack.hitboxh      18
 stickman.sideTiltAttack.priority     1.0
 
-stickman.downTiltAttack.startup      0.15
+stickman.downTiltAttack.startup      0.13
 stickman.downTiltAttack.duration     0.22
-stickman.downTiltAttack.cooldown     0.25
+stickman.downTiltAttack.cooldown     0.20
 stickman.downTiltAttack.damage       8
 stickman.downTiltAttack.stun         0.16
 stickman.downTiltAttack.knockbackx   1
 stickman.downTiltAttack.knockbacky   5
 stickman.downTiltAttack.kbbase       140.0
 stickman.downTiltAttack.kbscaling    5.00
-stickman.downTiltAttack.hitboxx      60
+stickman.downTiltAttack.hitboxx      30
 stickman.downTiltAttack.hitboxy      -30
 stickman.downTiltAttack.hitboxw      65
 stickman.downTiltAttack.hitboxh      15
@@ -260,7 +263,7 @@ stickman.tauntAttack.priority     0
 
 
 # -------------------
-# - Special Attacks -
+# - SPECIAL ATTACKS -
 # -------------------
 stickman.neutralSpecialState.startup       0.50
 stickman.neutralSpecialState.startupSizeFact 1.5
