@@ -91,6 +91,11 @@ void SimpleAttack::setOriginDirection(float odir)
     odir_ = odir;
 }
 
+void SimpleAttack::setKnockbackDir(const glm::vec2 &kbdir)
+{
+    kbdir_ = glm::normalize(kbdir);
+}
+
 bool SimpleAttack::canHit(const GameEntity *f) const
 {
     return hasHit_.find(f->getID()) == hasHit_.end();

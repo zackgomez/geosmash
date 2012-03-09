@@ -70,6 +70,7 @@ public:
     //void setKBDirection(float dir);
     void setOriginDirection(float odir);
     void setBaseKnockback(float pow);
+    void setKnockbackDir(const glm::vec2 &kbdir);
     void reown(int playerID, int teamID);
 
 protected:

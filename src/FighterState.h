@@ -52,6 +52,7 @@ protected:
     FighterState* checkForLedgeGrab(bool attackOK = false);
     // Helper for dealing with all B moves.
     FighterState* performBMove(const controller_state &, bool ground = true);
+    virtual void takeDamage(float damage, int playerID, int teamID);
     template<typename T> 
     static T muxByTime(const T& color, float t);
 

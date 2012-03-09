@@ -593,15 +593,17 @@ next_entity:
                 || fighter->getRect().x > killbox.x + killbox.w / 2)
         {
             std::string died = StatsManager::getPlayerName(fighter->getPlayerID());
+            const int lastHitBy = fighter->getLastHitBy();
             // Record the kill if it's not a self destruct
-            if (fighter->getLastHitBy() >= 0)
+            if (lastHitBy >= 0)
             {
-                logger_->info() << "Last hit by: " << fighter->getLastHitBy() << std::endl;
-                int killerID = fighter->getLastHitBy();
+                // TODO move this stats stuff to Fighter::respawn
+                logger_->info() << "Last hit by: " << lastHitBy << std::endl;
+                int killerID = lastHitBy;
                 std::string killer = StatsManager::getPlayerName(killerID);
                 StatsManager::get()->addStat(killer+ ".kills." + died, 1);
                 // check for team kill
-                if (fighter->getTeamID() == getFighterByID(fighter->getLastHitBy())->getTeamID())
+                if (fighter->getTeamID() == getFighterByID(lastHitBy)->getTeamID())
                     StatsManager::get()->addStat(killer+ ".kills.team", 1);
                 else
                 {
@@ -612,8 +614,18 @@ next_entity:
                             StatsManager::get()->getStat(killer + ".curKillStreak"));
                 }
             }
-            else
+            // Stage hazard is playerID -2
+            else if (lastHitBy == -2)
+            {
+                StatsManager::get()->addStat("hazard.kills", 1);
+                StatsManager::get()->addStat("hazard.kills." + died, 1);
+            }
+            // playerID -1 means no last hit by, i.e. suicide
+            else if (lastHitBy == -1)
                 StatsManager::get()->addStat(died + ".suicides", 1);
+            else
+                assert(false && "unknown playerID");
+
             fighter->respawn(true);
             break;
         }

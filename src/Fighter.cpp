@@ -270,8 +270,7 @@ void Fighter::hitByAttack(const Attack *attack)
     stateWrapper(state_->hitByAttack(attack));
 
     // Only set last hit by when it's a player
-    if (attack->getPlayerID() != -1)
-        airData_["lastHitBy"] = attack->getPlayerID();
+    airData_["lastHitBy"] = attack->getPlayerID();
 }
 
 void Fighter::attackConnected(GameEntity *victim)

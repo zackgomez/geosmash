@@ -73,21 +73,7 @@ FighterState* FighterState::calculateHitResult(const Attack *attack)
         fighter_->attack_ = 0;
     }
 
-    // Take damage
-    float dd = attack->getDamage();
-    fighter_->damage_ += dd;
-    // Record damage given/taken
-    StatsManager::get()->addStat(StatsManager::getStatPrefix(fighter_->playerID_) + "damageTaken", dd);
-    if (attack->getTeamID() == fighter_->getTeamID())
-        StatsManager::get()->addStat(StatsManager::getStatPrefix(attack->getPlayerID()) + "teamDamageGiven", dd);
-    else
-    {
-        StatsManager::get()->addStat(statPrefix(attack->getPlayerID()) + "damageGiven", dd);
-        StatsManager::get()->addStat(statPrefix(attack->getPlayerID()) + "damageStreak", dd);
-        StatsManager::get()->maxStat(statPrefix(attack->getPlayerID()) + "maxDamageStreak",
-            StatsManager::get()->getStat(statPrefix(attack->getPlayerID()) + "damageStreak"));
-    }
-
+    takeDamage(attack->getDamage(), attack->getPlayerID(), attack->getTeamID());
 
     // Calculate direction of hit
     glm::vec2 knockback = attack->calcKnockback(fighter_, fighter_->damage_);
@@ -171,6 +157,24 @@ FighterState* FighterState::checkForLedgeGrab(bool attackOK)
 
     // No ledge grab
     return NULL;
+}
+
+void FighterState::takeDamage(float damage, int playerID, int teamID)
+{
+    // TODO maybe take damage from lastHitBy if playerID/teamID is stage hazard
+    // Take damage
+    fighter_->damage_ += damage;
+    // Record damage given/taken
+    StatsManager::get()->addStat(StatsManager::getStatPrefix(fighter_->playerID_) + "damageTaken", damage);
+    if (fighter_->getTeamID() == teamID)
+        StatsManager::get()->addStat(StatsManager::getStatPrefix(playerID) + "teamDamageGiven", damage);
+    else
+    {
+        StatsManager::get()->addStat(statPrefix(playerID) + "damageGiven", damage);
+        StatsManager::get()->addStat(statPrefix(playerID) + "damageStreak", damage);
+        StatsManager::get()->maxStat(statPrefix(playerID) + "maxDamageStreak",
+            StatsManager::get()->getStat(statPrefix(playerID) + "damageStreak"));
+    }
 }
 
 SpecialState *getCharlieSpecialState(const std::string &name, Fighter *f, bool ground)
@@ -359,32 +363,6 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     // Do nothing during generic wait time
     if (waitTime_ > 0)
         return NULL;
-
-    // XXX XXX XXX
-    // --- Deal with jump transition ---
-    /*
-    if (jumpTime_ > fighter_->param("jumpStartupTime"))
-    {
-        // Set the xvelocity of the jump
-        fighter_->vel_.x = fabs(controller.joyx) > getParam("input.deadzone") ?
-            controller.joyx * fighter_->param("jumpXSpeed") :
-            0.0f;
-        // If they are still "holding down" the jump button now, then full jump
-        // otherwise short hop
-        bool shortHop = !controller.buttony;
-        if (shortHop)
-            fighter_->vel_.y = fighter_->param("hopSpeed");
-        else
-            fighter_->vel_.y = fighter_->param("jumpYSpeed");
-        // Draw a little puff
-        ExplosionManager::get()->addPuff(
-                fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.1f, 
-                fighter_->pos_.y - fighter_->size_.y * 0.45f,
-                0.3f);
-        // Jump; transition to Air Normal
-        return new AirNormalState(fighter_, shortHop);
-    }
-    */
 
 
     // -- Deal with starting an attack --
