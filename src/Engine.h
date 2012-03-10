@@ -45,8 +45,9 @@ int getCurrentMillis();
 std::string getTimeString();
 
 // For now just creates a cube
-mesh createMesh(std::string objfile, bool normalize = false);
-void renderMesh(const glm::mat4 &modelMatrix, const mesh &m, GLuint program);
+mesh* createMesh(std::string objfile, bool normalize = false);
+void renderMesh(const glm::mat4 &modelMatrix, const mesh *m, GLuint program);
+void freeMesh(mesh *m);
 
 // Matrix operations
 MatrixStack& getProjectionMatrixStack();

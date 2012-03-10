@@ -69,10 +69,10 @@ private:
     void initBackground();
 
     glm::vec3 ground_color_;
-    mesh level_mesh_;
-    mesh platform_mesh_;
-    mesh ship_mesh_;
-    mesh ship_main_mesh_;
+    mesh *level_mesh_;
+    mesh *platform_mesh_;
+    mesh *ship_mesh_;
+    mesh *ship_main_mesh_;
 };
 
 // Renders a shiny sphere.

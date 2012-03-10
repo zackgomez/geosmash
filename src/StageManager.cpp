@@ -250,8 +250,8 @@ void StageManager::renderBackground(float dt)
     glDisable(GL_CULL_FACE);
 
 
-    // XXX render rectangle at end of tunnel
-    
+    // XXX this renders ship at the end of the tunnel, move to level specific
+    // area
     float v = -1;
     float off = 0.2 * sin(5*v - t_) * 7*(-v);
     float xfact = (sin(M_PI*t_/10 + v) + 1) / 2;
@@ -262,7 +262,6 @@ void StageManager::renderBackground(float dt)
     glm::mat4 backtrans = glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(r*0.8,r*0.8,r)),
             glm::vec3(xoff, yoff, 2*v));
     renderMesh(glm::rotate(glm::scale(backtrans, glm::vec3(.15)), -90.f, glm::vec3(0,1,0)), ship_mesh_, stageProgram_);
-    //renderRectangle(backtrans, glm::vec4(1,1,1,0));
 }
 
 void StageManager::renderStage(float dt)

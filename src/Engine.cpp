@@ -37,7 +37,7 @@ static struct
 
     GLuint boneprogram;
 
-    mesh cubemesh;
+    mesh *cubemesh;
 
     GLuint fbo;
     GLuint depthbuf;
@@ -593,7 +593,7 @@ void addVert(std::vector<vert> &verts, const std::vector<glm::vec4> &positions,
     verts.push_back(v);
 }
 
-mesh createMesh(std::string objfile, bool normalize)
+mesh* createMesh(std::string objfile, bool normalize)
 {
     std::ifstream file(objfile.c_str());
     if (!file)
@@ -707,28 +707,28 @@ mesh createMesh(std::string objfile, bool normalize)
         }
     }
 
-    mesh ret;
+    mesh *ret = new mesh();
     // Now create a buffer to hold the data
-    ret.data_buffer = make_buffer(GL_ARRAY_BUFFER, &verts.front(), sizeof(vert) * verts.size());
-    ret.nverts = verts.size();
+    ret->data_buffer = make_buffer(GL_ARRAY_BUFFER, &verts.front(), sizeof(vert) * verts.size());
+    ret->nverts = verts.size();
     // If they asked to normalize, then do it!
     if (normalize)
     {
-        ret.transform = glm::scale(glm::mat4(1.f),
+        ret->transform = glm::scale(glm::mat4(1.f),
                 glm::vec3(1.f/maxes.x, 1.f/maxes.y, 1.f/maxes.z));
     }
     else
     {
         // Just set the transform to the identity
         // TODO support reading this from the obj file
-        ret.transform = glm::mat4(1.f);
+        ret->transform = glm::mat4(1.f);
     }
 
 
     return ret;
 }
 
-void renderMesh(const glm::mat4 &modelMatrix, const mesh &m, GLuint program)
+void renderMesh(const glm::mat4 &modelMatrix, const mesh *m, GLuint program)
 {
     // Uniform locations
     GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
@@ -740,12 +740,12 @@ void renderMesh(const glm::mat4 &modelMatrix, const mesh &m, GLuint program)
     GLuint texcoordAttrib = glGetAttribLocation(program, "texcoord");
     // Enable program and set up values
     glUseProgram(program);
-    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix * m.transform));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(viewMatrixStack.current() * modelMatrix * m->transform));
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(projectionMatrixStack.current()));
     glUniformMatrix4fv(normalUniform, 1, GL_FALSE, glm::value_ptr(glm::inverse(modelMatrix)));
 
     // Bind data
-    glBindBuffer(GL_ARRAY_BUFFER, m.data_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, m->data_buffer);
     glEnableVertexAttribArray(positionAttrib);
     glVertexAttribPointer(positionAttrib, 4, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)0);
     glEnableVertexAttribArray(normalAttrib);
@@ -754,13 +754,20 @@ void renderMesh(const glm::mat4 &modelMatrix, const mesh &m, GLuint program)
     glVertexAttribPointer(texcoordAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(struct vert), (void*)(8 * sizeof(float)));
 
     // Draw
-    glDrawArrays(GL_TRIANGLES, 0, m.nverts);
+    glDrawArrays(GL_TRIANGLES, 0, m->nverts);
 
     // Clean up
     glDisableVertexAttribArray(positionAttrib);
     glDisableVertexAttribArray(1);
     glDisableVertexAttribArray(texcoordAttrib);
     glUseProgram(0);
+}
+
+void freeMesh(mesh *m)
+{
+    glDeleteBuffers(1, &m->data_buffer);
+
+    delete m;
 }
 
 void setCamera(const glm::vec3 &pos)
