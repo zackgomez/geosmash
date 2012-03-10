@@ -593,7 +593,7 @@ void addVert(std::vector<vert> &verts, const std::vector<glm::vec4> &positions,
     verts.push_back(v);
 }
 
-mesh createMesh(std::string objfile)
+mesh createMesh(std::string objfile, bool normalize)
 {
     std::ifstream file(objfile.c_str());
     if (!file)
@@ -606,6 +606,8 @@ mesh createMesh(std::string objfile)
     std::vector<glm::vec4> norms;
     std::vector<glm::vec2> texcoords;
     std::vector<face> faces;
+
+    glm::vec3 maxes(-HUGE_VAL);
 
     // Parse the file
     char buf[1024];
@@ -636,6 +638,12 @@ mesh createMesh(std::string objfile)
         else if (cmd == "v")
         {
             ss >> a >> b >> c;
+            if (fabs(a) > maxes.x)
+                maxes.x = fabs(a);
+            if (fabs(a) > maxes.y)
+                maxes.y = fabs(b);
+            if (fabs(c) > maxes.z)
+                maxes.z = fabs(c);
             positions.push_back(glm::vec4(a, b, c, 1.0f));
         }
         // ignore comments
@@ -703,9 +711,19 @@ mesh createMesh(std::string objfile)
     // Now create a buffer to hold the data
     ret.data_buffer = make_buffer(GL_ARRAY_BUFFER, &verts.front(), sizeof(vert) * verts.size());
     ret.nverts = verts.size();
-    // Just set the transform to the identity
-    // TODO support reading this from the obj file
-    ret.transform = glm::mat4(1.f);
+    // If they asked to normalize, then do it!
+    if (normalize)
+    {
+        ret.transform = glm::scale(glm::mat4(1.f),
+                glm::vec3(1.f/maxes.x, 1.f/maxes.y, 1.f/maxes.z));
+    }
+    else
+    {
+        // Just set the transform to the identity
+        // TODO support reading this from the obj file
+        ret.transform = glm::mat4(1.f);
+    }
+
 
     return ret;
 }

@@ -72,6 +72,7 @@ private:
     mesh level_mesh_;
     mesh platform_mesh_;
     mesh ship_mesh_;
+    mesh ship_main_mesh_;
 };
 
 // Renders a shiny sphere.

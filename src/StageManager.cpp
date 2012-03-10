@@ -21,9 +21,10 @@ StageManager::StageManager() :
 
     // TODO move to initStage
     // Load the ground mesh
-    level_mesh_ = createMesh("models/level.obj");
+    level_mesh_ = createMesh("models/level.obj", true);
     platform_mesh_ = createMesh("models/cube.obj");
     ship_mesh_ = createMesh("models/ship1-2.obj");
+    ship_main_mesh_ = createMesh("models/ship_main.obj", true);
 
     stageProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
     wormholeProgram_ = make_program("shaders/wormholebg.v.glsl", "shaders/wormholebg.f.glsl");
