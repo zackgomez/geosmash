@@ -79,13 +79,13 @@ camera.xrange 1000
 camera.fov 90
 
 engine.useBlur 1
+background.shouldRender   1
 
 backgroundSphere.radius         2000
 backgroundSphere.pulseCount     1000
 backgroundSphere.divisionCount  1000
 backgroundSphere.lineCount      10
 backgroundSphere.meshRes        512
-backgroundSphere.shouldRender   1
 
 hud.x       0
 hud.y       -0.70

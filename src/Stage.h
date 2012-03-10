@@ -26,6 +26,9 @@ private:
     mesh *platformMesh_;
 
     GLuint levelProgram_, platformProgram_;
+    GLuint sphereProgram_;
+
+    float t_;
 };
 
 class Stage
@@ -37,8 +40,6 @@ public:
     virtual void update(float dt);
     virtual void renderBackground(float dt);
     virtual void renderStage(float dt);
-    // Reset stage variables (not ground, ledges, etc)
-    virtual void clear();
 
     const rectangle &getGroundRect() const { return ground_; }
     const std::vector<Ledge*>& getLedges() const { return ledges_; }

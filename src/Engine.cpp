@@ -39,6 +39,10 @@ static struct
 
     mesh *cubemesh;
 
+    int plane_res;
+    GLuint plane_buffer;
+    GLuint **plane_indices;
+
     GLuint fbo;
     GLuint depthbuf;
     GLuint rendertex[3];
@@ -287,6 +291,41 @@ void postRender()
     viewMatrixStack.pop();
 }
 
+bool initPlane()
+{
+    // Create a mesh [-1, 1] with some number of vertices
+    int meshRes = getParam("backgroundSphere.meshRes");
+    resources.plane_res = meshRes;
+    float *mesh = new float[2 * meshRes * meshRes];
+    for (int y = 0; y < meshRes; y++)
+    {
+        for (int x = 0; x < meshRes; x++)
+        {
+            int ind = 2*(y*meshRes + x);
+            // Map to [-1, 1]
+            mesh[ind]     = (x - meshRes/2.f) / (meshRes-1) * 10.f;
+            mesh[ind + 1] = (y - meshRes/2.f) / (meshRes-1) * 10.f;
+        }
+    }
+    resources.plane_buffer = make_buffer(GL_ARRAY_BUFFER, mesh, sizeof(float) * meshRes * meshRes * 2);
+    delete[] mesh;
+
+    // Create the element indices for the mesh
+    resources.plane_indices = new GLuint*[meshRes - 1];
+    for (int i = 0; i < meshRes - 1; i++)
+    {
+        resources.plane_indices[i] = new GLuint[meshRes*2];
+        GLuint *array = resources.plane_indices[i];
+        for (int j = 0; j < meshRes; j++)
+        {
+            array[2*j + 0] = i * meshRes + j;
+            array[2*j + 1] = (i + 1) * meshRes + j;
+        }
+    }
+
+    return true;
+}
+
 bool initGLUtils(int screenw, int screenh)
 {
     // The datas
@@ -434,6 +473,9 @@ bool initGLUtils(int screenw, int screenh)
     if (!checkFramebufferStatus())
         return false;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    if (!initPlane())
+        return false;
 
     return true;
 }
@@ -862,3 +904,27 @@ std::string getTimeString()
 
     return std::string(buf);
 }
+
+void renderPlane(const glm::mat4& transform, GLuint program)
+{
+    std::cout << "Rendering plane\n";
+    GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
+    GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
+    GLuint positionAttrib = glGetAttribLocation(program, "position");
+
+    glUseProgram(program);
+    glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrixStack().current()));
+    glUniformMatrix4fv(modelViewUniform, 1, GL_FALSE, glm::value_ptr(getViewMatrixStack().current() * transform));
+
+    glBindBuffer(GL_ARRAY_BUFFER, resources.plane_buffer);
+    glEnableVertexAttribArray(positionAttrib);
+    glVertexAttribPointer(positionAttrib, 2, GL_FLOAT, GL_FALSE, sizeof(float)*2, (void*)0);
+
+    for (int i = 0; i < resources.plane_res - 1; i++)
+        glDrawElements(GL_TRIANGLE_STRIP, resources.plane_res*2, GL_UNSIGNED_INT,
+                resources.plane_indices[i]);
+
+    glDisableVertexAttribArray(positionAttrib);
+    glUseProgram(0);
+}
+

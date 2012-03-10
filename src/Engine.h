@@ -49,6 +49,8 @@ mesh* createMesh(std::string objfile, bool normalize = false);
 void renderMesh(const glm::mat4 &modelMatrix, const mesh *m, GLuint program);
 void freeMesh(mesh *m);
 
+void renderPlane(const glm::mat4 &modelMatrix, GLuint program);
+
 // Matrix operations
 MatrixStack& getProjectionMatrixStack();
 MatrixStack& getViewMatrixStack();

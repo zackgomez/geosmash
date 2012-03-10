@@ -10,15 +10,16 @@ varying vec2 coord;
 
 void main()
 {
-   // Convert from the [-5,5]x[-5,5] range provided into radians
-   // between 0 and 2*pi
+   // Record input coordinate for later stages
    coord = position.xy;
 
+   // Convert from the [-5,5]x[-5,5] range provided into radians
+   // between 0 and 2*pi
    float u = (position.x + 5.0) / 10.0 * 2 * pi;
    float v = (position.y + 5.0) / 10.0 * 2 * pi;
 
    vec3 world = vec3(r*cos(u)*sin(v), r*cos(v), r*sin(u)*sin(v));
-   //world = 0.01*vec3(position.x, 0.f, position.y);
+   //vec3 world = 0.01*vec3(position.x, position.y, 0.f);
 
    gl_Position = projectionMatrix * modelViewMatrix * vec4(world,1.0);
 }

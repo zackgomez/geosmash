@@ -85,7 +85,6 @@ void StageManager::clear()
 {
     if (stage_)
     {
-        stage_->clear();
         delete stage_;
         stage_ = NULL;
     }
@@ -175,9 +174,9 @@ void StageManager::renderBackground(float dt)
     
     GLuint projectionUniform = glGetUniformLocation(backProgram_, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(backProgram_, "modelViewMatrix");
+    GLuint positionAttrib = glGetAttribLocation(backProgram_, "position");
     GLuint timeUniform = glGetUniformLocation(backProgram_, "t");
     GLuint colorUniform = glGetUniformLocation(backProgram_, "color");
-    GLuint positionAttrib = glGetAttribLocation(backProgram_, "position");
 
     glUseProgram(backProgram_);
     glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, glm::value_ptr(getProjectionMatrixStack().current()));

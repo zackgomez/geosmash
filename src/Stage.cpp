@@ -61,7 +61,7 @@ void Stage::update(float dt)
 
 void Stage::renderBackground(float dt)
 {
-    // TODO
+    renderer_->renderBackground(dt);
 }
 
 void Stage::renderStage(float dt)
@@ -77,19 +77,15 @@ void Stage::renderStage(float dt)
     }
 }
 
-// Reset stage variables (not ground, ledges, etc)
-void Stage::clear()
-{
-    // nop
-}
-
 StageRenderer::StageRenderer() :
-    levelMesh_(NULL), platformMesh_(NULL)
+    levelMesh_(NULL), platformMesh_(NULL),
+    t_(0.f)
 {
     levelMesh_ = createMesh("models/level.obj", true);
     platformMesh_ = createMesh("models/cube.obj", true);
 
     levelProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
+    sphereProgram_ = make_program("shaders/sphere.v.glsl", "shaders/sphere.f.glsl");
 }
 
 StageRenderer::~StageRenderer()
@@ -137,4 +133,26 @@ void StageRenderer::renderPlatform(const rectangle &platform, float depth, const
     renderMesh(transform, platformMesh_, levelProgram_);
 
     glUseProgram(0);
+}
+
+void StageRenderer::renderBackground(float dt)
+{
+    t_ += dt;
+	if (getParam("background.shouldRender") == 0) 
+		return;
+
+    glEnable(GL_CULL_FACE);
+    float r = getParam("backgroundSphere.radius");
+    glm::mat4 transform = glm::scale(glm::mat4(1.f), glm::vec3(r, r, r));
+
+    GLuint timeUniform = glGetUniformLocation(sphereProgram_, "t");
+    GLuint colorUniform = glGetUniformLocation(sphereProgram_, "color");
+
+    glUseProgram(sphereProgram_);
+    glUniform3fv(colorUniform, 1, glm::value_ptr(glm::vec3(0.f)));
+    glUniform1f(timeUniform, t_);
+    glUseProgram(0);
+
+    renderPlane(transform, sphereProgram_);
+    glDisable(GL_CULL_FACE);
 }
