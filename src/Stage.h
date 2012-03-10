@@ -11,11 +11,28 @@ struct Ledge
     float dir;
 };
 
+class StageRenderer
+{
+public:
+    StageRenderer();
+    ~StageRenderer();
+
+    void renderLevel(const rectangle &level_, float depth, const glm::vec3 &color);
+    void renderPlatform(const rectangle &platform_, float depth, const glm::vec3 &color);
+    void renderBackground(float dt);
+
+private:
+    mesh *levelMesh_;
+    mesh *platformMesh_;
+
+    GLuint levelProgram_, platformProgram_;
+};
+
 class Stage
 {
 public:
     Stage(const std::string &paramPrefix);
-    virtual ~Stage() { }
+    virtual ~Stage();
 
     virtual void update(float dt);
     virtual void renderBackground(float dt);
@@ -39,11 +56,7 @@ protected:
     // Graphics members
     glm::vec3 groundColor_;
     float groundDepth_;
-    mesh *levelMesh_;
-    mesh *platformMesh_;
-    GLuint levelProgram_, platformProgram_;
 
-    // Helper functions
-    void initGraphics();
+    StageRenderer *renderer_;
 };
 

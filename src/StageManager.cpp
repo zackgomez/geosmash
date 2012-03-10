@@ -27,7 +27,6 @@ StageManager::StageManager() :
     ship_mesh_ = createMesh("models/ship1-2.obj");
     ship_main_mesh_ = createMesh("models/ship_main.obj", true);
 
-    stageProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
     wormholeProgram_ = make_program("shaders/wormholebg.v.glsl", "shaders/wormholebg.f.glsl");
     */
 }
@@ -72,55 +71,24 @@ rectangle StageManager::getKillBox() const
 
 void StageManager::initLevel(const std::string &stage)
 {
-    const std::string pp = stage + '.';
+    std::string pp(stage);
+    for (size_t i = 0; i < pp.size(); i++)
+        if (pp[i] == ' ')
+            pp[i] = '_';
+    pp += '.';
 
     assert(!stage_);
     stage_ = new Stage(pp);
-
-    /*
-    // XXX: hardcoded
-    if (stage == "bandwidth bar")
-    {
-        // Set up hazard params
-        levelHazard_ = true;
-        hazardT_ = random_float(getParam("volcanoHazard.mintime"),
-                getParam("volcanoHazard.maxtime"));
-        backProgram_ = sphereProgram_;
-    }
-    else if (stage == "realtime ranch")
-    {
-        platforms_.push_back(rectangle(-200, 40, 220, 10));
-        platforms_.push_back(rectangle(0, 140, 220, 10));
-        platforms_.push_back(rectangle(200, 40, 220, 10));
-
-        ground_.w *= 0.80f;
-        backProgram_ = wormholeProgram_;
-    }
-    else if (stage == "ether net")
-    {
-        platforms_.push_back(rectangle(-200, 40, 220, 10));
-        // This guy is the fatty platform in the middle
-        platforms_.push_back(rectangle(10, 190, 440, 10));
-        platforms_.push_back(rectangle(200, 340, 220, 10));
-
-        ground_.w *= 0.80f;
-        backProgram_ = sphereProgram_;
-        killbox_ = rectangle(getParam("ether_net.killbox.x"), getParam("ether_net.killbox.y"), 
-            getParam("ether_net.killbox.w"), getParam("ether_net.killbox.h"));
-
-    }
-    else
-    {
-        assert(false && "Unknown level");
-    }
-    */
 }
 
 void StageManager::clear()
 {
-    stage_->clear();
-    delete stage_;
-    stage_ = NULL;
+    if (stage_)
+    {
+        stage_->clear();
+        delete stage_;
+        stage_ = NULL;
+    }
 }
 
 void StageManager::initBackground()

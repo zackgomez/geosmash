@@ -765,8 +765,10 @@ void renderMesh(const glm::mat4 &modelMatrix, const mesh *m, GLuint program)
 
 void freeMesh(mesh *m)
 {
-    glDeleteBuffers(1, &m->data_buffer);
+    if (!m)
+        return;
 
+    glDeleteBuffers(1, &m->data_buffer);
     delete m;
 }
 

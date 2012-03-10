@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
     ParamReader::get()->loadFile("config/global.params");
     ParamReader::get()->loadFile("config/charlie.params");
     ParamReader::get()->loadFile("config/stickman.params");
+    ParamReader::get()->loadFile("config/stages.params");
 
     ParamReader::get()->setParam("debug", 0.f);
     for (int i = 1; i < argc; i++)

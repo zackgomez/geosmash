@@ -249,6 +249,9 @@ void Fighter::update(float dt)
 
     // State update
     state_->update(dt);
+
+    printf("ID: %d  Damage: %.1f  Pos: [%.2f, %.2f]  Vel: [%.2f, %.2f]  Accel: [%.2f, %.2f]  Attack: %d  Dir: %.1f\n",
+            id_, damage_, pos_.x, pos_.y, vel_.x, vel_.y, accel_.x, accel_.y, attack_ != 0, dir_);
 }
 
 void Fighter::collisionWithGround(const rectangle &ground, bool collision, bool platform)
@@ -421,9 +424,6 @@ void Fighter::addLives(int delta)
 void Fighter::renderHelper(float dt, const glm::vec3 &color,
         const glm::mat4 &postTrans)
 {
-    //printf("ID: %d  Damage: %.1f  Pos: [%.2f, %.2f]  Vel: [%.2f, %.2f]  Accel: [%.2f, %.2f]  Attack: %d  Dir: %.1f\n",
-            //id_, damage_, pos_.x, pos_.y, vel_.x, vel_.y, accel_.x, accel_.y, attack_ != 0, dir_);
-
     std::string frameName = state_->getFrameName();
     if (attack_)
         frameName = attack_->getFrameName();

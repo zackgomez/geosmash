@@ -10,7 +10,7 @@ CXXFLAGS=-g -O0 -Wall -I$(GLM) -I$(KISS_PARTICLES) -I$(IRRKLANG)/include -I$(KIS
 LDFLAGS=-lSDL -lGL -lGLEW -lIrrKlang -L$(IRRKLANG)/bin/linux-gcc -lpthread
 
 OBJECTS = $(patsubst $(SRCDIR)/%,$(OBJDIR)/%,$(patsubst %.cpp,%.o,$(wildcard $(SRCDIR)/*.cpp))) obj/kiss-skeleton.o
-PARAMS = config/global.params config/charlie.params config/stickman.params
+PARAMS = config/global.params config/charlie.params config/stickman.params config/stages.params
 
 all: obj ssb params
 

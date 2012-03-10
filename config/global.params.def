@@ -37,42 +37,6 @@ menu.thresh         0.7
 # ----------------
 # - STAGE PARAMS -
 # ----------------
-level.x      0
-level.y      -100
-level.w      1024
-level.h      64
-level.d      80
-# level render color
-level.r      0.2
-level.g      0.2
-level.b      0.2
-
-killbox.x       0
-killbox.y       200
-killbox.w       2600
-killbox.h       1400
-ether_net.killbox.x       0
-ether_net.killbox.y       200
-ether_net.killbox.w       2200
-ether_net.killbox.h       1400
-
-#stageHazardAttack.cooldown     0.50
-#stageHazardAttack.damage       15
-#stageHazardAttack.stun         0.08
-#stageHazardAttack.speed        33.0
-#stageHazardAttack.switchRate   100.0
-#stageHazardAttack.sizex        60.0
-#stageHazardAttack.sizey        40.0
-#stageHazardAttack.knockbackx   1
-#stageHazardAttack.knockbacky   5
-#stageHazardAttack.kbbase       100
-#stageHazardAttack.priority   0
-#stageHazardAttack.lifetime   20
-
-#stageHazardAttack.twirlTime    1.5
-#stageHazardAttack.xaccel       1500
-#stageHazardAttack.twirlHeight  120
-
 volcanoHazard.startup  3.0
 volcanoHazard.duration 0.6
 volcanoHazard.cooldown 1.2
