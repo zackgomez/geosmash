@@ -4,6 +4,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
 
 const float widthRatio = 0.75f;
 
@@ -87,6 +88,16 @@ void FontManager::renderDigit(const glm::mat4 &transform, const glm::vec3 &color
         char dig)
 {
     char digit = dig - '0';
+
+    // FIXME remove this special case
+    if (dig == '.')
+    {
+        const glm::mat4 &finalTransform = glm::translate(
+                glm::scale(transform, glm::vec3(0.15f)),
+                glm::vec3(0.f, -2.5f, 0.f));
+        renderRectangle(finalTransform, glm::vec4(color, 0.f));
+        return;
+    }
 
     glm::vec2 size(1.f/10.f, 1.f);
     glm::vec2 pos(size.x * static_cast<float>(digit), 0.f);
