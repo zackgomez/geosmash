@@ -509,26 +509,3 @@ void SkeletonFighterRenderer::render(const glm::mat4 &transform, const glm::vec4
     skeleton_->render(scaledTransform);
 }
 
-// ----------------------------------------------------------------------------
-// Rectangle class methods
-// ----------------------------------------------------------------------------
-
-rectangle::rectangle() :
-    x(0), y(0), w(0), h(0)
-{}
-
-rectangle::rectangle(float xin, float yin, float win, float hin) :
-    x(xin), y(yin), w(win), h(hin)
-{}
-
-bool rectangle::overlaps(const rectangle &rhs) const
-{
-    return (rhs.x + rhs.w/2) > (x - w/2) && (rhs.x - rhs.w/2) < (x + w/2) &&
-        (rhs.y + rhs.h/2) > (y - h/2) && (rhs.y - rhs.h/2) < (y + h/2);
-}
-
-bool rectangle::contains(const rectangle &rhs) const
-{
-    return (rhs.x - rhs.w/2) > (x - w/2) && (rhs.x + rhs.w/2) < (x + w/2) &&
-        (rhs.y - rhs.h/2) > (y - h/2) && (rhs.y + rhs.h/2) < (y + h/2);
-}

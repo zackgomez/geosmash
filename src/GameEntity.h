@@ -89,3 +89,16 @@ protected:
 private:
     static int lastID_;
 };
+
+class rectangle
+{
+public:
+    rectangle();
+    rectangle(float x, float y, float w, float h);
+
+    bool overlaps(const rectangle &rhs) const;
+    bool contains(const rectangle &rhs) const;
+
+    float x, y, w, h;
+};
+

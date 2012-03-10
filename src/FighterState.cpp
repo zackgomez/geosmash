@@ -13,6 +13,7 @@
 #include "InGameState.h"
 #include "StickmanStates.h"
 #include "CharlieStates.h"
+#include "Stage.h"
 
 int getTeamID(int);
 

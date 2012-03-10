@@ -28,3 +28,9 @@ void *file_contents(const char *filename, GLint *length)
 
     return buffer;
 }
+
+float random_float(float min, float max)
+{
+    return rand() / static_cast<float>(RAND_MAX) * (max - min) + min;
+}
+
