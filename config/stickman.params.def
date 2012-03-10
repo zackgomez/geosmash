@@ -1,5 +1,5 @@
 # aesthetic only
-stickman.rotation 60
+stickman.rotation 90
 
 
 stickman.walkSpeed        150.0
@@ -73,15 +73,15 @@ stickman.ledgeGrab.inputDelay     0.20
 # ---------------
 # - DASH ATTACK -
 # ---------------
-stickman.dashAttack.startup      0.05
-stickman.dashAttack.duration     0.55
-stickman.dashAttack.cooldown     0.15
-stickman.dashAttack.damage       5
-stickman.dashAttack.stun         0.10
-stickman.dashAttack.knockbackx   1
-stickman.dashAttack.knockbacky   1
-stickman.dashAttack.kbbase       160.0
-stickman.dashAttack.kbscaling    4.00
+stickman.dashAttack.startup      0.08
+stickman.dashAttack.duration     0.45
+stickman.dashAttack.cooldown     0.20
+stickman.dashAttack.damage       7
+stickman.dashAttack.stun         0.12
+stickman.dashAttack.knockbackx   2
+stickman.dashAttack.knockbacky   3
+stickman.dashAttack.kbbase       360.0
+stickman.dashAttack.kbscaling    5.00
 stickman.dashAttack.hitboxx      35
 stickman.dashAttack.hitboxy      -20
 stickman.dashAttack.hitboxw      40
@@ -116,8 +116,8 @@ stickman.ledgeAttack.priority     2.0
 # - TILT ATTACKS -
 # ----------------
 stickman.neutralTiltAttack.startup      0.03
-stickman.neutralTiltAttack.duration     0.15
-stickman.neutralTiltAttack.cooldown     0.1
+stickman.neutralTiltAttack.duration     0.12
+stickman.neutralTiltAttack.cooldown     0.08
 stickman.neutralTiltAttack.damage       3
 stickman.neutralTiltAttack.stun         0.10
 stickman.neutralTiltAttack.knockbackx   1
@@ -131,7 +131,7 @@ stickman.neutralTiltAttack.hitboxh      18
 stickman.neutralTiltAttack.priority     1.0
 
 stickman.sideTiltAttack.startup      0.10
-stickman.sideTiltAttack.duration     0.16
+stickman.sideTiltAttack.duration     0.12
 stickman.sideTiltAttack.cooldown     0.16
 stickman.sideTiltAttack.damage       6
 stickman.sideTiltAttack.stun         0.10
@@ -146,8 +146,8 @@ stickman.sideTiltAttack.hitboxh      18
 stickman.sideTiltAttack.priority     1.0
 
 stickman.downTiltAttack.startup      0.13
-stickman.downTiltAttack.duration     0.22
-stickman.downTiltAttack.cooldown     0.20
+stickman.downTiltAttack.duration     0.16
+stickman.downTiltAttack.cooldown     0.15
 stickman.downTiltAttack.damage       8
 stickman.downTiltAttack.stun         0.16
 stickman.downTiltAttack.knockbackx   1
@@ -161,7 +161,7 @@ stickman.downTiltAttack.hitboxh      15
 stickman.downTiltAttack.priority     1.0
 
 stickman.upTiltAttack.startup      0.12
-stickman.upTiltAttack.duration     0.25
+stickman.upTiltAttack.duration     0.18
 stickman.upTiltAttack.cooldown     0.18
 stickman.upTiltAttack.damage       9
 stickman.upTiltAttack.stun         0.14

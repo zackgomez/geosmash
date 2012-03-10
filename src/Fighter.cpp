@@ -75,7 +75,6 @@ void Fighter::fillAttacks(const std::string &moveset)
     attackMap_["upSmash"]->setTwinkle(true);
 
     attackMap_["dash"] = loadAttack<DashAttack>("dashAttack", g, "DashAttack");
-    attackMap_["dash"]->setHitboxFrame("DashAttackHitbox");
 
     attackMap_["ledge"] = loadAttack<FighterAttack>("ledgeAttack", g, "LedgeAttack");
     attackMap_["ledge"]->setHitboxFrame("LedgeAttackHitbox");
@@ -93,15 +92,16 @@ void Fighter::fillAttacks(const std::string &moveset)
         attackMap_["downSmash"] = loadAttack<FighterAttack>("downSmashAttack", s, "DownSmash");
         attackMap_["downSmash"]->setTwinkle(true);
 
-        attackMap_["neutralSmash"]->setHitboxFrame("Null");
-        attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
-        attackMap_["downSmash"]->setHitboxFrame("DownSmashHitbox");
-        attackMap_["upSmash"]->setHitboxFrame("UpSmashHitbox");
-
         attackMap_["neutralTilt"]->setHitboxFrame("NeutralTiltHitbox");
         attackMap_["sideTilt"]->setHitboxFrame("SideTiltHitbox");
         attackMap_["downTilt"]->setHitboxFrame("DownTiltHitbox");
         attackMap_["upTilt"]->setHitboxFrame("UpTiltHitbox");
+        attackMap_["dash"]->setHitboxFrame("DashAttackHitbox");
+
+        attackMap_["neutralSmash"]->setHitboxFrame("Null");
+        attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
+        attackMap_["downSmash"]->setHitboxFrame("DownSmashHitbox");
+        attackMap_["upSmash"]->setHitboxFrame("UpSmashHitbox");
 
         attackMap_["airNeutral"]->setHitboxFrame("AirNeutralHitbox");
         attackMap_["airFront"]->setHitboxFrame("AirFronttiltHitbox");
@@ -124,6 +124,11 @@ void Fighter::fillAttacks(const std::string &moveset)
     }
     else if (moveset == "stickman")
     {
+        attackMap_["neutralTilt"]->setHitboxFrame("Null");
+        attackMap_["sideTilt"]->setHitboxFrame("Null");
+        attackMap_["downTilt"]->setHitboxFrame("Null");
+        attackMap_["upTilt"]->setHitboxFrame("Null");
+        attackMap_["dash"]->setHitboxFrame("Null");
 
         attackMap_["downSmash"] = loadAttack<MovingHitboxAttack>("downSmashAttack", s, "DownSmash");
         attackMap_["downSmash"]->setTwinkle(true);
