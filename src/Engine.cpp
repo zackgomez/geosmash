@@ -294,7 +294,7 @@ void postRender()
 bool initPlane()
 {
     // Create a mesh [-1, 1] with some number of vertices
-    int meshRes = getParam("backgroundSphere.meshRes");
+    int meshRes = getParam("engine.planeRes");
     resources.plane_res = meshRes;
     float *mesh = new float[2 * meshRes * meshRes];
     for (int y = 0; y < meshRes; y++)

@@ -3,6 +3,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+
+// =========
+// - STAGE -
+// ---------
 Stage::Stage(const std::string &pp) :
     paramPrefix_(pp)
 {
@@ -33,9 +37,6 @@ Stage::Stage(const std::string &pp) :
     l.dir = 1;
     ledges_.push_back(new Ledge(l));
 
-    // set up renderer
-    renderer_ = new StageRenderer();
-
     // read platforms
     int nplatforms = getParam(pp + "platforms");
     for (int i = 0; i < nplatforms; i++)
@@ -47,6 +48,16 @@ Stage::Stage(const std::string &pp) :
                 getParam(prefix + "w"), getParam(prefix + "h"));
         platforms_.push_back(platform);
     }
+
+    // set up renderer
+    // TODO read these as string params from file
+    std::string levelFile    = "models/level.obj";
+    std::string platformFile = "models/cube.obj";
+
+    mesh* levelMesh    = createMesh(levelFile, true);
+    mesh* platformMesh = createMesh(platformFile, true);
+    GLuint bgProgram   = make_program("shaders/sphere.v.glsl", "shaders/sphere.f.glsl");
+    renderer_ = new StageRenderer(levelMesh, platformMesh, bgProgram);
 }
 
 Stage::~Stage()
@@ -77,15 +88,16 @@ void Stage::renderStage(float dt)
     }
 }
 
-StageRenderer::StageRenderer() :
-    levelMesh_(NULL), platformMesh_(NULL),
+
+// ==================
+// - STAGE RENDERER -
+// ------------------
+StageRenderer::StageRenderer(mesh *levelMesh, mesh* platformMesh, GLuint bgProgram) :
+    levelMesh_(levelMesh), platformMesh_(platformMesh), backProgram_(bgProgram),
     t_(0.f)
 {
-    levelMesh_ = createMesh("models/level.obj", true);
-    platformMesh_ = createMesh("models/cube.obj", true);
-
     levelProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
-    sphereProgram_ = make_program("shaders/sphere.v.glsl", "shaders/sphere.f.glsl");
+    platformProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
 }
 
 StageRenderer::~StageRenderer()
@@ -145,14 +157,53 @@ void StageRenderer::renderBackground(float dt)
     float r = getParam("backgroundSphere.radius");
     glm::mat4 transform = glm::scale(glm::mat4(1.f), glm::vec3(r, r, r));
 
-    GLuint timeUniform = glGetUniformLocation(sphereProgram_, "t");
-    GLuint colorUniform = glGetUniformLocation(sphereProgram_, "color");
+    GLuint timeUniform = glGetUniformLocation(backProgram_, "t");
+    GLuint colorUniform = glGetUniformLocation(backProgram_, "color");
 
-    glUseProgram(sphereProgram_);
+    glUseProgram(backProgram_);
     glUniform3fv(colorUniform, 1, glm::value_ptr(glm::vec3(0.f)));
     glUniform1f(timeUniform, t_);
     glUseProgram(0);
 
-    renderPlane(transform, sphereProgram_);
+    renderPlane(transform, backProgram_);
     glDisable(GL_CULL_FACE);
+}
+
+
+// ===========================
+// - WORMHOLE STAGE RENDERER -
+// ---------------------------
+WormholeStageRenderer::WormholeStageRenderer(mesh *levelMesh, mesh *platformMesh, mesh *shipMesh,
+        GLuint bgProgram) :
+    StageRenderer(levelMesh, platformMesh, bgProgram),
+    shipMesh_(shipMesh)
+{
+}
+
+WormholeStageRenderer::~WormholeStageRenderer()
+{
+    freeMesh(shipMesh_);
+}
+
+void WormholeStageRenderer::renderBackground(float dt)
+{
+    StageRenderer::renderBackground(dt);
+
+    if (!getParam("background.shouldRender"))
+            return;
+
+
+    // TODO render ship in wormhole
+    /*
+    float v = -1;
+    float off = 0.2 * sin(5*v - t_) * 7*(-v);
+    float xfact = (sin(M_PI*t_/10 + v) + 1) / 2;
+
+    float xoff = off * xfact;
+    float yoff = off * (1 - xfact);
+
+    glm::mat4 backtrans = glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(r*0.8,r*0.8,r)),
+            glm::vec3(xoff, yoff, 2*v));
+    renderMesh(glm::rotate(glm::scale(backtrans, glm::vec3(.15)), -90.f, glm::vec3(0,1,0)), ship_mesh_, stageProgram_);
+    */
 }

@@ -11,24 +11,38 @@ struct Ledge
     float dir;
 };
 
+// Interface and default renderer
 class StageRenderer
 {
 public:
-    StageRenderer();
-    ~StageRenderer();
+    StageRenderer(mesh *levelMesh, mesh *platformMesh, GLuint bgProgram);
+    virtual ~StageRenderer();
 
-    void renderLevel(const rectangle &level_, float depth, const glm::vec3 &color);
-    void renderPlatform(const rectangle &platform_, float depth, const glm::vec3 &color);
-    void renderBackground(float dt);
+    virtual void renderLevel(const rectangle &level_, float depth, const glm::vec3 &color);
+    virtual void renderPlatform(const rectangle &platform_, float depth, const glm::vec3 &color);
+    virtual void renderBackground(float dt);
 
-private:
+protected:
     mesh *levelMesh_;
     mesh *platformMesh_;
 
     GLuint levelProgram_, platformProgram_;
-    GLuint sphereProgram_;
+    GLuint backProgram_;
 
     float t_;
+};
+
+class WormholeStageRenderer : public StageRenderer
+{
+public:
+    WormholeStageRenderer(mesh *levelMesh, mesh *platformMesh, mesh *shipMesh,
+            GLuint bgProgram);
+    virtual ~WormholeStageRenderer();
+
+    virtual void renderBackground(float dt);
+
+protected:
+    mesh *shipMesh_;
 };
 
 class Stage
