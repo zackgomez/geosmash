@@ -139,7 +139,7 @@ void Fighter::fillAttacks(const std::string &moveset)
         attackMap_["airDown"]->setHitboxFrame("Null");
         attackMap_["airUp"]->setHitboxFrame("Null");
 
-        attackMap_["upSpecial"] = loadAttack<VaryingDirectionAttack>("upSpecialAttack", a, "UpSpecial");
+        attackMap_["upSpecial"] = loadAttack<VelocityDirectionAttack>("upSpecialAttack", a, "UpSpecial");
         attackMap_["upSpecial"]->setHitboxFrame("Null");
         attackMap_["upSpecial"]->setStartSound("upspecial");
 

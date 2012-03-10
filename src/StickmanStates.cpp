@@ -111,7 +111,20 @@ FighterState* StickmanUpSpecial::processInput(controller_state &cs, float dt)
 FighterState* StickmanUpSpecial::collisionWithGround(const rectangle &ground, bool collision,
         bool platform)
 {
-    return SpecialState::collisionWithGround(ground, collision, platform);
+    if (collision)
+    {
+        collisionHelper(ground, platform);
+        ground_ = true;
+        // only reset the y velocity
+        fighter_->vel_.y = 0.f;
+        fighter_->accel_ = glm::vec2(0.f);
+    }
+    else
+    {
+        ground_ = false;
+        fighter_->accel_ = glm::vec2(0.f, fighter_->param("airAccel"));
+    }
+    return NULL;
 }
 
 FighterState* StickmanUpSpecial::hitByAttack(const Attack *attack)
@@ -121,6 +134,8 @@ FighterState* StickmanUpSpecial::hitByAttack(const Attack *attack)
 
 void StickmanUpSpecial::render(float dt)
 {
+    printf("STICKMAN UP SPECIAL || vel: %f %f  hitbox: %d\n",
+            fighter_->vel_.x, fighter_->vel_.y, fighter_->hasAttack());
     fighter_->renderHelper(dt, fighter_->color_);
 }
 

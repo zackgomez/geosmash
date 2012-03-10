@@ -126,7 +126,6 @@ void SimpleAttack::reown(int playerID, int teamID)
 // ----------------------------------------------------------------------------
 // FighterAttack class methods
 // ----------------------------------------------------------------------------
-
 FighterAttack::FighterAttack()
 {
 }
@@ -310,7 +309,6 @@ void FighterAttack::attackCollision(const Attack *other)
 // ----------------------------------------------------------------------------
 // MovingAttack class methods
 // ----------------------------------------------------------------------------
-
 MovingAttack::MovingAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
     FighterAttack(paramPrefix, audioID, frameName), started_(false)
@@ -377,7 +375,6 @@ void MovingAttack::hit(GameEntity *victim)
 // ----------------------------------------------------------------------------
 // UpSpecialAttack class methods
 // ----------------------------------------------------------------------------
-
 UpSpecialAttack::UpSpecialAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
     MovingAttack(paramPrefix, audioID, frameName)
@@ -444,7 +441,6 @@ void UpSpecialAttack::hit(GameEntity *victim)
 // ----------------------------------------------------------------------------
 // DashAttack class methods
 // ----------------------------------------------------------------------------
-
 DashAttack::DashAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
     FighterAttack(paramPrefix, audioID, frameName)
@@ -485,7 +481,6 @@ void DashAttack::update(float dt)
 // ----------------------------------------------------------------------------
 // MovingHitboxAttack class methods
 // ----------------------------------------------------------------------------
-
 MovingHitboxAttack::MovingHitboxAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
     FighterAttack(paramPrefix, audioID, frameName)
@@ -517,7 +512,6 @@ rectangle MovingHitboxAttack::getHitbox() const
 // ----------------------------------------------------------------------------
 // VaryingDirectionAttack class methods
 // ----------------------------------------------------------------------------
-
 VaryingDirectionAttack::VaryingDirectionAttack(const std::string &paramPrefix, const std::string &audioID,
         const std::string &frameName) :
     FighterAttack(paramPrefix, audioID, frameName)
@@ -534,6 +528,28 @@ glm::vec2 VaryingDirectionAttack::calcKnockback(const GameEntity *victim,
 {
     glm::vec2 apos(getHitbox().x, getHitbox().y);
     glm::vec2 kbdir = glm::normalize(victim->getPosition() - apos);
+    return kbdir * (kbbase_ + damage * kbscaling_);
+}
+
+// ----------------------------------------------------------------------------
+// VelocityDirectionAttack class methods
+// ----------------------------------------------------------------------------
+VelocityDirectionAttack::VelocityDirectionAttack(const std::string &paramPrefix, const std::string &audioID,
+        const std::string &frameName) :
+    FighterAttack(paramPrefix, audioID, frameName)
+{
+}
+
+FighterAttack *VelocityDirectionAttack::clone() const
+{
+    return new VelocityDirectionAttack(*this);
+}
+
+glm::vec2 VelocityDirectionAttack::calcKnockback(const GameEntity *victim,
+        float damage) const
+{
+    assert(owner_->getVelocity() != glm::vec2(0.f, 0.f));
+    glm::vec2 kbdir = glm::normalize(owner_->getVelocity());
     return kbdir * (kbbase_ + damage * kbscaling_);
 }
 

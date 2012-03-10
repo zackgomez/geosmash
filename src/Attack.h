@@ -188,6 +188,16 @@ public:
     virtual glm::vec2 calcKnockback(const GameEntity * victim, float damage) const;
 };
 
+class VelocityDirectionAttack : public FighterAttack
+{
+public:
+    VelocityDirectionAttack(const std::string &paramPrefix, const std::string &audioID,
+            const std::string &frameName);
+
+    virtual FighterAttack *clone() const;
+    virtual glm::vec2 calcKnockback(const GameEntity * victim, float damage) const;
+};
+
 
 // An attack that is responsible for moving the character.
 // (Current Up - B 0.7)

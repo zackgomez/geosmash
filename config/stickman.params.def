@@ -123,7 +123,7 @@ stickman.neutralTiltAttack.stun         0.10
 stickman.neutralTiltAttack.knockbackx   1
 stickman.neutralTiltAttack.knockbacky   1
 stickman.neutralTiltAttack.kbbase       100.0
-stickman.neutralTiltAttack.kbscaling    4.50
+stickman.neutralTiltAttack.kbscaling    1.00
 stickman.neutralTiltAttack.hitboxx      30
 stickman.neutralTiltAttack.hitboxy      0
 stickman.neutralTiltAttack.hitboxw      30
@@ -162,7 +162,7 @@ stickman.downTiltAttack.priority     1.0
 
 stickman.upTiltAttack.startup      0.12
 stickman.upTiltAttack.duration     0.18
-stickman.upTiltAttack.cooldown     0.18
+stickman.upTiltAttack.cooldown     0.14
 stickman.upTiltAttack.damage       9
 stickman.upTiltAttack.stun         0.14
 stickman.upTiltAttack.knockbackx   1
