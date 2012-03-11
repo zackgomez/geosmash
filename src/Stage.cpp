@@ -17,7 +17,6 @@ Stage::Stage(const std::string &pp) :
     ground_ = rectangle(groundpos.x, groundpos.y, groundsize.x, groundsize.y);
     groundDepth_ = getParam(pp + "ground.d");
 
-    std::cout << "Ground: " << ground_.x << ' ' << ground_.y << ' ' << ground_.w << ' ' << ground_.h << '\n';
     groundColor_ = glm::vec3(getParam(pp + "ground.r"),
             getParam(pp + "ground.g"), getParam(pp + "ground.b")); 
 

@@ -28,6 +28,7 @@ void ParamReader::loadFile(const char *filename)
     while (std::getline(file, line))
     {
         std::stringstream ss(line);
+        // TODO support reading floats and strings
         ss >> key >> val;
         // Ignore comments that start with #
         if (!key.empty() && key[0] == '#')
@@ -35,21 +36,33 @@ void ParamReader::loadFile(const char *filename)
         if (ss.fail())
             continue;
         // Fail on double key read
-        if (params_.find(key) != params_.end())
+        if (floatParams_.find(key) != floatParams_.end())
         {
             logger_->fatal() << "Overwritting param " << key << '\n';
             assert(false);
         }
-        params_[key] = val;
+        floatParams_[key] = val;
     }
 }
 
-float ParamReader::get(const std::string &key) const
+float ParamReader::getFloat(const std::string &key) const
 {
-    std::map<std::string, float>::const_iterator it = params_.find(key);
-    if (it == params_.end())
+    std::map<std::string, float>::const_iterator it = floatParams_.find(key);
+    if (it == floatParams_.end())
     {
-        logger_->fatal() << "Unable to find key " << key << '\n';
+        logger_->fatal() << "Unable to find [float] key " << key << '\n';
+        assert(false && "Key not found in params");
+    }
+    else
+        return it->second;
+}
+
+const std::string & ParamReader::getString(const std::string &key) const
+{
+    std::map<std::string, std::string>::const_iterator it = stringParams_.find(key);
+    if (it == stringParams_.end())
+    {
+        logger_->fatal() << "Unable to find [string] key " << key << '\n';
         assert(false && "Key not found in params");
     }
     else
@@ -58,19 +71,29 @@ float ParamReader::get(const std::string &key) const
 
 void ParamReader::setParam(const std::string &key, float value)
 {
-    params_[key] = value;
+    floatParams_[key] = value;
 }
 
-bool ParamReader::hasParam(const std::string &key) const
+void ParamReader::setParam(const std::string &key, const std::string &value)
 {
-    return params_.find(key) != params_.end();
+    stringParams_[key] = value;
+}
+
+bool ParamReader::hasFloat(const std::string &key) const
+{
+    return floatParams_.find(key) != floatParams_.end();
+}
+
+bool ParamReader::hasString(const std::string &key) const
+{
+    return stringParams_.find(key) != stringParams_.end();
 }
 
 void ParamReader::printParams() const
 {
     logger_->info() << "Params:\n";
     std::map<std::string, float>::const_iterator it;
-    for (it = params_.begin(); it != params_.end(); it++)
+    for (it = floatParams_.begin(); it != floatParams_.end(); it++)
     {
         logger_->info() << it->first << ' ' << it->second << '\n';
     }
@@ -78,6 +101,6 @@ void ParamReader::printParams() const
 
 float getParam(const std::string &param)
 {
-    return ParamReader::get()->get(param);
+    return ParamReader::get()->getFloat(param);
 }
 
