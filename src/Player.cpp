@@ -431,7 +431,7 @@ glm::vec2 getBucket(const glm::vec2 &posDiff)
 {
     const glm::vec2 bucketsz(50, 50);
 
-    return glm::floor(posDiff / bucketsz);
+    return glm::floor(glm::vec2(fabs(posDiff.x), posDiff.y) / bucketsz);
 }
 
 float GhostAIPlayer::caseHeuristic(const CaseGameState &cur, const CaseGameState &ref)
@@ -443,16 +443,16 @@ float GhostAIPlayer::caseHeuristic(const CaseGameState &cur, const CaseGameState
         return HUGE_VAL;
 
     // Calculate intermediate values
-    glm::vec2 dist = glm::abs(glm::abs(cur.relpos) - glm::abs(ref.relpos));
-    glm::vec2 bucket = getBucket(dist);
-    assert(bucket.x >= 0 && bucket.y >= 0);
+    glm::vec2 curbucket = getBucket(cur.relpos);
+    glm::vec2 refbucket = getBucket(ref.relpos);
 
-    // Calculate score...
-    score += 1e6 * (bucket.x + bucket.y);
+    // For now, different bucketed states are invalid
+    if (curbucket != refbucket)
+        return HUGE_VAL;
 
     // Positive score means no good, negative score means good with
     // score acting as differentiation
-    std::cout << "Bucket: " << bucket << " Score: " << score << '\n';
+    std::cout << "Bucket: " << curbucket << " Score: " << score << '\n';
     return score;
 }
 
