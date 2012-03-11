@@ -45,8 +45,6 @@ realtime_ranch.levelModel       ship_main
 realtime_ranch.platformModel    ship_small
 realtime_ranch.background       wormholebg
 
-wormholeShip.scale    0.10
-
 ether_net.ground.x 0
 ether_net.ground.y -100
 ether_net.ground.z 0
@@ -76,3 +74,32 @@ ether_net.platform3.h    10
 ether_net.levelModel       level
 ether_net.platformModel    cube
 ether_net.background       sphere
+
+# ------------------------
+# - VOLCANO HAZARD ADDON -
+# ------------------------
+volcanoHazard.startup  3.0
+volcanoHazard.duration 0.6
+volcanoHazard.cooldown 1.2
+volcanoHazard.mintime  10
+volcanoHazard.maxtime  15
+
+volcanoHazard.hitboxx     60
+volcanoHazard.hitboxy     120
+volcanoHazard.damage      30
+volcanoHazard.knockbackx  0
+volcanoHazard.knockbacky  1
+volcanoHazard.kbbase      500
+volcanoHazard.kbscaling   20
+volcanoHazard.stun        0.4
+volcanoHazard.priority    0
+
+# aesthetic only
+volcanoHazard.steamw   40
+volcanoHazard.steamh   100
+
+# -----------------------
+# - WORMHOLE SHIP ADDON -
+# -----------------------
+wormholeShip.scale    0.10
+

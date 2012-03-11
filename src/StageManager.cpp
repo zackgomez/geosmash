@@ -21,24 +21,6 @@ StageManager::StageManager() :
 void StageManager::update(float dt)
 {
     stage_->update(dt);
-    /*
-    hazardT_ -= dt;
-    if (levelHazard_ && hazardT_ < 0.f)
-    {
-        // spawn hazard at random location on ground
-        glm::vec2 hpos(random_float(ground_.x - ground_.w/2, ground_.x + ground_.w/2),
-                ground_.y + ground_.h/2);
-        // Make sure it's not on the edge
-        hpos.x *= 0.8f;
-
-        addEntity(new VolcanoHazard(hpos));
-
-        // Reset timer
-        hazardT_ = random_float(getParam("volcanoHazard.mintime"),
-                getParam("volcanoHazard.maxtime"));
-        logger_->info() << "Spawning hazard.  Next in " << hazardT_ << "s\n";
-    }
-    */
 }
 
 std::vector<std::string> StageManager::getStageNames() const
@@ -71,7 +53,9 @@ void StageManager::initLevel(const std::string &stage)
 
     // XXX remove this hardcoded hack
     if (stage == "realtime ranch")
-        stage_->addOn(new WormholeShipAddOn());
+        stage_->addOn(new WormholeShipAddOn(stage_));
+    if (stage == "bandwidth bar")
+        stage_->addOn(new VolcanoHazardAddOn(stage_));
 }
 
 void StageManager::clear()
@@ -98,6 +82,8 @@ Ledge * StageManager::getPossibleLedge(const glm::vec2 &pos)
     {
         Ledge *l = ledges[i];
         float dist = glm::length(pos - l->pos);
+        // FIXME this needs to also understand the rules for ledge grabbing
+        // like you must be beneath the ledge
         if (!l->occupied && dist < mindist)
         {
             ret = l;

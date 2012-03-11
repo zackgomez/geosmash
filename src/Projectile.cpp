@@ -98,7 +98,6 @@ void Projectile::attackCollision(const Attack *other)
     // For now, just make the attack go away on equal or higher priority hit
     if (other->getPriority() >= attack_->getPriority())
         hit_ = true;
-    std::cout << "Projectile collision\n";
 }
 
 void Projectile::hitByAttack(const Attack *attack)
@@ -116,7 +115,6 @@ void Projectile::attackConnected(GameEntity *other)
     other->hitByAttack(attack_);
     // no more hits
     hit_ = true;
-    std::cout << "Projectile connected\n";
 }
 
 void Projectile::collisionWithGround(const rectangle &rect, bool collision,
@@ -156,7 +154,6 @@ void Projectile::reflect()
 
 void Projectile::reown(int playerID, int teamID)
 {
-    std::cout << "Projection reown\n";
     GameEntity::reown(playerID, teamID);
     attack_->reown(playerID, teamID);
 }

@@ -1,7 +1,11 @@
 #include "Stage.h"
-#include "ParamReader.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "ParamReader.h"
+#include "util.h"
+#include "StageHazards.h"
+
+void addEntity(GameEntity *entity);
 
 std::string meshIDToFilename(const std::string &id)
 {
@@ -194,7 +198,8 @@ void StageRenderer::renderBackground(float dt)
 // =======================
 // - WORMHOLE SHIP ADDON -
 // -----------------------
-WormholeShipAddOn::WormholeShipAddOn() :
+WormholeShipAddOn::WormholeShipAddOn(const Stage* stage) :
+    StageAddOn(stage),
     shipMesh_(NULL),
     shipProgram_(0),
     t_(0.f)
@@ -243,5 +248,40 @@ void WormholeShipAddOn::renderBackground(float dt)
     renderMesh(backtrans, shipMesh_, shipProgram_);
 
     glUseProgram(0);
+}
+
+// ========================
+// - VOLCANO HAZARD ADDON -
+// ------------------------
+VolcanoHazardAddOn::VolcanoHazardAddOn(const Stage *stage) :
+    StageAddOn(stage)
+{
+    t_ = nextTime();
+}
+
+void VolcanoHazardAddOn::update(float dt)
+{
+    t_ -= dt;
+    if (t_ < 0.f)
+    {
+        const rectangle ground = stage_->getGroundRect();
+        // spawn hazard at random location on ground
+        glm::vec2 hpos(random_float(ground.x - ground.w/2, ground.x + ground.w/2),
+                ground.y + ground.h/2);
+        // Make sure it's not on the edge
+        hpos.x *= 0.8f;
+
+        addEntity(new VolcanoHazard(hpos));
+
+        // Reset timer
+        t_ = nextTime();
+        //logger_->info() << "Spawning hazard.  Next in " << hazardT_ << "s\n";
+    }
+}
+
+float VolcanoHazardAddOn::nextTime()
+{
+    return random_float(getParam("volcanoHazard.mintime"),
+            getParam("volcanoHazard.maxtime"));
 }
 

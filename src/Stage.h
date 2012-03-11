@@ -12,6 +12,8 @@ struct Ledge
     float dir;
 };
 
+class Stage;
+
 // Interface and default renderer
 class StageRenderer
 {
@@ -36,18 +38,22 @@ protected:
 class StageAddOn
 {
 public:
+    StageAddOn(const Stage *stage) : stage_(stage) { }
     virtual ~StageAddOn() { }
 
     // Called when Stage::update is called
     virtual void update(float dt) = 0;
     // Called when Stage::renderBackground is called
     virtual void renderBackground(float dt) = 0;
+
+protected:
+    const Stage *stage_;
 };
 
 class WormholeShipAddOn : public StageAddOn
 {
 public:
-    WormholeShipAddOn();
+    WormholeShipAddOn(const Stage *stage);
     ~WormholeShipAddOn();
     // update message ignored
     virtual void update(float dt) { }
@@ -57,6 +63,19 @@ private:
     mesh *shipMesh_;
     GLuint shipProgram_;
     float t_;
+};
+
+class VolcanoHazardAddOn : public StageAddOn
+{
+public:
+    VolcanoHazardAddOn(const Stage *stage);
+    virtual void update(float dt);
+    virtual void renderBackground(float dt) { /* nop */ }
+
+private:
+    float t_;
+
+    static float nextTime();
 };
 
 class Stage

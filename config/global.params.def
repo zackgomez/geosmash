@@ -3,6 +3,7 @@ debug.resolution.x  1280
 debug.resolution.y  720
 debug.saveghost     1
 
+
 # -------------------
 # - GAMEPLAY PARAMS -
 # -------------------
@@ -34,31 +35,6 @@ menu.deadzone       0.5
 menu.thresh         0.7
 
 
-# ----------------
-# - STAGE PARAMS -
-# ----------------
-volcanoHazard.startup  3.0
-volcanoHazard.duration 0.6
-volcanoHazard.cooldown 1.2
-volcanoHazard.mintime  10
-volcanoHazard.maxtime  15
-
-volcanoHazard.hitboxx     60
-volcanoHazard.hitboxy     120
-volcanoHazard.damage      30
-volcanoHazard.knockbackx  0
-volcanoHazard.knockbacky  1
-volcanoHazard.kbbase      500
-volcanoHazard.kbscaling   20
-volcanoHazard.stun        0.4
-volcanoHazard.priority    0
-
-# aesthetic only
-volcanoHazard.steamw   40
-volcanoHazard.steamh   100
-
-
-
 # -------------------
 # - GRAPHICS PARAMS -
 # -------------------
@@ -79,7 +55,7 @@ camera.xrange 1000
 camera.fov 90
 
 engine.useBlur     1
-engine.planeRes    128
+engine.planeRes    256
 background.shouldRender   1
 
 backgroundSphere.radius         2000
