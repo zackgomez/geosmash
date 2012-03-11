@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <list>
 #include "GameEntity.h" // for rectangle
 #include "Engine.h"
 
@@ -32,17 +33,30 @@ protected:
     float t_;
 };
 
-class WormholeStageRenderer : public StageRenderer
+class StageAddOn
 {
 public:
-    WormholeStageRenderer(mesh *levelMesh, mesh *platformMesh, mesh *shipMesh,
-            GLuint bgProgram);
-    virtual ~WormholeStageRenderer();
+    virtual ~StageAddOn() { }
 
+    // Called when Stage::update is called
+    virtual void update(float dt) = 0;
+    // Called when Stage::renderBackground is called
+    virtual void renderBackground(float dt) = 0;
+};
+
+class WormholeShipAddOn : public StageAddOn
+{
+public:
+    WormholeShipAddOn();
+    ~WormholeShipAddOn();
+    // update message ignored
+    virtual void update(float dt) { }
     virtual void renderBackground(float dt);
 
-protected:
+private:
     mesh *shipMesh_;
+    GLuint shipProgram_;
+    float t_;
 };
 
 class Stage
@@ -54,6 +68,8 @@ public:
     virtual void update(float dt);
     virtual void renderBackground(float dt);
     virtual void renderStage(float dt);
+
+    void addOn(StageAddOn *addon);
 
     const rectangle &getGroundRect() const { return ground_; }
     const std::vector<Ledge*>& getLedges() const { return ledges_; }
@@ -67,6 +83,8 @@ protected:
     rectangle ground_;
     std::vector<rectangle> platforms_;
     rectangle killbox_;
+
+    std::list<StageAddOn*> addOns_;
 
     // Graphics members
     glm::vec3 groundColor_;

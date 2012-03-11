@@ -76,12 +76,18 @@ Stage::~Stage()
 
 void Stage::update(float dt)
 {
-    // nop
+    // All the add on callbacks
+    for (std::list<StageAddOn*>::iterator it = addOns_.begin(); it != addOns_.end(); it++)
+        (*it)->update(dt);
 }
 
 void Stage::renderBackground(float dt)
 {
     renderer_->renderBackground(dt);
+
+    // All the add on callbacks
+    for (std::list<StageAddOn*>::iterator it = addOns_.begin(); it != addOns_.end(); it++)
+        (*it)->renderBackground(dt);
 }
 
 void Stage::renderStage(float dt)
@@ -97,6 +103,11 @@ void Stage::renderStage(float dt)
     }
 }
 
+void Stage::addOn(StageAddOn *addon)
+{
+    addOns_.push_back(addon);
+}
+
 
 // ==================
 // - STAGE RENDERER -
@@ -105,6 +116,7 @@ StageRenderer::StageRenderer(mesh *levelMesh, mesh* platformMesh, GLuint bgProgr
     levelMesh_(levelMesh), platformMesh_(platformMesh), backProgram_(bgProgram),
     t_(0.f)
 {
+    // TODO parameterize this as well
     levelProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
     platformProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
 }
@@ -179,31 +191,29 @@ void StageRenderer::renderBackground(float dt)
 }
 
 
-// ===========================
-// - WORMHOLE STAGE RENDERER -
-// ---------------------------
-WormholeStageRenderer::WormholeStageRenderer(mesh *levelMesh, mesh *platformMesh, mesh *shipMesh,
-        GLuint bgProgram) :
-    StageRenderer(levelMesh, platformMesh, bgProgram),
-    shipMesh_(shipMesh)
+// =======================
+// - WORMHOLE SHIP ADDON -
+// -----------------------
+WormholeShipAddOn::WormholeShipAddOn() :
+    shipMesh_(NULL),
+    shipProgram_(0),
+    t_(0.f)
 {
+    shipMesh_ = createMesh(meshIDToFilename("ship1-2"), false);
+    shipProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
 }
 
-WormholeStageRenderer::~WormholeStageRenderer()
+WormholeShipAddOn::~WormholeShipAddOn()
 {
     freeMesh(shipMesh_);
 }
 
-void WormholeStageRenderer::renderBackground(float dt)
+void WormholeShipAddOn::renderBackground(float dt)
 {
-    StageRenderer::renderBackground(dt);
-
+    t_ += dt;
     if (!getParam("background.shouldRender"))
             return;
 
-
-    // TODO render ship in wormhole
-    /*
     float v = -1;
     float off = 0.2 * sin(5*v - t_) * 7*(-v);
     float xfact = (sin(M_PI*t_/10 + v) + 1) / 2;
@@ -211,8 +221,27 @@ void WormholeStageRenderer::renderBackground(float dt)
     float xoff = off * xfact;
     float yoff = off * (1 - xfact);
 
-    glm::mat4 backtrans = glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(r*0.8,r*0.8,r)),
-            glm::vec3(xoff, yoff, 2*v));
-    renderMesh(glm::rotate(glm::scale(backtrans, glm::vec3(.15)), -90.f, glm::vec3(0,1,0)), ship_mesh_, stageProgram_);
-    */
+    float r = getParam("backgroundSphere.radius");
+    float scale = getParam("wormholeShip.scale");
+    const glm::vec3 color(0.2f);
+    glm::mat4 backtrans = glm::rotate(
+            glm::scale(
+                glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(r*0.8,r*0.8,r)),
+                    glm::vec3(xoff, yoff, 2*v)),
+                glm::vec3(scale)),
+            -90.f, glm::vec3(0,1,0));
+
+    // Initialize program
+    glUseProgram(shipProgram_);
+    glm::vec4 lightPos = getViewMatrixStack().current() * glm::vec4(500.f, 400.f, 200.f, 1.f);
+    lightPos /= lightPos.w;
+    GLuint colorUniform = glGetUniformLocation(shipProgram_, "color");
+    GLuint lightPosUniform = glGetUniformLocation(shipProgram_, "lightpos");
+    glUniform4fv(colorUniform, 1, glm::value_ptr(glm::vec4(color, 0.0f)));
+    glUniform4fv(lightPosUniform, 1, glm::value_ptr(lightPos));
+
+    renderMesh(backtrans, shipMesh_, shipProgram_);
+
+    glUseProgram(0);
 }
+

@@ -16,19 +16,6 @@ StageManager::StageManager() :
     stage_(NULL)
 {
     logger_ = Logger::getLogger("StageManager");
-
-    // TODO move to initStage
-    /*
-    initBackground();
-
-    // Load the ground mesh
-    level_mesh_ = createMesh("models/level.obj", true);
-    platform_mesh_ = createMesh("models/cube.obj");
-    ship_mesh_ = createMesh("models/ship1-2.obj");
-    ship_main_mesh_ = createMesh("models/ship_main.obj", true);
-
-    wormholeProgram_ = make_program("shaders/wormholebg.v.glsl", "shaders/wormholebg.f.glsl");
-    */
 }
 
 void StageManager::update(float dt)
@@ -81,6 +68,10 @@ void StageManager::initLevel(const std::string &stage)
     pp += '.';
 
     stage_ = new Stage(pp);
+
+    // XXX remove this hardcoded hack
+    if (stage == "realtime ranch")
+        stage_->addOn(new WormholeShipAddOn());
 }
 
 void StageManager::clear()

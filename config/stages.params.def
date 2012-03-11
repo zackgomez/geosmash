@@ -45,6 +45,8 @@ realtime_ranch.levelModel       ship_main
 realtime_ranch.platformModel    ship_small
 realtime_ranch.background       wormholebg
 
+wormholeShip.scale    0.10
+
 ether_net.ground.x 0
 ether_net.ground.y -100
 ether_net.ground.z 0
