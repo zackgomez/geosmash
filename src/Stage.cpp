@@ -62,7 +62,10 @@ Stage::Stage(const std::string &pp) :
         std::string platformFile = meshIDToFilename(strParam(pp + "platformModel"));
         platformMesh = createMesh(platformFile, true);
     }
-    GLuint bgProgram   = make_program("shaders/sphere.v.glsl", "shaders/sphere.f.glsl");
+    std::string programID = strParam(pp + "background");
+    GLuint bgProgram   = make_program(
+            ("shaders/"+programID+".v.glsl").c_str(),
+            ("shaders/"+programID+".f.glsl").c_str());
     renderer_ = new StageRenderer(levelMesh, platformMesh, bgProgram);
 }
 
