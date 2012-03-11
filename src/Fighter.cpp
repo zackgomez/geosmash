@@ -77,7 +77,6 @@ void Fighter::fillAttacks(const std::string &moveset)
     attackMap_["dash"] = loadAttack<DashAttack>("dashAttack", g, "DashAttack");
 
     attackMap_["ledge"] = loadAttack<FighterAttack>("ledgeAttack", g, "LedgeAttack");
-    attackMap_["ledge"]->setHitboxFrame("LedgeAttackHitbox");
 
     attackMap_["tauntUp"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntA");
     attackMap_["tauntDown"] = loadAttack<FighterAttack>("tauntAttack", a, "TauntB");
@@ -97,6 +96,7 @@ void Fighter::fillAttacks(const std::string &moveset)
         attackMap_["downTilt"]->setHitboxFrame("DownTiltHitbox");
         attackMap_["upTilt"]->setHitboxFrame("UpTiltHitbox");
         attackMap_["dash"]->setHitboxFrame("DashAttackHitbox");
+        attackMap_["ledge"]->setHitboxFrame("LedgeAttackHitbox");
 
         attackMap_["neutralSmash"]->setHitboxFrame("Null");
         attackMap_["sideSmash"]->setHitboxFrame("SideSmashHitbox");
@@ -129,6 +129,7 @@ void Fighter::fillAttacks(const std::string &moveset)
         attackMap_["downTilt"]->setHitboxFrame("Null");
         attackMap_["upTilt"]->setHitboxFrame("Null");
         attackMap_["dash"]->setHitboxFrame("Null");
+        attackMap_["ledge"]->setHitboxFrame("Null");
 
         attackMap_["neutralSmash"] = loadAttack<FighterAttack>("neutralSmashAttack", s, "NeutralSmash");
         attackMap_["neutralSmash"]->setTwinkle(true);

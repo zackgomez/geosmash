@@ -134,8 +134,8 @@ FighterState* StickmanUpSpecial::hitByAttack(const Attack *attack)
 
 void StickmanUpSpecial::render(float dt)
 {
-    printf("STICKMAN UP SPECIAL || vel: %f %f  hitbox: %d\n",
-            fighter_->vel_.x, fighter_->vel_.y, fighter_->hasAttack());
+    //printf("STICKMAN UP SPECIAL || vel: %f %f  hitbox: %d\n",
+            //fighter_->vel_.x, fighter_->vel_.y, fighter_->hasAttack());
     fighter_->renderHelper(dt, fighter_->color_);
 }
 
