@@ -907,7 +907,6 @@ std::string getTimeString()
 
 void renderPlane(const glm::mat4& transform, GLuint program)
 {
-    std::cout << "Rendering plane\n";
     GLuint projectionUniform = glGetUniformLocation(program, "projectionMatrix");
     GLuint modelViewUniform = glGetUniformLocation(program, "modelViewMatrix");
     GLuint positionAttrib = glGetAttribLocation(program, "position");

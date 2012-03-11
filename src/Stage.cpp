@@ -3,6 +3,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+std::string meshIDToFilename(const std::string &id)
+{
+    return "models/" + id + ".obj";
+}
 
 // =========
 // - STAGE -
@@ -49,12 +53,15 @@ Stage::Stage(const std::string &pp) :
     }
 
     // set up renderer
-    // TODO read these as string params from file
-    std::string levelFile    = "models/level.obj";
-    std::string platformFile = "models/cube.obj";
-
+    std::string levelFile = meshIDToFilename(strParam(pp + "levelModel"));
     mesh* levelMesh    = createMesh(levelFile, true);
-    mesh* platformMesh = createMesh(platformFile, true);
+
+    mesh* platformMesh = NULL;
+    if (!platforms_.empty())
+    {
+        std::string platformFile = meshIDToFilename(strParam(pp + "platformModel"));
+        platformMesh = createMesh(platformFile, true);
+    }
     GLuint bgProgram   = make_program("shaders/sphere.v.glsl", "shaders/sphere.f.glsl");
     renderer_ = new StageRenderer(levelMesh, platformMesh, bgProgram);
 }

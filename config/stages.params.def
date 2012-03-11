@@ -12,6 +12,7 @@ bandwidth_bar.killbox.y 200
 bandwidth_bar.killbox.w 2600
 bandwidth_bar.killbox.h 1400
 bandwidth_bar.platforms 0
+bandwidth_bar.levelModel    level
 
 realtime_ranch.ground.x     0
 realtime_ranch.ground.y     -100
@@ -39,6 +40,8 @@ realtime_ranch.platform3.x    200
 realtime_ranch.platform3.y    40
 realtime_ranch.platform3.w    220
 realtime_ranch.platform3.h    10
+realtime_ranch.levelModel       ship_main
+realtime_ranch.platformModel    ship_small
 
 ether_net.ground.x 0
 ether_net.ground.y -100
@@ -66,3 +69,5 @@ ether_net.platform3.x    200
 ether_net.platform3.y    340
 ether_net.platform3.w    220
 ether_net.platform3.h    10
+ether_net.levelModel       level
+ether_net.platformModel    cube

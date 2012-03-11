@@ -21,27 +21,48 @@ void ParamReader::loadFile(const char *filename)
         assert(false);
     }
 
-    std::string key;
-    float val;
-
     std::string line;
     while (std::getline(file, line))
     {
+        if (line.empty())
+            continue;
+
+        std::string key;
+        float fval;
+        std::string sval;
+
         std::stringstream ss(line);
-        // TODO support reading floats and strings
-        ss >> key >> val;
+        ss >> key;
+        
+        assert(!key.empty());
         // Ignore comments that start with #
-        if (!key.empty() && key[0] == '#')
+        if (key[0] == '#')
             continue;
-        if (ss.fail())
-            continue;
+
         // Fail on double key read
-        if (floatParams_.find(key) != floatParams_.end())
+        if (floatParams_.count(key) || stringParams_.count(key))
         {
             logger_->fatal() << "Overwritting param " << key << '\n';
             assert(false);
         }
-        floatParams_[key] = val;
+
+
+        // Try to read as float first
+        ss >> fval;
+        if (ss)
+        {
+            floatParams_[key] = fval;
+        }
+        // if it doesn't work, read as a string parameter
+        // NOTE this only reads single word values
+        else
+        {
+            // You MUST clear the fail bit or receive no input
+            ss.clear();
+            ss >> sval;
+            logger_->debug() << "Read [string] param '" << key << "' : '" << sval << "'\n";
+            stringParams_[key] = sval;
+        }
     }
 }
 
@@ -102,5 +123,10 @@ void ParamReader::printParams() const
 float getParam(const std::string &param)
 {
     return ParamReader::get()->getFloat(param);
+}
+
+const std::string& strParam(const std::string &param)
+{
+    return ParamReader::get()->getString(param);
 }
 

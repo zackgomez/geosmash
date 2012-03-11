@@ -30,7 +30,7 @@ void AudioManager::playSound(const std::string &soundIdentifier)
 	// Grab volume (optionally scaled) from params
     float volume = getParam("sfx.volume");
     logger_->debug() << "Looking for param: " << "sfx." + soundIdentifier + ".volume\n";
-    if (ParamReader::get()->hasParam("sfx." + soundIdentifier + ".volume")) 
+    if (ParamReader::get()->hasFloat("sfx." + soundIdentifier + ".volume")) 
 	{
         volume *= getParam("sfx." + soundIdentifier + ".volume");
 	}
@@ -95,7 +95,7 @@ void AudioManager::playSound(const std::string &audioID,
     //assert(vol >= V1 && vol <= V2);
     float volume = getParam("sfx.volume");
     logger_->debug() << "Looking for param: " << "sfx." + audioID + ".volume\n";
-    if (ParamReader::get()->hasParam("sfx." + audioID + ".volume")) 
+    if (ParamReader::get()->hasFloat("sfx." + audioID + ".volume")) 
 	{
         volume *= getParam("sfx." + audioID + ".volume");
 	}
