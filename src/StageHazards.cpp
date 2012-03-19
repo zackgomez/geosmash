@@ -9,7 +9,8 @@
 //////////////////////////////////////////////
 VolcanoHazard::VolcanoHazard(const glm::vec2 &pos) :
     GameEntity(),
-    t_(0.f)
+    t_(0.f),
+	active_(false)
 {
     pos_ = pos;
     size_  = glm::vec2(0.f);
@@ -123,7 +124,6 @@ void VolcanoHazard::render(float dt)
     if (t_ < getParam(pre_ + "startup"))
     {
         float fact = t_ / getParam(pre_ + "startup");
-        emitter_->setOutputRate(200 + 200*fact);
         // TODO Set parameters to make the steam grow
     }
     else if (t_ > getParam(pre_ + "startup")
