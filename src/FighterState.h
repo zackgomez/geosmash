@@ -74,12 +74,27 @@ public:
     virtual rectangle getRect() const;
 
 private:
-    // Dash startup timer.  Value >= 0 implies that the fighter is start to dash
-    float dashTime_;
     // Generic wait time, wait while value > 0
     float waitTime_;
-    bool dashing_;
     bool ducking_;
+};
+
+class DashingState : public FighterState
+{
+public:
+    DashingState(Fighter *f);
+    virtual ~DashingState();
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
+    virtual FighterState* hitByAttack(const Attack *attack);
+
+private:
+    // The time spent dashing in the current direction,
+    // always >= 0.f
+    float dashTime_;
 };
 
 class BlockingState : public FighterState
