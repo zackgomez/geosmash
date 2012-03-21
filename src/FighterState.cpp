@@ -424,7 +424,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         fighter_->vel_ = glm::vec2(0.f);
         return next;
     }
-    // Check for taunt
+    // Check for taunt up
     else if (controller.dpadu)
     {
         fighter_->attack_ = fighter_->attackMap_["tauntUp"]->clone();
@@ -432,6 +432,7 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         fighter_->attack_->start();
         return NULL;
     }
+    // Check for taunt down
     else if (controller.dpadd)
     {
         fighter_->attack_ = fighter_->attackMap_["tauntDown"]->clone();
@@ -464,6 +465,11 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     }
 
     // --- Deal with normal ground movement ---
+    // Start dashing if past pos and vel thresh, and both are in same direction
+    if (fabs(controller.joyx) > getParam("input.dashThresh")
+            && fabs(controller.joyxv) > getParam("input.velThresh")
+            && controller.joyx * controller.joyxv > 0)
+        return new DashingState(fighter_);
     // Just move around a bit based on the controller
     if (fabs(controller.joyx) > getParam("input.deadzone"))
     {
@@ -517,7 +523,6 @@ FighterState* GroundState::collisionWithGround(const rectangle &ground, bool col
         if (fighter_->attack_)
         {
             fighter_->attack_->cancel();
-            dashing_ = false;
             float dir = (fighter_->lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
             fighter_->pos_.x += dir * (fabs(fighter_->lastGround_.x - fighter_->pos_.x) - fighter_->lastGround_.w/2 - fighter_->size_.x/2 + 2);
         }
@@ -555,7 +560,8 @@ rectangle GroundState::getRect() const
 //// --------------------- DASHING STATE -----------------------------
 DashingState::DashingState(Fighter *f) :
     FighterState(f),
-    dashTime_(0.f)
+    dashTime_(0.f),
+    firstFrame_(true)
 {
     frameName_ = "GroundRunning";
 }
@@ -568,6 +574,7 @@ DashingState::~DashingState()
 FighterState* DashingState::processInput(controller_state &controller,
         float dt)
 {
+    dashTime_ += dt;
     // Do nothing while there is an active attack
     if (fighter_->attack_)
         return NULL;
@@ -600,7 +607,7 @@ FighterState* DashingState::processInput(controller_state &controller,
     // Set velocity
     if (fabs(controller.joyx) > getParam("input.deadzone"))
         fighter_->dir_ = glm::sign(controller.joyx);
-    fighter_->vel_.x = fighter_->dir_ * fighter_->param("dashSpeed")
+    fighter_->vel_.x = fighter_->dir_ * fighter_->param("dashSpeed");
     
     // No state change necessary if reached here
     return NULL;
@@ -608,6 +615,15 @@ FighterState* DashingState::processInput(controller_state &controller,
 
 void DashingState::render(float dt)
 {
+    if (firstFrame_)
+    {
+        ExplosionManager::get()->addPuff(
+                fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.4f,
+                fighter_->pos_.y - fighter_->size_.y * 0.45f, 
+                0.3f);
+        firstFrame_ = false;
+    }
+
     fighter_->renderHelper(dt, fighter_->color_);
 }
 
@@ -621,6 +637,7 @@ FighterState* DashingState::collisionWithGround(const rectangle &ground,
             fighter_->attack_->cancel();
             float dir = (fighter_->lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
             fighter_->pos_.x += dir * (fabs(fighter_->lastGround_.x - fighter_->pos_.x) - fighter_->lastGround_.w/2 - fighter_->size_.x/2 + 2);
+            return new GroundState(fighter_);
         }
         else
         {

@@ -20,7 +20,8 @@ public:
     virtual FighterState* processInput(controller_state&, float dt) = 0;
     // Called once per call to Fighter::update AFTER integration
     virtual void update(float dt);
-    // TODO description
+    // Called each time a frame is rendered.  This function SHOULD NOT change
+    // any values.
     virtual void render(float dt) = 0;
     // This function is called once every call to Fighter::collisionWithGround
     virtual FighterState* collisionWithGround(const rectangle &ground,
@@ -95,6 +96,9 @@ private:
     // The time spent dashing in the current direction,
     // always >= 0.f
     float dashTime_;
+
+    // For rendering only
+    bool firstFrame_;
 };
 
 class BlockingState : public FighterState
