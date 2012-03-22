@@ -396,7 +396,6 @@ FighterState* StickmanSideSpecial::attackCollision(const Attack *other)
 
 FighterState* StickmanSideSpecial::attackConnected(GameEntity *victim)
 {
-    std::cout << "REFLECTING...\n";
     // Turn the victim around
     victim->reflect();
     // don't hit them multiple times

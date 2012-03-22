@@ -325,8 +325,9 @@ FighterState* AirStunnedState::hitByAttack(const Attack *attack)
 
 //// ------------------------ GROUND STATE -------------------------
 GroundState::GroundState(Fighter *f, float delay, float invincTime) :
-    FighterState(f), dashTime_(-1), waitTime_(delay),
-    dashing_(false), ducking_(false)
+    FighterState(f),
+    waitTime_(delay),
+    ducking_(false)
 {
     frameName_ = "GroundNormal";
     fighter_->airData_.clear();
@@ -341,67 +342,38 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     // 'unduck' every frame
     ducking_ = false;
 
-    // XXX: HACK: This is a fix for the undesirable behavior of inputting a
-    // dash during the jump waiting period resulting in the dash not happening
-    // and instead the fighter simply starts walking
-    if (!dashing_ && waitTime_ >= 0 && dashTime_ < 0 &&
-            fabs(controller.joyx)  > getParam("input.dashThresh") &&
-            fabs(controller.joyxv) > getParam("input.velThresh"))
-    {
-        dashTime_ = 0;
-    }
-
     // Update running timers
     if (waitTime_ >= 0) waitTime_ -= dt;
-    // XXX why is this different than the rest?
-    if (dashTime_ >= 0) dashTime_ += dt;
-    else dashTime_ -= dt;
     // If the fighter is currently attacking, do nothing else
     if (fighter_->attack_) return NULL;
-    // Do nothing during dash startup
-    if (dashTime_ > 0 && dashTime_ < fighter_->param("dashStartupTime"))
-        return NULL;
     // Do nothing during generic wait time
-    if (waitTime_ > 0)
-        return NULL;
-
+    if (waitTime_ > 0) return NULL;
 
     // -- Deal with starting an attack --
     if (controller.pressa)
     {
-        // Check for dash attack
-        if (dashing_)
+        // No movement during attack
+        fighter_->vel_ = glm::vec2(0.f);
+        // Get direction of stick
+        glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
+        if (fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
         {
-            dashing_ = false;
-            fighter_->vel_.x = fighter_->dir_ * fighter_->param("dashSpeed");
-            fighter_->attack_ = fighter_->attackMap_["dash"]->clone();
+            // Do the L/R tilt
+            fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
+            fighter_->attack_ = fighter_->attackMap_["sideTilt"]->clone();
         }
-        // Not dashing- use a tilt
+        else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+        {
+            fighter_->attack_ = fighter_->attackMap_["downTilt"]->clone();
+        }
+        else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
+        {
+            fighter_->attack_ = fighter_->attackMap_["upTilt"]->clone();
+        }
         else
         {
-            // No movement during attack
-            fighter_->vel_ = glm::vec2(0.f);
-            // Get direction of stick
-            glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
-            if (fabs(controller.joyx) > getParam("input.tiltThresh") && fabs(tiltDir.x) > fabs(tiltDir.y))
-            {
-                // Do the L/R tilt
-                fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
-                fighter_->attack_ = fighter_->attackMap_["sideTilt"]->clone();
-            }
-            else if (controller.joyy < -getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-            {
-                fighter_->attack_ = fighter_->attackMap_["downTilt"]->clone();
-            }
-            else if (controller.joyy > getParam("input.tiltThresh") && fabs(tiltDir.x) < fabs(tiltDir.y))
-            {
-                fighter_->attack_ = fighter_->attackMap_["upTilt"]->clone();
-            }
-            else
-            {
-                // Neutral tilt attack
-                fighter_->attack_ = fighter_->attackMap_["neutralTilt"]->clone();
-            }
+            // Neutral tilt attack
+            fighter_->attack_ = fighter_->attackMap_["neutralTilt"]->clone();
         }
         // Do per attack stuff
         fighter_->attack_->setFighter(fighter_);
@@ -411,12 +383,9 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     // -- Check for grab start --
     else if (controller.pressrb)
     {
-        // Keep speed if we're dashing, stop creeping otherwise
-        if (!dashing_)
-        {
-            fighter_->vel_ = glm::vec2(0.f);
-            fighter_->accel_ = glm::vec2(0.f);
-        }
+        // Stop movement
+        fighter_->vel_ = glm::vec2(0.f);
+        fighter_->accel_ = glm::vec2(0.f);
         // Make sure we're facing the right direction
         if (fabs(controller.joyx) > getParam("input.deadzone"))
             fighter_->dir_ = controller.joyx > 0 ? 1 : -1;
@@ -452,26 +421,27 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         FighterState *next = performBMove(controller);
         // In the ground state, make sure the player stops moving before
         // ANY B move
-        fighter_->vel_.x = 0.f;
-        dashing_ = false;
+        fighter_->vel_ = glm::vec2(0.f);
         return next;
     }
-    // Check for taunt
-    else if (controller.dpadu && !dashing_)
+    // Check for taunt up
+    else if (controller.dpadu)
     {
         fighter_->attack_ = fighter_->attackMap_["tauntUp"]->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return NULL;
     }
-    else if (controller.dpadd && !dashing_)
+    // Check for taunt down
+    else if (controller.dpadd)
     {
         fighter_->attack_ = fighter_->attackMap_["tauntDown"]->clone();
         fighter_->attack_->setFighter(fighter_);
         fighter_->attack_->start();
         return NULL;
-    } // Check for smash attacks
-    else if (controller.pressx && !dashing_)
+    }
+    // Check for smash attacks
+    else if (controller.pressx)
     {
         glm::vec2 tiltDir = glm::normalize(glm::vec2(controller.joyx, controller.joyy));
         // No movement during smash attacks
@@ -494,85 +464,32 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
         return NULL;
     }
 
-    // --- Deal with dashing movement ---
-    if (dashing_ )
-    {
-        int newdir = controller.joyx < 0 ? -1 : 1;
-        // Check for change of dash direction
-        if (fighter_->dir_ != newdir && fabs(controller.joyxv) > getParam("input.velThresh") && fabs(controller.joyx) > getParam("input.dashMin"))
-        {
-            fighter_->dir_ = newdir;
-            fighter_->vel_.x = 0;
-            waitTime_ = fighter_->param("dashChangeTime");
-            // Draw a little puff
-            ExplosionManager::get()->addPuff(
-                    fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.4f, 
-                    fighter_->pos_.y - fighter_->size_.y * 0.45f,
-                    0.3f);
-            // Reset min dash time
-            dashTime_ = -1 + std::min(fighter_->param("dashChangeTime"), 0.99f);
-        }
-        // Check for drop out of dash
-        else if (fabs(controller.joyx) < getParam("input.dashMin")
-                && fabs(controller.joyxv) < getParam("input.velThresh")
-                && dashTime_ < -1 - fighter_->param("minDashTime"))
-        {
-            
-            dashing_ = false;
-            waitTime_ = fighter_->param("dashChangeTime");
-            fighter_->vel_.x = 0;
-            ExplosionManager::get()->addPuff(
-                    fighter_->pos_.x + fighter_->size_.x * fighter_->dir_ * 0.4f, 
-                    fighter_->pos_.y - fighter_->size_.y * 0.45f,
-                    0.3f);
-        }
-        // Otherwise just set the velocity
-        else
-        {
-            fighter_->vel_.x = fighter_->dir_ * fighter_->param("dashSpeed");
-            // TODO add puffs every x amount of time
-        }
-    }
     // --- Deal with normal ground movement ---
-    else
+    // Start dashing if past pos and vel thresh, and both are in same direction
+    if (fabs(controller.joyx) > getParam("input.dashThresh")
+            && fabs(controller.joyxv) > getParam("input.velThresh")
+            && controller.joyx * controller.joyxv > 0)
+        return new DashingState(fighter_);
+    // Just move around a bit based on the controller
+    if (fabs(controller.joyx) > getParam("input.deadzone"))
     {
-        // Just move around a bit based on the controller
-        if (fabs(controller.joyx) > getParam("input.deadzone"))
-        {
-            fighter_->vel_.x = controller.joyx * fighter_->param("walkSpeed");
-            fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
-        }
-        // Only move when controller is held
-        else
-            fighter_->vel_ = glm::vec2(0.f);
+        fighter_->vel_.x = controller.joyx * fighter_->param("walkSpeed");
+        fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
+    }
+    // Only move when controller is held
+    else
+        fighter_->vel_ = glm::vec2(0.f);
 
-        // --- Check for dashing startup complete ---
-        if (dashTime_ > fighter_->param("dashStartupTime"))
-        {
-            dashing_ = true;
-            dashTime_ = -1;
-        }
-        // --- Check for dashing transition start
-        else if (fabs(controller.joyx) > getParam("input.dashThresh")
-                && fabs(controller.joyxv) > getParam("input.velThresh") && dashTime_ < 0)
-        {
-            dashTime_ = 0;
-            fighter_->vel_.x = 0;
-            fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
-            // Draw a little puff
-            ExplosionManager::get()->addPuff(
-                    fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.4f, 
-                    fighter_->pos_.y - fighter_->size_.y * 0.45f,
-                    0.3f);
-        }
-
-        if (controller.joyy < getParam("input.duckThresh"))
-            ducking_ = true;
+    // Ducking
+    if (controller.joyy < getParam("input.duckThresh"))
+    {
+        ducking_ = true;
+        frameName_ = "Ducking";
     }
 
     // --- Check to see if they want to start a jump ---
     if (controller.pressy)
-        return new AirNormalState(fighter_, true);
+        return new AirNormalState(fighter_, /*jumping*/ true);
     // No state change
     return NULL;
 }
@@ -584,16 +501,12 @@ void GroundState::render(float dt)
             jumpTime_, dashTime_, waitTime_, ducking_);
             */
 
+    // XXX never set frameName_ in render
     frameName_ = "GroundNormal";
-    if (dashing_)
-        frameName_ = "GroundRunning";
-    if (dashing_ && waitTime_ > 0.f)
-        frameName_ = "DashChange";
-
     if (ducking_)
         frameName_ = "Ducking";
     // if not ducking and moving, then walking
-    else if (!dashing_ && fabs(fighter_->vel_.x) > 0)
+    else if (fabs(fighter_->vel_.x) > 0)
         frameName_ = "GroundWalking";
 
     glm::vec3 color = fighter_->color_;
@@ -610,7 +523,6 @@ FighterState* GroundState::collisionWithGround(const rectangle &ground, bool col
         if (fighter_->attack_)
         {
             fighter_->attack_->cancel();
-            dashing_ = false;
             float dir = (fighter_->lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
             fighter_->pos_.x += dir * (fabs(fighter_->lastGround_.x - fighter_->pos_.x) - fighter_->lastGround_.w/2 - fighter_->size_.x/2 + 2);
         }
@@ -645,7 +557,104 @@ rectangle GroundState::getRect() const
     return r;
 }
 
-//// -------------------- AIR NORMAL STATE -----------------------------
+//// --------------------- DASHING STATE -----------------------------
+DashingState::DashingState(Fighter *f) :
+    FighterState(f),
+    dashTime_(0.f),
+    firstFrame_(true)
+{
+    frameName_ = "GroundRunning";
+}
+
+DashingState::~DashingState()
+{
+    // nop
+}
+
+FighterState* DashingState::processInput(controller_state &controller,
+        float dt)
+{
+    dashTime_ += dt;
+    // Do nothing while there is an active attack
+    if (fighter_->attack_)
+        return NULL;
+
+    // First check for jump
+    if (controller.pressy)
+        return new AirNormalState(fighter_, /*jumping*/ true);
+    // Check for dash attack (normal attack)
+    if (controller.pressa)
+    {
+        // Set up the dash attack
+        fighter_->attack_ = fighter_->attackMap_["dash"]->clone();
+        fighter_->attack_->setFighter(fighter_);
+        fighter_->attack_->start();
+
+        // After the attack, we want to be in the GroundNormal state
+        return new GroundState(fighter_);
+    }
+    // check for special attacks
+    if (controller.pressb)
+        return performBMove(controller, /*ground*/true);
+    // Check for grab
+    if (controller.pressrb)
+        return new GrabbingState(fighter_);
+
+    // --- Deal with movement ---
+    // First check for drop into GroundNormal
+    if (fabs(controller.joyx) < getParam("input.dashMin"))
+        return new GroundState(fighter_);
+    // Set velocity
+    if (fabs(controller.joyx) > getParam("input.deadzone"))
+        fighter_->dir_ = glm::sign(controller.joyx);
+    fighter_->vel_.x = fighter_->dir_ * fighter_->param("dashSpeed");
+    
+    // No state change necessary if reached here
+    return NULL;
+}
+
+void DashingState::render(float dt)
+{
+    if (firstFrame_)
+    {
+        ExplosionManager::get()->addPuff(
+                fighter_->pos_.x - fighter_->size_.x * fighter_->dir_ * 0.4f,
+                fighter_->pos_.y - fighter_->size_.y * 0.45f, 
+                0.3f);
+        firstFrame_ = false;
+    }
+
+    fighter_->renderHelper(dt, fighter_->color_);
+}
+
+FighterState* DashingState::collisionWithGround(const rectangle &ground,
+        bool collision, bool platform)
+{
+    if (!collision)
+    {
+        if (fighter_->attack_)
+        {
+            fighter_->attack_->cancel();
+            float dir = (fighter_->lastGround_.x - fighter_->pos_.x) > 0 ? 1 : -1;
+            fighter_->pos_.x += dir * (fabs(fighter_->lastGround_.x - fighter_->pos_.x) - fighter_->lastGround_.w/2 - fighter_->size_.x/2 + 2);
+            return new GroundState(fighter_);
+        }
+        else
+        {
+            return new AirNormalState(fighter_);
+        }
+    }
+
+    // Collision?, then keep dashing
+    return NULL;
+}
+
+FighterState* DashingState::hitByAttack(const Attack *attack)
+{
+    return FighterState::calculateHitResult(attack);
+}
+
+//// -------------------- AIR NORMAL STATE ---------------------------
 BlockingState::BlockingState(Fighter *f) :
     FighterState(f), waitTime_(0.f), dazeTime_(0.f), hitStunTime_(0.f), stepTime_(0.f)
 {

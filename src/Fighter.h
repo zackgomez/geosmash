@@ -131,14 +131,14 @@ private:
 
     friend class FighterState;
     friend class GroundState;
-    friend class DashState;
+    friend class DashingState;
     friend class AirNormalState;
     friend class AirStunnedState;
     friend class DodgeState;
-    friend class DeadState;
-    friend class RespawnState;
     friend class BlockingState;
     friend class LedgeGrabState;
+    friend class DeadState;
+    friend class RespawnState;
     friend class CounterState;
     friend class UpSpecialState;
     friend class GrabbingState;

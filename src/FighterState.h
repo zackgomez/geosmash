@@ -20,7 +20,8 @@ public:
     virtual FighterState* processInput(controller_state&, float dt) = 0;
     // Called once per call to Fighter::update AFTER integration
     virtual void update(float dt);
-    // TODO description
+    // Called each time a frame is rendered.  This function SHOULD NOT change
+    // any values.
     virtual void render(float dt) = 0;
     // This function is called once every call to Fighter::collisionWithGround
     virtual FighterState* collisionWithGround(const rectangle &ground,
@@ -74,12 +75,30 @@ public:
     virtual rectangle getRect() const;
 
 private:
-    // Dash startup timer.  Value >= 0 implies that the fighter is start to dash
-    float dashTime_;
     // Generic wait time, wait while value > 0
     float waitTime_;
-    bool dashing_;
     bool ducking_;
+};
+
+class DashingState : public FighterState
+{
+public:
+    DashingState(Fighter *f);
+    virtual ~DashingState();
+
+    virtual FighterState* processInput(controller_state&, float dt);
+    virtual void render(float dt);
+    virtual FighterState* collisionWithGround(const rectangle &ground, bool collision,
+            bool platform);
+    virtual FighterState* hitByAttack(const Attack *attack);
+
+private:
+    // The time spent dashing in the current direction,
+    // always >= 0.f
+    float dashTime_;
+
+    // For rendering only
+    bool firstFrame_;
 };
 
 class BlockingState : public FighterState
