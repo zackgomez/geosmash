@@ -16,7 +16,6 @@ public:
     MenuWidget() : enabled_(true) { }
     virtual ~MenuWidget() { }
 
-    virtual int value() const = 0;
     virtual void handleInput(float val) = 0;
     virtual void render(const glm::vec2 &center,
             const glm::vec2 &size, bool highlight) const = 0;
@@ -27,21 +26,20 @@ protected:
     bool enabled_;
 };
 
-class NumberSelectWidget : public MenuWidget
+class IntegerSelectWidget : public MenuWidget
 {
 public:
-    NumberSelectWidget(const std::string &name,
-            int min, int max, int defval = 0);
+    IntegerSelectWidget(const std::string &name,
+            const std::string &varname,
+            int min, int max);
     
-    int value() const;
     void handleInput(float val);
     void render(const glm::vec2 &center,
             const glm::vec2 &size, bool highlight) const;
 
 private:
-    std::string name_;
+    std::string name_, varname_;
     int min_, max_;
-    int value_;
     bool primed_;
 };
 
@@ -50,26 +48,38 @@ class StringSelectWidget : public MenuWidget
 {
 public:
     StringSelectWidget(const std::string &name,
-            const std::vector<std::string> &strings, int defval = -1);
+            const std::string &varname,
+            const std::vector<std::string> &strings);
     
-    int value() const;
     void handleInput(float val);
     void render(const glm::vec2 &center,
             const glm::vec2 &size, bool highlight) const;
 
-    std::string strValue() const;
-
 private:
     std::string name_;
-    std::vector<std::string> values_;
-    int idx_;
+    std::string varname_;
+    std::string idxname_;
+    std::vector<std::string> strings_;
+    bool primed_;
+};
+
+class BoolSelectWidget : public MenuWidget
+{
+public:
+    BoolSelectWidget(const std::string &name, const std::string &varname);
+    void handleInput(float val);
+    void render(const glm::vec2 &center,
+            const glm::vec2 &size, bool highlight) const;
+
+private:
+    std::string name_, varname_;
     bool primed_;
 };
 
 class PlayerWidget
 {
 public:
-    explicit PlayerWidget(int playerID, const bool *teams, const bool *handicap);
+    explicit PlayerWidget(int playerID);
     ~PlayerWidget();
 
     bool isActive() const;
@@ -77,33 +87,21 @@ public:
     void processInput(Controller *controller, float dt);
     void render(const glm::vec2 &center, const glm::vec2 &size, float dt);
 
-    int getTeamID() const;
-    int getProfileID() const;
-    int getColorID() const;
-    int getFighterID() const;
-    glm::vec3 getColor(int colorScheme = 0) const;
-    std::string getUsername() const;
-    std::string getFighterName() const;
-    int getHandicapLives() const;
-
 private:
     void renderFighter(const glm::mat4 &transform, const glm::vec3 &color);
-    int playerID_;
 
-    bool active_;
+    int playerID_;
+    std::string prefix_;
 
     StringSelectWidget *usernameWidget_;
     StringSelectWidget *teamIDWidget_;
     StringSelectWidget *fighterWidget_;
-    NumberSelectWidget *handicapWidget_;
+    IntegerSelectWidget *handicapWidget_;
 
     int widgetIdx_;
     std::vector<MenuWidget*> widgets_;
-    int colorIdx_;
 
     bool widgetChangePrimed_;
-
-    const bool *teams_, *handicap_;
 };
 
 class MenuState : public GameState
@@ -122,7 +120,6 @@ private:
     std::vector<PlayerWidget*> widgets_;
     std::vector<MenuWidget*> topWidgets_;
 
-    bool teams_, handicap_;
     int topMenuController_;
     size_t topWidgetIdx_;
 

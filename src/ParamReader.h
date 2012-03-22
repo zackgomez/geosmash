@@ -5,6 +5,14 @@
 #include <sstream>
 #include "Logger.h"
 
+// Global convenience methods
+float getParam(const std::string &param);
+const std::string& strParam(const std::string &param);
+
+void setParam(const std::string &key, float value);
+void setParam(const std::string &key, const std::string &value);
+
+
 class ParamReader
 {
 public:
@@ -31,7 +39,4 @@ private:
     std::map<std::string, float> floatParams_;
     std::map<std::string, std::string> stringParams_;
 };
-
-float getParam(const std::string &param);
-const std::string& strParam(const std::string &param);
 

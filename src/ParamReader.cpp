@@ -130,3 +130,13 @@ const std::string& strParam(const std::string &param)
     return ParamReader::get()->getString(param);
 }
 
+void setParam(const std::string &key, float value)
+{
+    ParamReader::get()->setParam(key, value);
+}
+
+void setParam(const std::string &key, const std::string &value)
+{
+    ParamReader::get()->setParam(key, value);
+}
+

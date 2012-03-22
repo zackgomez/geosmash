@@ -17,6 +17,8 @@
 #include "kiss-skeleton.h"
 
 void checkForJoysticks(unsigned maxPlayers);
+static std::string getPlayerMenuPrefix(int playerID);
+static glm::vec3 getColor(const std::string &prefix);
 
 static const glm::vec3 playerColors__[] =
 {
@@ -50,11 +52,34 @@ static const glm::vec3 teamColorsB[] =
     glm::vec3(0.8, 0.2, 0.8),  // pink
 };
 
+glm::vec3 getColor(const std::string &prefix)
+{
+    if (getParam("menu.teams"))
+    {
+        int teamID = getParam(prefix + "teamIDidx");
+        assert(teamID >= 0 && teamID < 4);
+        // TODO this is a bit naive...
+        return teamColorsA[teamID];
+    }
+    else
+    {
+        int colorIdx = getParam(prefix + "colorIdx");
+        assert(colorIdx >= 0 && colorIdx < playerColors.size());
+        return playerColors[colorIdx];
+    }
+}
+
+std::string getPlayerMenuPrefix(int playerID)
+{
+    std::stringstream ss;
+    ss << "menu.player" << playerID << '.';
+    return ss.str();
+}
+
+
 static const std::string teamStrs_[] = {"A", "B", "C", "D"};
 static const std::string *teamStrs__ = teamStrs_;
 static const std::vector<std::string> teamStrs(teamStrs__, teamStrs__ + 4);
-static const std::string boolStrs_[] = {"OFF", "ON"};
-static const std::vector<std::string> boolStrs(boolStrs_, boolStrs_+2);
 static const std::string fighterStrs_[] = {"charlie", "stickman"};
 static const std::vector<std::string> fighterStrs(fighterStrs_, fighterStrs_+2);
 
@@ -62,42 +87,40 @@ static const glm::vec3 widgetSelColor      = glm::vec3(.9, .9, .9);
 static const glm::vec3 widgetEnabledColor  = glm::vec3(.3, .3, .3);
 static const glm::vec3 widgetDisabledColor = glm::vec3(.1, .1, .1);
 
-static struct
+void setDefaultState()
 {
-    int lives;
-    bool teams;
-    bool recordStats;
-    bool handicap;
-    int stageIdx;
-    int profileID[4];
-    int fighterID[4];
-    int teamID[4];
-    bool active[4];
-    int colors[4];
-    int handicaps[4];
-} defstate =
-{
-    4,
-    false,
-    true,
-    false,
-    0,
-    {0, 0, 0, 0},
-    {0, 0, 0, 0},
-    {0, 1, 2, 3},
-    {false, false, false, false},
-    {0, 1, 2, 3},
-    {0, 0, 0, 0},
-};
+    if (ParamReader::get()->hasFloat("menu.lives"))
+        return;
 
-NumberSelectWidget::NumberSelectWidget(const std::string &name, int min, int max, int defval) :
-    name_(name), min_(min), max_(max), value_(min), primed_(false)
-{
-    if (defval != -1)
-        value_ = defval;
+    ParamReader::get()->setParam("menu.lives", 4);
+    ParamReader::get()->setParam("menu.teams", 0);
+    ParamReader::get()->setParam("menu.recordStats", 1);
+    ParamReader::get()->setParam("menu.handicap", 0);
+    ParamReader::get()->setParam("menu.stageidx", 0);
+
+    // Loop over players 0-3
+    for (int i = 0; i < 4; i++)
+    {
+        std::string prefix = getPlayerMenuPrefix(i);
+
+        ParamReader::get()->setParam(prefix + "profileidx", 0);
+        ParamReader::get()->setParam(prefix + "fighteridx", 0);
+        ParamReader::get()->setParam(prefix + "teamIDidx", i);
+        ParamReader::get()->setParam(prefix + "active", 0);
+        ParamReader::get()->setParam(prefix + "colorIdx", i);
+        ParamReader::get()->setParam(prefix + "handicap", 0);
+    }
 }
 
-void NumberSelectWidget::handleInput(float val)
+IntegerSelectWidget::IntegerSelectWidget(const std::string &name,
+        const std::string &varname,
+        int min, int max) :
+    name_(name), varname_(varname), min_(min), max_(max), primed_(false)
+{
+    //nop
+}
+
+void IntegerSelectWidget::handleInput(float val)
 {
     if (fabs(val) < getParam("menu.deadzone"))
     {
@@ -110,12 +133,13 @@ void NumberSelectWidget::handleInput(float val)
 
     int sign = val > 0 ? 1 : -1;
 
-    value_ += sign;
-    value_ = std::max(std::min(value_, max_), min_);
+    int newval = getParam(varname_) + sign;
+    newval = glm::clamp(newval, min_, max_);
+    setParam(varname_, newval);
     primed_ = false;
 }
 
-void NumberSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
+void IntegerSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
         bool selected) const
 {
     //if (selected) assert(enabled_);
@@ -135,35 +159,24 @@ void NumberSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
             name_);
 
     // Render value
-    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * (FontManager::numDigits(value_)/2.f + 1.f), 0.f);
+    int val = getParam(varname_);
+    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * (FontManager::numDigits(val)/2.f + 1.f), 0.f);
     transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
             glm::vec3(charsize, -charsize, 1.f));
     FontManager::get()->renderNumber(
             transform,
             color,
-            value_);
-}
-
-int NumberSelectWidget::value() const
-{
-    return value_;
+            val);
 }
 
 StringSelectWidget::StringSelectWidget(const std::string &name,
-        const std::vector<std::string> &strings, int defval) :
-    name_(name), values_(strings), idx_(defval), primed_(false)
+        const std::string &varname,
+        const std::vector<std::string> &strings) :
+    name_(name), varname_(varname), idxname_(varname), strings_(strings), primed_(false)
 {
-}
-
-int StringSelectWidget::value() const
-{
-    return idx_;
-}
-
-std::string StringSelectWidget::strValue() const
-{
-    return values_[idx_];
+    idxname_.append("idx");
+    setParam(varname_, strings_[getParam(idxname_)]);
 }
 
 void StringSelectWidget::handleInput(float val)
@@ -179,8 +192,10 @@ void StringSelectWidget::handleInput(float val)
 
     int sign = val > 0 ? 1 : -1;
 
-    idx_ += sign;
-    idx_ = std::max(std::min(idx_, (int)values_.size() - 1), 0);
+    int newval = getParam(idxname_) + sign;
+    newval = glm::clamp(newval, 0, (int)strings_.size() - 1);
+    setParam(idxname_, newval);
+    setParam(varname_, strings_[newval]);
     primed_ = false;
 }
 
@@ -204,32 +219,94 @@ void StringSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
             name_);
 
     // Render value
-    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * (values_[idx_].length()/2.f + 1.f), 0.f);
+    const std::string &val = strParam(varname_);
+    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * (val.length()/2.f + 1.f), 0.f);
     transform = glm::scale(
             glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
             glm::vec3(charsize, -charsize, 1.f));
     FontManager::get()->renderString(
             transform,
             color,
-            values_[idx_]);
+            val);
 }
 
-PlayerWidget::PlayerWidget(int playerID, const bool *teams, const bool *handicap) :
+BoolSelectWidget::BoolSelectWidget(const std::string &name,
+        const std::string &varname) :
+    name_(name), varname_(varname),
+    primed_(false)
+{
+}
+
+void BoolSelectWidget::handleInput(float val)
+{
+    if (fabs(val) < getParam("menu.deadzone"))
+    {
+        primed_ = true;
+        return;
+    }
+
+    if (!primed_)
+        return;
+
+    int newval = val > 0 ? 1 : 0;
+    setParam(varname_, newval);
+    primed_ = false;
+}
+
+void BoolSelectWidget::render(const glm::vec2 &center, const glm::vec2 &size,
+        bool selected) const
+{
+    if (selected) assert(enabled_);
+    const float charsize = size.y;
+    glm::mat4 transform;
+    glm::vec3 color = selected ? widgetSelColor : widgetEnabledColor;
+    color = enabled_ ? color : widgetDisabledColor;
+
+    // Render name
+    glm::vec2 strcenter = center - glm::vec2(0.75f * charsize * name_.length()/2.f, 0.f);
+    transform = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(strcenter, 0.f)),
+            glm::vec3(charsize, -charsize, 1.f));
+    FontManager::get()->renderString(
+            transform,
+            color,
+            name_);
+
+    // Render value
+    const std::string &val = getParam(varname_) ? "ON" : "OFF";
+    glm::vec2 valcenter = center + glm::vec2(0.75f * charsize * (val.length()/2.f + 1.f), 0.f);
+    transform = glm::scale(
+            glm::translate(glm::mat4(1.f), glm::vec3(valcenter, 0.f)),
+            glm::vec3(charsize, -charsize, 1.f));
+    FontManager::get()->renderString(
+            transform,
+            color,
+            val);
+}
+
+PlayerWidget::PlayerWidget(int playerID) :
     playerID_(playerID),
-    active_(defstate.active[playerID]),
     usernameWidget_(NULL),
     teamIDWidget_(NULL),
     widgetIdx_(0),
-    colorIdx_(defstate.colors[playerID]),
-    widgetChangePrimed_(false),
-    teams_(teams), handicap_(handicap)
+    widgetChangePrimed_(false)
 {
     assert(playerID < 4);
-    usernameWidget_ = new StringSelectWidget("Profile ", StatsManager::get()->getUsernames(),
-            defstate.profileID[playerID]);
-    fighterWidget_ = new StringSelectWidget("Fighter ", fighterStrs, defstate.fighterID[playerID]);
-    teamIDWidget_ = new StringSelectWidget("Team ", teamStrs, defstate.teamID[playerID]);
-    handicapWidget_ = new NumberSelectWidget("Handicap ", 0, 9, defstate.handicaps[playerID]);
+    prefix_ = getPlayerMenuPrefix(playerID);
+
+    usernameWidget_ = new StringSelectWidget("Profile ",
+            prefix_ + "profile",
+            StatsManager::get()->getUsernames());
+    fighterWidget_ = new StringSelectWidget("Fighter ",
+            prefix_ + "fighter",
+            fighterStrs);
+    teamIDWidget_ = new StringSelectWidget("Team ",
+            prefix_ + "teamID",
+            teamStrs);
+    handicapWidget_ = new IntegerSelectWidget("Handicap ",
+            prefix_ + "handicap",
+            0, 9);
+
     widgets_.push_back(usernameWidget_);
     widgets_.push_back(fighterWidget_);
     widgets_.push_back(teamIDWidget_);
@@ -244,24 +321,36 @@ PlayerWidget::~PlayerWidget()
     delete handicapWidget_;
 }
 
-bool PlayerWidget::isActive() const { return active_; }
+bool PlayerWidget::isActive() const
+{
+    return getParam(prefix_ + "active");
+}
 
 void PlayerWidget::processInput(Controller *controller, float dt)
 {
     // A to join
     if (controller->getState().pressa)
-        active_ = true;
+    {
+        setParam(prefix_ + "active", 1);
+        return;
+    }
 
-    if (!active_)
+    if (!isActive())
         return;
 
     // B to leave
     if (controller->getState().pressb)
-        active_ = false;
+    {
+        setParam(prefix_ + "active", 0);
+        return;
+    }
 
     // X to change color
     if (controller->getState().pressx)
-        colorIdx_ = (colorIdx_ + 1) % playerColors.size();
+    {
+        int newval = ((int)getParam(prefix_ + "colorIdx") + 1) % playerColors.size();
+        setParam(prefix_ + "colorIdx", newval);
+    }
 
     // Left stick
     float xval = controller->getState().joyx;
@@ -305,34 +394,17 @@ void PlayerWidget::processInput(Controller *controller, float dt)
     widgets_[widgetIdx_]->handleInput(xval);
 }
 
-glm::vec3 PlayerWidget::getColor(int colorScheme) const
-{
-    if (!(*teams_))
-    {
-        assert(colorScheme == 0);
-        return playerColors[colorIdx_];
-    }
-    else
-    {
-        if (colorScheme == 0)
-            return teamColorsA[teamIDWidget_->value()];
-        else if (colorScheme == 1)
-            return teamColorsB[teamIDWidget_->value()];
-        else
-            assert(false && "Unknown color scheme to PlayerWidget::getColor");
-    }
-}
-
 void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float dt)
 {
     glm::mat4 trans;
-    const glm::vec3 color = getColor();
+    const glm::vec3 color = getColor(prefix_);
 
     // Update widget enabled status
-    teamIDWidget_->setEnabled(*teams_);
-    handicapWidget_->setEnabled(*handicap_);
+    teamIDWidget_->setEnabled(getParam("menu.teams"));
+    handicapWidget_->setEnabled(getParam("menu.handicap"));
 
-    if (!active_)
+    const bool active = getParam(prefix_ + "active");
+    if (!active)
     {
         trans = glm::scale(glm::translate(glm::mat4(1.f),
                     glm::vec3(center.x, center.y, -0.1f)),
@@ -361,7 +433,7 @@ void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float 
 
 void PlayerWidget::renderFighter(const glm::mat4 &transform, const glm::vec3 &color)
 {
-    std::string fighter = fighterWidget_->strValue() ;
+    std::string fighter = strParam(prefix_ + "fighter");
     // Scale for each bixel being 5 game units
     if (fighter == "charlie")
     {
@@ -375,52 +447,15 @@ void PlayerWidget::renderFighter(const glm::mat4 &transform, const glm::vec3 &co
         assert(false && "Unknown fighter to render");
 }
 
-int PlayerWidget::getTeamID() const
-{
-    return *teams_ ? teamIDWidget_->value() : playerID_;
-}
-
-int PlayerWidget::getProfileID() const
-{
-    return usernameWidget_->value();
-}
-
-std::string PlayerWidget::getUsername() const
-{
-    return usernameWidget_->strValue();
-}
-
-int PlayerWidget::getFighterID() const
-{
-    return fighterWidget_->value();
-}
-
-std::string PlayerWidget::getFighterName() const
-{
-    return fighterWidget_->strValue();
-}
-
-int PlayerWidget::getColorID() const
-{
-    return colorIdx_;
-}
-
-int PlayerWidget::getHandicapLives() const
-{
-    // Only return handicap lives if handicap is enabled
-    if (*handicap_)
-        return handicapWidget_->value();
-    return 0;
-}
-
 MenuState::MenuState() :
-    teams_(defstate.teams),
-    handicap_(defstate.handicap),
     topMenuController_(-1),
     topWidgetIdx_(0),
     topWidgetChangePrimed_(false)
 {
     logger_ = Logger::getLogger("MenuState");
+
+    // Set up params (if necessary)
+    setDefaultState();
 
     // Start the menu soundtrack
     AudioManager::get()->setSoundtrack("sfx/02 Escape Velocity (loop).ogg");
@@ -430,13 +465,13 @@ MenuState::MenuState() :
     boolstrs.push_back("no"); boolstrs.push_back("yes");
 
     for (int i = 0; i < 4; i++)
-        widgets_.push_back(new PlayerWidget(i, &teams_, &handicap_));
+        widgets_.push_back(new PlayerWidget(i));
 
-    topWidgets_.push_back(new NumberSelectWidget("Lives", 1, 99, defstate.lives));
-    topWidgets_.push_back(new StringSelectWidget("Teams", boolStrs, defstate.teams));
-    topWidgets_.push_back(new StringSelectWidget("Stats", boolStrs, defstate.recordStats));
-    topWidgets_.push_back(new StringSelectWidget("Handicap", boolStrs, defstate.handicap));
-    topWidgets_.push_back(new StringSelectWidget("Stage", StageManager::get()->getStageNames(), defstate.stageIdx));
+    topWidgets_.push_back(new IntegerSelectWidget("Lives", "menu.lives", 1, 99));
+    topWidgets_.push_back(new BoolSelectWidget("Teams", "menu.teams"));
+    topWidgets_.push_back(new BoolSelectWidget("Stats", "menu.recordStats"));
+    topWidgets_.push_back(new BoolSelectWidget("Handicap", "menu.handicap"));
+    topWidgets_.push_back(new StringSelectWidget("Stage", "menu.stage", StageManager::get()->getStageNames()));
 
     getProjectionMatrixStack().clear();
     getViewMatrixStack().clear();
@@ -497,7 +532,6 @@ GameState* MenuState::processInput(const std::vector<Controller*> &controllers, 
 {
     bool shouldStart = false;
     int startingPlayer = -1;
-    std::set<int> teams;
     for (size_t i = 0; i < widgets_.size() && i < controllers.size(); i++)
     {
         // Check for start
@@ -505,17 +539,13 @@ GameState* MenuState::processInput(const std::vector<Controller*> &controllers, 
         if (shouldStart && startingPlayer == -1)
             startingPlayer = i;
 
-        // Keep track of teams selected
-        if (widgets_[i]->isActive())
-            teams.insert(widgets_[i]->getTeamID());
-
         // Check for y button to transition to top menu
         if (widgets_[i]->isActive() && controllers[i]->getState().pressy
                 && topMenuController_ == -1)
         {
             topMenuController_ = i;
             topWidgetIdx_ = 0;
-            controllers[i]->clearPresses();
+            continue;
         }
 
         if (i == topMenuController_)
@@ -530,7 +560,8 @@ GameState* MenuState::processInput(const std::vector<Controller*> &controllers, 
 
 
     // start when someone asks to and either at least two teams, or it's debug mode
-    if (shouldStart && (teams.size() >= 2 || getParam("debug")))
+    // TODO make this require at least 2 teams
+    if (shouldStart /* && (atleast2teams) */)
     {
         logger_->debug() << "Starting a new game by from Player " << startingPlayer+1 << "'s request\n";
         return newGame(controllers);
@@ -568,20 +599,15 @@ void MenuState::handleTopMenu(Controller *controller)
 
     // Now deal with change value on widget
     topWidgets_[topWidgetIdx_]->handleInput(yval);
-
-    // Set teams value accordingly
-    teams_ = topWidgets_[1]->value();
-    // Set handicap value accordingly
-    handicap_ = topWidgets_[3]->value();
 }
 
 
 GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
 {
-    int lives = topWidgets_[0]->value();
-    bool recordStats = topWidgets_[2]->value();
-    bool handicap = topWidgets_[3]->value();
-    std::string stage = ((StringSelectWidget*)topWidgets_[4])->strValue();
+    int lives = getParam("menu.lives");
+    bool recordStats = getParam("menu.recordStats");
+    bool handicap = getParam("menu.handicap");
+    std::string stage = strParam("menu.stage");
 
     std::vector<Player *> players;
     std::vector<Fighter *> fighters;
@@ -590,14 +616,15 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
 
     for (size_t i = 0; i < widgets_.size(); i++)
     {
-        if (widgets_[i]->isActive())
+        std::string prefix = getPlayerMenuPrefix(i);
+        if (getParam(prefix + "active"))
         {
-            int teamID = widgets_[i]->getTeamID();
-            glm::vec3 color = widgets_[i]->getColor(teamCounts[teamID]);
-            std::string username = widgets_[i]->getUsername();
-            std::string fighterName = widgets_[i]->getFighterName();
+            int teamID = getParam(prefix + "teamIDidx");
+            glm::vec3 color = getColor(prefix);
+            std::string username = strParam(prefix + "profile");
+            std::string fighterName = strParam(prefix + "fighter");
 
-            int handicapLives = widgets_[i]->getHandicapLives();
+            int handicapLives = handicap ? getParam(prefix + "handicap") : 0;
 
             Fighter *fighter = new Fighter(color, i, teamID,
                     lives + handicapLives, username, fighterName);
@@ -619,34 +646,6 @@ GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
                 controllers[i]->clearPresses();
             }
             players.push_back(player);
-        }
-    }
-
-    // Save the state for next time
-    defstate.lives = lives;
-    defstate.teams = teams_;
-    defstate.recordStats = recordStats;
-    defstate.handicap = handicap;
-    defstate.stageIdx = topWidgets_[4]->value();
-    for (size_t i = 0; i < widgets_.size(); i++)
-    {
-        if (widgets_[i]->isActive())
-        {
-            defstate.active[i] = true;
-            defstate.teamID[i] = widgets_[i]->getTeamID();
-            defstate.profileID[i] = widgets_[i]->getProfileID();
-            defstate.fighterID[i] = widgets_[i]->getFighterID();
-            defstate.colors[i] = widgets_[i]->getColorID();
-            defstate.handicaps[i] = widgets_[i]->getHandicapLives();
-        }
-        else
-        {
-            defstate.active[i] = false;
-            defstate.teamID[i] = i;
-            defstate.profileID[i] = 0;
-            defstate.fighterID[i] = 0;
-            defstate.colors[i] = i;
-            defstate.handicaps[i] = 0;
         }
     }
 
