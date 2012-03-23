@@ -1,5 +1,5 @@
 #include "MenuState.h"
-#include "InGameState.h"
+#include "LevelSelectState.h"
 #include "GameState.h"
 #include "Fighter.h"
 #include <cassert>
@@ -17,8 +17,6 @@
 #include "kiss-skeleton.h"
 
 void checkForJoysticks(unsigned maxPlayers);
-static std::string getPlayerMenuPrefix(int playerID);
-static glm::vec3 getColor(const std::string &prefix);
 
 static const glm::vec3 playerColors__[] =
 {
@@ -52,8 +50,9 @@ static const glm::vec3 teamColorsB[] =
     glm::vec3(0.8, 0.2, 0.8),  // pink
 };
 
-glm::vec3 getColor(const std::string &prefix)
+glm::vec3 MenuState::getPlayerColor(int playerID)
 {
+    std::string prefix = getPlayerMenuPrefix(playerID);
     if (getParam("menu.teams"))
     {
         int teamID = getParam(prefix + "teamIDidx");
@@ -69,7 +68,7 @@ glm::vec3 getColor(const std::string &prefix)
     }
 }
 
-std::string getPlayerMenuPrefix(int playerID)
+std::string MenuState::getPlayerMenuPrefix(int playerID)
 {
     std::stringstream ss;
     ss << "menu.player" << playerID << '.';
@@ -81,8 +80,7 @@ static const std::string teamStrs_[] = {"A", "B", "C", "D"};
 static const std::string *teamStrs__ = teamStrs_;
 static const std::vector<std::string> teamStrs(teamStrs__, teamStrs__ + 4);
 static const std::string fighterStrs_[] = {"charlie", "stickman"};
-static const std::vector<std::string> fighterStrs(fighterStrs_, fighterStrs_+2);
-
+static const std::vector<std::string> fighterStrs(fighterStrs_, fighterStrs_+2); 
 static const glm::vec3 widgetSelColor      = glm::vec3(.9, .9, .9);
 static const glm::vec3 widgetEnabledColor  = glm::vec3(.3, .3, .3);
 static const glm::vec3 widgetDisabledColor = glm::vec3(.1, .1, .1);
@@ -96,12 +94,13 @@ void setDefaultState()
     ParamReader::get()->setParam("menu.teams", 0);
     ParamReader::get()->setParam("menu.recordStats", 1);
     ParamReader::get()->setParam("menu.handicap", 0);
-    ParamReader::get()->setParam("menu.stageidx", 0);
+    ParamReader::get()->setParam("menu.stage",
+            StageManager::get()->getStageNames().front());
 
     // Loop over players 0-3
     for (int i = 0; i < 4; i++)
     {
-        std::string prefix = getPlayerMenuPrefix(i);
+        std::string prefix = MenuState::getPlayerMenuPrefix(i);
 
         ParamReader::get()->setParam(prefix + "profileidx", 0);
         ParamReader::get()->setParam(prefix + "fighteridx", 0);
@@ -292,7 +291,7 @@ PlayerWidget::PlayerWidget(int playerID) :
     widgetChangePrimed_(false)
 {
     assert(playerID < 4);
-    prefix_ = getPlayerMenuPrefix(playerID);
+    prefix_ = MenuState::getPlayerMenuPrefix(playerID);
 
     usernameWidget_ = new StringSelectWidget("Profile ",
             prefix_ + "profile",
@@ -397,7 +396,7 @@ void PlayerWidget::processInput(Controller *controller, float dt)
 void PlayerWidget::render(const glm::vec2 &center, const glm::vec2 &size, float dt)
 {
     glm::mat4 trans;
-    const glm::vec3 color = getColor(prefix_);
+    const glm::vec3 color = MenuState::getPlayerColor(playerID_);
 
     // Update widget enabled status
     teamIDWidget_->setEnabled(getParam("menu.teams"));
@@ -471,7 +470,6 @@ MenuState::MenuState() :
     topWidgets_.push_back(new BoolSelectWidget("Teams", "menu.teams"));
     topWidgets_.push_back(new BoolSelectWidget("Stats", "menu.recordStats"));
     topWidgets_.push_back(new BoolSelectWidget("Handicap", "menu.handicap"));
-    topWidgets_.push_back(new StringSelectWidget("Stage", "menu.stage", StageManager::get()->getStageNames()));
 
     getProjectionMatrixStack().clear();
     getViewMatrixStack().clear();
@@ -564,7 +562,7 @@ GameState* MenuState::processInput(const std::vector<Controller*> &controllers, 
     if (shouldStart /* && (atleast2teams) */)
     {
         logger_->debug() << "Starting a new game by from Player " << startingPlayer+1 << "'s request\n";
-        return newGame(controllers);
+        return new LevelSelectState(startingPlayer);
     }
 
     // No transition
@@ -599,64 +597,5 @@ void MenuState::handleTopMenu(Controller *controller)
 
     // Now deal with change value on widget
     topWidgets_[topWidgetIdx_]->handleInput(yval);
-}
-
-
-GameState* MenuState::newGame(const std::vector<Controller*> &controllers)
-{
-    int lives = getParam("menu.lives");
-    bool recordStats = getParam("menu.recordStats");
-    bool handicap = getParam("menu.handicap");
-    std::string stage = strParam("menu.stage");
-
-    std::vector<Player *> players;
-    std::vector<Fighter *> fighters;
-
-    int teamCounts[4] = {0, 0, 0, 0};
-
-    for (size_t i = 0; i < widgets_.size(); i++)
-    {
-        std::string prefix = getPlayerMenuPrefix(i);
-        if (getParam(prefix + "active"))
-        {
-            int teamID = getParam(prefix + "teamIDidx");
-            glm::vec3 color = getColor(prefix);
-            std::string username = strParam(prefix + "profile");
-            std::string fighterName = strParam(prefix + "fighter");
-
-            int handicapLives = handicap ? getParam(prefix + "handicap") : 0;
-
-            Fighter *fighter = new Fighter(color, i, teamID,
-                    lives + handicapLives, username, fighterName);
-            teamCounts[teamID]++;
-            fighters.push_back(fighter);
-
-            Player  *player = NULL;
-            if (username == StatsManager::ai_user)
-            {
-                player = new AIPlayer(fighter);
-            }
-            else if (username == StatsManager::ghost_ai_user)
-            {
-                player = new GhostAIPlayer(fighter);
-            }
-            else 
-            {
-                player = new LocalPlayer(controllers[i], fighter);
-                controllers[i]->clearPresses();
-            }
-            players.push_back(player);
-        }
-    }
-
-    // Create game mode
-    GameMode *gameMode;
-    if (getParam("debug"))
-        gameMode = new DebugGameMode();
-    else
-        gameMode = new StockGameMode();
-
-    GameState *gs = new InGameState(players, fighters, recordStats, stage, gameMode);
-    return gs;
 }
 

@@ -31,6 +31,9 @@ input.trigThresh    0.5
 input.duckThresh    -0.85
 input.throwThresh   0.8
 
+input.cursorDeadzone 0.2
+input.cursorSpeed    30
+
 menu.deadzone       0.5
 menu.thresh         0.7
 

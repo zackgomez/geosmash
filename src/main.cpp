@@ -82,11 +82,12 @@ void mainloop()
             controllers[i]->update(dt);
 
         GameState *nextState;
-        // Process input, checking for new states along the way
-        while ((nextState = state->processInput(controllers, dt)))
+        // Process input, if new state, restart frame
+        if ((nextState = state->processInput(controllers, dt)))
         {
             delete state;
             state = nextState;
+            continue;
         }
 
         // Update
@@ -122,9 +123,8 @@ void addKeyboardController()
 {
 	// Make sure to tell this controller that it's a keyboard ctrl
 	if (controllers.size() == getParam("maxPlayers"))
-	{
 		return;
-	}
+
 	Controller *c = new KeyboardController(controllers.size());
 	controllers.push_back(c);
 }

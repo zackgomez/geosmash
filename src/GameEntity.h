@@ -95,9 +95,13 @@ class rectangle
 public:
     rectangle();
     rectangle(float x, float y, float w, float h);
+    rectangle(const glm::vec2 &pos, const glm::vec2 &sz);
 
     bool overlaps(const rectangle &rhs) const;
     bool contains(const rectangle &rhs) const;
+    bool contains(const glm::vec2 &pt) const;
+
+    glm::vec2 center() const;
 
     float x, y, w, h;
 };

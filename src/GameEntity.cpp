@@ -53,6 +53,10 @@ rectangle::rectangle(float xin, float yin, float win, float hin) :
     x(xin), y(yin), w(win), h(hin)
 {}
 
+rectangle::rectangle(const glm::vec2 &pos, const glm::vec2 &sz) :
+    x(pos.x), y(pos.y), w(sz.x), h(sz.y)
+{}
+
 bool rectangle::overlaps(const rectangle &rhs) const
 {
     return (rhs.x + rhs.w/2) > (x - w/2) && (rhs.x - rhs.w/2) < (x + w/2) &&
@@ -63,5 +67,18 @@ bool rectangle::contains(const rectangle &rhs) const
 {
     return (rhs.x - rhs.w/2) > (x - w/2) && (rhs.x + rhs.w/2) < (x + w/2) &&
         (rhs.y - rhs.h/2) > (y - h/2) && (rhs.y + rhs.h/2) < (y + h/2);
+}
+
+bool rectangle::contains(const glm::vec2 &pt) const
+{
+    return (x - w/2) < pt.x &&
+           (x + w/2) > pt.x &&
+           (y - h/2) < pt.y &&
+           (y + h/2) > pt.y;
+}
+
+glm::vec2 rectangle::center() const
+{
+    return glm::vec2(x, y);
 }
 

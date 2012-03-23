@@ -2,9 +2,9 @@
 #include "GameState.h"
 #include <string>
 #include <vector>
+#include <set>
 #include <glm/glm.hpp>
 #include "Controller.h"
-#include <set>
 #include "Logger.h"
 
 class Skeleton;
@@ -115,6 +115,9 @@ public:
     virtual void update(float dt);
     virtual void render(float dt);
     virtual void postFrame();
+
+    static glm::vec3 getPlayerColor(int playerID);
+    static std::string getPlayerMenuPrefix(int playerID);
     
 private:
     std::vector<PlayerWidget*> widgets_;
@@ -127,7 +130,6 @@ private:
 
     LoggerPtr logger_;
 
-    GameState* newGame(const std::vector<Controller*>&);
     void handleTopMenu(Controller *controller);
 };
 
