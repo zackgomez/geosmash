@@ -134,8 +134,8 @@ void LevelSelectState::render(float dt)
 rectangle LevelSelectState::stageRect(int idx)
 {
     const int nstages = stages_.size();
-    const glm::vec2 boxsz(300.f, 200.f);
-    const glm::vec2 boxmargin(200.f);
+    const glm::vec2 boxsz(450.f, 200.f);
+    const glm::vec2 boxmargin(100.f);
 
     glm::vec2 pos = glm::vec2(1920.f, 1080.f)/2.f;
     pos.x += (boxsz.x + boxmargin.x) * (idx - nstages/2.f + 0.5f);
