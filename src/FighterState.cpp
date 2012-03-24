@@ -475,15 +475,20 @@ FighterState* GroundState::processInput(controller_state &controller, float dt)
     {
         fighter_->vel_.x = controller.joyx * fighter_->param("walkSpeed");
         fighter_->dir_ = controller.joyx < 0 ? -1 : 1;
+        frameName_ = "GroundWalking";
     }
     // Only move when controller is held
     else
+    {
         fighter_->vel_ = glm::vec2(0.f);
+        frameName_ = "GroundNormal";
+    }
 
     // Ducking
     if (controller.joyy < getParam("input.duckThresh"))
     {
         ducking_ = true;
+        // The ducking frame overrides the walking frame
         frameName_ = "Ducking";
     }
 
@@ -500,14 +505,6 @@ void GroundState::render(float dt)
     printf("GROUND | JumpT: %.3f  DashT: %.3f  WaitT: %.3f Duck: %d || ",
             jumpTime_, dashTime_, waitTime_, ducking_);
             */
-
-    // XXX never set frameName_ in render
-    frameName_ = "GroundNormal";
-    if (ducking_)
-        frameName_ = "Ducking";
-    // if not ducking and moving, then walking
-    else if (fabs(fighter_->vel_.x) > 0)
-        frameName_ = "GroundWalking";
 
     glm::vec3 color = fighter_->color_;
     if (invincTime_ > 0.f)
@@ -681,6 +678,9 @@ FighterState* BlockingState::processInput(controller_state &controller, float dt
     if (hitStunTime_ > 0.f) return NULL;
     if (stepTime_ > 0.f) return NULL;
 
+    // Set default frame name
+    frameName_ = "Blocking";
+
     // Check for drop out of blocking state
     if (controller.rtrigger > -getParam("input.trigThresh")
      && controller.ltrigger > -getParam("input.trigThresh"))
@@ -704,6 +704,7 @@ FighterState* BlockingState::processInput(controller_state &controller, float dt
     {
         invincTime_ = fighter_->param("stepdodge.invincTime") ;
         stepTime_ = invincTime_ + fighter_->param("stepdodge.cooldown");
+        frameName_ = "StepDodge";
     }
 
     // Eat the degeneration
@@ -715,6 +716,7 @@ FighterState* BlockingState::processInput(controller_state &controller, float dt
         dazeTime_ = fighter_->param("shield.dazeTime");
         fighter_->shieldHealth_ = 0.f;
         AudioManager::get()->playSound("shieldshatter");
+        frameName_ = "Dazed";
     }
 
     return NULL;
@@ -731,12 +733,10 @@ void BlockingState::render(float dt)
     glm::vec3 color = fighter_->color_;
     if (dazeTime_ > 0.f)
     {
-        frameName_ = "Dazed";
         color = muxByTime(color, dazeTime_);
     }
     if (stepTime_ > fighter_->param("stepdodge.cooldown"))
     {
-        frameName_ = "StepDodge";
         color = muxByTime(color, stepTime_);
         trans = glm::translate(trans, glm::vec3(0, 0, fighter_->param("stepdodge.zoffset")));
     }
