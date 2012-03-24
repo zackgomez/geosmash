@@ -1,6 +1,7 @@
 #include "CameraManager.h"
 #include "ParamReader.h"
 #include "Engine.h"
+#include "StageManager.h"
 
 #define MINY -75.0
 #define MINX (-100.0f)
@@ -28,12 +29,14 @@ void CameraManager::setCurrent(const glm::vec3 &v)
     current_ = v;
 }
 
-void CameraManager::updateTarget_(const std::vector<Fighter *> &fighters) {
+void CameraManager::updateTarget_(const std::vector<Fighter *> &fighters)
+{
     glm::vec2 totalPos;
     float minX = 1e6, maxX = -1e6;
     float spread = 0;
 
-    for (unsigned i = 0; i < fighters.size(); i++) {
+    for (unsigned i = 0; i < fighters.size(); i++)
+    {
         if (fighters[i]->isAlive()) 
         {
             glm::vec2 v = fighters[i]->getPosition();
@@ -110,6 +113,10 @@ rectangle CameraManager::getCameraRect_(const std::vector<Fighter*> &fighters)
         if (pos.x > max.x) max.x = pos.x;
         if (pos.y > max.y) max.y = pos.y;
     }
+
+    // If there are no fighters alive, then have camera be entire killbox
+    if (min == glm::vec2(HUGE_VAL, HUGE_VAL))
+        return StageManager::get()->getKillBox();
 
     const float margin = getParam("camera.margin");
     min -= glm::vec2(margin, margin / 2);
