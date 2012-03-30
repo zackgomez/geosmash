@@ -59,13 +59,13 @@ Stage::Stage(const std::string &pp) :
 
     // set up renderer
     std::string levelFile = meshIDToFilename(strParam(pp + "levelModel"));
-    mesh* levelMesh    = createMesh(levelFile, true);
+    mesh* levelMesh = loadMesh(levelFile, true);
 
     mesh* platformMesh = NULL;
     if (!platforms_.empty())
     {
         std::string platformFile = meshIDToFilename(strParam(pp + "platformModel"));
-        platformMesh = createMesh(platformFile, true);
+        platformMesh = loadMesh(platformFile, true);
     }
     std::string programID = strParam(pp + "background");
     GLuint bgProgram   = make_program(
@@ -205,7 +205,7 @@ WormholeShipAddOn::WormholeShipAddOn(const Stage* stage) :
     shipProgram_(0),
     t_(0.f)
 {
-    shipMesh_ = createMesh(meshIDToFilename("ship1-2"), false);
+    shipMesh_ = loadMesh(meshIDToFilename("ship1-2"), false);
     shipProgram_ = make_program("shaders/stage.v.glsl", "shaders/stage.f.glsl");
 }
 
